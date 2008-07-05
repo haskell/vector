@@ -1,0 +1,27 @@
+Name:           vector
+Version:        0.1
+License:        BSD3
+License-File:   LICENSE
+Author:         Roman Leshchinskiy
+Maintainer:     Roman Leshchinskiy <rl@cse.unsw.edu.au>
+Category:       Data Structures
+Synopsis:       Efficient Arrays
+
+Cabal-Version:  >= 1.2
+Build-Type:     Simple
+
+Library
+  Exposed-Modules:
+        Data.Vector.Unboxed.Unbox
+        Data.Vector.Unboxed.Mutable
+        Data.Vector.Unboxed
+        Data.Vector.Stream
+
+  Include-Dirs:
+        include
+
+  Install-Includes:
+        phases.h
+
+  Build-Depends: base, array
+
