@@ -3,8 +3,9 @@
 module Data.Vector.Unboxed
 where
 
-import Data.Vector.Unboxed.Unbox
+import qualified Data.Vector.Unboxed.Prim as Prim
 import qualified Data.Vector.Unboxed.Mutable as Mut
+import           Data.Vector.Unboxed.Unbox ( Unbox )
 
 import qualified Data.Vector.Stream as Stream
 import           Data.Vector.Stream ( Step(..), Stream(..) )
@@ -14,9 +15,9 @@ import Control.Monad.ST  ( ST, runST )
 
 import Prelude hiding ( length )
 
-data Vector a = Vector !Int
-                       !Int
-                       !(Array a)
+data Vector a = Vector {-# UNPACK #-} !Int
+                       {-# UNPACK #-} !Int
+                       {-# UNPACK #-} !(Prim.Vector a)
 
 new :: Unbox a
     => Int -> (forall s. Mut.Vector s a -> ST s (Mut.Vector s a)) -> Vector a
@@ -25,9 +26,9 @@ new n init = runST (
   do
     mv  <- Mut.new n
     mv' <- init mv
-    let (marr, i, n') = Mut.dataOf mv'
-    arr <- unsafeFreezeArray marr
-    return $ Vector i n' arr
+    let (mprim, i, n') = Mut.dataOf mv'
+    prim <- Prim.unsafeFreeze mprim
+    return $ Vector i n' prim
   )
 
 stream :: Unbox a => Vector a -> Stream a
@@ -37,7 +38,7 @@ stream (Vector i n arr) = Stream get i n
     n' = n+i
 
     {-# INLINE get #-}
-    get j | j < n'    = Yield (indexArray arr j) (j+1)
+    get j | j < n'    = Yield (Prim.at arr j) (j+1)
           | otherwise = Done
 
 unstream :: Unbox a => Stream a -> Vector a
@@ -67,7 +68,7 @@ slice (Vector i n arr) j m
 
 unsafeAt :: Unbox a => Vector a -> Int -> a
 {-# INLINE unsafeAt #-}
-unsafeAt (Vector i _ arr) j = indexArray arr (i+j)
+unsafeAt (Vector i _ arr) j = Prim.at arr (i+j)
 
 at :: Unbox a => Vector a -> Int -> a
 {-# INLINE at #-}

@@ -7,7 +7,8 @@ module Data.Vector.Unboxed.Mutable (
   dataOf
 ) where
 
-import Data.Vector.Unboxed.Unbox
+import qualified Data.Vector.Unboxed.Prim as Prim
+import           Data.Vector.Unboxed.Unbox ( Unbox )
 
 import qualified Data.Vector.Stream as Stream
 import           Data.Vector.Stream ( Stream )
@@ -17,20 +18,18 @@ import Control.Monad.ST  ( ST )
 
 import Prelude hiding ( length, read )
 
-data Vector s a = Vector !Int                  -- ^ start
-                         !Int                  -- ^ length
-                         !(MutableArray s a)   -- ^ data
+data Vector s a = Vector {-# UNPACK #-} !Int                       -- ^ start
+                         {-# UNPACK #-} !Int                       -- ^ length
+                         {-# UNPACK #-} !(Prim.MutableVector s a)  -- ^ data
 
-dataOf :: Vector s a -> (MutableArray s a, Int, Int)
+dataOf :: Vector s a -> (Prim.MutableVector s a, Int, Int)
 {-# INLINE dataOf #-}
-dataOf (Vector i n arr) = (arr, i, n)
+dataOf (Vector i n v) = (v, i, n)
 
 new :: Unbox a => Int -> ST s (Vector s a)
 {-# INLINE new #-}
 new n = assert (n >= 0)
-      $ do
-          arr <- newArray n
-          return $ Vector 0 n arr
+      $ Vector 0 n `fmap` Prim.new n
 
 length :: Unbox a => Vector s a -> Int
 {-# INLINE length #-}
@@ -38,27 +37,27 @@ length (Vector _ n _) = n
 
 slice :: Unbox a => Vector s a -> Int -> Int -> Vector s a
 {-# INLINE slice #-}
-slice (Vector i n arr) j m
+slice (Vector i n v) j m
   = assert (j + m <= n && j >= 0 && m >= 0)
-  $ Vector (i+j) m arr
+  $ Vector (i+j) m v
 
 slicel :: Unbox a => Vector s a -> Int -> Vector s a
 {-# INLINE slicel #-}
-slicel (Vector i n arr) m
+slicel (Vector i n v) m
   = assert (m <= n && m >= 0)
-  $ Vector i m arr
+  $ Vector i m v
 
 read :: Unbox a => Vector s a -> Int -> ST s a
 {-# INLINE read #-}
-read (Vector i n arr) j
+read (Vector i n v) j
   = assert (j < n)
-  $ readArray arr (i+j)
+  $ Prim.read v (i+j)
 
 write :: Unbox a => Vector s a -> Int -> a -> ST s ()
 {-# INLINE write #-}
-write (Vector i n arr) j x
+write (Vector i n v) j x
   = assert (j < n)
-  $ writeArray arr (i+j) x
+  $ Prim.write v (i+j) x
 
 fill :: Unbox a => Vector s a -> Stream a -> ST s Int
 {-# INLINE fill #-}
