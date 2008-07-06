@@ -12,12 +12,16 @@ Build-Type:     Simple
 
 Library
   Exposed-Modules:
+        Data.Vector.Stream
+
         Data.Vector.Unboxed.Unbox
         Data.Vector.Unboxed.Prim
         Data.Vector.Unboxed.Mutable
         Data.Vector.Unboxed
-        Data.Vector.Stream
 
+        Data.Vector.Prim
+        Data.Vector.Mutable
+        Data.Vector
   Include-Dirs:
         include
 
