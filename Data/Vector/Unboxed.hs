@@ -1,4 +1,6 @@
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RankNTypes, CPP #-}
+
+#include "phases.h"
 
 module Data.Vector.Unboxed
 where

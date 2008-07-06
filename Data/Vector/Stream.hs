@@ -1,4 +1,6 @@
-{-# LANGUAGE ExistentialQuantification, BangPatterns #-}
+{-# LANGUAGE ExistentialQuantification, BangPatterns, CPP #-}
+
+#include "phases.h"
 
 module Data.Vector.Stream (
   Step(..), Stream(..),
