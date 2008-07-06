@@ -9,7 +9,7 @@ import qualified Data.Vector.Prim    as Prim
 import qualified Data.Vector.Mutable as Mut
 
 import qualified Data.Vector.Stream  as Stream
-import           Data.Vector.Stream ( Step(..), Stream(..) )
+import           Data.Vector.Stream ( Stream )
 
 import Control.Exception ( assert )
 import Control.Monad.ST  ( ST, runST )
@@ -44,20 +44,20 @@ new' n x init = runST (
 
 stream :: Vector a -> Stream a
 {-# INLINE_STREAM stream #-}
-stream (Vector i n arr) = Stream get i n
+stream (Vector i n arr) = Stream.unfold get i n
   where
     n' = n+i
 
     {-# INLINE get #-}
-    get j | j < n'    = Prim.at' arr j $ \x -> Yield x (j+1)
-          | otherwise = Done
+    get j | j < n'    = Prim.at' arr j $ \x -> Just (x, j+1)
+          | otherwise = Nothing
 
 unstream :: Stream a -> Vector a
 {-# INLINE_STREAM unstream #-}
-unstream s@(Stream _ _ n) = new n (\mv ->
+unstream s = new (Stream.bound s) (\mv ->
   do
-    n' <- Mut.fill mv s
-    return $ Mut.slice mv 0 n'
+    n <- Mut.fill mv s
+    return $ Mut.slice mv 0 n
   )
 
 {-# RULES
