@@ -5,6 +5,7 @@
 module Data.Vector.Stream (
   Step(..), Stream(..),
 
+  bound, unfold,
   empty, singleton, replicate, (++),
   map, filter, zipWith,
   foldr, foldl, foldl',
@@ -20,6 +21,19 @@ data Step s a = Yield a s
               | Done
 
 data Stream a = forall s. Stream (s -> Step s a) s Int
+
+bound :: Stream a -> Int
+{-# INLINE bound #-}
+bound (Stream _ _ n) = n
+
+unfold :: (s -> Maybe (a, s)) -> s -> Int -> Stream a
+{-# INLINE_STREAM unfold #-}
+unfold f s n = Stream step s n
+  where
+    {-# INLINE step #-}
+    step s = case f s of
+               Just (x, s') -> Yield x s'
+               Nothing      -> Done
 
 empty :: Stream a
 {-# INLINE_STREAM empty #-}
