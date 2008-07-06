@@ -92,3 +92,7 @@ zipWith :: (Unbox a, Unbox b, Unbox c)
 zipWith f v w = unstream
               $ Stream.zipWith f (stream v) (stream w)
 
+foldl' :: Unbox a => (a -> b -> b) -> b -> Vector a -> b
+{-# INLINE foldl' #-}
+foldl' f z = Stream.foldl' f z . stream
+
