@@ -5,13 +5,13 @@
 module Data.Vector.Stream (
   Step(..), Stream(..),
 
-  empty, singleton, replicate,
+  empty, singleton, replicate, (++),
   map, filter, zipWith,
   foldr, foldl, foldl',
   mapM_, foldM
 ) where
 
-import Prelude hiding ( replicate, map, filter, zipWith,
+import Prelude hiding ( replicate, (++), map, filter, zipWith,
                         foldr, foldl,
                         mapM_ )
 
@@ -40,6 +40,20 @@ replicate n x = Stream step n (max n 0)
     {-# INLINE step #-}
     step i | i > 0     = Yield x (i-1)
            | otherwise = Done
+
+infixr ++
+(++) :: Stream a -> Stream a -> Stream a
+{-# INLINE_STREAM (++) #-}
+Stream stepa sa na ++ Stream stepb sb nb = Stream step (Left sa) (na + nb)
+  where
+    step (Left  sa) = case stepa sa of
+                        Yield x sa' -> Yield x (Left  sa')
+                        Skip    sa' -> Skip    (Left  sa')
+                        Done        -> Skip    (Right sb)
+    step (Right sb) = case stepb sb of
+                        Yield x sb' -> Yield x (Right sb')
+                        Skip    sb' -> Skip    (Right sb')
+                        Done        -> Done
 
 map :: (a -> b) -> Stream a -> Stream b
 {-# INLINE_STREAM map #-}

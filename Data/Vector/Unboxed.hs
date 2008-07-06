@@ -15,7 +15,7 @@ import           Data.Vector.Stream ( Step(..), Stream(..) )
 import Control.Exception ( assert )
 import Control.Monad.ST  ( ST, runST )
 
-import Prelude hiding ( length )
+import Prelude hiding ( length, (++) )
 
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
@@ -77,6 +77,10 @@ at :: Unbox a => Vector a -> Int -> a
 at v i = assert (i >= 0 && i < length v)
        $ unsafeAt v i
 
+infixr ++
+(++) :: Unbox a => Vector a -> Vector a -> Vector a
+{-# INLINE (++) #-}
+v ++ w = unstream (stream v Stream.++ stream w)
 
 map :: (Unbox a, Unbox b) => (a -> b) -> Vector a -> Vector b
 {-# INLINE map #-}
