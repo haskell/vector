@@ -9,6 +9,7 @@ import qualified Data.Vector.Unboxed.Prim as Prim
 import qualified Data.Vector.Unboxed.Mutable as Mut
 import           Data.Vector.Unboxed.Unbox ( Unbox )
 
+import           Data.Vector.Stream.Size ( Size(..) )
 import qualified Data.Vector.Stream as Stream
 import           Data.Vector.Stream ( Stream )
 
@@ -35,7 +36,7 @@ new n init = runST (
 
 stream :: Unbox a => Vector a -> Stream a
 {-# INLINE_STREAM stream #-}
-stream (Vector i n arr) = Stream.unfold get i n
+stream (Vector i n arr) = Stream.unfold get i `Stream.sized` Exact n
   where
     n' = n+i
 
@@ -45,10 +46,11 @@ stream (Vector i n arr) = Stream.unfold get i n
 
 unstream :: Unbox a => Stream a -> Vector a
 {-# INLINE_STREAM unstream #-}
-unstream s = new (Stream.bound s) (\mv ->
-  do
-    n <- Mut.fill mv s
-    return $ Mut.slice mv 0 n
+unstream s = runST (do
+    mv <- Mut.unstream s
+    let (mprim, i, n) = Mut.dataOf mv
+    prim <- Prim.unsafeFreeze mprim
+    return $ Vector i n prim
   )
 
 {-# RULES

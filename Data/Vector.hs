@@ -8,6 +8,7 @@ where
 import qualified Data.Vector.Prim    as Prim
 import qualified Data.Vector.Mutable as Mut
 
+import           Data.Vector.Stream.Size ( Size(..) )
 import qualified Data.Vector.Stream  as Stream
 import           Data.Vector.Stream ( Stream )
 
@@ -44,7 +45,7 @@ new' n x init = runST (
 
 stream :: Vector a -> Stream a
 {-# INLINE_STREAM stream #-}
-stream (Vector i n arr) = Stream.unfold get i n
+stream (Vector i n arr) = Stream.unfold get i `Stream.sized` Exact n
   where
     n' = n+i
 
@@ -54,10 +55,11 @@ stream (Vector i n arr) = Stream.unfold get i n
 
 unstream :: Stream a -> Vector a
 {-# INLINE_STREAM unstream #-}
-unstream s = new (Stream.bound s) (\mv ->
-  do
-    n <- Mut.fill mv s
-    return $ Mut.slice mv 0 n
+unstream s = runST (do
+    mv <- Mut.unstream s
+    let (mprim, i, n) = Mut.dataOf mv
+    prim <- Prim.unsafeFreeze mprim
+    return $ Vector i n prim
   )
 
 {-# RULES

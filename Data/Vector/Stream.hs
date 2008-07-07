@@ -5,12 +5,14 @@
 module Data.Vector.Stream (
   Step(..), Stream(..),
 
-  bound, unfold,
+  size, sized, unfold,
   empty, singleton, replicate, (++),
   map, filter, zipWith,
   foldr, foldl, foldl',
   mapM_, foldM
 ) where
+
+import Data.Vector.Stream.Size
 
 import Prelude hiding ( replicate, (++), map, filter, zipWith,
                         foldr, foldl,
@@ -20,15 +22,19 @@ data Step s a = Yield a s
               | Skip    s
               | Done
 
-data Stream a = forall s. Stream (s -> Step s a) s Int
+data Stream a = forall s. Stream (s -> Step s a) s Size
 
-bound :: Stream a -> Int
-{-# INLINE bound #-}
-bound (Stream _ _ n) = n
+size :: Stream a -> Size
+{-# INLINE size #-}
+size (Stream _ _ sz) = sz
 
-unfold :: (s -> Maybe (a, s)) -> s -> Int -> Stream a
+sized :: Stream a -> Size -> Stream a
+{-# INLINE_STREAM sized #-}
+sized (Stream step s _) sz = Stream step s sz
+
+unfold :: (s -> Maybe (a, s)) -> s -> Stream a
 {-# INLINE_STREAM unfold #-}
-unfold f s n = Stream step s n
+unfold f s = Stream step s Unknown
   where
     {-# INLINE step #-}
     step s = case f s of
@@ -37,11 +43,11 @@ unfold f s n = Stream step s n
 
 empty :: Stream a
 {-# INLINE_STREAM empty #-}
-empty = Stream (const Done) () 0
+empty = Stream (const Done) () (Exact 0)
 
 singleton :: a -> Stream a
 {-# INLINE_STREAM singleton #-}
-singleton x = Stream step True 1
+singleton x = Stream step True (Exact 1)
   where
     {-# INLINE step #-}
     step True  = Yield x False
@@ -49,7 +55,7 @@ singleton x = Stream step True 1
 
 replicate :: Int -> a -> Stream a
 {-# INLINE_STREAM replicate #-}
-replicate n x = Stream step n (max n 0)
+replicate n x = Stream step n (Exact (max n 0))
   where
     {-# INLINE step #-}
     step i | i > 0     = Yield x (i-1)
@@ -81,7 +87,7 @@ map f (Stream step s n) = Stream step' s n
 
 filter :: (a -> Bool) -> Stream a -> Stream a
 {-# INLINE_STREAM filter #-}
-filter f (Stream step s n) = Stream step' s n
+filter f (Stream step s n) = Stream step' s (toMax n)
   where
     {-# INLINE step' #-}
     step' s = case step s of
@@ -93,7 +99,7 @@ filter f (Stream step s n) = Stream step' s n
 zipWith :: (a -> b -> c) -> Stream a -> Stream b -> Stream c
 {-# INLINE_STREAM zipWith #-}
 zipWith f (Stream stepa sa na) (Stream stepb sb nb)
-  = Stream step (sa, sb, Nothing) (min na nb)
+  = Stream step (sa, sb, Nothing) (smaller na nb)
   where
     {-# INLINE step #-}
     step (sa, sb, Nothing) = case stepa sa of

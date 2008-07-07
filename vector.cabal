@@ -12,6 +12,7 @@ Build-Type:     Simple
 
 Library
   Exposed-Modules:
+        Data.Vector.Stream.Size
         Data.Vector.Stream
 
         Data.Vector.Unboxed.Unbox
