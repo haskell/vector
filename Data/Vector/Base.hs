@@ -47,6 +47,10 @@ infixr ++
 {-# INLINE (++) #-}
 v ++ w = unstream (stream v Stream.++ stream w)
 
+filter :: Base v a => (a -> Bool) -> v a -> v a
+{-# INLINE filter #-}
+filter f = unstream . Stream.filter f . stream
+
 map :: (Base v a, Base v b) => (a -> b) -> v a -> v b
 {-# INLINE map #-}
 map f = unstream . Stream.map f . stream
@@ -62,4 +66,12 @@ foldl' f z = Stream.foldl' f z . stream
 sum :: (Base v a, Num a) => v a -> a
 {-# INLINE sum #-}
 sum = foldl' (+) 0
+
+toList :: Base v a => v a -> [a]
+{-# INLINE toList #-}
+toList = Stream.toList . stream
+
+fromList :: Base v a => [a] -> v a
+{-# INLINE fromList #-}
+fromList = unstream . Stream.fromList
 
