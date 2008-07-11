@@ -47,9 +47,13 @@ infixr ++
 {-# INLINE (++) #-}
 v ++ w = unstream (stream v Stream.++ stream w)
 
-filter :: Base v a => (a -> Bool) -> v a -> v a
-{-# INLINE filter #-}
-filter f = unstream . Stream.filter f . stream
+take :: Base v a => Int -> v a -> v a
+{-# INLINE take #-}
+take n = unstream . Stream.take n . stream
+
+drop :: Base v a => Int -> v a -> v a
+{-# INLINE drop #-}
+drop n = unstream . Stream.drop n . stream
 
 map :: (Base v a, Base v b) => (a -> b) -> v a -> v b
 {-# INLINE map #-}
@@ -58,6 +62,18 @@ map f = unstream . Stream.map f . stream
 zipWith :: (Base v a, Base v b, Base v c) => (a -> b -> c) -> v a -> v b -> v c
 {-# INLINE zipWith #-}
 zipWith f xs ys = unstream (Stream.zipWith f (stream xs) (stream ys))
+
+filter :: Base v a => (a -> Bool) -> v a -> v a
+{-# INLINE filter #-}
+filter f = unstream . Stream.filter f . stream
+
+takeWhile :: Base v a => (a -> Bool) -> v a -> v a
+{-# INLINE takeWhile #-}
+takeWhile f = unstream . Stream.takeWhile f . stream
+
+dropWhile :: Base v a => (a -> Bool) -> v a -> v a
+{-# INLINE dropWhile #-}
+dropWhile f = unstream . Stream.dropWhile f . stream
 
 foldl' :: Base v b => (a -> b -> a) -> a -> v b -> a
 {-# INLINE foldl' #-}

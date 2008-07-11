@@ -7,14 +7,19 @@ module Data.Vector.Stream (
 
   size, sized, unfold, toList, fromList,
   empty, singleton, replicate, (++),
-  map, filter, zipWith,
+  take, drop,
+  map, zipWith,
+  filter, takeWhile, dropWhile,
   foldr, foldl, foldl',
   mapM_, foldM
 ) where
 
 import Data.Vector.Stream.Size
 
-import Prelude hiding ( replicate, (++), map, filter, zipWith,
+import Prelude hiding ( replicate, (++),
+                        take, drop,
+                        map, zipWith,
+                        filter, takeWhile, dropWhile,
                         foldr, foldl,
                         mapM_ )
 
@@ -52,6 +57,9 @@ fromList xs = Stream step xs Unknown
     step (x:xs) = Yield x xs
     step []     = Done
 
+-- Construction
+-- ------------
+
 empty :: Stream a
 {-# INLINE_STREAM empty #-}
 empty = Stream (const Done) () (Exact 0)
@@ -86,6 +94,46 @@ Stream stepa sa na ++ Stream stepb sb nb = Stream step (Left sa) (na + nb)
                         Skip    sb' -> Skip    (Right sb')
                         Done        -> Done
 
+-- Substreams
+-- ----------
+
+take :: Int -> Stream a -> Stream a
+{-# INLINE_STREAM take #-}
+take n (Stream step s sz) = Stream step' (s, 0) (smaller (Exact n) sz)
+  where
+    {-# INLINE step' #-}
+    step' (s, i) | i < n = case step s of
+                             Yield x s' -> Yield x (s', i+1)
+                             Skip    s' -> Skip    (s', i)
+                             Done       -> Done
+    step' (s, i) = Done
+
+data Drop s = Drop_Drop s Int | Drop_Keep s
+
+drop :: Int -> Stream a -> Stream a
+{-# INLINE_STREAM drop #-}
+drop n (Stream step s sz) = Stream step' (Drop_Drop s 0) (sz - Exact n)
+  where
+    {-# INLINE step' #-}
+    step' (Drop_Drop s i) | i < n = case step s of
+                                      Yield x s' -> Skip (Drop_Drop s' (i+1))
+                                      Skip    s' -> Skip (Drop_Drop s' i)
+                                      Done       -> Done
+                          | otherwise = Skip (Drop_Keep s)
+
+    step' (Drop_Keep s) = case step s of
+                            Yield x s' -> Yield x (Drop_Keep s')
+                            Skip    s' -> Skip    (Drop_Keep s')
+                            Done       -> Done
+                     
+
+-- Mapping/zipping
+-- ---------------
+
+instance Functor Stream where
+  {-# INLINE_STREAM fmap #-}
+  fmap = map
+
 map :: (a -> b) -> Stream a -> Stream b
 {-# INLINE_STREAM map #-}
 map f (Stream step s n) = Stream step' s n
@@ -95,17 +143,6 @@ map f (Stream step s n) = Stream step' s n
                 Yield x s' -> Yield (f x) s'
                 Skip    s' -> Skip        s'
                 Done       -> Done
-
-filter :: (a -> Bool) -> Stream a -> Stream a
-{-# INLINE_STREAM filter #-}
-filter f (Stream step s n) = Stream step' s (toMax n)
-  where
-    {-# INLINE step' #-}
-    step' s = case step s of
-                Yield x s' | f x       -> Yield x s'
-                           | otherwise -> Skip    s'
-                Skip    s'             -> Skip    s'
-                Done                   -> Done
 
 zipWith :: (a -> b -> c) -> Stream a -> Stream b -> Stream c
 {-# INLINE_STREAM zipWith #-}
@@ -122,6 +159,59 @@ zipWith f (Stream stepa sa na) (Stream stepb sb nb)
                                Yield y sb' -> Yield (f x y) (sa, sb', Nothing)
                                Skip    sb' -> Skip          (sa, sb', Just x)
                                Done        -> Done
+
+-- Filtering
+-- ---------
+
+filter :: (a -> Bool) -> Stream a -> Stream a
+{-# INLINE_STREAM filter #-}
+filter f (Stream step s n) = Stream step' s (toMax n)
+  where
+    {-# INLINE step' #-}
+    step' s = case step s of
+                Yield x s' | f x       -> Yield x s'
+                           | otherwise -> Skip    s'
+                Skip    s'             -> Skip    s'
+                Done                   -> Done
+
+takeWhile :: (a -> Bool) -> Stream a -> Stream a
+{-# INLINE_STREAM takeWhile #-}
+takeWhile f (Stream step s n) = Stream step' s (toMax n)
+  where
+    {-# INLINE step' #-}
+    step' s = case step s of
+                Yield x s' | f x       -> Yield x s'
+                           | otherwise -> Done
+                Skip    s'             -> Skip s'
+                Done                   -> Done
+
+
+data DropWhile s a = DropWhile_Drop s | DropWhile_Yield a s | DropWhile_Next s
+
+dropWhile :: (a -> Bool) -> Stream a -> Stream a
+{-# INLINE_STREAM dropWhile #-}
+dropWhile f (Stream step s n) = Stream step' (DropWhile_Drop s) (toMax n)
+  where
+    -- NOTE: we jump through hoops here to have only one Yield; local data
+    -- declarations would be nice!
+
+    {-# INLINE step' #-}
+    step' (DropWhile_Drop s)
+      = case step s of
+          Yield x s' | f x       -> Skip    (DropWhile_Drop    s')
+                     | otherwise -> Skip    (DropWhile_Yield x s')
+          Skip    s'             -> Skip    (DropWhile_Drop    s')
+          Done                   -> Done
+
+    step' (DropWhile_Yield x s) = Yield x (DropWhile_Next s)
+
+    step' (DropWhile_Next s) = case step s of
+                                 Yield x s' -> Skip    (DropWhile_Yield x s')
+                                 Skip    s' -> Skip    (DropWhile_Next    s')
+                                 Done       -> Done
+
+-- Folding
+-- -------
 
 foldl :: (a -> b -> a) -> a -> Stream b -> a
 {-# INLINE_STREAM foldl #-}
