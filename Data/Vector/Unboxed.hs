@@ -1,104 +1,38 @@
-{-# LANGUAGE RankNTypes, CPP #-}
+{-# LANGUAGE MagicHash, UnboxedTuples, FlexibleInstances, MultiParamTypeClasses #-}
 
-#include "phases.h"
+module Data.Vector.Unboxed (
+  Vector(..), module Data.Vector.Base
+) where
 
-module Data.Vector.Unboxed
-where
-
-import qualified Data.Vector.Unboxed.Prim as Prim
+import           Data.Vector.Base
 import qualified Data.Vector.Unboxed.Mutable as Mut
-import           Data.Vector.Unboxed.Unbox ( Unbox )
+import           Data.Vector.Unboxed.Unbox
 
-import           Data.Vector.Stream.Size ( Size(..) )
-import qualified Data.Vector.Stream as Stream
-import           Data.Vector.Stream ( Stream )
+import Control.Monad.ST ( runST )
 
-import Control.Exception ( assert )
-import Control.Monad.ST  ( ST, runST )
-
-import Prelude hiding ( length, (++) )
+import GHC.ST   ( ST(..) )
+import GHC.Prim ( ByteArray#, unsafeFreezeByteArray#, (+#) )
+import GHC.Base ( Int(..) )
 
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
-                       {-# UNPACK #-} !(Prim.Vector a)
+                                      ByteArray#
 
-new :: Unbox a
-    => Int -> (forall s. Mut.Vector s a -> ST s (Mut.Vector s a)) -> Vector a
-{-# INLINE new #-}
-new n init = runST (
-  do
-    mv  <- Mut.new n
-    mv' <- init mv
-    let (mprim, i, n') = Mut.dataOf mv'
-    prim <- Prim.unsafeFreeze mprim
-    return $ Vector i n' prim
-  )
+instance Unbox a => Base Vector a where
+  {-# INLINE create #-}
+  create init = runST (do
+      Mut.Vector i n marr# <- init
+      ST (\s# -> case unsafeFreezeByteArray# marr# s# of
+                   (# s2#, arr# #) -> (# s2#, Vector i n arr# #)
+         )
+    )
 
-stream :: Unbox a => Vector a -> Stream a
-{-# INLINE_STREAM stream #-}
-stream (Vector i n arr) = Stream.unfold get i `Stream.sized` Exact n
-  where
-    n' = n+i
+  {-# INLINE length #-}
+  length (Vector _ n _) = n
 
-    {-# INLINE get #-}
-    get j | j < n'    = Just (Prim.at arr j, j+1)
-          | otherwise = Nothing
+  {-# INLINE unsafeSlice #-}
+  unsafeSlice (Vector i _ arr#) j n = Vector (i+j) n arr#
 
-unstream :: Unbox a => Stream a -> Vector a
-{-# INLINE_STREAM unstream #-}
-unstream s = runST (do
-    mv <- Mut.unstream s
-    let (mprim, i, n) = Mut.dataOf mv
-    prim <- Prim.unsafeFreeze mprim
-    return $ Vector i n prim
-  )
-
-{-# RULES
-
-"stream/unstream [Vector.Unboxed]" forall s.
-  stream (unstream s) = s
-
- #-}
-
-length :: Unbox a => Vector a -> Int
-{-# INLINE length #-}
-length (Vector _ n _) = n
-
-slice :: Unbox a => Vector a -> Int -> Int -> Vector a
-{-# INLINE slice #-}
-slice (Vector i n arr) j m
-  = assert (j + m <= n && j >= 0 && m >= 0)
-  $ Vector (i+j) m arr
-
-unsafeAt :: Unbox a => Vector a -> Int -> a
-{-# INLINE unsafeAt #-}
-unsafeAt (Vector i _ arr) j = Prim.at arr (i+j)
-
-at :: Unbox a => Vector a -> Int -> a
-{-# INLINE at #-}
-at v i = assert (i >= 0 && i < length v)
-       $ unsafeAt v i
-
-infixr ++
-(++) :: Unbox a => Vector a -> Vector a -> Vector a
-{-# INLINE (++) #-}
-v ++ w = unstream (stream v Stream.++ stream w)
-
-map :: (Unbox a, Unbox b) => (a -> b) -> Vector a -> Vector b
-{-# INLINE map #-}
-map f = unstream . Stream.map f . stream
-
-filter :: Unbox a => (a -> Bool) -> Vector a -> Vector a
-{-# INLINE filter #-}
-filter f = unstream . Stream.filter f . stream
-
-zipWith :: (Unbox a, Unbox b, Unbox c)
-        => (a -> b -> c) -> Vector a -> Vector b -> Vector c
-{-# INLINE zipWith #-}
-zipWith f v w = unstream
-              $ Stream.zipWith f (stream v) (stream w)
-
-foldl' :: Unbox a => (a -> b -> b) -> b -> Vector a -> b
-{-# INLINE foldl' #-}
-foldl' f z = Stream.foldl' f z . stream
+  {-# INLINE unsafeIndex #-}
+  unsafeIndex (Vector (I# i#) _ arr#) (I# j#) f = f (at# arr# (i# +# j#))
 

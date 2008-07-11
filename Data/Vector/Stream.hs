@@ -5,7 +5,7 @@
 module Data.Vector.Stream (
   Step(..), Stream(..),
 
-  size, sized, unfold,
+  size, sized, unfold, toList, fromList,
   empty, singleton, replicate, (++),
   map, filter, zipWith,
   foldr, foldl, foldl',
@@ -40,6 +40,17 @@ unfold f s = Stream step s Unknown
     step s = case f s of
                Just (x, s') -> Yield x s'
                Nothing      -> Done
+
+toList :: Stream a -> [a]
+{-# INLINE toList #-}
+toList s = foldr (:) [] s
+
+fromList :: [a] -> Stream a
+{-# INLINE_STREAM fromList #-}
+fromList xs = Stream step xs Unknown
+  where
+    step (x:xs) = Yield x xs
+    step []     = Done
 
 empty :: Stream a
 {-# INLINE_STREAM empty #-}
@@ -112,21 +123,21 @@ zipWith f (Stream stepa sa na) (Stream stepb sb nb)
                                Skip    sb' -> Skip          (sa, sb', Just x)
                                Done        -> Done
 
-foldl :: (a -> b -> b) -> b -> Stream a -> b
+foldl :: (a -> b -> a) -> a -> Stream b -> a
 {-# INLINE_STREAM foldl #-}
 foldl f z (Stream step s _) = foldl_go z s
   where
     foldl_go z s = case step s of
-                     Yield x s' -> foldl_go (f x z) s'
+                     Yield x s' -> foldl_go (f z x) s'
                      Skip    s' -> foldl_go z       s'
                      Done       -> z
 
-foldl' :: (a -> b -> b) -> b -> Stream a -> b
+foldl' :: (a -> b -> a) -> a -> Stream b -> a
 {-# INLINE_STREAM foldl' #-}
-foldl' f z (Stream step s _) = foldl_go z s
+foldl' f !z (Stream step s _) = foldl_go z s
   where
     foldl_go !z s = case step s of
-                      Yield x s' -> foldl_go (f x z) s'
+                      Yield x s' -> foldl_go (f z x) s'
                       Skip    s' -> foldl_go z       s'
                       Done       -> z
 
