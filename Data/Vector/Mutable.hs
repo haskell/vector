@@ -1,4 +1,4 @@
-{-# LANGUAGE MagicHash, UnboxedTuples, TypeFamilies, MultiParamTypeClasses, FlexibleInstances #-}
+{-# LANGUAGE MagicHash, UnboxedTuples, MultiParamTypeClasses, GADTs, FlexibleInstances #-}
 
 module Data.Vector.Mutable ( Vector(..) )
 where
@@ -12,13 +12,13 @@ import GHC.ST   ( ST(..) )
 
 import GHC.Base ( Int(..) )
 
-data Vector s a = Vector {-# UNPACK #-} !Int
-                         {-# UNPACK #-} !Int
-                                        (MutableArray# s a)
+data Vector m a where
+  Vector :: {-# UNPACK #-} !Int
+         -> {-# UNPACK #-} !Int
+         -> MutableArray# s a
+         -> Vector (ST s) a
 
-instance Base.Base (Vector s) a where
-  type Base.Trans (Vector s) = ST s
-
+instance Base.Base Vector (ST s) a where
   length (Vector _ n _) = n
   unsafeSlice (Vector i _ arr#) j m = Vector (i+j) m arr#
 
@@ -43,11 +43,11 @@ instance Base.Base (Vector s) a where
     where
       between x y z = x >= y && x < z
 
-unsafeNew :: Int -> ST s (Vector s a)
+unsafeNew :: Int -> ST s (Vector (ST s) a)
 {-# INLINE unsafeNew #-}
 unsafeNew n = unsafeNewWith n (error "Data.Vector.Mutable: uninitialised elemen t")
 
-unsafeNewWith :: Int -> a -> ST s (Vector s a)
+unsafeNewWith :: Int -> a -> ST s (Vector (ST s) a)
 {-# INLINE unsafeNewWith #-}
 unsafeNewWith (I# n#) x = ST (\s# ->
     case newArray# n# x s# of

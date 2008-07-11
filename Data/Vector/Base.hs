@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies, FlexibleContexts, RankNTypes, MultiParamTypeClasses, BangPatterns, CPP #-}
+{-# LANGUAGE Rank2Types, MultiParamTypeClasses, BangPatterns, CPP #-}
 
 #include "phases.h"
 
@@ -14,7 +14,7 @@ import           Data.Vector.Stream.Size
 import Prelude hiding ( length, map, zipWith, sum )
 
 class Base v a where
-  create       :: (forall mv. Mut.Base mv a => Mut.Trans mv (mv a)) -> v a
+  create       :: (forall mv m. Mut.Base mv m a => m (mv m a)) -> v a
 
   length       :: v a -> Int
   unsafeSlice  :: v a -> Int -> Int -> v a

@@ -1,4 +1,4 @@
-{-# LANGUAGE MagicHash, UnboxedTuples, TypeFamilies, MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables #-}
+{-# LANGUAGE MagicHash, UnboxedTuples, MultiParamTypeClasses, FlexibleInstances, GADTs, ScopedTypeVariables #-}
 
 module Data.Vector.Unboxed.Mutable ( Vector(..) )
 where
@@ -13,14 +13,13 @@ import GHC.ST   ( ST(..) )
 
 import GHC.Base ( Int(..) )
 
-data Vector s a = Vector {-# UNPACK #-} !Int
-                         {-# UNPACK #-} !Int
-                                        (MutableByteArray# s)
+data Vector m a where
+   Vector :: {-# UNPACK #-} !Int
+          -> {-# UNPACK #-} !Int
+          -> MutableByteArray# s
+          -> Vector (ST s) a
 
-
-instance Unbox a => Base.Base (Vector s) a where
-  type Base.Trans (Vector s) = ST s
-
+instance Unbox a => Base.Base Vector (ST s) a where
   length (Vector _ n _) = n
   unsafeSlice (Vector i _ arr#) j m = Vector (i+j) m arr#
 

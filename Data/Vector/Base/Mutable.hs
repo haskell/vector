@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies, FlexibleContexts, MultiParamTypeClasses #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 module Data.Vector.Base.Mutable (
   Base(..),
 
@@ -21,23 +21,21 @@ import Prelude hiding ( length, read )
 gROWTH_FACTOR :: Double
 gROWTH_FACTOR = 1.5
 
-class Monad (Trans v) => Base v a where
-  type Trans   v :: * -> *
+class Monad m => Base v m a where
+  length           :: v m a -> Int
+  unsafeSlice      :: v m a -> Int -> Int -> v m a
 
-  length           :: v a -> Int
-  unsafeSlice      :: v a -> Int -> Int -> v a
+  unsafeNew        :: Int -> m (v m a)
+  unsafeNewWith    :: Int -> a -> m (v m a)
 
-  unsafeNew        :: Int -> Trans v (v a)
-  unsafeNewWith    :: Int -> a -> Trans v (v a)
+  unsafeRead       :: v m a -> Int -> m a
+  unsafeWrite      :: v m a -> Int -> a -> m ()
 
-  unsafeRead       :: v a -> Int -> Trans v a
-  unsafeWrite      :: v a -> Int -> a -> Trans v ()
+  set              :: v m a -> a -> m ()
+  unsafeCopy       :: v m a -> v m a -> m ()
+  unsafeGrow       :: v m a -> Int -> m (v m a)
 
-  set              :: v a -> a -> Trans v ()
-  unsafeCopy       :: v a -> v a -> Trans v ()
-  unsafeGrow       :: v a -> Int -> Trans v (v a)
-
-  overlaps         :: v a -> v a -> Bool
+  overlaps         :: v m a -> v m a -> Bool
 
   {-# INLINE unsafeNewWith #-}
   unsafeNewWith n x = do
@@ -74,49 +72,49 @@ class Monad (Trans v) => Base v a where
     where
       n = length v
 
-inBounds :: Base v a => v a -> Int -> Bool
+inBounds :: Base v m a => v m a -> Int -> Bool
 {-# INLINE inBounds #-}
 inBounds v i = i >= 0 && i < length v
 
-slice :: Base v a => v a -> Int -> Int -> v a
+slice :: Base v m a => v m a -> Int -> Int -> v m a
 {-# INLINE slice #-}
 slice v i n = assert (i >=0 && n >= 0 && i+n <= length v)
             $ unsafeSlice v i n
 
-new :: (Base v a, m ~ Trans v) => Int -> m (v a)
+new :: Base v m a => Int -> m (v m a)
 {-# INLINE new #-}
 new n = assert (n >= 0) $ unsafeNew n
 
-newWith :: (Base v a, m ~ Trans v) => Int -> a -> m (v a)
+newWith :: Base v m a => Int -> a -> m (v m a)
 {-# INLINE newWith #-}
 newWith n x = assert (n >= 0) $ unsafeNewWith n x
 
-read :: (Base v a, m ~ Trans v) => v a -> Int -> m a
+read :: Base v m a => v m a -> Int -> m a
 {-# INLINE read #-}
 read v i = assert (inBounds v i) $ unsafeRead v i
 
-write :: (Base v a, m ~ Trans v) => v a -> Int -> a -> m ()
+write :: Base v m a => v m a -> Int -> a -> m ()
 {-# INLINE write #-}
 write v i x = assert (inBounds v i) $ unsafeWrite v i x
 
-copy :: (Base v a, m ~ Trans v) => v a -> v a -> m ()
+copy :: Base v m a => v m a -> v m a -> m ()
 {-# INLINE copy #-}
 copy dst src = assert (not (dst `overlaps` src) && length dst == length src)
              $ unsafeCopy dst src
 
-grow :: (Base v a, m ~ Trans v) => v a -> Int -> m (v a)
+grow :: Base v m a => v m a -> Int -> m (v m a)
 {-# INLINE grow #-}
 grow v by = assert (by >= 0)
           $ unsafeGrow v by
 
 
-unstream :: (Base v a, m ~ Trans v) => Stream a -> m (v a)
+unstream :: Base v m a => Stream a -> m (v m a)
 {-# INLINE unstream #-}
 unstream s = case upperBound (Stream.size s) of
                Just n  -> unstreamMax     s n
                Nothing -> unstreamUnknown s
 
-unstreamMax :: (Base v a, m ~ Trans v) => Stream a -> Int -> m (v a)
+unstreamMax :: Base v m a => Stream a -> Int -> m (v m a)
 {-# INLINE unstreamMax #-}
 unstreamMax s n
   = do
@@ -125,7 +123,7 @@ unstreamMax s n
       n' <- Stream.foldM put 0 s
       return $ slice v 0 n'
 
-unstreamUnknown :: (Base v a, m ~ Trans v) => Stream a -> m (v a)
+unstreamUnknown :: Base v m a => Stream a -> m (v m a)
 {-# INLINE unstreamUnknown #-}
 unstreamUnknown s
   = do
