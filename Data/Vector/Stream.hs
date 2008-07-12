@@ -7,7 +7,7 @@ module Data.Vector.Stream (
 
   size, sized, unfold, toList, fromList,
   length, null,
-  empty, singleton, replicate, (++),
+  empty, singleton, cons, snoc, replicate, (++),
   head, last, (!!),
   init, tail, take, drop,
   map, zipWith,
@@ -103,7 +103,7 @@ snoc :: Stream a -> a -> Stream a
 {-# INLINE snoc #-}
 snoc s x = s ++ singleton x
 
-infixr ++
+infixr 5 ++
 (++) :: Stream a -> Stream a -> Stream a
 {-# INLINE_STREAM (++) #-}
 Stream stepa sa na ++ Stream stepb sb nb = Stream step (Left sa) (na + nb)
