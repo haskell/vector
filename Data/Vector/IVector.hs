@@ -48,7 +48,7 @@ module Data.Vector.IVector (
   stream, unstream,
 
   -- * MVector-based initialisation
-  create,
+  new,
 
   -- * Unsafe functions
   unsafeSlice, unsafeIndex,
@@ -79,7 +79,7 @@ import Prelude hiding ( length,
 --
 class IVector v a where
   -- | Construct a pure vector from a monadic initialiser.
-  create       :: (forall mv m. MVector mv m a => m (mv a)) -> v a
+  new       :: (forall mv m. MVector mv m a => m (mv a)) -> v a
 
   -- | Length of the vector (not fusible!)
   vlength      :: v a -> Int
@@ -122,7 +122,7 @@ stream v = v `seq` (Stream.unfold get 0 `Stream.sized` Exact n)
 -- | Create a vector from a 'Stream'
 unstream :: IVector v a => Stream a -> v a
 {-# INLINE_STREAM unstream #-}
-unstream s = create (MVector.unstream s)
+unstream s = new (MVector.unstream s)
 
 {-# RULES
 
