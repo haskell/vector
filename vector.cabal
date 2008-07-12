@@ -32,5 +32,6 @@ Library
   Install-Includes:
         phases.h
 
-  Build-Depends: base, array, ghc-prim
+  Build-Depends: base, array, ghc-prim,
+                 ghc >= 6.9
 
