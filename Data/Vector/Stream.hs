@@ -6,21 +6,25 @@ module Data.Vector.Stream (
   Step(..), Stream(..),
 
   size, sized, unfold, toList, fromList,
+  length, null,
   empty, singleton, replicate, (++),
-  take, drop,
+  head, last, (!!),
+  init, tail, take, drop,
   map, zipWith,
   filter, takeWhile, dropWhile,
-  foldr, foldl, foldl',
+  foldl, foldl1, foldl', foldl1', foldr, foldr1,
   mapM_, foldM
 ) where
 
 import Data.Vector.Stream.Size
 
-import Prelude hiding ( replicate, (++),
-                        take, drop,
+import Prelude hiding ( length, null,
+                        replicate, (++),
+                        head, last, (!!),
+                        init, tail, take, drop,
                         map, zipWith,
                         filter, takeWhile, dropWhile,
-                        foldr, foldl,
+                        foldl, foldl1, foldr, foldr1,
                         mapM_ )
 
 data Step s a = Yield a s
@@ -57,6 +61,17 @@ fromList xs = Stream step xs Unknown
     step (x:xs) = Yield x xs
     step []     = Done
 
+-- Length
+-- ------
+
+length :: Stream a -> Int
+{-# INLINE_STREAM length #-}
+length s = foldl' (\n _ -> n+1) 0 s
+
+null :: Stream a -> Bool
+{-# INLINE_STREAM null #-}
+null s = foldr (\_ _ -> False) True s
+
 -- Construction
 -- ------------
 
@@ -80,6 +95,14 @@ replicate n x = Stream step n (Exact (max n 0))
     step i | i > 0     = Yield x (i-1)
            | otherwise = Done
 
+cons :: a -> Stream a -> Stream a
+{-# INLINE cons #-}
+cons x s = singleton x ++ s
+
+snoc :: Stream a -> a -> Stream a
+{-# INLINE snoc #-}
+snoc s x = s ++ singleton x
+
 infixr ++
 (++) :: Stream a -> Stream a -> Stream a
 {-# INLINE_STREAM (++) #-}
@@ -94,8 +117,68 @@ Stream stepa sa na ++ Stream stepb sb nb = Stream step (Left sa) (na + nb)
                         Skip    sb' -> Skip    (Right sb')
                         Done        -> Done
 
+-- Accessing elements
+-- ------------------
+
+head :: Stream a -> a
+{-# INLINE_STREAM head #-}
+head (Stream step s _) = head_loop s
+  where
+    head_loop s = case step s of
+                    Yield x _  -> x
+                    Skip    s' -> head_loop s'
+                    Done       -> error "Data.Vector.Stream.head: empty stream"
+
+last :: Stream a -> a
+{-# INLINE_STREAM last #-}
+last (Stream step s _) = last_loop0 s
+  where
+    last_loop0 s = case step s of
+                     Yield x s' -> last_loop1 x s'
+                     Skip    s' -> last_loop0   s'
+                     Done       -> error "Data.Vector.Stream.last: empty stream"
+
+    last_loop1 x s = case step s of
+                       Yield y s' -> last_loop1 y s'
+                       Skip    s' -> last_loop1 x s'
+                       Done       -> x
+
+(!!) :: Stream a -> Int -> a
+{-# INLINE (!!) #-}
+s !! i = head (drop i s)
+
 -- Substreams
 -- ----------
+
+init :: Stream a -> Stream a
+{-# INLINE_STREAM init #-}
+init (Stream step s sz) = Stream step' (Nothing, s) (sz - 1)
+  where
+    {-# INLINE step' #-}
+    step' (Nothing, s) = case step s of
+                           Yield x s' -> Skip (Just x,  s')
+                           Skip    s' -> Skip (Nothing, s')
+                           Done       -> Done  -- FIXME: should be an error
+
+    step' (Just x,  s) = case step s of
+                           Yield y s' -> Yield x (Just y, s')
+                           Skip    s' -> Skip    (Just x, s')
+                           Done       -> Done
+
+tail :: Stream a -> Stream a
+{-# INLINE_STREAM tail #-}
+tail (Stream step s sz) = Stream step' (Left s) (sz - 1)
+  where
+    {-# INLINE step' #-}
+    step' (Left  s) = case step s of
+                        Yield x s' -> Skip (Right s')
+                        Skip    s' -> Skip (Left  s')
+                        Done       -> Done    -- FIXME: should be error?
+
+    step' (Right s) = case step s of
+                        Yield x s' -> Yield x (Right s')
+                        Skip    s' -> Skip    (Right s')
+                        Done       -> Done
 
 take :: Int -> Stream a -> Stream a
 {-# INLINE_STREAM take #-}
@@ -222,6 +305,15 @@ foldl f z (Stream step s _) = foldl_go z s
                      Skip    s' -> foldl_go z       s'
                      Done       -> z
 
+foldl1 :: (a -> a -> a) -> Stream a -> a
+{-# INLINE_STREAM foldl1 #-}
+foldl1 f (Stream step s sz) = foldl1_loop s
+  where
+    foldl1_loop s = case step s of
+                      Yield x s' -> foldl f x (Stream step s' (sz - 1))
+                      Skip    s' -> foldl1_loop s'
+                      Done       -> error "Data.Vector.Stream.foldl1: empty stream"
+
 foldl' :: (a -> b -> a) -> a -> Stream b -> a
 {-# INLINE_STREAM foldl' #-}
 foldl' f !z (Stream step s _) = foldl_go z s
@@ -231,6 +323,16 @@ foldl' f !z (Stream step s _) = foldl_go z s
                       Skip    s' -> foldl_go z       s'
                       Done       -> z
 
+foldl1' :: (a -> a -> a) -> Stream a -> a
+{-# INLINE_STREAM foldl1' #-}
+foldl1' f (Stream step s sz) = foldl1'_loop s
+  where
+    foldl1'_loop s = case step s of
+                      Yield x s' -> foldl' f x (Stream step s' (sz - 1))
+                      Skip    s' -> foldl1'_loop s'
+                      Done       -> error "Data.Vector.Stream.foldl1': empty stream"
+
+
 foldr :: (a -> b -> b) -> b -> Stream a -> b
 {-# INLINE_STREAM foldr #-}
 foldr f z (Stream step s _) = foldr_go s
@@ -239,6 +341,15 @@ foldr f z (Stream step s _) = foldr_go s
                    Yield x s' -> f x (foldr_go s')
                    Skip    s' -> foldr_go s'
                    Done       -> z
+
+foldr1 :: (a -> a -> a) -> Stream a -> a
+{-# INLINE_STREAM foldr1 #-}
+foldr1 f (Stream step s sz) = foldr1_loop s
+  where
+    foldr1_loop s = case step s of
+                      Yield x s' -> foldr f x (Stream step s' (sz - 1))
+                      Skip    s' -> foldr1_loop s'
+                      Done       -> error "Data.Vector.Stream.foldr1: empty stream"
 
 mapM_ :: Monad m => (a -> m ()) -> Stream a -> m ()
 {-# INLINE_STREAM mapM_ #-}
