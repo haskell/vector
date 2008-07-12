@@ -475,6 +475,51 @@ foldr1 f (Stream step s sz) = foldr1_loop s
                       Skip    s' -> foldr1_loop s'
                       Done       -> error "Data.Vector.Stream.foldr1: empty stream"
 
+-- Comparisons
+-- -----------
+
+eq :: Eq a => Stream a -> Stream a -> Bool
+{-# INLINE_STREAM eq #-}
+eq (Stream step1 s1 _) (Stream step2 s2 _) = eq_loop0 s1 s2
+  where
+    eq_loop0 s1 s2 = case step1 s1 of
+                       Yield x s1' -> eq_loop1 x s1' s2
+                       Skip    s1' -> eq_loop0   s1' s2
+                       Done        -> null (Stream step2 s2 Unknown)
+
+    eq_loop1 x s1 s2 = case step2 s2 of
+                         Yield y s2' -> x == y && eq_loop0   s1 s2'
+                         Skip    s2' ->           eq_loop1 x s1 s2'
+                         Done        -> False
+
+cmp :: Ord a => Stream a -> Stream a -> Ordering
+{-# INLINE_STREAM cmp #-}
+cmp (Stream step1 s1 _) (Stream step2 s2 _) = cmp_loop0 s1 s2
+  where
+    cmp_loop0 s1 s2 = case step1 s1 of
+                        Yield x s1' -> cmp_loop1 x s1' s2
+                        Skip    s1' -> cmp_loop0   s1' s2
+                        Done        -> if null (Stream step2 s2 Unknown)
+                                         then EQ else LT
+
+    cmp_loop1 x s1 s2 = case step2 s2 of
+                          Yield y s2' -> case x `compare` y of
+                                           EQ -> cmp_loop0 s1 s2'
+                                           c  -> c
+                          Skip    s2' -> cmp_loop1 x s1 s2'
+                          Done        -> GT
+
+instance Eq a => Eq (Stream a) where
+  {-# INLINE (==) #-}
+  (==) = eq
+
+instance Ord a => Ord (Stream a) where
+  {-# INLINE compare #-}
+  compare = cmp
+
+-- Monadic combinators
+-- -------------------
+
 -- | Apply a monadic action to each element of the stream
 mapM_ :: Monad m => (a -> m ()) -> Stream a -> m ()
 {-# INLINE_STREAM mapM_ #-}
