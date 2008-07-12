@@ -16,7 +16,7 @@
 module Data.Vector.MVector (
   MVectorPure(..), MVector(..),
 
-  slice, new, newWith, read, write, copy, grow, unstream, update
+  slice, new, newWith, read, write, copy, grow, unstream, map, update
 ) where
 
 import qualified Data.Vector.Stream      as Stream
@@ -30,7 +30,7 @@ import GHC.Float (
     double2Int, int2Double
   )
 
-import Prelude hiding ( length, read )
+import Prelude hiding ( length, map, read )
 
 gROWTH_FACTOR :: Double
 gROWTH_FACTOR = 1.5
@@ -201,6 +201,16 @@ unstreamUnknown s
                                  . double2Int
                                  $ int2Double (length v) * gROWTH_FACTOR
 
+map :: MVector v m a => (a -> a) -> v a -> m ()
+{-# INLINE map #-}
+map f v = map_loop 0
+  where
+    n = length v
+
+    map_loop i | i <= n    = do
+                               x <- read v i
+                               write v i (f x)
+               | otherwise = return ()
 
 update :: MVector v m a => v a -> Stream (Int, a) -> m ()
 {-# INLINE update #-}

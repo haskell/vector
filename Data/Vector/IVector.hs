@@ -296,6 +296,14 @@ map :: (IVector v a, IVector v b) => (a -> b) -> v a -> v b
 {-# INLINE map #-}
 map f = unstream . Stream.map f . stream
 
+{-# RULES
+
+"in-place map [IVector]" forall f m.
+  Mut.unstream (Stream.map f (stream (new m)))
+    = Mut.map f m
+
+  #-}
+
 -- | Zip two vectors with the given function.
 zipWith :: (IVector v a, IVector v b, IVector v c) => (a -> b -> c) -> v a -> v b -> v c
 {-# INLINE zipWith #-}
