@@ -11,6 +11,8 @@
 -- Generic interface to mutable vectors
 --
 
+#include "phases.h"
+
 module Data.Vector.MVector (
   MVectorPure(..), MVector(..),
 
@@ -164,7 +166,7 @@ grow v by = assert (by >= 0)
 -- The vector will grow logarithmically if the 'Size' hint of the 'Stream' is
 -- inexact.
 unstream :: MVector v m a => Stream a -> m (v a)
-{-# INLINE unstream #-}
+{-# INLINE_STREAM unstream #-}
 unstream s = case upperBound (Stream.size s) of
                Just n  -> unstreamMax     s n
                Nothing -> unstreamUnknown s

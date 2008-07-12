@@ -60,6 +60,9 @@ module Data.Vector.IVector (
 import qualified Data.Vector.MVector as MVector
 import           Data.Vector.MVector ( MVector )
 
+import qualified Data.Vector.MVector.Mut as Mut
+import           Data.Vector.MVector.Mut ( Mut )
+
 import qualified Data.Vector.Stream as Stream
 import           Data.Vector.Stream ( Stream )
 import           Data.Vector.Stream.Size
@@ -112,9 +115,9 @@ class IVector v a where
 -- ------
 
 -- | Construct a pure vector from a monadic initialiser 
-new :: IVector v a => (forall mv m. MVector mv m a => m (mv a)) -> v a
+new :: IVector v a => Mut a -> v a
 {-# INLINE_STREAM new #-}
-new init = vnew init
+new m = vnew (Mut.run m)
 
 -- | Convert a vector to a 'Stream'
 stream :: IVector v a => v a -> Stream a
@@ -130,12 +133,15 @@ stream v = v `seq` (Stream.unfold get 0 `Stream.sized` Exact n)
 -- | Create a vector from a 'Stream'
 unstream :: IVector v a => Stream a -> v a
 {-# INLINE_STREAM unstream #-}
-unstream s = new (MVector.unstream s)
+unstream s = new (Mut.unstream s)
 
 {-# RULES
 
 "stream/unstream [IVector]" forall s.
   stream (unstream s) = s
+
+"Mut.unstream/stream/new [IVector]" forall p.
+  Mut.unstream (stream (new p)) = p
 
  #-}
 
