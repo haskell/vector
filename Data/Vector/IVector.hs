@@ -135,13 +135,13 @@ stream v = v `seq` (Stream.unfold get 0 `Stream.sized` Exact n)
 
 -- | Create a vector from a 'Stream'
 unstream :: IVector v a => Stream a -> v a
-{-# INLINE_STREAM unstream #-}
+{-# INLINE unstream #-}
 unstream s = new (Mut.unstream s)
 
 {-# RULES
 
 "stream/unstream [IVector]" forall s.
-  stream (unstream s) = s
+  stream (new (Mut.unstream s)) = s
 
 "Mut.unstream/stream/new [IVector]" forall p.
   Mut.unstream (stream (new p)) = p
