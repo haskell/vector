@@ -4,8 +4,17 @@ License:        BSD3
 License-File:   LICENSE
 Author:         Roman Leshchinskiy
 Maintainer:     Roman Leshchinskiy <rl@cse.unsw.edu.au>
+Copyright:      (c) Roman Leshchinskiy 2008
+Homepage:       http://darcs.haskell.org/vector
 Category:       Data Structures
 Synopsis:       Efficient Arrays
+Description:
+        .
+        An efficient implementation of Int-indexed arrays with a powerful
+        loop fusion framework.
+        .
+        This code is highly experimental and for the most part untested. Use
+        at your own risk!
 
 Cabal-Version:  >= 1.2
 Build-Type:     Simple
