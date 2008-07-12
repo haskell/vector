@@ -299,8 +299,7 @@ map f = unstream . Stream.map f . stream
 {-# RULES
 
 "in-place map [IVector]" forall f m.
-  Mut.unstream (Stream.map f (stream (new m)))
-    = Mut.map f m
+  Mut.unstream (Stream.map f (stream (new m))) = Mut.map f m
 
   #-}
 
