@@ -46,3 +46,11 @@ instance Unbox a => IVector Vector a where
   {-# INLINE unsafeIndex #-}
   unsafeIndex (Vector (I# i#) _ arr#) (I# j#) f = f (at# arr# (i# +# j#))
 
+instance (Unbox a, Eq a) => Eq (Vector a) where
+  {-# INLINE (==) #-}
+  (==) = eq
+
+instance (Unbox a, Ord a) => Ord (Vector a) where
+  {-# INLINE compare #-}
+  compare = cmp
+

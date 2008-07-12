@@ -35,6 +35,9 @@ module Data.Vector.IVector (
   -- * Mapping and zipping
   map, zipWith,
 
+  -- * Comparisons
+  eq, cmp,
+
   -- * Filtering
   filter, takeWhileSlice, takeWhile, dropWhileSlice, dropWhile,
 
@@ -307,6 +310,17 @@ map f = unstream . Stream.map f . stream
 zipWith :: (IVector v a, IVector v b, IVector v c) => (a -> b -> c) -> v a -> v b -> v c
 {-# INLINE zipWith #-}
 zipWith f xs ys = unstream (Stream.zipWith f (stream xs) (stream ys))
+
+-- Comparisons
+-- -----------
+
+eq :: (IVector v a, Eq a) => v a -> v a -> Bool
+{-# INLINE eq #-}
+xs `eq` ys = stream xs == stream ys
+
+cmp :: (IVector v a, Ord a) => v a -> v a -> Ordering
+{-# INLINE cmp #-}
+cmp xs ys = compare (stream xs) (stream ys)
 
 -- Filtering
 -- ---------

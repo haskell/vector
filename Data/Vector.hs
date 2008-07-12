@@ -46,3 +46,11 @@ instance IVector Vector a where
   unsafeIndex (Vector (I# i#) _ arr#) (I# j#) f
     = case indexArray# arr# (i# +# j#) of (# x #) -> f x
 
+instance Eq a => Eq (Vector a) where
+  {-# INLINE (==) #-}
+  (==) = eq
+
+instance Ord a => Ord (Vector a) where
+  {-# INLINE compare #-}
+  compare = cmp
+
