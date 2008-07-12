@@ -1,5 +1,17 @@
 {-# LANGUAGE MagicHash, UnboxedTuples #-}
 
+-- |
+-- Module      : Data.Vector.Unboxed.Unbox
+-- Copyright   : (c) Roman Leshchinskiy 2008
+-- License     : BSD-style
+--
+-- Maintainer  : rl@cse.unsw.edu.au
+-- Stability   : experimental
+-- Portability : non-portable
+-- 
+-- Primitives for manipulating unboxed arrays
+--
+
 module Data.Vector.Unboxed.Unbox (
   Unbox(..)
 ) where
@@ -22,10 +34,20 @@ import Data.Array.Base (
     wORD_SCALE, fLOAT_SCALE, dOUBLE_SCALE
   )
 
+-- | Class of types which can be stored in unboxed arrays
 class Unbox a where
-  size#  :: a -> Int# -> Int#
+  -- | Yield the size in bytes of a 'ByteArray#' which can store @n@ elements
+  size#  :: a     -- ^ Dummy type parameter, never evaluated
+         -> Int#  -- ^ Number of elements
+         -> Int#
+
+  -- | Indexing
   at#    :: ByteArray# -> Int# -> a
+
+  -- | Yield the element at the given position
   read#  :: MutableByteArray# s -> Int# -> State# s -> (# State# s, a #)
+
+  -- | Store the given element at the given position
   write# :: MutableByteArray# s -> Int# -> a -> State# s -> State# s
 
 instance Unbox Int where

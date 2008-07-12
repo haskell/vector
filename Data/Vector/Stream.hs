@@ -1,18 +1,54 @@
-{-# LANGUAGE ExistentialQuantification, BangPatterns, CPP #-}
+{-# LANGUAGE ExistentialQuantification #-}
+
+-- |
+-- Module      : Data.Vector.Stream.Size
+-- Copyright   : (c) Roman Leshchinskiy 2008
+-- License     : BSD-style
+--
+-- Maintainer  : rl@cse.unsw.edu.au
+-- Stability   : experimental
+-- Portability : non-portable
+-- 
+-- Fusible streams
+--
 
 #include "phases.h"
 
 module Data.Vector.Stream (
+  -- * Types
   Step(..), Stream(..),
 
-  size, sized, unfold, toList, fromList,
+  -- * Size hints
+  size, sized,
+
+  -- * Length information
   length, null,
+
+  -- * Construction
   empty, singleton, cons, snoc, replicate, (++),
+
+  -- * Accessing individual elements
   head, last, (!!),
+
+  -- * Substreams
   init, tail, take, drop,
+
+  -- * Mapping and zipping
   map, zipWith,
+
+  -- * Filtering
   filter, takeWhile, dropWhile,
+
+  -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
+
+  -- * Unfolding
+  unfold,
+
+  -- * Conversion to/from lists
+  toList, fromList,
+
+  -- * Monadic combinators
   mapM_, foldM
 ) where
 
@@ -31,16 +67,20 @@ data Step s a = Yield a s
               | Skip    s
               | Done
 
+-- | The type of fusible streams
 data Stream a = forall s. Stream (s -> Step s a) s Size
 
+-- | 'Size' hint of a 'Stream'
 size :: Stream a -> Size
 {-# INLINE size #-}
 size (Stream _ _ sz) = sz
 
+-- | Attach a 'Size' hint to a 'Stream'
 sized :: Stream a -> Size -> Stream a
 {-# INLINE_STREAM sized #-}
 sized (Stream step s _) sz = Stream step s sz
 
+-- | Unfold
 unfold :: (s -> Maybe (a, s)) -> s -> Stream a
 {-# INLINE_STREAM unfold #-}
 unfold f s = Stream step s Unknown
@@ -50,10 +90,12 @@ unfold f s = Stream step s Unknown
                Just (x, s') -> Yield x s'
                Nothing      -> Done
 
+-- | Convert a 'Stream' to a list
 toList :: Stream a -> [a]
 {-# INLINE toList #-}
 toList s = foldr (:) [] s
 
+-- | Create a 'Stream' from a list
 fromList :: [a] -> Stream a
 {-# INLINE_STREAM fromList #-}
 fromList xs = Stream step xs Unknown
@@ -64,10 +106,12 @@ fromList xs = Stream step xs Unknown
 -- Length
 -- ------
 
+-- | Length of a 'Stream'
 length :: Stream a -> Int
 {-# INLINE_STREAM length #-}
 length s = foldl' (\n _ -> n+1) 0 s
 
+-- | Check if a 'Stream' is empty
 null :: Stream a -> Bool
 {-# INLINE_STREAM null #-}
 null s = foldr (\_ _ -> False) True s
@@ -75,10 +119,12 @@ null s = foldr (\_ _ -> False) True s
 -- Construction
 -- ------------
 
+-- | Empty 'Stream'
 empty :: Stream a
 {-# INLINE_STREAM empty #-}
 empty = Stream (const Done) () (Exact 0)
 
+-- | Singleton 'Stream'
 singleton :: a -> Stream a
 {-# INLINE_STREAM singleton #-}
 singleton x = Stream step True (Exact 1)
@@ -87,6 +133,7 @@ singleton x = Stream step True (Exact 1)
     step True  = Yield x False
     step False = Done
 
+-- | Replicate a value to a given length
 replicate :: Int -> a -> Stream a
 {-# INLINE_STREAM replicate #-}
 replicate n x = Stream step n (Exact (max n 0))
@@ -95,15 +142,18 @@ replicate n x = Stream step n (Exact (max n 0))
     step i | i > 0     = Yield x (i-1)
            | otherwise = Done
 
+-- | Prepend an element
 cons :: a -> Stream a -> Stream a
 {-# INLINE cons #-}
 cons x s = singleton x ++ s
 
+-- | Append an element
 snoc :: Stream a -> a -> Stream a
 {-# INLINE snoc #-}
 snoc s x = s ++ singleton x
 
 infixr 5 ++
+-- | Concatenate two 'Stream's
 (++) :: Stream a -> Stream a -> Stream a
 {-# INLINE_STREAM (++) #-}
 Stream stepa sa na ++ Stream stepb sb nb = Stream step (Left sa) (na + nb)
@@ -120,6 +170,7 @@ Stream stepa sa na ++ Stream stepb sb nb = Stream step (Left sa) (na + nb)
 -- Accessing elements
 -- ------------------
 
+-- | First element of the 'Stream' or error if empty
 head :: Stream a -> a
 {-# INLINE_STREAM head #-}
 head (Stream step s _) = head_loop s
@@ -129,6 +180,7 @@ head (Stream step s _) = head_loop s
                     Skip    s' -> head_loop s'
                     Done       -> error "Data.Vector.Stream.head: empty stream"
 
+-- | Last element of the 'Stream' or error if empty
 last :: Stream a -> a
 {-# INLINE_STREAM last #-}
 last (Stream step s _) = last_loop0 s
@@ -143,6 +195,7 @@ last (Stream step s _) = last_loop0 s
                        Skip    s' -> last_loop1 x s'
                        Done       -> x
 
+-- | Element at the given position
 (!!) :: Stream a -> Int -> a
 {-# INLINE (!!) #-}
 s !! i = head (drop i s)
@@ -150,6 +203,7 @@ s !! i = head (drop i s)
 -- Substreams
 -- ----------
 
+-- | All but the last element
 init :: Stream a -> Stream a
 {-# INLINE_STREAM init #-}
 init (Stream step s sz) = Stream step' (Nothing, s) (sz - 1)
@@ -165,6 +219,7 @@ init (Stream step s sz) = Stream step' (Nothing, s) (sz - 1)
                            Skip    s' -> Skip    (Just x, s')
                            Done       -> Done
 
+-- | All but the first element
 tail :: Stream a -> Stream a
 {-# INLINE_STREAM tail #-}
 tail (Stream step s sz) = Stream step' (Left s) (sz - 1)
@@ -180,6 +235,7 @@ tail (Stream step s sz) = Stream step' (Left s) (sz - 1)
                         Skip    s' -> Skip    (Right s')
                         Done       -> Done
 
+-- | The first @n@ elements
 take :: Int -> Stream a -> Stream a
 {-# INLINE_STREAM take #-}
 take n (Stream step s sz) = Stream step' (s, 0) (smaller (Exact n) sz)
@@ -193,6 +249,7 @@ take n (Stream step s sz) = Stream step' (s, 0) (smaller (Exact n) sz)
 
 data Drop s = Drop_Drop s Int | Drop_Keep s
 
+-- | All but the first @n@ elements
 drop :: Int -> Stream a -> Stream a
 {-# INLINE_STREAM drop #-}
 drop n (Stream step s sz) = Stream step' (Drop_Drop s 0) (sz - Exact n)
@@ -217,6 +274,7 @@ instance Functor Stream where
   {-# INLINE_STREAM fmap #-}
   fmap = map
 
+-- | Map a function over a 'Stream'
 map :: (a -> b) -> Stream a -> Stream b
 {-# INLINE_STREAM map #-}
 map f (Stream step s n) = Stream step' s n
@@ -227,6 +285,7 @@ map f (Stream step s n) = Stream step' s n
                 Skip    s' -> Skip        s'
                 Done       -> Done
 
+-- | Zip two 'Stream's with the given function
 zipWith :: (a -> b -> c) -> Stream a -> Stream b -> Stream c
 {-# INLINE_STREAM zipWith #-}
 zipWith f (Stream stepa sa na) (Stream stepb sb nb)
@@ -246,6 +305,7 @@ zipWith f (Stream stepa sa na) (Stream stepb sb nb)
 -- Filtering
 -- ---------
 
+-- | Drop elements which do not satisfy the predicate
 filter :: (a -> Bool) -> Stream a -> Stream a
 {-# INLINE_STREAM filter #-}
 filter f (Stream step s n) = Stream step' s (toMax n)
@@ -257,6 +317,7 @@ filter f (Stream step s n) = Stream step' s (toMax n)
                 Skip    s'             -> Skip    s'
                 Done                   -> Done
 
+-- | Longest prefix of elements that satisfy the predicate
 takeWhile :: (a -> Bool) -> Stream a -> Stream a
 {-# INLINE_STREAM takeWhile #-}
 takeWhile f (Stream step s n) = Stream step' s (toMax n)
@@ -271,6 +332,7 @@ takeWhile f (Stream step s n) = Stream step' s (toMax n)
 
 data DropWhile s a = DropWhile_Drop s | DropWhile_Yield a s | DropWhile_Next s
 
+-- | Drop the longest prefix of elements that satisfy the predicate
 dropWhile :: (a -> Bool) -> Stream a -> Stream a
 {-# INLINE_STREAM dropWhile #-}
 dropWhile f (Stream step s n) = Stream step' (DropWhile_Drop s) (toMax n)
@@ -296,6 +358,7 @@ dropWhile f (Stream step s n) = Stream step' (DropWhile_Drop s) (toMax n)
 -- Folding
 -- -------
 
+-- | Left fold
 foldl :: (a -> b -> a) -> a -> Stream b -> a
 {-# INLINE_STREAM foldl #-}
 foldl f z (Stream step s _) = foldl_go z s
@@ -305,6 +368,7 @@ foldl f z (Stream step s _) = foldl_go z s
                      Skip    s' -> foldl_go z       s'
                      Done       -> z
 
+-- | Left fold on non-empty 'Stream's
 foldl1 :: (a -> a -> a) -> Stream a -> a
 {-# INLINE_STREAM foldl1 #-}
 foldl1 f (Stream step s sz) = foldl1_loop s
@@ -314,6 +378,7 @@ foldl1 f (Stream step s sz) = foldl1_loop s
                       Skip    s' -> foldl1_loop s'
                       Done       -> error "Data.Vector.Stream.foldl1: empty stream"
 
+-- | Left fold with strict accumulator
 foldl' :: (a -> b -> a) -> a -> Stream b -> a
 {-# INLINE_STREAM foldl' #-}
 foldl' f z (Stream step s _) = foldl_go z s
@@ -324,6 +389,7 @@ foldl' f z (Stream step s _) = foldl_go z s
                      Skip    s' -> foldl_go z       s'
                      Done       -> z
 
+-- | Left fold on non-empty 'Stream's with strict accumulator
 foldl1' :: (a -> a -> a) -> Stream a -> a
 {-# INLINE_STREAM foldl1' #-}
 foldl1' f (Stream step s sz) = foldl1'_loop s
@@ -333,7 +399,7 @@ foldl1' f (Stream step s sz) = foldl1'_loop s
                       Skip    s' -> foldl1'_loop s'
                       Done       -> error "Data.Vector.Stream.foldl1': empty stream"
 
-
+-- | Right fold
 foldr :: (a -> b -> b) -> b -> Stream a -> b
 {-# INLINE_STREAM foldr #-}
 foldr f z (Stream step s _) = foldr_go s
@@ -343,6 +409,7 @@ foldr f z (Stream step s _) = foldr_go s
                    Skip    s' -> foldr_go s'
                    Done       -> z
 
+-- | Right fold on non-empty 'Stream's
 foldr1 :: (a -> a -> a) -> Stream a -> a
 {-# INLINE_STREAM foldr1 #-}
 foldr1 f (Stream step s sz) = foldr1_loop s
@@ -352,6 +419,7 @@ foldr1 f (Stream step s sz) = foldr1_loop s
                       Skip    s' -> foldr1_loop s'
                       Done       -> error "Data.Vector.Stream.foldr1: empty stream"
 
+-- | Apply a monadic action to each element of the stream
 mapM_ :: Monad m => (a -> m ()) -> Stream a -> m ()
 {-# INLINE_STREAM mapM_ #-}
 mapM_ m (Stream step s _) = mapM_go s
@@ -361,6 +429,7 @@ mapM_ m (Stream step s _) = mapM_go s
                    Skip    s' -> mapM_go s'
                    Done       -> return ()
 
+-- | Monadic fold
 foldM :: Monad m => (a -> b -> m a) -> a -> Stream b -> m a
 {-# INLINE_STREAM foldM #-}
 foldM m z (Stream step s _) = foldM_go z s
