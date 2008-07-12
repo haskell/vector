@@ -185,19 +185,32 @@ v ++ w = unstream (stream v Stream.++ stream w)
 
 -- | Indexing
 (!) :: IVector v a => v a -> Int -> a
-{-# INLINE (!) #-}
+{-# INLINE_STREAM (!) #-}
 v ! i = assert (i >= 0 && i < length v)
       $ unsafeIndex v i id
 
 -- | First element
 head :: IVector v a => v a -> a
-{-# INLINE head #-}
+{-# INLINE_STREAM head #-}
 head v = v ! 0
 
 -- | Last element
 last :: IVector v a => v a -> a
-{-# INLINE last #-}
+{-# INLINE_STREAM last #-}
 last v = v ! (length v - 1)
+
+{-# RULES
+
+"(!)/unstream [IVector]" forall i s.
+  unstream s ! i = s Stream.!! i
+
+"head/unstream [IVector]" forall s.
+  head (unstream s) = Stream.head s
+
+"last/unstream [IVector]" forall s.
+  last (unstream s) = Stream.last s
+
+ #-}
 
 -- Subarrays
 -- ---------
