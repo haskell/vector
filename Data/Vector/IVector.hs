@@ -24,13 +24,13 @@ module Data.Vector.IVector (
   empty, singleton, cons, snoc, replicate, (++),
 
   -- * Subvectors
-  slice, takeSlice, take, dropSlice, drop,
+  slice, subvector, takeSlice, take, dropSlice, drop,
 
   -- * Mapping and zipping
   map, zipWith,
 
   -- * Filtering
-  filter, takeWhile, dropWhile,
+  filter, takeWhileSlice, takeWhile, dropWhileSlice, dropWhile,
 
   -- * Searching
   elem, notElem, find, findIndex,
@@ -213,11 +213,27 @@ filter :: IVector v a => (a -> Bool) -> v a -> v a
 {-# INLINE filter #-}
 filter f = unstream . Stream.filter f . stream
 
+-- | Yield the longest prefix of elements satisfying the predicate without
+-- copying.
+takeWhileSlice :: IVector v a => (a -> Bool) -> v a -> v a
+{-# INLINE takeWhileSlice #-}
+takeWhileSlice f v = case findIndex (not . f) v of
+                       Just n  -> takeSlice n v
+                       Nothing -> v
+
 -- | Copy the longest prefix of elements satisfying the predicate to a new
 -- vector
 takeWhile :: IVector v a => (a -> Bool) -> v a -> v a
 {-# INLINE takeWhile #-}
 takeWhile f = unstream . Stream.takeWhile f . stream
+
+-- | Drop the longest prefix of elements that satisfy the predicate without
+-- copying
+dropWhileSlice :: IVector v a => (a -> Bool) -> v a -> v a
+{-# INLINE dropWhileSlice #-}
+dropWhileSlice f v = case findIndex (not . f) v of
+                       Just n  -> dropSlice n v
+                       Nothing -> v
 
 -- | Drop the longest prefix of elements that satisfy the predicate and copy
 -- the rest to a new vector.
