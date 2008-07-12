@@ -16,7 +16,7 @@
 module Data.Vector.MVector (
   MVectorPure(..), MVector(..),
 
-  slice, new, newWith, read, write, copy, grow, unstream, map, update
+  slice, new, newWith, read, write, copy, grow, unstream, update, reverse, map
 ) where
 
 import qualified Data.Vector.Stream      as Stream
@@ -30,7 +30,7 @@ import GHC.Float (
     double2Int, int2Double
   )
 
-import Prelude hiding ( length, map, read )
+import Prelude hiding ( length, reverse, map, read )
 
 gROWTH_FACTOR :: Double
 gROWTH_FACTOR = 1.5
@@ -201,6 +201,25 @@ unstreamUnknown s
                                  . double2Int
                                  $ int2Double (length v) * gROWTH_FACTOR
 
+update :: MVector v m a => v a -> Stream (Int, a) -> m ()
+{-# INLINE update #-}
+update v s = Stream.mapM_ put s
+  where
+    {-# INLINE put #-}
+    put (i, x) = write v i x
+
+reverse :: MVector v m a => v a -> m ()
+{-# INLINE reverse #-}
+reverse v = reverse_loop 0 (length v - 1)
+  where
+    reverse_loop i j | i < j = do
+                                 x <- unsafeRead v i
+                                 y <- unsafeRead v j
+                                 unsafeWrite v i y
+                                 unsafeWrite v j x
+    reverse_loop _ _ = return ()
+
+
 map :: MVector v m a => (a -> a) -> v a -> m ()
 {-# INLINE map #-}
 map f v = map_loop 0
@@ -212,10 +231,4 @@ map f v = map_loop 0
                                write v i (f x)
                | otherwise = return ()
 
-update :: MVector v m a => v a -> Stream (Int, a) -> m ()
-{-# INLINE update #-}
-update v s = Stream.mapM_ put s
-  where
-    {-# INLINE put #-}
-    put (i, x) = write v i x
 

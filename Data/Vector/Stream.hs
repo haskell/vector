@@ -495,3 +495,4 @@ foldM m z (Stream step s _) = foldM_go z s
                      Skip    s' -> foldM_go z s'
                      Done       -> return z
 
+
