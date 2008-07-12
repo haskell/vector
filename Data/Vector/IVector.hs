@@ -54,7 +54,7 @@ module Data.Vector.IVector (
   unsafeSlice, unsafeIndex,
 
   -- * Utility functions
-  vlength
+  vlength, vnew
 ) where
 
 import qualified Data.Vector.MVector as MVector
@@ -78,8 +78,8 @@ import Prelude hiding ( length,
 -- | Class of immutable vectors.
 --
 class IVector v a where
-  -- | Construct a pure vector from a monadic initialiser.
-  new       :: (forall mv m. MVector mv m a => m (mv a)) -> v a
+  -- | Construct a pure vector from a monadic initialiser (not fusible!)
+  vnew         :: (forall mv m. MVector mv m a => m (mv a)) -> v a
 
   -- | Length of the vector (not fusible!)
   vlength      :: v a -> Int
@@ -107,6 +107,14 @@ class IVector v a where
   -- which does not have this problem.
   --
   unsafeIndex  :: v a -> Int -> (a -> b) -> b
+
+-- Fusion
+-- ------
+
+-- | Construct a pure vector from a monadic initialiser 
+new :: IVector v a => (forall mv m. MVector mv m a => m (mv a)) -> v a
+{-# INLINE_STREAM new #-}
+new init = vnew init
 
 -- | Convert a vector to a 'Stream'
 stream :: IVector v a => v a -> Stream a

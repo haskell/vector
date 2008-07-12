@@ -30,12 +30,11 @@ data Vector a = Vector {-# UNPACK #-} !Int
                                       (Array# a)
 
 instance IVector Vector a where
-  {-# INLINE new #-}
-  new init = runST (do
-                      Mut.Vector i n marr# <- init
-                      ST (\s# -> case unsafeFreezeArray# marr# s# of
-                              (# s2#, arr# #) -> (# s2#, Vector i n arr# #)
-                            ))
+  {-# INLINE vnew #-}
+  vnew init = runST (do
+                       Mut.Vector i n marr# <- init
+                       ST (\s# -> case unsafeFreezeArray# marr# s# of
+                               (# s2#, arr# #) -> (# s2#, Vector i n arr# #)))
 
   {-# INLINE vlength #-}
   vlength (Vector _ n _) = n
