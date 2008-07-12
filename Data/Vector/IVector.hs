@@ -158,7 +158,7 @@ length v = vlength v
 {-# RULES
 
 "length/unstream [IVector]" forall s.
-  length (unstream s) = Stream.length s
+  length (new (Mut.unstream s)) = Stream.length s
 
   #-}
 
@@ -218,13 +218,13 @@ last v = v ! (length v - 1)
 {-# RULES
 
 "(!)/unstream [IVector]" forall i s.
-  unstream s ! i = s Stream.!! i
+  new (Mut.unstream s) ! i = s Stream.!! i
 
 "head/unstream [IVector]" forall s.
-  head (unstream s) = Stream.head s
+  head (new (Mut.unstream s)) = Stream.head s
 
 "last/unstream [IVector]" forall s.
-  last (unstream s) = Stream.last s
+  last (new (Mut.unstream s)) = Stream.last s
 
  #-}
 
@@ -270,13 +270,13 @@ drop n = unstream . Stream.drop n . stream
 {-# RULES
 
 "slice/extract [IVector]" forall i n s.
-  slice (unstream s) i n = extract (unstream s) i n
+  slice (new (Mut.unstream s)) i n = extract (new (Mut.unstream s)) i n
 
 "takeSlice/unstream [IVector]" forall n s.
-  takeSlice n (unstream s) = take n (unstream s)
+  takeSlice n (new (Mut.unstream s)) = take n (new (Mut.unstream s))
 
 "dropSlice/unstream [IVector]" forall n s.
-  dropSlice n (unstream s) = drop n (unstream s)
+  dropSlice n (new (Mut.unstream s)) = drop n (new (Mut.unstream s))
 
   #-}
 
@@ -340,10 +340,10 @@ dropWhile f = unstream . Stream.dropWhile f . stream
 {-# RULES
 
 "takeWhileSlice/unstream" forall f s.
-  takeWhileSlice f (unstream s) = takeWhile f (unstream s)
+  takeWhileSlice f (new (Mut.unstream s)) = takeWhile f (new (Mut.unstream s))
 
 "dropWhileSlice/unstream" forall f s.
-  dropWhileSlice f (unstream s) = dropWhile f (unstream s)
+  dropWhileSlice f (new (Mut.unstream s)) = dropWhile f (new (Mut.unstream s))
 
  #-}
 
