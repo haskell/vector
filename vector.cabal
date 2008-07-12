@@ -11,12 +11,13 @@ Cabal-Version:  >= 1.2
 Build-Type:     Simple
 
 Library
+  Extensions: CPP
   Exposed-Modules:
         Data.Vector.Stream.Size
         Data.Vector.Stream
 
-        Data.Vector.Base.Mutable
-        Data.Vector.Base
+        Data.Vector.MVector
+        Data.Vector.IVector
 
         Data.Vector.Unboxed.Unbox
         Data.Vector.Unboxed.Mutable

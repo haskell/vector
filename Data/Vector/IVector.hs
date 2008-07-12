@@ -2,10 +2,11 @@
 
 #include "phases.h"
 
-module Data.Vector.Base
+module Data.Vector.IVector
 where
 
-import qualified Data.Vector.Base.Mutable as Mut
+import qualified Data.Vector.MVector as MVector
+import           Data.Vector.MVector ( MVector )
 
 import qualified Data.Vector.Stream as Stream
 import           Data.Vector.Stream ( Stream )
@@ -19,15 +20,15 @@ import Prelude hiding ( length,
                         filter, takeWhile, dropWhile,
                         foldl, foldl1, foldr, foldr1 )
 
-class Base v a where
-  create       :: (forall mv m. Mut.Base mv m a => m (mv m a)) -> v a
+class IVector v a where
+  create       :: (forall mv m. MVector mv m a => m (mv m a)) -> v a
 
   length       :: v a -> Int
   unsafeSlice  :: v a -> Int -> Int -> v a
 
   unsafeIndex  :: v a -> Int -> (a -> b) -> b
 
-stream :: Base v a => v a -> Stream a
+stream :: IVector v a => v a -> Stream a
 {-# INLINE_STREAM stream #-}
 stream !v = Stream.unfold get 0 `Stream.sized` Exact n
   where
@@ -37,13 +38,13 @@ stream !v = Stream.unfold get 0 `Stream.sized` Exact n
     get i | i < n     = unsafeIndex v i $ \x -> Just (x, i+1)
           | otherwise = Nothing
 
-unstream :: Base v a => Stream a -> v a
+unstream :: IVector v a => Stream a -> v a
 {-# INLINE_STREAM unstream #-}
-unstream s = create (Mut.unstream s)
+unstream s = create (MVector.unstream s)
 
 {-# RULES
 
-"stream/unstream [Vector.Base]" forall s.
+"stream/unstream [Vector.IVector]" forall s.
   stream (unstream s) = s
 
  #-}
@@ -51,100 +52,100 @@ unstream s = create (Mut.unstream s)
 -- Construction
 -- ------------
 
-empty :: Base v a => v a
+empty :: IVector v a => v a
 {-# INLINE empty #-}
 empty = unstream Stream.empty
 
-singleton :: Base v a => a -> v a
+singleton :: IVector v a => a -> v a
 {-# INLINE singleton #-}
 singleton x = unstream (Stream.singleton x)
 
-replicate :: Base v a => Int -> a -> v a
+replicate :: IVector v a => Int -> a -> v a
 {-# INLINE replicate #-}
 replicate n = unstream . Stream.replicate n
 
-cons :: Base v a => a -> v a -> v a
+cons :: IVector v a => a -> v a -> v a
 {-# INLINE cons #-}
 cons x = unstream . Stream.cons x . stream
 
-snoc :: Base v a => v a -> a -> v a
+snoc :: IVector v a => v a -> a -> v a
 {-# INLINE snoc #-}
 snoc v = unstream . Stream.snoc (stream v)
 
 infixr 5 ++
-(++) :: Base v a => v a -> v a -> v a
+(++) :: IVector v a => v a -> v a -> v a
 {-# INLINE (++) #-}
 v ++ w = unstream (stream v Stream.++ stream w)
 
 -- Subarrays
 -- ---------
 
-take :: Base v a => Int -> v a -> v a
+take :: IVector v a => Int -> v a -> v a
 {-# INLINE take #-}
 take n = unstream . Stream.take n . stream
 
-drop :: Base v a => Int -> v a -> v a
+drop :: IVector v a => Int -> v a -> v a
 {-# INLINE drop #-}
 drop n = unstream . Stream.drop n . stream
 
 -- Mapping/zipping
 -- ---------------
 
-map :: (Base v a, Base v b) => (a -> b) -> v a -> v b
+map :: (IVector v a, IVector v b) => (a -> b) -> v a -> v b
 {-# INLINE map #-}
 map f = unstream . Stream.map f . stream
 
-zipWith :: (Base v a, Base v b, Base v c) => (a -> b -> c) -> v a -> v b -> v c
+zipWith :: (IVector v a, IVector v b, IVector v c) => (a -> b -> c) -> v a -> v b -> v c
 {-# INLINE zipWith #-}
 zipWith f xs ys = unstream (Stream.zipWith f (stream xs) (stream ys))
 
 -- Filtering
 -- ---------
 
-filter :: Base v a => (a -> Bool) -> v a -> v a
+filter :: IVector v a => (a -> Bool) -> v a -> v a
 {-# INLINE filter #-}
 filter f = unstream . Stream.filter f . stream
 
-takeWhile :: Base v a => (a -> Bool) -> v a -> v a
+takeWhile :: IVector v a => (a -> Bool) -> v a -> v a
 {-# INLINE takeWhile #-}
 takeWhile f = unstream . Stream.takeWhile f . stream
 
-dropWhile :: Base v a => (a -> Bool) -> v a -> v a
+dropWhile :: IVector v a => (a -> Bool) -> v a -> v a
 {-# INLINE dropWhile #-}
 dropWhile f = unstream . Stream.dropWhile f . stream
 
 -- Folding
 -- -------
 
-foldl :: Base v b => (a -> b -> a) -> a -> v b -> a
+foldl :: IVector v b => (a -> b -> a) -> a -> v b -> a
 {-# INLINE foldl #-}
 foldl f z = Stream.foldl f z . stream
 
-foldl1 :: Base v a => (a -> a -> a) -> v a -> a
+foldl1 :: IVector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldl1 #-}
 foldl1 f = Stream.foldl1 f . stream
 
-foldl' :: Base v b => (a -> b -> a) -> a -> v b -> a
+foldl' :: IVector v b => (a -> b -> a) -> a -> v b -> a
 {-# INLINE foldl' #-}
 foldl' f z = Stream.foldl' f z . stream
 
-foldl1' :: Base v a => (a -> a -> a) -> v a -> a
+foldl1' :: IVector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldl1' #-}
 foldl1' f = Stream.foldl1' f . stream
 
-foldr :: Base v a => (a -> b -> b) -> b -> v a -> b
+foldr :: IVector v a => (a -> b -> b) -> b -> v a -> b
 {-# INLINE foldr #-}
 foldr f z = Stream.foldr f z . stream
 
-foldr1 :: Base v a => (a -> a -> a) -> v a -> a
+foldr1 :: IVector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldr1 #-}
 foldr1 f = Stream.foldr1 f . stream
 
-toList :: Base v a => v a -> [a]
+toList :: IVector v a => v a -> [a]
 {-# INLINE toList #-}
 toList = Stream.toList . stream
 
-fromList :: Base v a => [a] -> v a
+fromList :: IVector v a => [a] -> v a
 {-# INLINE fromList #-}
 fromList = unstream . Stream.fromList
 

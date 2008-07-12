@@ -1,10 +1,10 @@
 {-# LANGUAGE MagicHash, UnboxedTuples, FlexibleInstances, MultiParamTypeClasses #-}
 
 module Data.Vector (
-  Vector(..), module Data.Vector.Base
+  Vector(..), module Data.Vector.IVector
 ) where
 
-import           Data.Vector.Base
+import           Data.Vector.IVector
 import qualified Data.Vector.Mutable as Mut
 
 import Control.Monad.ST ( runST )
@@ -17,7 +17,7 @@ data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
                                       (Array# a)
 
-instance Base Vector a where
+instance IVector Vector a where
   {-# INLINE create #-}
   create init = runST (do_create init)
     where

@@ -3,7 +3,8 @@
 module Data.Vector.Mutable ( Vector(..) )
 where
 
-import qualified Data.Vector.Base.Mutable as Base
+import qualified Data.Vector.MVector as MVector
+import           Data.Vector.MVector ( MVector )
 
 import GHC.Prim ( MutableArray#,
                   newArray#, readArray#, writeArray#, sameMutableArray#, (+#) )
@@ -12,13 +13,17 @@ import GHC.ST   ( ST(..) )
 
 import GHC.Base ( Int(..) )
 
+#ifndef __HADDOCK__
 data Vector m a where
   Vector :: {-# UNPACK #-} !Int
          -> {-# UNPACK #-} !Int
          -> MutableArray# s a
          -> Vector (ST s) a
+#else
+data Vector m a = forall s. Vector !Int !Int (MutableArray# s a)
+#endif
 
-instance Base.Base Vector (ST s) a where
+instance MVector Vector (ST s) a where
   length (Vector _ n _) = n
   unsafeSlice (Vector i _ arr#) j m = Vector (i+j) m arr#
 

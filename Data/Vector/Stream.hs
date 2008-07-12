@@ -316,12 +316,13 @@ foldl1 f (Stream step s sz) = foldl1_loop s
 
 foldl' :: (a -> b -> a) -> a -> Stream b -> a
 {-# INLINE_STREAM foldl' #-}
-foldl' f !z (Stream step s _) = foldl_go z s
+foldl' f z (Stream step s _) = foldl_go z s
   where
-    foldl_go !z s = case step s of
-                      Yield x s' -> foldl_go (f z x) s'
-                      Skip    s' -> foldl_go z       s'
-                      Done       -> z
+    foldl_go z s = z `seq`
+                   case step s of
+                     Yield x s' -> foldl_go (f z x) s'
+                     Skip    s' -> foldl_go z       s'
+                     Done       -> z
 
 foldl1' :: (a -> a -> a) -> Stream a -> a
 {-# INLINE_STREAM foldl1' #-}
