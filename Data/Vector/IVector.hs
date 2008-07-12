@@ -32,6 +32,9 @@ module Data.Vector.IVector (
   -- * Filtering
   filter, takeWhile, dropWhile,
 
+  -- * Searching
+  elem, notElem, find, findIndex,
+
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
 
@@ -63,6 +66,7 @@ import Prelude hiding ( length,
                         init, tail, take, drop,
                         map, zipWith,
                         filter, takeWhile, dropWhile,
+                        elem, notElem,
                         foldl, foldl1, foldr, foldr1 )
 
 -- | Class of immutable vectors. Just like with 'MVector', the type of the
@@ -220,6 +224,33 @@ takeWhile f = unstream . Stream.takeWhile f . stream
 dropWhile :: IVector v a => (a -> Bool) -> v a -> v a
 {-# INLINE dropWhile #-}
 dropWhile f = unstream . Stream.dropWhile f . stream
+
+-- Searching
+-- ---------
+
+infix 4 `elem`
+-- | Check whether the vector contains an element
+elem :: (IVector v a, Eq a) => a -> v a -> Bool
+{-# INLINE elem #-}
+elem x = Stream.elem x . stream
+
+infix 4 `notElem`
+-- | Inverse of `elem`
+notElem :: (IVector v a, Eq a) => a -> v a -> Bool
+{-# INLINE notElem #-}
+notElem x = Stream.notElem x . stream
+
+-- | Yield 'Just' the first element matching the predicate or 'Nothing' if no
+-- such element exists.
+find :: IVector v a => (a -> Bool) -> v a -> Maybe a
+{-# INLINE find #-}
+find f = Stream.find f . stream
+
+-- | Yield 'Just' the index of the first element matching the predicate or
+-- 'Nothing' if no such element exists.
+findIndex :: IVector v a => (a -> Bool) -> v a -> Maybe Int
+{-# INLINE findIndex #-}
+findIndex f = Stream.findIndex f . stream
 
 -- Folding
 -- -------

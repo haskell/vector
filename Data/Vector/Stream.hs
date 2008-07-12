@@ -39,6 +39,9 @@ module Data.Vector.Stream (
   -- * Filtering
   filter, takeWhile, dropWhile,
 
+  -- * Searching
+  elem, notElem, find, findIndex,
+
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
 
@@ -60,6 +63,7 @@ import Prelude hiding ( length, null,
                         init, tail, take, drop,
                         map, zipWith,
                         filter, takeWhile, dropWhile,
+                        elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         mapM_ )
 
@@ -354,6 +358,51 @@ dropWhile f (Stream step s n) = Stream step' (DropWhile_Drop s) (toMax n)
                                  Yield x s' -> Skip    (DropWhile_Yield x s')
                                  Skip    s' -> Skip    (DropWhile_Next    s')
                                  Done       -> Done
+
+-- Searching
+-- ---------
+
+infix 4 `elem`
+-- | Check whether the 'Stream' contains an element
+elem :: Eq a => a -> Stream a -> Bool
+{-# INLINE_STREAM elem #-}
+elem x (Stream step s _) = elem_loop s
+  where
+    elem_loop s = case step s of
+                    Yield y s' | x == y    -> True
+                               | otherwise -> elem_loop s'
+                    Skip    s'             -> elem_loop s'
+                    Done                   -> False
+
+infix 4 `notElem`
+-- | Inverse of `elem`
+notElem :: Eq a => a -> Stream a -> Bool
+{-# INLINE notElem #-}
+notElem x = not . elem x
+
+-- | Yield 'Just' the first element matching the predicate or 'Nothing' if no
+-- such element exists.
+find :: (a -> Bool) -> Stream a -> Maybe a
+{-# INLINE_STREAM find #-}
+find f (Stream step s _) = find_loop s
+  where
+    find_loop s = case step s of
+                    Yield x s' | f x       -> Just x
+                               | otherwise -> find_loop s'
+                    Skip    s'             -> find_loop s'
+                    Done                   -> Nothing
+
+-- | Yield 'Just' the index of the first element matching the predicate or
+-- 'Nothing' if no such element exists.
+findIndex :: (a -> Bool) -> Stream a -> Maybe Int
+{-# INLINE_STREAM findIndex #-}
+findIndex f (Stream step s _) = findIndex_loop s 0
+  where
+    findIndex_loop s i = case step s of
+                           Yield x s' | f x       -> Just i
+                                      | otherwise -> findIndex_loop s' (i+1)
+                           Skip    s'             -> findIndex_loop s' i
+                           Done                   -> Nothing
 
 -- Folding
 -- -------
