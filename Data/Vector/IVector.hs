@@ -23,8 +23,11 @@ module Data.Vector.IVector (
   -- * Construction
   empty, singleton, cons, snoc, replicate, (++),
 
+  -- * Accessing individual elements
+  (!), head, last,
+
   -- * Subvectors
-  slice, subvector, takeSlice, take, dropSlice, drop,
+  slice, takeSlice, take, dropSlice, drop,
 
   -- * Mapping and zipping
   map, zipWith,
@@ -159,6 +162,25 @@ infixr 5 ++
 (++) :: IVector v a => v a -> v a -> v a
 {-# INLINE (++) #-}
 v ++ w = unstream (stream v Stream.++ stream w)
+
+-- Accessing individual elements
+-- -----------------------------
+
+-- | Indexing
+(!) :: IVector v a => v a -> Int -> a
+{-# INLINE (!) #-}
+v ! i = assert (i >= 0 && i < length v)
+      $ unsafeIndex v i id
+
+-- | First element
+head :: IVector v a => v a -> a
+{-# INLINE head #-}
+head v = v ! 0
+
+-- | Last element
+last :: IVector v a => v a -> a
+{-# INLINE last #-}
+last v = v ! (length v - 1)
 
 -- Subarrays
 -- ---------
