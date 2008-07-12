@@ -75,12 +75,11 @@ import Prelude hiding ( length,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1 )
 
--- | Class of immutable vectors. Just like with 'MVector', the type of the
--- elements can be restricted by using GADTs.
+-- | Class of immutable vectors.
 --
 class IVector v a where
   -- | Construct a pure vector from a monadic initialiser.
-  create       :: (forall mv m. MVector mv m a => m (mv m a)) -> v a
+  create       :: (forall mv m. MVector mv m a => m (mv a)) -> v a
 
   -- | Length of the vector (not fusible!)
   vlength      :: v a -> Int

@@ -33,7 +33,7 @@ instance IVector Vector a where
   {-# INLINE create #-}
   create init = runST (do_create init)
     where
-      do_create :: ST s (Mut.Vector (ST s) a) -> ST s (Vector a)
+      do_create :: ST s (Mut.Vector s a) -> ST s (Vector a)
       do_create init = do
                          Mut.Vector i n marr# <- init
                          ST (\s# -> case unsafeFreezeArray# marr# s# of

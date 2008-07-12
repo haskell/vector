@@ -1,4 +1,4 @@
-{-# LANGUAGE MagicHash, UnboxedTuples, MultiParamTypeClasses, GADTs, FlexibleInstances #-}
+{-# LANGUAGE MagicHash, UnboxedTuples, MultiParamTypeClasses, FlexibleInstances #-}
 
 -- |
 -- Module      : Data.Vector.Mutable
@@ -16,7 +16,7 @@ module Data.Vector.Mutable ( Vector(..) )
 where
 
 import qualified Data.Vector.MVector as MVector
-import           Data.Vector.MVector ( MVector )
+import           Data.Vector.MVector ( MVector, MVectorPure )
 
 import GHC.Prim ( MutableArray#,
                   newArray#, readArray#, writeArray#, sameMutableArray#, (+#) )
@@ -25,25 +25,24 @@ import GHC.ST   ( ST(..) )
 
 import GHC.Base ( Int(..) )
 
-#ifndef __HADDOCK__
-data Vector m a where
-  Vector :: {-# UNPACK #-} !Int
-         -> {-# UNPACK #-} !Int
-         -> MutableArray# s a
-         -> Vector (ST s) a
-#else
--- | Type of mutable boxed vectors. This is actually a GADT:
---
--- > data Vector m a where
--- >   Vector :: !Int -> !Int -> MutableArray# s a -> Vector (ST s) a
---
-data Vector m a = forall s. Vector !Int !Int (MutableArray# s a)
-#endif
+-- | Mutable boxed vectors. They live in the 'ST' monad.
+data Vector s a = Vector {-# UNPACK #-} !Int
+                         {-# UNPACK #-} !Int
+                                        (MutableArray# s a)
 
-instance MVector Vector (ST s) a where
+instance MVectorPure (Vector s) a where
   length (Vector _ n _) = n
   unsafeSlice (Vector i _ arr#) j m = Vector (i+j) m arr#
 
+  {-# INLINE overlaps #-}
+  overlaps (Vector i m arr1#) (Vector j n arr2#)
+    = sameMutableArray# arr1# arr2#
+      && (between i j (j+n) || between j i (i+m))
+    where
+      between x y z = x >= y && x < z
+
+
+instance MVector (Vector s) (ST s) a where
   {-# INLINE unsafeNew #-}
   unsafeNew = unsafeNew
 
@@ -58,18 +57,12 @@ instance MVector Vector (ST s) a where
       case writeArray# arr# (i# +# j#) x s# of s2# -> (# s2#, () #)
     )
 
-  {-# INLINE overlaps #-}
-  overlaps (Vector i m arr1#) (Vector j n arr2#)
-    = sameMutableArray# arr1# arr2#
-      && (between i j (j+n) || between j i (i+m))
-    where
-      between x y z = x >= y && x < z
 
-unsafeNew :: Int -> ST s (Vector (ST s) a)
+unsafeNew :: Int -> ST s (Vector s a)
 {-# INLINE unsafeNew #-}
 unsafeNew n = unsafeNewWith n (error "Data.Vector.Mutable: uninitialised elemen t")
 
-unsafeNewWith :: Int -> a -> ST s (Vector (ST s) a)
+unsafeNewWith :: Int -> a -> ST s (Vector s a)
 {-# INLINE unsafeNewWith #-}
 unsafeNewWith (I# n#) x = ST (\s# ->
     case newArray# n# x s# of
