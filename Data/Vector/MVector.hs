@@ -16,7 +16,7 @@
 module Data.Vector.MVector (
   MVectorPure(..), MVector(..),
 
-  slice, new, newWith, read, write, copy, grow, unstream
+  slice, new, newWith, read, write, copy, grow, unstream, update
 ) where
 
 import qualified Data.Vector.Stream      as Stream
@@ -200,4 +200,12 @@ unstreamUnknown s
                                  . max 1
                                  . double2Int
                                  $ int2Double (length v) * gROWTH_FACTOR
+
+
+update :: MVector v m a => v a -> Stream (Int, a) -> m ()
+{-# INLINE update #-}
+update v s = Stream.mapM_ put s
+  where
+    {-# INLINE put #-}
+    put (i, x) = write v i x
 

@@ -29,6 +29,9 @@ module Data.Vector.IVector (
   -- * Subvectors
   slice, extract, takeSlice, take, dropSlice, drop,
 
+  -- * Permutations
+  (//),
+
   -- * Mapping and zipping
   map, zipWith,
 
@@ -276,6 +279,14 @@ drop n = unstream . Stream.drop n . stream
   dropSlice n (unstream s) = drop n (unstream s)
 
   #-}
+
+-- Permutations
+-- ------------
+
+(//) :: IVector v a => v a -> [(Int, a)] -> v a
+{-# INLINE (//) #-}
+v // us = new (Mut.update (Mut.unstream (stream v))
+                          (Stream.fromList us))
 
 -- Mapping/zipping
 -- ---------------
