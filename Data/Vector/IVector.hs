@@ -24,7 +24,7 @@ module Data.Vector.IVector (
   empty, singleton, cons, snoc, replicate, (++),
 
   -- * Subvectors
-  take, drop,
+  slice, takeSlice, take, dropSlice, drop,
 
   -- * Mapping and zipping
   map, zipWith,
@@ -33,7 +33,7 @@ module Data.Vector.IVector (
   filter, takeWhile, dropWhile,
 
   -- * Folding
- foldl, foldl1, foldl', foldl1', foldr, foldr1,
+  foldl, foldl1, foldl', foldl1', foldr, foldr1,
 
   -- * Conversion to/from lists
   toList, fromList,
@@ -54,6 +54,8 @@ import           Data.Vector.MVector ( MVector )
 import qualified Data.Vector.Stream as Stream
 import           Data.Vector.Stream ( Stream )
 import           Data.Vector.Stream.Size
+
+import Control.Exception ( assert )
 
 import Prelude hiding ( length,
                         replicate, (++),
@@ -157,10 +159,29 @@ v ++ w = unstream (stream v Stream.++ stream w)
 -- Subarrays
 -- ---------
 
+-- | Yield a part of the vector without copying it. Safer version of
+-- 'unsafeSlice'.
+slice :: IVector v a => v a -> Int   -- ^ starting index
+                            -> Int   -- ^ length
+                            -> v a
+{-# INLINE slice #-}
+slice v i n = assert (i >= 0 && n >= 0  && i+n <= length v)
+            $ unsafeSlice v i n
+
+-- | Yield the first @n@ elements without copying.
+takeSlice :: IVector v a => Int -> v a -> v a
+{-# INLINE takeSlice #-}
+takeSlice n v = slice v 0 n
+
 -- | Copy the first @n@ elements to a new vector.
 take :: IVector v a => Int -> v a -> v a
 {-# INLINE take #-}
 take n = unstream . Stream.take n . stream
+
+-- | Yield all but the first @n@ elements without copying.
+dropSlice :: IVector v a => Int -> v a -> v a
+{-# INLINE dropSlice #-}
+dropSlice n v = slice v n (length v - n)
 
 -- | Copy all but the first @n@ elements to a new vectors.
 drop :: IVector v a => Int -> v a -> v a
