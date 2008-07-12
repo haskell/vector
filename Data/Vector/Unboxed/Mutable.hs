@@ -58,4 +58,6 @@ instance Unbox a => MVector (Vector s) (ST s) a where
       case write# arr# (i# +# j#) x s# of s2# -> (# s2#, () #)
     )
 
+  {-# INLINE clear #-}
+  clear _ = return ()
 

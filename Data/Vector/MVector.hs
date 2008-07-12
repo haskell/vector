@@ -65,6 +65,9 @@ class (Monad m, MVectorPure v a) => MVector v m a where
   -- | Replace the element at the given position. Index is not checked!
   unsafeWrite      :: v a -> Int -> a -> m ()
 
+  -- | Clear all references to external objects
+  clear            :: v a -> m ()
+
   -- | Write the value at each position.
   set              :: v a -> a -> m ()
 
@@ -230,5 +233,4 @@ map f v = map_loop 0
                                x <- read v i
                                write v i (f x)
                | otherwise = return ()
-
 

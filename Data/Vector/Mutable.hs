@@ -57,10 +57,16 @@ instance MVector (Vector s) (ST s) a where
       case writeArray# arr# (i# +# j#) x s# of s2# -> (# s2#, () #)
     )
 
+  {-# INLINE clear #-}
+  clear v = MVector.set v uninitialised
+
+
+uninitialised :: a
+uninitialised = error "Data.Vector.Mutable: uninitialised elemen t"
 
 unsafeNew :: Int -> ST s (Vector s a)
 {-# INLINE unsafeNew #-}
-unsafeNew n = unsafeNewWith n (error "Data.Vector.Mutable: uninitialised elemen t")
+unsafeNew n = unsafeNewWith n uninitialised
 
 unsafeNewWith :: Int -> a -> ST s (Vector s a)
 {-# INLINE unsafeNewWith #-}
