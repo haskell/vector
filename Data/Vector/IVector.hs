@@ -124,7 +124,7 @@ unstream s = create (MVector.unstream s)
 
 {-# RULES
 
-"stream/unstream [Vector.IVector]" forall s.
+"stream/unstream [IVector]" forall s.
   stream (unstream s) = s
 
  #-}
