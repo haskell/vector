@@ -1,5 +1,17 @@
 {-# LANGUAGE MagicHash, UnboxedTuples, FlexibleInstances, MultiParamTypeClasses #-}
 
+-- |
+-- Module      : Data.Vector
+-- Copyright   : (c) Roman Leshchinskiy 2008
+-- License     : BSD-style
+--
+-- Maintainer  : rl@cse.unsw.edu.au
+-- Stability   : experimental
+-- Portability : non-portable
+-- 
+-- Boxed vectors
+--
+
 module Data.Vector (
   Vector(..), module Data.Vector.IVector
 ) where

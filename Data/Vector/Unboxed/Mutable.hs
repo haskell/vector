@@ -1,5 +1,17 @@
 {-# LANGUAGE MagicHash, UnboxedTuples, MultiParamTypeClasses, FlexibleInstances, GADTs, ScopedTypeVariables #-}
 
+-- |
+-- Module      : Data.Vector.Unboxed.Mutable
+-- Copyright   : (c) Roman Leshchinskiy 2008
+-- License     : BSD-style
+--
+-- Maintainer  : rl@cse.unsw.edu.au
+-- Stability   : experimental
+-- Portability : non-portable
+-- 
+-- Mutable unboxed vectors based on 'Unbox'.
+--
+
 module Data.Vector.Unboxed.Mutable ( Vector(..) )
 where
 
@@ -21,6 +33,11 @@ data Vector m a where
           -> MutableByteArray# s
           -> Vector (ST s) a
 #else
+-- | Type of mutable unboxed vectors. This is actually a GADT:
+--
+-- > data Vector m a where
+-- >   Vector :: !Int -> !Int -> MutableByteArray# s -> Vector (ST s) a
+--
 data Vector m a = forall s. Vector !Int !Int (MutableByteArray# s)
 #endif
 
