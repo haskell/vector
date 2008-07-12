@@ -51,7 +51,10 @@ module Data.Vector.IVector (
   create,
 
   -- * Unsafe functions
-  unsafeSlice, unsafeIndex
+  unsafeSlice, unsafeIndex,
+
+  -- * Utility functions
+  vlength
 ) where
 
 import qualified Data.Vector.MVector as MVector
@@ -79,8 +82,8 @@ class IVector v a where
   -- | Construct a pure vector from a monadic initialiser.
   create       :: (forall mv m. MVector mv m a => m (mv m a)) -> v a
 
-  -- | Length of the vector
-  length       :: v a -> Int
+  -- | Length of the vector (not fusible!)
+  vlength      :: v a -> Int
 
   -- | Yield a part of the vector without copying it. No range checks!
   unsafeSlice  :: v a -> Int -> Int -> v a
@@ -128,6 +131,20 @@ unstream s = create (MVector.unstream s)
   stream (unstream s) = s
 
  #-}
+
+-- Length
+-- ------
+
+length :: IVector v a => v a -> Int
+{-# INLINE_STREAM length #-}
+length v = vlength v
+
+{-# RULES
+
+"length/unstream [IVector]" forall s.
+  length (unstream s) = Stream.length s
+
+  #-}
 
 -- Construction
 -- ------------

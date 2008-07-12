@@ -41,8 +41,8 @@ instance Unbox a => IVector Vector a where
                               (# s2#, arr# #) -> (# s2#, Vector i n arr# #)
                             )
 
-  {-# INLINE length #-}
-  length (Vector _ n _) = n
+  {-# INLINE vlength #-}
+  vlength (Vector _ n _) = n
 
   {-# INLINE unsafeSlice #-}
   unsafeSlice (Vector i _ arr#) j n = Vector (i+j) n arr#
