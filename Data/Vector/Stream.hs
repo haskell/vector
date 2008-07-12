@@ -31,7 +31,7 @@ module Data.Vector.Stream (
   head, last, (!!),
 
   -- * Substreams
-  init, tail, take, drop,
+  extract, init, tail, take, drop,
 
   -- * Mapping and zipping
   map, zipWith,
@@ -206,6 +206,13 @@ s !! i = head (drop i s)
 
 -- Substreams
 -- ----------
+
+-- | Extract a substream of the given length starting at the given position.
+extract :: Stream a -> Int   -- ^ starting index
+                    -> Int   -- ^ length
+                    -> Stream a
+{-# INLINE extract #-}
+extract s i n = take n (drop i s)
 
 -- | All but the last element
 init :: Stream a -> Stream a

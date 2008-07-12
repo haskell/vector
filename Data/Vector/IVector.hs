@@ -27,7 +27,7 @@ module Data.Vector.IVector (
   (!), head, last,
 
   -- * Subvectors
-  slice, takeSlice, take, dropSlice, drop,
+  slice, extract, takeSlice, take, dropSlice, drop,
 
   -- * Mapping and zipping
   map, zipWith,
@@ -224,6 +224,13 @@ slice :: IVector v a => v a -> Int   -- ^ starting index
 slice v i n = assert (i >= 0 && n >= 0  && i+n <= length v)
             $ unsafeSlice v i n
 
+-- | Copy @n@ elements starting at the given position to a new vector.
+extract :: IVector v a => v a -> Int  -- ^ starting index
+                              -> Int  -- ^ length
+                              -> v a
+{-# INLINE extract #-}
+extract v i n = unstream (Stream.extract (stream v) i n)
+
 -- | Yield the first @n@ elements without copying.
 takeSlice :: IVector v a => Int -> v a -> v a
 {-# INLINE takeSlice #-}
@@ -243,6 +250,19 @@ dropSlice n v = slice v n (length v - n)
 drop :: IVector v a => Int -> v a -> v a
 {-# INLINE drop #-}
 drop n = unstream . Stream.drop n . stream
+
+{-# RULES
+
+"slice/extract [IVector]" forall i n s.
+  slice (unstream s) i n = extract (unstream s) i n
+
+"takeSlice/unstream [IVector]" forall n s.
+  takeSlice n (unstream s) = take n (unstream s)
+
+"dropSlice/unstream [IVector]" forall n s.
+  dropSlice n (unstream s) = drop n (unstream s)
+
+  #-}
 
 -- Mapping/zipping
 -- ---------------
@@ -292,6 +312,16 @@ dropWhileSlice f v = case findIndex (not . f) v of
 dropWhile :: IVector v a => (a -> Bool) -> v a -> v a
 {-# INLINE dropWhile #-}
 dropWhile f = unstream . Stream.dropWhile f . stream
+
+{-# RULES
+
+"takeWhileSlice/unstream" forall f s.
+  takeWhileSlice f (unstream s) = takeWhile f (unstream s)
+
+"dropWhileSlice/unstream" forall f s.
+  dropWhileSlice f (unstream s) = dropWhile f (unstream s)
+
+ #-}
 
 -- Searching
 -- ---------
