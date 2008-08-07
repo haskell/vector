@@ -18,7 +18,7 @@ module Data.Vector.MVector (
 
   slice, new, newWith, read, write, copy, grow,
   unstream, mstream, munstream,
-  update, reverse, map
+  update, reverse
 ) where
 
 import qualified Data.Vector.Stream      as Stream
@@ -240,16 +240,4 @@ reverse v = reverse_loop 0 (length v - 1)
                                  unsafeWrite v i y
                                  unsafeWrite v j x
     reverse_loop _ _ = return ()
-
-
-map :: MVector v m a => (a -> a) -> v a -> m ()
-{-# INLINE map #-}
-map f v = map_loop 0
-  where
-    n = length v
-
-    map_loop i | i <= n    = do
-                               x <- read v i
-                               write v i (f x)
-               | otherwise = return ()
 
