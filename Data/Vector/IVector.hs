@@ -1,4 +1,5 @@
-{-# LANGUAGE Rank2Types, MultiParamTypeClasses, ScopedTypeVariables #-}
+{-# LANGUAGE Rank2Types, MultiParamTypeClasses, FlexibleContexts,
+             ScopedTypeVariables #-}
 -- |
 -- Module      : Data.Vector.IVector
 -- Copyright   : (c) Roman Leshchinskiy 2008
@@ -30,7 +31,7 @@ module Data.Vector.IVector (
   slice, extract, takeSlice, take, dropSlice, drop,
 
   -- * Permutations
-  (//),
+  (//), update, bpermute,
 
   -- * Mapping and zipping
   map, zipWith,
@@ -311,6 +312,14 @@ drop n = unstream . Stream.drop n . stream
 {-# INLINE (//) #-}
 v // us = new (Mut.update (Mut.unstream (stream v))
                           (Stream.fromList us))
+
+update :: (IVector v a, IVector v (Int, a)) => v a -> v (Int, a) -> v a
+{-# INLINE update #-}
+update v w = new (Mut.update (Mut.unstream (stream v)) (stream w))
+
+bpermute :: (IVector v a, IVector v Int) => v a -> v Int -> v a
+{-# INLINE bpermute #-}
+bpermute v is = is `seq` map (v!) is
 
 -- Mapping/zipping
 -- ---------------
