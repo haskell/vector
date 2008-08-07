@@ -32,19 +32,19 @@ unstream :: Stream a -> Mut a
 {-# INLINE_STREAM unstream #-}
 unstream s = Mut (MVector.unstream s)
 
-restream :: (forall m. Monad m => MStream m a -> MStream m a) -> Mut a -> Mut a
-{-# INLINE_STREAM restream #-}
-restream f (Mut p) = Mut (
+inplace :: (forall m. Monad m => MStream m a -> MStream m a) -> Mut a -> Mut a
+{-# INLINE_STREAM inplace #-}
+inplace f (Mut p) = Mut (
   do
     v <- p
     MVector.munstream v (f (MVector.mstream v)))
 
 {-# RULES
 
-"restream/restream [Mut]"
+"inplace/inplace [Mut]"
   forall (f :: forall m. Monad m => MStream m a -> MStream m a)
          (g :: forall m. Monad m => MStream m a -> MStream m a) p .
-  restream f (restream g p) = restream (f . g) p
+  inplace f (inplace g p) = inplace (f . g) p
 
  #-}
 
@@ -58,9 +58,9 @@ reverse m = trans m (MVector.reverse)
 
 map :: (a -> a) -> Mut a -> Mut a
 {-# INLINE map #-}
-map f = restream (MStream.map f)
+map f = inplace (MStream.map f)
 
 filter :: (a -> Bool) -> Mut a -> Mut a
 {-# INLINE filter #-}
-filter f = restream (MStream.filter f)
+filter f = inplace (MStream.filter f)
 
