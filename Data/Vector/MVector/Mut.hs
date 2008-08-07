@@ -3,7 +3,7 @@
 #include "phases.h"
 
 module Data.Vector.MVector.Mut (
-  Mut(..), run, unstream, update, reverse, map
+  Mut(..), run, unstream, inplace, update, reverse, map, filter
 ) where
 
 import qualified Data.Vector.MVector as MVector
@@ -16,7 +16,7 @@ import           Data.Vector.MStream ( MStream )
 import qualified Data.Vector.MStream as MStream
 
 import Control.Monad  ( liftM )
-import Prelude hiding ( reverse, map )
+import Prelude hiding ( reverse, map, filter )
 
 data Mut a = Mut (forall m mv. MVector mv m a => m (mv a))
 

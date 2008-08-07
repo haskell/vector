@@ -1,4 +1,4 @@
-{-# LANGUAGE Rank2Types, MultiParamTypeClasses #-}
+{-# LANGUAGE Rank2Types, MultiParamTypeClasses, ScopedTypeVariables #-}
 -- |
 -- Module      : Data.Vector.IVector
 -- Copyright   : (c) Roman Leshchinskiy 2008
@@ -71,6 +71,8 @@ import           Data.Vector.MVector.Mut ( Mut )
 
 import qualified Data.Vector.Stream as Stream
 import           Data.Vector.Stream ( Stream )
+import qualified Data.Vector.MStream as MStream
+import           Data.Vector.MStream ( MStream )
 import           Data.Vector.Stream.Size
 
 import Control.Exception ( assert )
@@ -148,6 +150,25 @@ unstream s = new (Mut.unstream s)
 
 "Mut.unstream/stream/new [IVector]" forall p.
   Mut.unstream (stream (new p)) = p
+
+ #-}
+
+inplace :: (Stream a -> Stream a)
+        -> (forall m. Monad m => MStream m a -> MStream m a)
+        -> Stream a -> Stream a
+{-# INLINE_STREAM inplace #-}
+inplace f _ s = f s
+
+{-# RULES
+
+"inplace [IVector]"
+  forall f (mf :: forall m. Monad m => MStream m a -> MStream m a) m.
+  Mut.unstream (inplace f mf (stream (new m))) = Mut.inplace mf m
+
+"inplace/inplace [IVector]"
+  forall f (mf :: forall m. Monad m => MStream m a -> MStream m a)
+         g (mg :: forall m. Monad m => MStream m a -> MStream m a) s.
+  inplace f mf (inplace g mg s) = inplace (f . g) (mf . mg) s
 
  #-}
 
@@ -299,12 +320,15 @@ map :: (IVector v a, IVector v b) => (a -> b) -> v a -> v b
 {-# INLINE map #-}
 map f = unstream . Stream.map f . stream
 
+inplace_map :: IVector v a => (a -> a) -> v a -> v a
+{-# INLINE inplace_map #-}
+inplace_map f = unstream . inplace (Stream.map f) (MStream.map f) . stream
+
 {-# RULES
 
-"in-place map [IVector]" forall f m.
-  Mut.unstream (Stream.map f (stream (new m))) = Mut.map f m
+"map->inplace_map [IVector]" map = inplace_map
 
-  #-}
+ #-}
 
 -- | Zip two vectors with the given function.
 zipWith :: (IVector v a, IVector v b, IVector v c) => (a -> b -> c) -> v a -> v b -> v c
@@ -328,7 +352,7 @@ cmp xs ys = compare (stream xs) (stream ys)
 -- | Drop elements which do not satisfy the predicate
 filter :: IVector v a => (a -> Bool) -> v a -> v a
 {-# INLINE filter #-}
-filter f = unstream . Stream.filter f . stream
+filter f = unstream . inplace (Stream.filter f) (MStream.filter f) . stream
 
 -- | Yield the longest prefix of elements satisfying the predicate without
 -- copying.
