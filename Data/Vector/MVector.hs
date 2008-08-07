@@ -23,6 +23,8 @@ module Data.Vector.MVector (
 
 import qualified Data.Vector.Stream      as Stream
 import           Data.Vector.Stream      ( Stream )
+import qualified Data.Vector.MStream     as MStream
+import           Data.Vector.MStream     ( MStream )
 import           Data.Vector.Stream.Size
 
 import Control.Monad.ST ( ST )
@@ -166,23 +168,24 @@ grow :: MVector v m a => v a -> Int -> m (v a)
 grow v by = assert (by >= 0)
           $ unsafeGrow v by
 
-mstream :: MVector v m a => v a -> Stream (m a)
+mstream :: MVector v m a => v a -> MStream m a
 {-# INLINE mstream #-}
-mstream v = v `seq` (Stream.unfold get 0 `Stream.sized` Exact n)
+mstream v = v `seq` (MStream.unfoldM get 0 `MStream.sized` Exact n)
   where
     n = length v
 
     {-# INLINE get #-}
-    get i | i < n     = Just (unsafeRead v i, i+1)
-          | otherwise = Nothing
+    get i | i < n     = do x <- unsafeRead v i
+                           return $ Just (x, i+1)
+          | otherwise = return $ Nothing
 
-munstream :: MVector v m a => v a -> Stream (m a) -> m (v a)
+munstream :: MVector v m a => v a -> MStream m a -> m (v a)
 {-# INLINE munstream #-}
 munstream v s = v `seq` do
-                          n' <- Stream.foldM put 0 s
+                          n' <- MStream.foldM put 0 s
                           return $ slice v 0 n'
   where
-    put i m = do { write v i =<< m; return (i+1) }
+    put i x = do { write v i x; return (i+1) }
 
 -- | Create a new mutable vector and fill it with elements from the 'Stream'.
 -- The vector will grow logarithmically if the 'Size' hint of the 'Stream' is

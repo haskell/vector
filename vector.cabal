@@ -24,6 +24,7 @@ Library
   Exposed-Modules:
         Data.Vector.Stream.Size
         Data.Vector.Stream
+        Data.Vector.MStream
 
         Data.Vector.MVector
         Data.Vector.MVector.Mut

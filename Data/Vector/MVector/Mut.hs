@@ -12,6 +12,9 @@ import           Data.Vector.MVector ( MVector )
 import           Data.Vector.Stream ( Stream )
 import qualified Data.Vector.Stream as Stream
 
+import           Data.Vector.MStream ( MStream )
+import qualified Data.Vector.MStream as MStream
+
 import Control.Monad  ( liftM )
 import Prelude hiding ( reverse, map )
 
@@ -29,8 +32,7 @@ unstream :: Stream a -> Mut a
 {-# INLINE_STREAM unstream #-}
 unstream s = Mut (MVector.unstream s)
 
-restream :: (forall m. Monad m => Stream (m a) -> Stream (m a))
-          -> Mut a -> Mut a
+restream :: (forall m. Monad m => MStream m a -> MStream m a) -> Mut a -> Mut a
 {-# INLINE_STREAM restream #-}
 restream f (Mut p) = Mut (
   do
@@ -40,8 +42,8 @@ restream f (Mut p) = Mut (
 {-# RULES
 
 "restream/restream [Mut]"
-  forall (f :: forall m. Monad m => Stream (m a) -> Stream (m a))
-         (g :: forall m. Monad m => Stream (m a) -> Stream (m a)) p .
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a)
+         (g :: forall m. Monad m => MStream m a -> MStream m a) p .
   restream f (restream g p) = restream (f . g) p
 
  #-}
@@ -56,5 +58,9 @@ reverse m = trans m (MVector.reverse)
 
 map :: (a -> a) -> Mut a -> Mut a
 {-# INLINE map #-}
-map f = restream (Stream.map (liftM f))
+map f = restream (MStream.map f)
+
+filter :: (a -> Bool) -> Mut a -> Mut a
+{-# INLINE filter #-}
+filter f = restream (MStream.filter f)
 
