@@ -70,14 +70,53 @@ filterM f (MStream step s n) = MStream step' s (toMax n)
                   Skip    s' -> return $ Skip s'
                   Done       -> return $ Done
 
-foldM :: Monad m => (a -> b -> m a) -> a -> MStream m b -> m a
-{-# INLINE_STREAM foldM #-}
-foldM m z (MStream step s _) = foldM_go z s
+foldl :: Monad m => (a -> b -> a) -> a -> MStream m b -> m a
+{-# INLINE foldl #-}
+foldl f = foldM (\a b -> return (f a b))
+
+foldr :: Monad m => (a -> b -> b) -> b -> MStream m a -> m b
+{-# INLINE foldr #-}
+foldr f = foldrM (\a b -> return (f a b))
+
+foldlM :: Monad m => (a -> b -> m a) -> a -> MStream m b -> m a
+{-# INLINE_STREAM foldlM #-}
+foldlM m z (MStream step s _) = foldlM_go z s
   where
-    foldM_go z s = do
-                     r <- step s
-                     case r of
-                       Yield x s' -> do { z' <- m z x; foldM_go z' s' }
-                       Skip    s' -> foldM_go z s'
-                       Done       -> return z
+    foldlM_go z s = do
+                      r <- step s
+                      case r of
+                        Yield x s' -> do { z' <- m z x; foldlM_go z' s' }
+                        Skip    s' -> foldlM_go z s'
+                        Done       -> return z
+
+foldlM' :: Monad m => (a -> b -> m a) -> a -> MStream m b -> m a
+{-# INLINE_STREAM foldlM' #-}
+foldlM' m z (MStream step s _) = foldlM'_go z s
+  where
+    foldlM'_go z s = z `seq`
+                     do
+                       r <- step s
+                       case r of
+                         Yield x s' -> do { z' <- m z x; foldlM'_go z' s' }
+                         Skip    s' -> foldlM'_go z s'
+                         Done       -> return z
+
+foldM :: Monad m => (a -> b -> m a) -> a -> MStream m b -> m a
+{-# INLINE foldM #-}
+foldM = foldlM
+
+foldM' :: Monad m => (a -> b -> m a) -> a -> MStream m b -> m a
+{-# INLINE foldM' #-}
+foldM' = foldlM'
+
+foldrM :: Monad m => (a -> b -> m b) -> b -> MStream m a -> m b
+{-# INLINE_STREAM foldrM #-}
+foldrM f z (MStream step s _) = foldrM_go s
+  where
+    foldrM_go s = do
+                    r <- step s
+                    case r of
+                      Yield x s' -> f x =<< foldrM_go s'
+                      Skip    s' -> foldrM_go s'
+                      Done       -> return z
 
