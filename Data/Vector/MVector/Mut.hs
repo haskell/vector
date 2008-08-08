@@ -24,9 +24,9 @@ run :: MVector mv m a => Mut a -> m (mv a)
 {-# INLINE run #-}
 run (Mut p) = p
 
-trans :: Mut a -> (forall m mv. MVector mv m a => mv a -> m ()) -> Mut a
-{-# INLINE trans #-}
-trans (Mut p) q = Mut (do { v <- p; q v; return v })
+modify :: Mut a -> (forall m mv. MVector mv m a => mv a -> m ()) -> Mut a
+{-# INLINE modify #-}
+modify (Mut p) q = Mut (do { v <- p; q v; return v })
 
 unstream :: Stream a -> Mut a
 {-# INLINE_STREAM unstream #-}
@@ -50,11 +50,11 @@ inplace f (Mut p) = Mut (
 
 update :: Mut a -> Stream (Int, a) -> Mut a
 {-# INLINE_STREAM update #-}
-update m s = trans m (\v -> MVector.update v s)
+update m s = modify m (\v -> MVector.update v s)
 
 reverse :: Mut a -> Mut a
 {-# INLINE_STREAM reverse #-}
-reverse m = trans m (MVector.reverse)
+reverse m = modify m (MVector.reverse)
 
 map :: (a -> a) -> Mut a -> Mut a
 {-# INLINE map #-}
