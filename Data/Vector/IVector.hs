@@ -34,7 +34,7 @@ module Data.Vector.IVector (
   (//), update, bpermute,
 
   -- * Mapping and zipping
-  map, zipWith,
+  map, zipWith, zip,
 
   -- * Comparisons
   eq, cmp,
@@ -82,7 +82,7 @@ import Prelude hiding ( length,
                         replicate, (++),
                         head, last,
                         init, tail, take, drop,
-                        map, zipWith,
+                        map, zipWith, zip,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1 )
@@ -343,6 +343,10 @@ inplace_map f = unstream . inplace (Stream.map f) (MStream.map f) . stream
 zipWith :: (IVector v a, IVector v b, IVector v c) => (a -> b -> c) -> v a -> v b -> v c
 {-# INLINE zipWith #-}
 zipWith f xs ys = unstream (Stream.zipWith f (stream xs) (stream ys))
+
+zip :: (IVector v a, IVector v b, IVector v (a,b)) => v a -> v b -> v (a, b)
+{-# INLINE zip #-}
+zip = zipWith (,)
 
 -- Comparisons
 -- -----------
