@@ -71,9 +71,8 @@ import qualified Data.Vector.MVector.New as New
 import           Data.Vector.MVector.New ( New )
 
 import qualified Data.Vector.Fusion.Stream as Stream
-import           Data.Vector.Fusion.Stream ( Stream )
-import qualified Data.Vector.Fusion.MStream as MStream
-import           Data.Vector.Fusion.MStream ( MStream )
+import           Data.Vector.Fusion.Stream ( Stream, MStream )
+import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
 
 import Control.Exception ( assert )
@@ -163,12 +162,14 @@ inplace f _ s = f s
 {-# RULES
 
 "inplace [IVector]"
-  forall f (mf :: forall m. Monad m => MStream m a -> MStream m a) m.
+  forall (mf :: forall m. Monad m => MStream m a -> MStream m a)
+         f m.
   New.unstream (inplace f mf (stream (new m))) = New.inplace mf m
 
 "inplace/inplace [IVector]"
   forall f (mf :: forall m. Monad m => MStream m a -> MStream m a)
-         g (mg :: forall m. Monad m => MStream m a -> MStream m a) s.
+         g (mg :: forall m. Monad m => MStream m a -> MStream m a)
+         s.
   inplace f mf (inplace g mg s) = inplace (f . g) (mf . mg) s
 
  #-}

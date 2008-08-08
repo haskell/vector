@@ -16,7 +16,7 @@
 
 module Data.Vector.Fusion.Stream (
   -- * Types
-  Step(..), Stream(..),
+  Step(..), Stream(..), MStream,
 
   -- * Size hints
   size, sized,
@@ -57,6 +57,7 @@ module Data.Vector.Fusion.Stream (
 
 import Data.Vector.Fusion.Stream.Size
 import Data.Vector.Fusion.Stream.Step
+import qualified Data.Vector.Fusion.Stream.Monadic as Monadic
 
 import Prelude hiding ( length, null,
                         replicate, (++),
@@ -71,6 +72,8 @@ import Prelude hiding ( length, null,
 
 -- | The type of fusible streams
 data Stream a = forall s. Stream (s -> Step s a) s Size
+
+type MStream = Monadic.Stream
 
 -- | 'Size' hint of a 'Stream'
 size :: Stream a -> Size

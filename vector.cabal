@@ -24,8 +24,8 @@ Library
   Exposed-Modules:
         Data.Vector.Fusion.Stream.Size
         Data.Vector.Fusion.Stream.Step
+        Data.Vector.Fusion.Stream.Monadic
         Data.Vector.Fusion.Stream
-        Data.Vector.Fusion.MStream
 
         Data.Vector.MVector
         Data.Vector.MVector.New

@@ -9,11 +9,10 @@ module Data.Vector.MVector.New (
 import qualified Data.Vector.MVector as MVector
 import           Data.Vector.MVector ( MVector )
 
-import           Data.Vector.Fusion.Stream ( Stream )
+import           Data.Vector.Fusion.Stream ( Stream, MStream )
 import qualified Data.Vector.Fusion.Stream as Stream
 
-import           Data.Vector.Fusion.MStream ( MStream )
-import qualified Data.Vector.Fusion.MStream as MStream
+import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 
 import Control.Monad  ( liftM )
 import Prelude hiding ( reverse, map, filter )
@@ -43,7 +42,8 @@ inplace f (New p) = New (
 
 "inplace/inplace [New]"
   forall (f :: forall m. Monad m => MStream m a -> MStream m a)
-         (g :: forall m. Monad m => MStream m a -> MStream m a) p .
+         (g :: forall m. Monad m => MStream m a -> MStream m a)
+         p .
   inplace f (inplace g p) = inplace (f . g) p
 
  #-}

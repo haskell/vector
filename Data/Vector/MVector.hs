@@ -22,9 +22,8 @@ module Data.Vector.MVector (
 ) where
 
 import qualified Data.Vector.Fusion.Stream      as Stream
-import           Data.Vector.Fusion.Stream      ( Stream )
-import qualified Data.Vector.Fusion.MStream     as MStream
-import           Data.Vector.Fusion.MStream     ( MStream )
+import           Data.Vector.Fusion.Stream      ( Stream, MStream )
+import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
 
 import Control.Monad.ST ( ST )
