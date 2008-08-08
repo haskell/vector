@@ -56,6 +56,7 @@ module Data.Vector.Fusion.Stream (
 ) where
 
 import Data.Vector.Fusion.Stream.Size
+import Data.Vector.Fusion.Stream.Step
 
 import Prelude hiding ( length, null,
                         replicate, (++),
@@ -67,9 +68,6 @@ import Prelude hiding ( length, null,
                         foldl, foldl1, foldr, foldr1,
                         mapM_ )
 
-data Step s a = Yield a s
-              | Skip    s
-              | Done
 
 -- | The type of fusible streams
 data Stream a = forall s. Stream (s -> Step s a) s Size
