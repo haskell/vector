@@ -27,7 +27,7 @@ Library
         Data.Vector.MStream
 
         Data.Vector.MVector
-        Data.Vector.MVector.Mut
+        Data.Vector.MVector.New
         Data.Vector.IVector
 
         Data.Vector.Unboxed.Unbox

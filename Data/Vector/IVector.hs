@@ -67,8 +67,8 @@ module Data.Vector.IVector (
 import qualified Data.Vector.MVector as MVector
 import           Data.Vector.MVector ( MVector )
 
-import qualified Data.Vector.MVector.Mut as Mut
-import           Data.Vector.MVector.Mut ( Mut )
+import qualified Data.Vector.MVector.New as New
+import           Data.Vector.MVector.New ( New )
 
 import qualified Data.Vector.Stream as Stream
 import           Data.Vector.Stream ( Stream )
@@ -124,9 +124,9 @@ class IVector v a where
 -- ------
 
 -- | Construct a pure vector from a monadic initialiser 
-new :: IVector v a => Mut a -> v a
+new :: IVector v a => New a -> v a
 {-# INLINE_STREAM new #-}
-new m = vnew (Mut.run m)
+new m = vnew (New.run m)
 
 -- | Convert a vector to a 'Stream'
 stream :: IVector v a => v a -> Stream a
@@ -142,15 +142,15 @@ stream v = v `seq` (Stream.unfold get 0 `Stream.sized` Exact n)
 -- | Create a vector from a 'Stream'
 unstream :: IVector v a => Stream a -> v a
 {-# INLINE unstream #-}
-unstream s = new (Mut.unstream s)
+unstream s = new (New.unstream s)
 
 {-# RULES
 
 "stream/unstream [IVector]" forall s.
-  stream (new (Mut.unstream s)) = s
+  stream (new (New.unstream s)) = s
 
-"Mut.unstream/stream/new [IVector]" forall p.
-  Mut.unstream (stream (new p)) = p
+"New.unstream/stream/new [IVector]" forall p.
+  New.unstream (stream (new p)) = p
 
  #-}
 
@@ -164,7 +164,7 @@ inplace f _ s = f s
 
 "inplace [IVector]"
   forall f (mf :: forall m. Monad m => MStream m a -> MStream m a) m.
-  Mut.unstream (inplace f mf (stream (new m))) = Mut.inplace mf m
+  New.unstream (inplace f mf (stream (new m))) = New.inplace mf m
 
 "inplace/inplace [IVector]"
   forall f (mf :: forall m. Monad m => MStream m a -> MStream m a)
@@ -183,7 +183,7 @@ length v = vlength v
 {-# RULES
 
 "length/unstream [IVector]" forall s.
-  length (new (Mut.unstream s)) = Stream.length s
+  length (new (New.unstream s)) = Stream.length s
 
   #-}
 
@@ -243,13 +243,13 @@ last v = v ! (length v - 1)
 {-# RULES
 
 "(!)/unstream [IVector]" forall i s.
-  new (Mut.unstream s) ! i = s Stream.!! i
+  new (New.unstream s) ! i = s Stream.!! i
 
 "head/unstream [IVector]" forall s.
-  head (new (Mut.unstream s)) = Stream.head s
+  head (new (New.unstream s)) = Stream.head s
 
 "last/unstream [IVector]" forall s.
-  last (new (Mut.unstream s)) = Stream.last s
+  last (new (New.unstream s)) = Stream.last s
 
  #-}
 
@@ -295,13 +295,13 @@ drop n = unstream . Stream.drop n . stream
 {-# RULES
 
 "slice/extract [IVector]" forall i n s.
-  slice (new (Mut.unstream s)) i n = extract (new (Mut.unstream s)) i n
+  slice (new (New.unstream s)) i n = extract (new (New.unstream s)) i n
 
 "takeSlice/unstream [IVector]" forall n s.
-  takeSlice n (new (Mut.unstream s)) = take n (new (Mut.unstream s))
+  takeSlice n (new (New.unstream s)) = take n (new (New.unstream s))
 
 "dropSlice/unstream [IVector]" forall n s.
-  dropSlice n (new (Mut.unstream s)) = drop n (new (Mut.unstream s))
+  dropSlice n (new (New.unstream s)) = drop n (new (New.unstream s))
 
   #-}
 
@@ -310,12 +310,12 @@ drop n = unstream . Stream.drop n . stream
 
 (//) :: IVector v a => v a -> [(Int, a)] -> v a
 {-# INLINE (//) #-}
-v // us = new (Mut.update (Mut.unstream (stream v))
+v // us = new (New.update (New.unstream (stream v))
                           (Stream.fromList us))
 
 update :: (IVector v a, IVector v (Int, a)) => v a -> v (Int, a) -> v a
 {-# INLINE update #-}
-update v w = new (Mut.update (Mut.unstream (stream v)) (stream w))
+update v w = new (New.update (New.unstream (stream v)) (stream w))
 
 bpermute :: (IVector v a, IVector v Int) => v a -> v Int -> v a
 {-# INLINE bpermute #-}
@@ -398,10 +398,10 @@ dropWhile f = unstream . Stream.dropWhile f . stream
 {-# RULES
 
 "takeWhileSlice/unstream" forall f s.
-  takeWhileSlice f (new (Mut.unstream s)) = takeWhile f (new (Mut.unstream s))
+  takeWhileSlice f (new (New.unstream s)) = takeWhile f (new (New.unstream s))
 
 "dropWhileSlice/unstream" forall f s.
-  dropWhileSlice f (new (Mut.unstream s)) = dropWhile f (new (Mut.unstream s))
+  dropWhileSlice f (new (New.unstream s)) = dropWhile f (new (New.unstream s))
 
  #-}
 
