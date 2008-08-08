@@ -12,7 +12,7 @@ module Data.Vector.Fusion.MStream (
   map, mapM, filter, filterM
 ) where
 
-import Data.Vector.Fusion.Stream ( Step(..) )
+import Data.Vector.Fusion.Stream.Step
 import Data.Vector.Fusion.Stream.Size
 
 import Control.Monad  ( liftM )
