@@ -2,7 +2,7 @@
 
 #include "phases.h"
 
-module Data.Vector.MStream (
+module Data.Vector.Fusion.MStream (
   MStream,
 
   sized,
@@ -12,8 +12,8 @@ module Data.Vector.MStream (
   map, mapM, filter, filterM
 ) where
 
-import Data.Vector.Stream ( Step(..) )
-import Data.Vector.Stream.Size
+import Data.Vector.Fusion.Stream ( Step(..) )
+import Data.Vector.Fusion.Stream.Size
 
 import Control.Monad  ( liftM )
 import Prelude hiding ( map, mapM, filter )

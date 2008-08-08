@@ -70,11 +70,11 @@ import           Data.Vector.MVector ( MVector )
 import qualified Data.Vector.MVector.New as New
 import           Data.Vector.MVector.New ( New )
 
-import qualified Data.Vector.Stream as Stream
-import           Data.Vector.Stream ( Stream )
-import qualified Data.Vector.MStream as MStream
-import           Data.Vector.MStream ( MStream )
-import           Data.Vector.Stream.Size
+import qualified Data.Vector.Fusion.Stream as Stream
+import           Data.Vector.Fusion.Stream ( Stream )
+import qualified Data.Vector.Fusion.MStream as MStream
+import           Data.Vector.Fusion.MStream ( MStream )
+import           Data.Vector.Fusion.Stream.Size
 
 import Control.Exception ( assert )
 

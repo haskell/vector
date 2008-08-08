@@ -9,11 +9,11 @@ module Data.Vector.MVector.New (
 import qualified Data.Vector.MVector as MVector
 import           Data.Vector.MVector ( MVector )
 
-import           Data.Vector.Stream ( Stream )
-import qualified Data.Vector.Stream as Stream
+import           Data.Vector.Fusion.Stream ( Stream )
+import qualified Data.Vector.Fusion.Stream as Stream
 
-import           Data.Vector.MStream ( MStream )
-import qualified Data.Vector.MStream as MStream
+import           Data.Vector.Fusion.MStream ( MStream )
+import qualified Data.Vector.Fusion.MStream as MStream
 
 import Control.Monad  ( liftM )
 import Prelude hiding ( reverse, map, filter )

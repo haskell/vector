@@ -1,7 +1,7 @@
 {-# LANGUAGE ExistentialQuantification #-}
 
 -- |
--- Module      : Data.Vector.Stream.Size
+-- Module      : Data.Vector.Fusion.Stream
 -- Copyright   : (c) Roman Leshchinskiy 2008
 -- License     : BSD-style
 --
@@ -14,7 +14,7 @@
 
 #include "phases.h"
 
-module Data.Vector.Stream (
+module Data.Vector.Fusion.Stream (
   -- * Types
   Step(..), Stream(..),
 
@@ -55,7 +55,7 @@ module Data.Vector.Stream (
   mapM_, foldM
 ) where
 
-import Data.Vector.Stream.Size
+import Data.Vector.Fusion.Stream.Size
 
 import Prelude hiding ( length, null,
                         replicate, (++),

@@ -22,9 +22,9 @@ Build-Type:     Simple
 Library
   Extensions: CPP
   Exposed-Modules:
-        Data.Vector.Stream.Size
-        Data.Vector.Stream
-        Data.Vector.MStream
+        Data.Vector.Fusion.Stream.Size
+        Data.Vector.Fusion.Stream
+        Data.Vector.Fusion.MStream
 
         Data.Vector.MVector
         Data.Vector.MVector.New

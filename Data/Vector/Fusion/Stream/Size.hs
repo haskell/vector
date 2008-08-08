@@ -10,7 +10,7 @@
 -- Size hints
 --
 
-module Data.Vector.Stream.Size (
+module Data.Vector.Fusion.Stream.Size (
   Size(..), smaller, larger, toMax, upperBound
 ) where
 
