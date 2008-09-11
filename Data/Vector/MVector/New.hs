@@ -17,7 +17,7 @@ import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import Control.Monad  ( liftM )
 import Prelude hiding ( reverse, map, filter )
 
-data New a = New (forall m mv. MVector mv m a => m (mv a))
+newtype New a = New (forall m mv. MVector mv m a => m (mv a))
 
 run :: MVector mv m a => New a -> m (mv a)
 {-# INLINE run #-}
