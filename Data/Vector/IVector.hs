@@ -153,24 +153,22 @@ unstream s = new (New.unstream s)
 
  #-}
 
-inplace :: (Stream a -> Stream a)
-        -> (forall m. Monad m => MStream m a -> MStream m a)
+inplace :: (forall m. Monad m => MStream m a -> MStream m a)
         -> Stream a -> Stream a
 {-# INLINE_STREAM inplace #-}
-inplace f _ s = f s
+inplace f s = f s
 
 {-# RULES
 
 "inplace [IVector]"
-  forall (mf :: forall m. Monad m => MStream m a -> MStream m a)
-         f m.
-  New.unstream (inplace f mf (stream (new m))) = New.transform mf m
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
+  New.unstream (inplace f (stream (new m))) = New.transform f m
 
 "inplace/inplace [IVector]"
-  forall f (mf :: forall m. Monad m => MStream m a -> MStream m a)
-         g (mg :: forall m. Monad m => MStream m a -> MStream m a)
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a)
+         (g :: forall m. Monad m => MStream m a -> MStream m a)
          s.
-  inplace f mf (inplace g mg s) = inplace (f . g) (mf . mg) s
+  inplace f (inplace g s) = inplace (f . g) s
 
  #-}
 
@@ -332,7 +330,7 @@ map f = unstream . Stream.map f . stream
 
 inplace_map :: IVector v a => (a -> a) -> v a -> v a
 {-# INLINE inplace_map #-}
-inplace_map f = unstream . inplace (Stream.map f) (MStream.map f) . stream
+inplace_map f = unstream . inplace (MStream.map f) . stream
 
 {-# RULES
 
@@ -366,7 +364,7 @@ cmp xs ys = compare (stream xs) (stream ys)
 -- | Drop elements which do not satisfy the predicate
 filter :: IVector v a => (a -> Bool) -> v a -> v a
 {-# INLINE filter #-}
-filter f = unstream . inplace (Stream.filter f) (MStream.filter f) . stream
+filter f = unstream . inplace (MStream.filter f) . stream
 
 -- | Yield the longest prefix of elements satisfying the predicate without
 -- copying.
