@@ -17,7 +17,7 @@ module Data.Vector.MVector (
   MVectorPure(..), MVector(..),
 
   slice, new, newWith, read, write, copy, grow,
-  unstream, mstream, munstream,
+  unstream, transform,
   update, reverse
 ) where
 
@@ -185,6 +185,10 @@ munstream v s = v `seq` do
                           return $ slice v 0 n'
   where
     put i x = do { write v i x; return (i+1) }
+
+transform :: MVector v m a => (MStream m a -> MStream m a) -> v a -> m (v a)
+{-# INLINE_STREAM transform #-}
+transform f v = munstream v (f (mstream v))
 
 -- | Create a new mutable vector and fill it with elements from the 'Stream'.
 -- The vector will grow logarithmically if the 'Size' hint of the 'Stream' is

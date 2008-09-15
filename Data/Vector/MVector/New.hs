@@ -33,10 +33,7 @@ unstream s = New (MVector.unstream s)
 
 inplace :: (forall m. Monad m => MStream m a -> MStream m a) -> New a -> New a
 {-# INLINE_STREAM inplace #-}
-inplace f (New p) = New (
-  do
-    v <- p
-    MVector.munstream v (f (MVector.mstream v)))
+inplace f (New p) = New (MVector.transform f =<< p)
 
 {-# RULES
 
