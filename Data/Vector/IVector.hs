@@ -124,8 +124,14 @@ class IVector v a where
 
 -- | Construct a pure vector from a monadic initialiser 
 new :: IVector v a => New a -> v a
-{-# INLINE_STREAM new #-}
-new m = vnew (New.run m)
+{-# INLINE new #-}
+new m = new' undefined m
+
+-- | Same as 'new' but with a dummy argument necessary for correctly typing
+-- the rule @uninplace@.
+new' :: IVector v a => v a -> New a -> v a
+{-# INLINE_STREAM new' #-}
+new' _ m = vnew (New.run m)
 
 -- | Convert a vector to a 'Stream'
 stream :: IVector v a => v a -> Stream a
@@ -145,11 +151,11 @@ unstream s = new (New.unstream s)
 
 {-# RULES
 
-"stream/unstream [IVector]" forall s.
-  stream (new (New.unstream s)) = s
+"stream/unstream [IVector]" forall v s.
+  stream (new' v (New.unstream s)) = s
 
-"New.unstream/stream/new [IVector]" forall p.
-  New.unstream (stream (new p)) = p
+"New.unstream/stream/new [IVector]" forall v p.
+  New.unstream (stream (new' v p)) = p
 
  #-}
 
@@ -161,8 +167,12 @@ inplace f s = f s
 {-# RULES
 
 "inplace [IVector]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
-  New.unstream (inplace f (stream (new m))) = New.transform f m
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a) v m.
+  New.unstream (inplace f (stream (new' v m))) = New.transform f m
+
+"uninplace [IVector]"
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a) v m.
+  stream (new' v (New.transform f m)) = inplace f (stream (new' v m))
 
 "inplace/inplace [IVector]"
   forall (f :: forall m. Monad m => MStream m a -> MStream m a)
@@ -181,8 +191,8 @@ length v = vlength v
 
 {-# RULES
 
-"length/unstream [IVector]" forall s.
-  length (new (New.unstream s)) = Stream.length s
+"length/unstream [IVector]" forall v s.
+  length (new' v (New.unstream s)) = Stream.length s
 
   #-}
 
@@ -241,14 +251,14 @@ last v = v ! (length v - 1)
 
 {-# RULES
 
-"(!)/unstream [IVector]" forall i s.
-  new (New.unstream s) ! i = s Stream.!! i
+"(!)/unstream [IVector]" forall v i s.
+  new' v (New.unstream s) ! i = s Stream.!! i
 
-"head/unstream [IVector]" forall s.
-  head (new (New.unstream s)) = Stream.head s
+"head/unstream [IVector]" forall v s.
+  head (new' v (New.unstream s)) = Stream.head s
 
-"last/unstream [IVector]" forall s.
-  last (new (New.unstream s)) = Stream.last s
+"last/unstream [IVector]" forall v s.
+  last (new' v (New.unstream s)) = Stream.last s
 
  #-}
 
@@ -293,14 +303,14 @@ drop n = unstream . Stream.drop n . stream
 
 {-# RULES
 
-"slice/extract [IVector]" forall i n s.
-  slice (new (New.unstream s)) i n = extract (new (New.unstream s)) i n
+"slice/extract [IVector]" forall v i n s.
+  slice (new' v (New.unstream s)) i n = extract (new' v (New.unstream s)) i n
 
-"takeSlice/unstream [IVector]" forall n s.
-  takeSlice n (new (New.unstream s)) = take n (new (New.unstream s))
+"takeSlice/unstream [IVector]" forall v n s.
+  takeSlice n (new' v (New.unstream s)) = take n (new' v (New.unstream s))
 
-"dropSlice/unstream [IVector]" forall n s.
-  dropSlice n (new (New.unstream s)) = drop n (new (New.unstream s))
+"dropSlice/unstream [IVector]" forall v n s.
+  dropSlice n (new' v (New.unstream s)) = drop n (new' v (New.unstream s))
 
   #-}
 
@@ -396,11 +406,11 @@ dropWhile f = unstream . Stream.dropWhile f . stream
 
 {-# RULES
 
-"takeWhileSlice/unstream" forall f s.
-  takeWhileSlice f (new (New.unstream s)) = takeWhile f (new (New.unstream s))
+"takeWhileSlice/unstream" forall v f s.
+  takeWhileSlice f (new' v (New.unstream s)) = takeWhile f (new' v (New.unstream s))
 
-"dropWhileSlice/unstream" forall f s.
-  dropWhileSlice f (new (New.unstream s)) = dropWhile f (new (New.unstream s))
+"dropWhileSlice/unstream" forall v f s.
+  dropWhileSlice f (new' v (New.unstream s)) = dropWhile f (new' v (New.unstream s))
 
  #-}
 
