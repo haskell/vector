@@ -164,7 +164,7 @@ inplace f _ s = f s
 "inplace [IVector]"
   forall (mf :: forall m. Monad m => MStream m a -> MStream m a)
          f m.
-  New.unstream (inplace f mf (stream (new m))) = New.inplace mf m
+  New.unstream (inplace f mf (stream (new m))) = New.transform mf m
 
 "inplace/inplace [IVector]"
   forall f (mf :: forall m. Monad m => MStream m a -> MStream m a)

@@ -3,7 +3,7 @@
 #include "phases.h"
 
 module Data.Vector.MVector.New (
-  New(..), run, unstream, inplace, update, reverse
+  New(..), run, unstream, transform, update, reverse
 ) where
 
 import qualified Data.Vector.MVector as MVector
@@ -31,17 +31,17 @@ unstream :: Stream a -> New a
 {-# INLINE_STREAM unstream #-}
 unstream s = New (MVector.unstream s)
 
-inplace :: (forall m. Monad m => MStream m a -> MStream m a) -> New a -> New a
-{-# INLINE_STREAM inplace #-}
-inplace f (New p) = New (MVector.transform f =<< p)
+transform :: (forall m. Monad m => MStream m a -> MStream m a) -> New a -> New a
+{-# INLINE_STREAM transform #-}
+transform f (New p) = New (MVector.transform f =<< p)
 
 {-# RULES
 
-"inplace/inplace [New]"
+"transform/transform [New]"
   forall (f :: forall m. Monad m => MStream m a -> MStream m a)
          (g :: forall m. Monad m => MStream m a -> MStream m a)
          p .
-  inplace f (inplace g p) = inplace (f . g) p
+  transform f (transform g p) = transform (f . g) p
 
  #-}
 
