@@ -1,4 +1,4 @@
-{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE ExistentialQuantification, FlexibleInstances #-}
 
 -- |
 -- Module      : Data.Vector.Fusion.Stream
@@ -16,7 +16,7 @@
 
 module Data.Vector.Fusion.Stream (
   -- * Types
-  Step(..), Stream(..), MStream,
+  Step(..), Stream, MStream, Id(..),
 
   -- * Size hints
   size, sized,
@@ -57,7 +57,7 @@ module Data.Vector.Fusion.Stream (
 
 import Data.Vector.Fusion.Stream.Size
 import Data.Vector.Fusion.Stream.Step
-import qualified Data.Vector.Fusion.Stream.Monadic as Monadic
+import qualified Data.Vector.Fusion.Stream.Monadic as M
 
 import Prelude hiding ( length, null,
                         replicate, (++),
@@ -70,140 +70,113 @@ import Prelude hiding ( length, null,
                         mapM_ )
 
 
--- | The type of fusible streams
-data Stream a = forall s. Stream (s -> Step s a) s Size
+newtype Id a = Id { unId :: a }
 
-type MStream = Monadic.Stream
+instance Functor Id where
+  fmap f (Id x) = Id (f x)
+
+instance Monad Id where
+  return     = Id
+  Id x >>= f = f x
+
+-- | The type of fusible streams
+type Stream = M.Stream Id
+
+type MStream = M.Stream
+
+liftStream :: Monad m => Stream a -> M.Stream m a
+{-# INLINE_STREAM liftStream #-}
+liftStream (M.Stream step s sz) = M.Stream (return . unId . step) s sz
 
 -- | 'Size' hint of a 'Stream'
 size :: Stream a -> Size
 {-# INLINE size #-}
-size (Stream _ _ sz) = sz
+size = M.size
 
 -- | Attach a 'Size' hint to a 'Stream'
 sized :: Stream a -> Size -> Stream a
-{-# INLINE_STREAM sized #-}
-sized (Stream step s _) sz = Stream step s sz
+{-# INLINE sized #-}
+sized = M.sized
 
 -- | Unfold
 unfold :: (s -> Maybe (a, s)) -> s -> Stream a
-{-# INLINE_STREAM unfold #-}
-unfold f s = Stream step s Unknown
-  where
-    {-# INLINE step #-}
-    step s = case f s of
-               Just (x, s') -> Yield x s'
-               Nothing      -> Done
+{-# INLINE unfold #-}
+unfold = M.unfold
 
 -- | Convert a 'Stream' to a list
 toList :: Stream a -> [a]
 {-# INLINE toList #-}
-toList s = foldr (:) [] s
+toList s = unId (M.toList s)
 
 -- | Create a 'Stream' from a list
 fromList :: [a] -> Stream a
-{-# INLINE_STREAM fromList #-}
-fromList xs = Stream step xs Unknown
-  where
-    step (x:xs) = Yield x xs
-    step []     = Done
+{-# INLINE fromList #-}
+fromList = M.fromList
 
 -- Length
 -- ------
 
 -- | Length of a 'Stream'
 length :: Stream a -> Int
-{-# INLINE_STREAM length #-}
-length s = foldl' (\n _ -> n+1) 0 s
+{-# INLINE length #-}
+length = unId . M.length
 
 -- | Check if a 'Stream' is empty
 null :: Stream a -> Bool
-{-# INLINE_STREAM null #-}
-null s = foldr (\_ _ -> False) True s
+{-# INLINE null #-}
+null = unId . M.null
 
 -- Construction
 -- ------------
 
 -- | Empty 'Stream'
 empty :: Stream a
-{-# INLINE_STREAM empty #-}
-empty = Stream (const Done) () (Exact 0)
+{-# INLINE empty #-}
+empty = M.empty
 
 -- | Singleton 'Stream'
 singleton :: a -> Stream a
-{-# INLINE_STREAM singleton #-}
-singleton x = Stream step True (Exact 1)
-  where
-    {-# INLINE step #-}
-    step True  = Yield x False
-    step False = Done
+{-# INLINE singleton #-}
+singleton = M.singleton
 
 -- | Replicate a value to a given length
 replicate :: Int -> a -> Stream a
 {-# INLINE_STREAM replicate #-}
-replicate n x = Stream step n (Exact (max n 0))
-  where
-    {-# INLINE step #-}
-    step i | i > 0     = Yield x (i-1)
-           | otherwise = Done
+replicate = M.replicate
 
 -- | Prepend an element
 cons :: a -> Stream a -> Stream a
 {-# INLINE cons #-}
-cons x s = singleton x ++ s
+cons = M.cons
 
 -- | Append an element
 snoc :: Stream a -> a -> Stream a
 {-# INLINE snoc #-}
-snoc s x = s ++ singleton x
+snoc = M.snoc
 
 infixr 5 ++
 -- | Concatenate two 'Stream's
 (++) :: Stream a -> Stream a -> Stream a
-{-# INLINE_STREAM (++) #-}
-Stream stepa sa na ++ Stream stepb sb nb = Stream step (Left sa) (na + nb)
-  where
-    step (Left  sa) = case stepa sa of
-                        Yield x sa' -> Yield x (Left  sa')
-                        Skip    sa' -> Skip    (Left  sa')
-                        Done        -> Skip    (Right sb)
-    step (Right sb) = case stepb sb of
-                        Yield x sb' -> Yield x (Right sb')
-                        Skip    sb' -> Skip    (Right sb')
-                        Done        -> Done
+{-# INLINE (++) #-}
+(++) = (M.++)
 
 -- Accessing elements
 -- ------------------
 
 -- | First element of the 'Stream' or error if empty
 head :: Stream a -> a
-{-# INLINE_STREAM head #-}
-head (Stream step s _) = head_loop s
-  where
-    head_loop s = case step s of
-                    Yield x _  -> x
-                    Skip    s' -> head_loop s'
-                    Done       -> error "Data.Vector.Stream.head: empty stream"
+{-# INLINE head #-}
+head = unId . M.head
 
 -- | Last element of the 'Stream' or error if empty
 last :: Stream a -> a
-{-# INLINE_STREAM last #-}
-last (Stream step s _) = last_loop0 s
-  where
-    last_loop0 s = case step s of
-                     Yield x s' -> last_loop1 x s'
-                     Skip    s' -> last_loop0   s'
-                     Done       -> error "Data.Vector.Stream.last: empty stream"
-
-    last_loop1 x s = case step s of
-                       Yield y s' -> last_loop1 y s'
-                       Skip    s' -> last_loop1 x s'
-                       Done       -> x
+{-# INLINE last #-}
+last = unId . M.last
 
 -- | Element at the given position
 (!!) :: Stream a -> Int -> a
 {-# INLINE (!!) #-}
-s !! i = head (drop i s)
+s !! i = unId (s M.!! i)
 
 -- Substreams
 -- ----------
@@ -213,159 +186,58 @@ extract :: Stream a -> Int   -- ^ starting index
                     -> Int   -- ^ length
                     -> Stream a
 {-# INLINE extract #-}
-extract s i n = take n (drop i s)
+extract = M.extract
 
 -- | All but the last element
 init :: Stream a -> Stream a
-{-# INLINE_STREAM init #-}
-init (Stream step s sz) = Stream step' (Nothing, s) (sz - 1)
-  where
-    {-# INLINE step' #-}
-    step' (Nothing, s) = case step s of
-                           Yield x s' -> Skip (Just x,  s')
-                           Skip    s' -> Skip (Nothing, s')
-                           Done       -> Done  -- FIXME: should be an error
-
-    step' (Just x,  s) = case step s of
-                           Yield y s' -> Yield x (Just y, s')
-                           Skip    s' -> Skip    (Just x, s')
-                           Done       -> Done
+{-# INLINE init #-}
+init = M.init
 
 -- | All but the first element
 tail :: Stream a -> Stream a
-{-# INLINE_STREAM tail #-}
-tail (Stream step s sz) = Stream step' (Left s) (sz - 1)
-  where
-    {-# INLINE step' #-}
-    step' (Left  s) = case step s of
-                        Yield x s' -> Skip (Right s')
-                        Skip    s' -> Skip (Left  s')
-                        Done       -> Done    -- FIXME: should be error?
-
-    step' (Right s) = case step s of
-                        Yield x s' -> Yield x (Right s')
-                        Skip    s' -> Skip    (Right s')
-                        Done       -> Done
+{-# INLINE tail #-}
+tail = M.tail
 
 -- | The first @n@ elements
 take :: Int -> Stream a -> Stream a
-{-# INLINE_STREAM take #-}
-take n (Stream step s sz) = Stream step' (s, 0) (smaller (Exact n) sz)
-  where
-    {-# INLINE step' #-}
-    step' (s, i) | i < n = case step s of
-                             Yield x s' -> Yield x (s', i+1)
-                             Skip    s' -> Skip    (s', i)
-                             Done       -> Done
-    step' (s, i) = Done
-
-data Drop s = Drop_Drop s Int | Drop_Keep s
+{-# INLINE take #-}
+take = M.take
 
 -- | All but the first @n@ elements
 drop :: Int -> Stream a -> Stream a
-{-# INLINE_STREAM drop #-}
-drop n (Stream step s sz) = Stream step' (Drop_Drop s 0) (sz - Exact n)
-  where
-    {-# INLINE step' #-}
-    step' (Drop_Drop s i) | i < n = case step s of
-                                      Yield x s' -> Skip (Drop_Drop s' (i+1))
-                                      Skip    s' -> Skip (Drop_Drop s' i)
-                                      Done       -> Done
-                          | otherwise = Skip (Drop_Keep s)
-
-    step' (Drop_Keep s) = case step s of
-                            Yield x s' -> Yield x (Drop_Keep s')
-                            Skip    s' -> Skip    (Drop_Keep s')
-                            Done       -> Done
-                     
+{-# INLINE drop #-}
+drop = M.drop
 
 -- Mapping/zipping
 -- ---------------
 
-instance Functor Stream where
-  {-# INLINE_STREAM fmap #-}
-  fmap = map
-
 -- | Map a function over a 'Stream'
 map :: (a -> b) -> Stream a -> Stream b
-{-# INLINE_STREAM map #-}
-map f (Stream step s n) = Stream step' s n
-  where
-    {-# INLINE step' #-}
-    step' s = case step s of
-                Yield x s' -> Yield (f x) s'
-                Skip    s' -> Skip        s'
-                Done       -> Done
+{-# INLINE map #-}
+map = M.map
 
 -- | Zip two 'Stream's with the given function
 zipWith :: (a -> b -> c) -> Stream a -> Stream b -> Stream c
-{-# INLINE_STREAM zipWith #-}
-zipWith f (Stream stepa sa na) (Stream stepb sb nb)
-  = Stream step (sa, sb, Nothing) (smaller na nb)
-  where
-    {-# INLINE step #-}
-    step (sa, sb, Nothing) = case stepa sa of
-                               Yield x sa' -> Skip (sa', sb, Just x)
-                               Skip    sa' -> Skip (sa', sb, Nothing)
-                               Done        -> Done
-
-    step (sa, sb, Just x)  = case stepb sb of
-                               Yield y sb' -> Yield (f x y) (sa, sb', Nothing)
-                               Skip    sb' -> Skip          (sa, sb', Just x)
-                               Done        -> Done
+{-# INLINE zipWith #-}
+zipWith = M.zipWith
 
 -- Filtering
 -- ---------
 
 -- | Drop elements which do not satisfy the predicate
 filter :: (a -> Bool) -> Stream a -> Stream a
-{-# INLINE_STREAM filter #-}
-filter f (Stream step s n) = Stream step' s (toMax n)
-  where
-    {-# INLINE step' #-}
-    step' s = case step s of
-                Yield x s' | f x       -> Yield x s'
-                           | otherwise -> Skip    s'
-                Skip    s'             -> Skip    s'
-                Done                   -> Done
+{-# INLINE filter #-}
+filter = M.filter
 
 -- | Longest prefix of elements that satisfy the predicate
 takeWhile :: (a -> Bool) -> Stream a -> Stream a
-{-# INLINE_STREAM takeWhile #-}
-takeWhile f (Stream step s n) = Stream step' s (toMax n)
-  where
-    {-# INLINE step' #-}
-    step' s = case step s of
-                Yield x s' | f x       -> Yield x s'
-                           | otherwise -> Done
-                Skip    s'             -> Skip s'
-                Done                   -> Done
-
-
-data DropWhile s a = DropWhile_Drop s | DropWhile_Yield a s | DropWhile_Next s
+{-# INLINE takeWhile #-}
+takeWhile = M.takeWhile
 
 -- | Drop the longest prefix of elements that satisfy the predicate
 dropWhile :: (a -> Bool) -> Stream a -> Stream a
-{-# INLINE_STREAM dropWhile #-}
-dropWhile f (Stream step s n) = Stream step' (DropWhile_Drop s) (toMax n)
-  where
-    -- NOTE: we jump through hoops here to have only one Yield; local data
-    -- declarations would be nice!
-
-    {-# INLINE step' #-}
-    step' (DropWhile_Drop s)
-      = case step s of
-          Yield x s' | f x       -> Skip    (DropWhile_Drop    s')
-                     | otherwise -> Skip    (DropWhile_Yield x s')
-          Skip    s'             -> Skip    (DropWhile_Drop    s')
-          Done                   -> Done
-
-    step' (DropWhile_Yield x s) = Yield x (DropWhile_Next s)
-
-    step' (DropWhile_Next s) = case step s of
-                                 Yield x s' -> Skip    (DropWhile_Yield x s')
-                                 Skip    s' -> Skip    (DropWhile_Next    s')
-                                 Done       -> Done
+{-# INLINE dropWhile #-}
+dropWhile = M.dropWhile
 
 -- Searching
 -- ---------
@@ -373,148 +245,99 @@ dropWhile f (Stream step s n) = Stream step' (DropWhile_Drop s) (toMax n)
 infix 4 `elem`
 -- | Check whether the 'Stream' contains an element
 elem :: Eq a => a -> Stream a -> Bool
-{-# INLINE_STREAM elem #-}
-elem x (Stream step s _) = elem_loop s
-  where
-    elem_loop s = case step s of
-                    Yield y s' | x == y    -> True
-                               | otherwise -> elem_loop s'
-                    Skip    s'             -> elem_loop s'
-                    Done                   -> False
+{-# INLINE elem #-}
+elem x = unId . M.elem x
 
 infix 4 `notElem`
 -- | Inverse of `elem`
 notElem :: Eq a => a -> Stream a -> Bool
 {-# INLINE notElem #-}
-notElem x = not . elem x
+notElem x = unId . M.notElem x
 
 -- | Yield 'Just' the first element matching the predicate or 'Nothing' if no
 -- such element exists.
 find :: (a -> Bool) -> Stream a -> Maybe a
-{-# INLINE_STREAM find #-}
-find f (Stream step s _) = find_loop s
-  where
-    find_loop s = case step s of
-                    Yield x s' | f x       -> Just x
-                               | otherwise -> find_loop s'
-                    Skip    s'             -> find_loop s'
-                    Done                   -> Nothing
+{-# INLINE find #-}
+find f = unId . M.find f
 
 -- | Yield 'Just' the index of the first element matching the predicate or
 -- 'Nothing' if no such element exists.
 findIndex :: (a -> Bool) -> Stream a -> Maybe Int
-{-# INLINE_STREAM findIndex #-}
-findIndex f (Stream step s _) = findIndex_loop s 0
-  where
-    findIndex_loop s i = case step s of
-                           Yield x s' | f x       -> Just i
-                                      | otherwise -> findIndex_loop s' (i+1)
-                           Skip    s'             -> findIndex_loop s' i
-                           Done                   -> Nothing
+{-# INLINE findIndex #-}
+findIndex f = unId . M.findIndex f
 
 -- Folding
 -- -------
 
 -- | Left fold
 foldl :: (a -> b -> a) -> a -> Stream b -> a
-{-# INLINE_STREAM foldl #-}
-foldl f z (Stream step s _) = foldl_go z s
-  where
-    foldl_go z s = case step s of
-                     Yield x s' -> foldl_go (f z x) s'
-                     Skip    s' -> foldl_go z       s'
-                     Done       -> z
+{-# INLINE foldl #-}
+foldl f z = unId . M.foldl f z
 
 -- | Left fold on non-empty 'Stream's
 foldl1 :: (a -> a -> a) -> Stream a -> a
-{-# INLINE_STREAM foldl1 #-}
-foldl1 f (Stream step s sz) = foldl1_loop s
-  where
-    foldl1_loop s = case step s of
-                      Yield x s' -> foldl f x (Stream step s' (sz - 1))
-                      Skip    s' -> foldl1_loop s'
-                      Done       -> error "Data.Vector.Stream.foldl1: empty stream"
+{-# INLINE foldl1 #-}
+foldl1 f = unId . M.foldl1 f
 
 -- | Left fold with strict accumulator
 foldl' :: (a -> b -> a) -> a -> Stream b -> a
-{-# INLINE_STREAM foldl' #-}
-foldl' f z (Stream step s _) = foldl_go z s
-  where
-    foldl_go z s = z `seq`
-                   case step s of
-                     Yield x s' -> foldl_go (f z x) s'
-                     Skip    s' -> foldl_go z       s'
-                     Done       -> z
+{-# INLINE foldl' #-}
+foldl' f z = unId . M.foldl' f z
 
 -- | Left fold on non-empty 'Stream's with strict accumulator
 foldl1' :: (a -> a -> a) -> Stream a -> a
-{-# INLINE_STREAM foldl1' #-}
-foldl1' f (Stream step s sz) = foldl1'_loop s
-  where
-    foldl1'_loop s = case step s of
-                      Yield x s' -> foldl' f x (Stream step s' (sz - 1))
-                      Skip    s' -> foldl1'_loop s'
-                      Done       -> error "Data.Vector.Stream.foldl1': empty stream"
+{-# INLINE foldl1' #-}
+foldl1' f = unId . M.foldl1' f
 
 -- | Right fold
 foldr :: (a -> b -> b) -> b -> Stream a -> b
-{-# INLINE_STREAM foldr #-}
-foldr f z (Stream step s _) = foldr_go s
-  where
-    foldr_go s = case step s of
-                   Yield x s' -> f x (foldr_go s')
-                   Skip    s' -> foldr_go s'
-                   Done       -> z
+{-# INLINE foldr #-}
+foldr f z = unId . M.foldr f z
 
 -- | Right fold on non-empty 'Stream's
 foldr1 :: (a -> a -> a) -> Stream a -> a
-{-# INLINE_STREAM foldr1 #-}
-foldr1 f (Stream step s sz) = foldr1_loop s
-  where
-    foldr1_loop s = case step s of
-                      Yield x s' -> foldr f x (Stream step s' (sz - 1))
-                      Skip    s' -> foldr1_loop s'
-                      Done       -> error "Data.Vector.Stream.foldr1: empty stream"
+{-# INLINE foldr1 #-}
+foldr1 f = unId . M.foldr1 f
 
 -- Comparisons
 -- -----------
 
 eq :: Eq a => Stream a -> Stream a -> Bool
 {-# INLINE_STREAM eq #-}
-eq (Stream step1 s1 _) (Stream step2 s2 _) = eq_loop0 s1 s2
+eq (M.Stream step1 s1 _) (M.Stream step2 s2 _) = eq_loop0 s1 s2
   where
-    eq_loop0 s1 s2 = case step1 s1 of
+    eq_loop0 s1 s2 = case unId (step1 s1) of
                        Yield x s1' -> eq_loop1 x s1' s2
                        Skip    s1' -> eq_loop0   s1' s2
-                       Done        -> null (Stream step2 s2 Unknown)
+                       Done        -> null (M.Stream step2 s2 Unknown)
 
-    eq_loop1 x s1 s2 = case step2 s2 of
+    eq_loop1 x s1 s2 = case unId (step2 s2) of
                          Yield y s2' -> x == y && eq_loop0   s1 s2'
                          Skip    s2' ->           eq_loop1 x s1 s2'
                          Done        -> False
 
 cmp :: Ord a => Stream a -> Stream a -> Ordering
 {-# INLINE_STREAM cmp #-}
-cmp (Stream step1 s1 _) (Stream step2 s2 _) = cmp_loop0 s1 s2
+cmp (M.Stream step1 s1 _) (M.Stream step2 s2 _) = cmp_loop0 s1 s2
   where
-    cmp_loop0 s1 s2 = case step1 s1 of
+    cmp_loop0 s1 s2 = case unId (step1 s1) of
                         Yield x s1' -> cmp_loop1 x s1' s2
                         Skip    s1' -> cmp_loop0   s1' s2
-                        Done        -> if null (Stream step2 s2 Unknown)
+                        Done        -> if null (M.Stream step2 s2 Unknown)
                                          then EQ else LT
 
-    cmp_loop1 x s1 s2 = case step2 s2 of
+    cmp_loop1 x s1 s2 = case unId (step2 s2) of
                           Yield y s2' -> case x `compare` y of
                                            EQ -> cmp_loop0 s1 s2'
                                            c  -> c
                           Skip    s2' -> cmp_loop1 x s1 s2'
                           Done        -> GT
 
-instance Eq a => Eq (Stream a) where
+instance Eq a => Eq (M.Stream Id a) where
   {-# INLINE (==) #-}
   (==) = eq
 
-instance Ord a => Ord (Stream a) where
+instance Ord a => Ord (M.Stream Id a) where
   {-# INLINE compare #-}
   compare = cmp
 
@@ -524,21 +347,10 @@ instance Ord a => Ord (Stream a) where
 -- | Apply a monadic action to each element of the stream
 mapM_ :: Monad m => (a -> m ()) -> Stream a -> m ()
 {-# INLINE_STREAM mapM_ #-}
-mapM_ m (Stream step s _) = mapM_go s
-   where
-     mapM_go s = case step s of
-                   Yield x s' -> do { m x; mapM_go s' }
-                   Skip    s' -> mapM_go s'
-                   Done       -> return ()
+mapM_ f = M.mapM_ f . liftStream
 
 -- | Monadic fold
 foldM :: Monad m => (a -> b -> m a) -> a -> Stream b -> m a
 {-# INLINE_STREAM foldM #-}
-foldM m z (Stream step s _) = foldM_go z s
-  where
-    foldM_go z s = case step s of
-                     Yield x s' -> do { z' <- m z x; foldM_go z' s' }
-                     Skip    s' -> foldM_go z s'
-                     Done       -> return z
-
+foldM m z = M.foldM m z . liftStream
 
