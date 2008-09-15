@@ -3,7 +3,7 @@
 #include "phases.h"
 
 module Data.Vector.MVector.New (
-  New(..), run, unstream, inplace, update, reverse, map, filter
+  New(..), run, unstream, inplace, update, reverse
 ) where
 
 import qualified Data.Vector.MVector as MVector
@@ -52,12 +52,4 @@ update m s = modify m (\v -> MVector.update v s)
 reverse :: New a -> New a
 {-# INLINE_STREAM reverse #-}
 reverse m = modify m (MVector.reverse)
-
-map :: (a -> a) -> New a -> New a
-{-# INLINE map #-}
-map f = inplace (MStream.map f)
-
-filter :: (a -> Bool) -> New a -> New a
-{-# INLINE filter #-}
-filter f = inplace (MStream.filter f)
 
