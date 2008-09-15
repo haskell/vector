@@ -37,6 +37,9 @@ module Data.Vector.Fusion.Stream.Monadic (
   -- * Unfolding
   unfold, unfoldM,
 
+  -- * Scans
+  prescanl, prescanlM, prescanl', prescanlM',
+
   toList, fromList
 ) where
 
@@ -593,6 +596,50 @@ unfoldM f s = Stream step s Unknown
                  Nothing      -> Done
              ) (f s)
 
+-- Scans
+-- -----
+
+-- | Prefix scan
+prescanl :: Monad m => (a -> b -> a) -> a -> Stream m b -> Stream m a
+{-# INLINE prescanl #-}
+prescanl f = prescanlM (\a b -> return (f a b))
+
+-- | Prefix scan
+prescanlM :: Monad m => (a -> b -> m a) -> a -> Stream m b -> Stream m a
+{-# INLINE_STREAM prescanlM #-}
+prescanlM f z (Stream step s sz) = Stream step' (s,z) sz
+  where
+    {-# INLINE step' #-}
+    step' (s,x) = do
+                    r <- step s
+                    case r of
+                      Yield y s' -> do
+                                      z <- f x y
+                                      return $ Yield x (s', z)
+                      Skip    s' -> return $ Skip (s', x)
+                      Done       -> return Done
+
+
+-- | Prefix scan with strict accumulator
+prescanl' :: Monad m => (a -> b -> a) -> a -> Stream m b -> Stream m a
+{-# INLINE prescanl' #-}
+prescanl' f = prescanlM' (\a b -> return (f a b))
+
+-- | Prefix scan with strict accumulator
+prescanlM' :: Monad m => (a -> b -> m a) -> a -> Stream m b -> Stream m a
+{-# INLINE_STREAM prescanlM' #-}
+prescanlM' f z (Stream step s sz) = Stream step' (s,z) sz
+  where
+    {-# INLINE step' #-}
+    step' (s,x) = x `seq`
+                  do
+                    r <- step s
+                    case r of
+                      Yield y s' -> do
+                                      z <- f x y
+                                      return $ Yield x (s', z)
+                      Skip    s' -> return $ Skip (s', x)
+                      Done       -> return Done
 
 -- Conversions
 -- -----------

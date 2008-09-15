@@ -48,6 +48,9 @@ module Data.Vector.Fusion.Stream (
   -- * Unfolding
   unfold,
 
+  -- * Scans
+  prescanl, prescanl',
+
   -- * Conversion to/from lists
   toList, fromList,
 
@@ -97,11 +100,6 @@ size = M.size
 sized :: Stream a -> Size -> Stream a
 {-# INLINE sized #-}
 sized = M.sized
-
--- | Unfold
-unfold :: (s -> Maybe (a, s)) -> s -> Stream a
-{-# INLINE unfold #-}
-unfold = M.unfold
 
 -- | Convert a 'Stream' to a list
 toList :: Stream a -> [a]
@@ -298,6 +296,27 @@ foldr f z = unId . M.foldr f z
 foldr1 :: (a -> a -> a) -> Stream a -> a
 {-# INLINE foldr1 #-}
 foldr1 f = unId . M.foldr1 f
+
+-- Unfolding
+-- ---------
+
+-- | Unfold
+unfold :: (s -> Maybe (a, s)) -> s -> Stream a
+{-# INLINE unfold #-}
+unfold = M.unfold
+
+-- Scans
+-- -----
+
+-- | Prefix scan
+prescanl :: (a -> b -> a) -> a -> Stream b -> Stream a
+{-# INLINE prescanl #-}
+prescanl = M.prescanl
+
+-- | Prefix scan with strict accumulator
+prescanl' :: (a -> b -> a) -> a -> Stream b -> Stream a
+{-# INLINE prescanl' #-}
+prescanl' = M.prescanl'
 
 -- Comparisons
 -- -----------

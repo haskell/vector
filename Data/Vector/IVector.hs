@@ -48,6 +48,9 @@ module Data.Vector.IVector (
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
 
+  -- * Scans
+  prescanl, prescanl',
+
   -- * Conversion to/from lists
   toList, fromList,
 
@@ -473,6 +476,40 @@ foldr f z = Stream.foldr f z . stream
 foldr1 :: IVector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldr1 #-}
 foldr1 f = Stream.foldr1 f . stream
+
+-- Scans
+-- -----
+
+-- | Prefix scan
+prescanl :: (IVector v a, IVector v b) => (a -> b -> a) -> a -> v b -> v a
+{-# INLINE prescanl #-}
+prescanl f z = unstream . Stream.prescanl f z . stream
+
+inplace_prescanl :: IVector v a => (a -> a -> a) -> a -> v a -> v a
+{-# INLINE inplace_prescanl #-}
+inplace_prescanl f z = unstream . inplace (MStream.prescanl f z) . stream
+
+{-# RULES
+
+"prescanl -> inplace_prescanl [IVector]" prescanl = inplace_prescanl
+
+ #-}
+
+-- | Prefix scan with strict accumulator
+prescanl' :: (IVector v a, IVector v b) => (a -> b -> a) -> a -> v b -> v a
+{-# INLINE prescanl' #-}
+prescanl' f z = unstream . Stream.prescanl' f z . stream
+
+inplace_prescanl' :: IVector v a => (a -> a -> a) -> a -> v a -> v a
+{-# INLINE inplace_prescanl' #-}
+inplace_prescanl' f z = unstream . inplace (MStream.prescanl' f z) . stream
+
+{-# RULES
+
+"prescanl' -> inplace_prescanl' [IVector]" prescanl' = inplace_prescanl'
+
+ #-}
+
 
 -- | Convert a vector to a list
 toList :: IVector v a => v a -> [a]
