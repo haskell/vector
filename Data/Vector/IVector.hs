@@ -382,7 +382,7 @@ filter f = unstream . inplace (MStream.filter f) . stream
 -- | Yield the longest prefix of elements satisfying the predicate without
 -- copying.
 takeWhileSlice :: IVector v a => (a -> Bool) -> v a -> v a
-{-# INLINE takeWhileSlice #-}
+{-# INLINE_STREAM takeWhileSlice #-}
 takeWhileSlice f v = case findIndex (not . f) v of
                        Just n  -> takeSlice n v
                        Nothing -> v
@@ -396,7 +396,7 @@ takeWhile f = unstream . Stream.takeWhile f . stream
 -- | Drop the longest prefix of elements that satisfy the predicate without
 -- copying
 dropWhileSlice :: IVector v a => (a -> Bool) -> v a -> v a
-{-# INLINE dropWhileSlice #-}
+{-# INLINE_STREAM dropWhileSlice #-}
 dropWhileSlice f v = case findIndex (not . f) v of
                        Just n  -> dropSlice n v
                        Nothing -> v
