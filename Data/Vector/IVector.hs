@@ -132,6 +132,8 @@ new m = new' undefined m
 
 -- | Same as 'new' but with a dummy argument necessary for correctly typing
 -- the rule @uninplace@.
+--
+-- See http://hackage.haskell.org/trac/ghc/ticket/2600
 new' :: IVector v a => v a -> New a -> v a
 {-# INLINE_STREAM new' #-}
 new' _ m = vnew (New.run m)
