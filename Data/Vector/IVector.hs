@@ -331,7 +331,7 @@ update v w = new (New.update (New.unstream (stream v)) (stream w))
 
 bpermute :: (IVector v a, IVector v Int) => v a -> v Int -> v a
 {-# INLINE bpermute #-}
-bpermute v is = is `seq` map (v!) is
+bpermute v is = v `seq` map (v!) is
 
 -- Mapping/zipping
 -- ---------------
