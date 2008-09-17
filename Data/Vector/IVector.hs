@@ -268,6 +268,8 @@ last v = v ! (length v - 1)
 -- Subarrays
 -- ---------
 
+-- FIXME: slicing doesn't work with the inplace stuff at the moment
+
 -- | Yield a part of the vector without copying it. Safer version of
 -- 'unsafeSlice'.
 slice :: IVector v a => v a -> Int   -- ^ starting index
