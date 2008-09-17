@@ -273,7 +273,7 @@ last v = v ! (length v - 1)
 slice :: IVector v a => v a -> Int   -- ^ starting index
                             -> Int   -- ^ length
                             -> v a
-{-# INLINE slice #-}
+{-# INLINE_STREAM slice #-}
 slice v i n = assert (i >= 0 && n >= 0  && i+n <= length v)
             $ unsafeSlice v i n
 
@@ -306,14 +306,8 @@ drop n = unstream . Stream.drop n . stream
 
 {-# RULES
 
-"slice/extract [IVector]" forall v i n s.
+"slice/unstream [IVector]" forall v i n s.
   slice (new' v (New.unstream s)) i n = extract (new' v (New.unstream s)) i n
-
-"takeSlice/unstream [IVector]" forall v n s.
-  takeSlice n (new' v (New.unstream s)) = take n (new' v (New.unstream s))
-
-"dropSlice/unstream [IVector]" forall v n s.
-  dropSlice n (new' v (New.unstream s)) = drop n (new' v (New.unstream s))
 
   #-}
 
