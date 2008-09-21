@@ -59,7 +59,7 @@ module Data.Vector.Fusion.Stream (
 ) where
 
 import Data.Vector.Fusion.Stream.Size
-import Data.Vector.Fusion.Stream.Step
+import Data.Vector.Fusion.Stream.Monadic ( Step(..) )
 import qualified Data.Vector.Fusion.Stream.Monadic as M
 
 import Prelude hiding ( length, null,

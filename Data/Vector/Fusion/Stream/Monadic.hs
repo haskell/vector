@@ -15,7 +15,7 @@
 #include "phases.h"
 
 module Data.Vector.Fusion.Stream.Monadic (
-  Stream(..),
+  Stream(..), Step(..),
 
   -- * Size hints
   size, sized,
@@ -55,7 +55,6 @@ module Data.Vector.Fusion.Stream.Monadic (
   toList, fromList
 ) where
 
-import Data.Vector.Fusion.Stream.Step
 import Data.Vector.Fusion.Stream.Size
 
 import Control.Monad  ( liftM )
@@ -69,6 +68,12 @@ import Prelude hiding ( length, null,
                         foldl, foldl1, foldr, foldr1 )
 import qualified Prelude
 
+-- | Result of taking a single step in a stream
+data Step s a = Yield a s  -- ^ a new element and a new seed
+              | Skip    s  -- ^ just a new seed
+              | Done       -- ^ end of stream
+
+-- | Monadic streams
 data Stream m a = forall s. Stream (s -> m (Step s a)) s Size
 
 -- | 'Size' hint of a 'Stream'
