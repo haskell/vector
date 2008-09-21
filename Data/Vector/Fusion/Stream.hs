@@ -5,11 +5,11 @@
 -- Copyright   : (c) Roman Leshchinskiy 2008
 -- License     : BSD-style
 --
--- Maintainer  : rl@cse.unsw.edu.au
+-- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Fusible streams
+-- Streams for stream fusion
 --
 
 #include "phases.h"
@@ -51,8 +51,8 @@ module Data.Vector.Fusion.Stream (
   -- * Scans
   prescanl, prescanl',
 
-  -- * Conversion to/from lists
-  toList, fromList,
+  -- * Conversions
+  toList, fromList, liftStream,
 
   -- * Monadic combinators
   mapM_, foldM
@@ -73,6 +73,7 @@ import Prelude hiding ( length, null,
                         mapM_ )
 
 
+-- | Identity monad
 newtype Id a = Id { unId :: a }
 
 instance Functor Id where
@@ -82,11 +83,13 @@ instance Monad Id where
   return     = Id
   Id x >>= f = f x
 
--- | The type of fusible streams
+-- | The type of pure streams 
 type Stream = M.Stream Id
 
+-- | Alternative name for monadic streams
 type MStream = M.Stream
 
+-- | Convert a pure stream to a monadic stream
 liftStream :: Monad m => Stream a -> M.Stream m a
 {-# INLINE_STREAM liftStream #-}
 liftStream (M.Stream step s sz) = M.Stream (return . unId . step) s sz
@@ -100,16 +103,6 @@ size = M.size
 sized :: Stream a -> Size -> Stream a
 {-# INLINE sized #-}
 sized = M.sized
-
--- | Convert a 'Stream' to a list
-toList :: Stream a -> [a]
-{-# INLINE toList #-}
-toList s = unId (M.toList s)
-
--- | Create a 'Stream' from a list
-fromList :: [a] -> Stream a
-{-# INLINE fromList #-}
-fromList = M.fromList
 
 -- Length
 -- ------
@@ -321,6 +314,7 @@ prescanl' = M.prescanl'
 -- Comparisons
 -- -----------
 
+-- | Check if two 'Stream's are equal
 eq :: Eq a => Stream a -> Stream a -> Bool
 {-# INLINE_STREAM eq #-}
 eq (M.Stream step1 s1 _) (M.Stream step2 s2 _) = eq_loop0 s1 s2
@@ -335,6 +329,7 @@ eq (M.Stream step1 s1 _) (M.Stream step2 s2 _) = eq_loop0 s1 s2
                          Skip    s2' ->           eq_loop1 x s1 s2'
                          Done        -> False
 
+-- | Lexicographically compare two 'Stream's
 cmp :: Ord a => Stream a -> Stream a -> Ordering
 {-# INLINE_STREAM cmp #-}
 cmp (M.Stream step1 s1 _) (M.Stream step2 s2 _) = cmp_loop0 s1 s2
@@ -372,4 +367,17 @@ mapM_ f = M.mapM_ f . liftStream
 foldM :: Monad m => (a -> b -> m a) -> a -> Stream b -> m a
 {-# INLINE_STREAM foldM #-}
 foldM m z = M.foldM m z . liftStream
+
+-- Conversions
+-- -----------
+
+-- | Convert a 'Stream' to a list
+toList :: Stream a -> [a]
+{-# INLINE toList #-}
+toList s = unId (M.toList s)
+
+-- | Create a 'Stream' from a list
+fromList :: [a] -> Stream a
+{-# INLINE fromList #-}
+fromList = M.fromList
 

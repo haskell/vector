@@ -52,6 +52,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   -- * Scans
   prescanl, prescanlM, prescanl', prescanlM',
 
+  -- * Conversions
   toList, fromList
 ) where
 
