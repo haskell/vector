@@ -1,5 +1,17 @@
 {-# LANGUAGE ExistentialQuantification #-}
 
+-- |
+-- Module      : Data.Vector.Fusion.Stream.Monadic
+-- Copyright   : (c) Roman Leshchinskiy 2008
+-- License     : BSD-style
+--
+-- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
+-- Stability   : experimental
+-- Portability : non-portable
+--
+-- Monadic streams
+--
+
 #include "phases.h"
 
 module Data.Vector.Fusion.Stream.Monadic (
@@ -270,10 +282,12 @@ instance Monad m => Functor (Stream m) where
   {-# INLINE fmap #-}
   fmap = map
 
+-- | Map a function over a 'Stream'
 map :: Monad m => (a -> b) -> Stream m a -> Stream m b
 {-# INLINE map #-}
 map f = mapM (return . f)
 
+-- | Map a monadic function over a 'Stream'
 mapM :: Monad m => (a -> m b) -> Stream m a -> Stream m b
 {-# INLINE_STREAM mapM #-}
 mapM f (Stream step s n) = Stream step' s n
@@ -286,6 +300,7 @@ mapM f (Stream step s n) = Stream step' s n
                   Skip    s' -> return (Skip    s')
                   Done       -> return Done
 
+-- | Execute a monadic action for each element of the 'Stream'
 mapM_ :: Monad m => (a -> m b) -> Stream m a -> m ()
 {-# INLINE_STREAM mapM_ #-}
 mapM_ m (Stream step s _) = mapM_go s
@@ -302,7 +317,7 @@ zipWith :: Monad m => (a -> b -> c) -> Stream m a -> Stream m b -> Stream m c
 {-# INLINE zipWith #-}
 zipWith f = zipWithM (\a b -> return (f a b))
 
--- | Zip two 'Stream's with the given function
+-- | Zip two 'Stream's with the given monadic function
 zipWithM :: Monad m => (a -> b -> m c) -> Stream m a -> Stream m b -> Stream m c
 {-# INLINE_STREAM zipWithM #-}
 zipWithM f (Stream stepa sa na) (Stream stepb sb nb)
@@ -334,7 +349,7 @@ filter :: Monad m => (a -> Bool) -> Stream m a -> Stream m a
 {-# INLINE filter #-}
 filter f = filterM (return . f)
 
--- | Drop elements which do not satisfy the predicate
+-- | Drop elements which do not satisfy the monadic predicate
 filterM :: Monad m => (a -> m Bool) -> Stream m a -> Stream m a
 {-# INLINE_STREAM filterM #-}
 filterM f (Stream step s n) = Stream step' s (toMax n)
@@ -355,7 +370,7 @@ takeWhile :: Monad m => (a -> Bool) -> Stream m a -> Stream m a
 {-# INLINE takeWhile #-}
 takeWhile f = takeWhileM (return . f)
 
--- | Longest prefix of elements that satisfy the predicate
+-- | Longest prefix of elements that satisfy the monadic predicate
 takeWhileM :: Monad m => (a -> m Bool) -> Stream m a -> Stream m a
 {-# INLINE_STREAM takeWhileM #-}
 takeWhileM f (Stream step s n) = Stream step' s (toMax n)
@@ -370,14 +385,14 @@ takeWhileM f (Stream step s n) = Stream step' s (toMax n)
                   Skip    s' -> return $ Skip s'
                   Done       -> return $ Done
 
-
+-- | Drop the longest prefix of elements that satisfy the predicate
 dropWhile :: Monad m => (a -> Bool) -> Stream m a -> Stream m a
 {-# INLINE dropWhile #-}
 dropWhile f = dropWhileM (return . f)
 
 data DropWhile s a = DropWhile_Drop s | DropWhile_Yield a s | DropWhile_Next s
 
--- | Drop the longest prefix of elements that satisfy the predicate
+-- | Drop the longest prefix of elements that satisfy the monadic predicate
 dropWhileM :: Monad m => (a -> m Bool) -> Stream m a -> Stream m a
 {-# INLINE_STREAM dropWhileM #-}
 dropWhileM f (Stream step s n) = Stream step' (DropWhile_Drop s) (toMax n)
@@ -430,12 +445,14 @@ notElem :: (Monad m, Eq a) => a -> Stream m a -> m Bool
 {-# INLINE notElem #-}
 notElem x s = liftM not (elem x s)
 
+-- | Yield 'Just' the first element that satisfies the predicate or 'Nothing'
+-- if no such element exists.
 find :: Monad m => (a -> Bool) -> Stream m a -> m (Maybe a)
 {-# INLINE find #-}
 find f = findM (return . f)
 
--- | Yield 'Just' the first element matching the predicate or 'Nothing' if no
--- such element exists.
+-- | Yield 'Just' the first element that satisfies the monadic predicate or
+-- 'Nothing' if no such element exists.
 findM :: Monad m => (a -> m Bool) -> Stream m a -> m (Maybe a)
 {-# INLINE_STREAM findM #-}
 findM f (Stream step s _) = find_loop s
@@ -450,12 +467,14 @@ findM f (Stream step s _) = find_loop s
                       Skip    s' -> find_loop s'
                       Done       -> return Nothing
 
+-- | Yield 'Just' the index of the first element that satisfies the predicate
+-- or 'Nothing' if no such element exists.
 findIndex :: Monad m => (a -> Bool) -> Stream m a -> m (Maybe Int)
 {-# INLINE_STREAM findIndex #-}
 findIndex f = findIndexM (return . f)
 
--- | Yield 'Just' the index of the first element matching the predicate or
--- 'Nothing' if no such element exists.
+-- | Yield 'Just' the index of the first element that satisfies the monadic
+-- predicate or 'Nothing' if no such element exists.
 findIndexM :: Monad m => (a -> m Bool) -> Stream m a -> m (Maybe Int)
 {-# INLINE_STREAM findIndexM #-}
 findIndexM f (Stream step s _) = findIndex_loop s 0
@@ -473,10 +492,12 @@ findIndexM f (Stream step s _) = findIndex_loop s 0
 -- Folding
 -- -------
 
+-- | Left fold
 foldl :: Monad m => (a -> b -> a) -> a -> Stream m b -> m a
 {-# INLINE foldl #-}
 foldl f = foldlM (\a b -> return (f a b))
 
+-- | Left fold with a monadic operator
 foldlM :: Monad m => (a -> b -> m a) -> a -> Stream m b -> m a
 {-# INLINE_STREAM foldlM #-}
 foldlM m z (Stream step s _) = foldlM_go z s
@@ -488,14 +509,17 @@ foldlM m z (Stream step s _) = foldlM_go z s
                         Skip    s' -> foldlM_go z s'
                         Done       -> return z
 
+-- | Same as 'foldlM'
 foldM :: Monad m => (a -> b -> m a) -> a -> Stream m b -> m a
 {-# INLINE foldM #-}
 foldM = foldlM
 
+-- | Left fold over a non-empty 'Stream'
 foldl1 :: Monad m => (a -> a -> a) -> Stream m a -> m a
 {-# INLINE foldl1 #-}
 foldl1 f = foldl1M (\a b -> return (f a b))
 
+-- | Left fold over a non-empty 'Stream' with a monadic operator
 foldl1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_STREAM foldl1M #-}
 foldl1M f (Stream step s sz) = foldl1M_go s
@@ -507,10 +531,12 @@ foldl1M f (Stream step s sz) = foldl1M_go s
                        Skip    s' -> foldl1M_go s'
                        Done       -> errorEmptyStream "foldl1M"
 
+-- | Left fold with a strict accumulator
 foldl' :: Monad m => (a -> b -> a) -> a -> Stream m b -> m a
 {-# INLINE foldl' #-}
 foldl' f = foldlM' (\a b -> return (f a b))
 
+-- | Left fold with a strict accumulator and a monadic operator
 foldlM' :: Monad m => (a -> b -> m a) -> a -> Stream m b -> m a
 {-# INLINE_STREAM foldlM' #-}
 foldlM' m z (Stream step s _) = foldlM'_go z s
@@ -523,10 +549,13 @@ foldlM' m z (Stream step s _) = foldlM'_go z s
                          Skip    s' -> foldlM'_go z s'
                          Done       -> return z
 
+-- | Left fold over a non-empty 'Stream' with a strict accumulator
 foldl1' :: Monad m => (a -> a -> a) -> Stream m a -> m a
 {-# INLINE foldl1' #-}
 foldl1' f = foldl1M' (\a b -> return (f a b))
 
+-- | Left fold over a non-empty 'Stream' with a strict accumulator and a
+-- monadic operator
 foldl1M' :: Monad m => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_STREAM foldl1M' #-}
 foldl1M' f (Stream step s sz) = foldl1M'_go s
@@ -538,10 +567,12 @@ foldl1M' f (Stream step s sz) = foldl1M'_go s
                         Skip    s' -> foldl1M'_go s'
                         Done       -> errorEmptyStream "foldl1M'"
 
+-- | Right fold
 foldr :: Monad m => (a -> b -> b) -> b -> Stream m a -> m b
 {-# INLINE foldr #-}
 foldr f = foldrM (\a b -> return (f a b))
 
+-- | Right fold with a monadic operator
 foldrM :: Monad m => (a -> b -> m b) -> b -> Stream m a -> m b
 {-# INLINE_STREAM foldrM #-}
 foldrM f z (Stream step s _) = foldrM_go s
@@ -553,10 +584,12 @@ foldrM f z (Stream step s _) = foldrM_go s
                       Skip    s' -> foldrM_go s'
                       Done       -> return z
 
+-- | Right fold over a non-empty stream
 foldr1 :: Monad m => (a -> a -> a) -> Stream m a -> m a
 {-# INLINE foldr1 #-}
 foldr1 f = foldr1M (\a b -> return (f a b))
 
+-- | Right fold over a non-empty stream with a monadic operator
 foldr1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_STREAM foldr1M #-}
 foldr1M f (Stream step s _) = foldr1M_go0 s
@@ -583,6 +616,7 @@ unfold :: Monad m => (s -> Maybe (a, s)) -> s -> Stream m a
 {-# INLINE_STREAM unfold #-}
 unfold f = unfoldM (return . f)
 
+-- | Unfold with a monadic function
 unfoldM :: Monad m => (s -> m (Maybe (a, s))) -> s -> Stream m a
 {-# INLINE_STREAM unfoldM #-}
 unfoldM f s = Stream step s Unknown
@@ -602,7 +636,7 @@ prescanl :: Monad m => (a -> b -> a) -> a -> Stream m b -> Stream m a
 {-# INLINE prescanl #-}
 prescanl f = prescanlM (\a b -> return (f a b))
 
--- | Prefix scan
+-- | Prefix scan with a monadic operator
 prescanlM :: Monad m => (a -> b -> m a) -> a -> Stream m b -> Stream m a
 {-# INLINE_STREAM prescanlM #-}
 prescanlM f z (Stream step s sz) = Stream step' (s,z) sz
@@ -617,13 +651,12 @@ prescanlM f z (Stream step s sz) = Stream step' (s,z) sz
                       Skip    s' -> return $ Skip (s', x)
                       Done       -> return Done
 
-
 -- | Prefix scan with strict accumulator
 prescanl' :: Monad m => (a -> b -> a) -> a -> Stream m b -> Stream m a
 {-# INLINE prescanl' #-}
 prescanl' f = prescanlM' (\a b -> return (f a b))
 
--- | Prefix scan with strict accumulator
+-- | Prefix scan with strict accumulator and a monadic operator
 prescanlM' :: Monad m => (a -> b -> m a) -> a -> Stream m b -> Stream m a
 {-# INLINE_STREAM prescanlM' #-}
 prescanlM' f z (Stream step s sz) = Stream step' (s,z) sz
@@ -642,10 +675,12 @@ prescanlM' f z (Stream step s sz) = Stream step' (s,z) sz
 -- Conversions
 -- -----------
 
+-- | Convert a 'Stream' to a list
 toList :: Monad m => Stream m a -> m [a]
 {-# INLINE toList #-}
 toList = foldr (:) []
 
+-- | Convert a list to a 'Stream'
 fromList :: Monad m => [a] -> Stream m a
 {-# INLINE_STREAM fromList #-}
 fromList xs = Stream step xs Unknown
