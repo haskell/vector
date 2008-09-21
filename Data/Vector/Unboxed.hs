@@ -5,7 +5,7 @@
 -- Copyright   : (c) Roman Leshchinskiy 2008
 -- License     : BSD-style
 --
--- Maintainer  : rl@cse.unsw.edu.au
+-- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
@@ -26,6 +26,7 @@ import GHC.ST   ( ST(..) )
 import GHC.Prim ( ByteArray#, unsafeFreezeByteArray#, (+#) )
 import GHC.Base ( Int(..) )
 
+-- | Unboxed vectors
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
                                       ByteArray#

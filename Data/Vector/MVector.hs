@@ -4,7 +4,7 @@
 -- Copyright   : (c) Roman Leshchinskiy 2008
 -- License     : BSD-style
 --
--- Maintainer  : rl@cse.unsw.edu.au
+-- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
