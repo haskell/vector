@@ -241,28 +241,26 @@ take n (Stream step s sz) = Stream step' (s, 0) (smaller (Exact n) sz)
                            ) (step s)
     step' (s, i) = return Done
 
-data Drop s = Drop_Drop s Int | Drop_Keep s
-
 -- | All but the first @n@ elements
 drop :: Monad m => Int -> Stream m a -> Stream m a
 {-# INLINE_STREAM drop #-}
-drop n (Stream step s sz) = Stream step' (Drop_Drop s 0) (sz - Exact n)
+drop n (Stream step s sz) = Stream step' (s, Just n) (sz - Exact n)
   where
     {-# INLINE step' #-}
-    step' (Drop_Drop s i) | i < n = liftM (\r ->
+    step' (s, Just i) | i > 0 = liftM (\r ->
                                 case r of
-                                   Yield x s' -> Skip (Drop_Drop s' (i+1))
-                                   Skip    s' -> Skip (Drop_Drop s' i)
+                                   Yield x s' -> Skip (s', Just (i-1))
+                                   Skip    s' -> Skip (s', Just i)
                                    Done       -> Done
                                 ) (step s)
-                          | otherwise = return $ Skip (Drop_Keep s)
+                      | otherwise = return $ Skip (s, Nothing)
 
-    step' (Drop_Keep s) = liftM (\r ->
-                                case r of
-                                  Yield x s' -> Yield x (Drop_Keep s')
-                                  Skip    s' -> Skip    (Drop_Keep s')
-                                  Done       -> Done
-                                ) (step s)
+    step' (s, Nothing) = liftM (\r ->
+                           case r of
+                             Yield x s' -> Yield x (s', Nothing)
+                             Skip    s' -> Skip    (s', Nothing)
+                             Done       -> Done
+                           ) (step s)
                      
 
 -- Mapping/zipping
