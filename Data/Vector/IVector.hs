@@ -40,7 +40,7 @@ module Data.Vector.IVector (
   eq, cmp,
 
   -- * Filtering
-  filter, takeWhileSlice, takeWhile, dropWhileSlice, dropWhile,
+  filter, takeWhile, dropWhile,
 
   -- * Searching
   elem, notElem, find, findIndex,
@@ -394,43 +394,15 @@ filter :: IVector v a => (a -> Bool) -> v a -> v a
 {-# INLINE filter #-}
 filter f = unstream . inplace (MStream.filter f) . stream
 
--- | Yield the longest prefix of elements satisfying the predicate without
--- copying.
-takeWhileSlice :: IVector v a => (a -> Bool) -> v a -> v a
-{-# INLINE_STREAM takeWhileSlice #-}
-takeWhileSlice f v = case findIndex (not . f) v of
-                       Just n  -> take n v
-                       Nothing -> v
-
--- | Copy the longest prefix of elements satisfying the predicate to a new
--- vector
+-- | Yield the longest prefix of elements satisfying the predicate.
 takeWhile :: IVector v a => (a -> Bool) -> v a -> v a
 {-# INLINE takeWhile #-}
 takeWhile f = unstream . Stream.takeWhile f . stream
 
--- | Drop the longest prefix of elements that satisfy the predicate without
--- copying
-dropWhileSlice :: IVector v a => (a -> Bool) -> v a -> v a
-{-# INLINE_STREAM dropWhileSlice #-}
-dropWhileSlice f v = case findIndex (not . f) v of
-                       Just n  -> drop n v
-                       Nothing -> v
-
--- | Drop the longest prefix of elements that satisfy the predicate and copy
--- the rest to a new vector.
+-- | Drop the longest prefix of elements that satisfy the predicate.
 dropWhile :: IVector v a => (a -> Bool) -> v a -> v a
 {-# INLINE dropWhile #-}
 dropWhile f = unstream . Stream.dropWhile f . stream
-
-{-# RULES
-
-"takeWhileSlice/unstream" forall v f s.
-  takeWhileSlice f (new' v (New.unstream s)) = takeWhile f (new' v (New.unstream s))
-
-"dropWhileSlice/unstream" forall v f s.
-  dropWhileSlice f (new' v (New.unstream s)) = dropWhile f (new' v (New.unstream s))
-
- #-}
 
 -- Searching
 -- ---------
