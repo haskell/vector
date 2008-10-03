@@ -22,13 +22,13 @@ module Data.Vector.IVector (
   length,
 
   -- * Construction
-  empty, singleton, cons, snoc, replicate, (++),
+  empty, singleton, cons, snoc, replicate, (++), copy,
 
   -- * Accessing individual elements
   (!), head, last,
 
   -- * Subvectors
-  slice, extract, takeSlice, take, dropSlice, drop,
+  slice, init, tail, take, drop,
 
   -- * Permutations
   (//), update, bpermute,
@@ -235,6 +235,18 @@ infixr 5 ++
 {-# INLINE (++) #-}
 v ++ w = unstream (stream v Stream.++ stream w)
 
+-- | Create a copy of a vector. Useful when dealing with slices.
+copy :: IVector v a => v a -> v a
+{-# INLINE_STREAM copy #-}
+copy = unstream . stream
+
+{-# RULES
+
+"copy/unstream [IVector]" forall v s.
+  copy (new' v (New.unstream s)) = new' v (New.unstream s)
+
+ #-}
+
 -- Accessing individual elements
 -- -----------------------------
 
@@ -281,37 +293,42 @@ slice :: IVector v a => v a -> Int   -- ^ starting index
 slice v i n = assert (i >= 0 && n >= 0  && i+n <= length v)
             $ unsafeSlice v i n
 
--- | Copy @n@ elements starting at the given position to a new vector.
-extract :: IVector v a => v a -> Int  -- ^ starting index
-                              -> Int  -- ^ length
-                              -> v a
-{-# INLINE extract #-}
-extract v i n = unstream (Stream.extract (stream v) i n)
+-- | Yield all but the last element without copying.
+init :: IVector v a => v a -> v a
+{-# INLINE_STREAM init #-}
+init v = slice v 0 (length v - 1)
+
+-- | All but the first element (without copying).
+tail :: IVector v a => v a -> v a
+{-# INLINE_STREAM tail #-}
+tail v = slice v 1 (length v - 1)
 
 -- | Yield the first @n@ elements without copying.
-takeSlice :: IVector v a => Int -> v a -> v a
-{-# INLINE takeSlice #-}
-takeSlice n v = slice v 0 n
-
--- | Copy the first @n@ elements to a new vector.
 take :: IVector v a => Int -> v a -> v a
-{-# INLINE take #-}
-take n = unstream . Stream.take n . stream
+{-# INLINE_STREAM take #-}
+take n v = slice v 0 (min n (length v))
 
 -- | Yield all but the first @n@ elements without copying.
-dropSlice :: IVector v a => Int -> v a -> v a
-{-# INLINE dropSlice #-}
-dropSlice n v = slice v n (length v - n)
-
--- | Copy all but the first @n@ elements to a new vectors.
 drop :: IVector v a => Int -> v a -> v a
-{-# INLINE drop #-}
-drop n = unstream . Stream.drop n . stream
+{-# INLINE_STREAM drop #-}
+drop n v = slice v n (max 0 (length v - n))
 
 {-# RULES
 
-"slice/unstream [IVector]" forall v i n s.
-  slice (new' v (New.unstream s)) i n = extract (new' v (New.unstream s)) i n
+"slice/new [IVector]" forall v p i n.
+  slice (new' v p) i n = new' v (New.slice p i n)
+
+"init/new [IVector]" forall v p.
+  init (new' v p) = new' v (New.init p)
+
+"tail/new [IVector]" forall v p.
+  tail (new' v p) = new' v (New.tail p)
+
+"take/new [IVector]" forall n v p.
+  take n (new' v p) = new' v (New.take n p)
+
+"drop/new [IVector]" forall n v p.
+  drop n (new' v p) = new' v (New.drop n p)
 
   #-}
 
@@ -382,7 +399,7 @@ filter f = unstream . inplace (MStream.filter f) . stream
 takeWhileSlice :: IVector v a => (a -> Bool) -> v a -> v a
 {-# INLINE_STREAM takeWhileSlice #-}
 takeWhileSlice f v = case findIndex (not . f) v of
-                       Just n  -> takeSlice n v
+                       Just n  -> take n v
                        Nothing -> v
 
 -- | Copy the longest prefix of elements satisfying the predicate to a new
@@ -396,7 +413,7 @@ takeWhile f = unstream . Stream.takeWhile f . stream
 dropWhileSlice :: IVector v a => (a -> Bool) -> v a -> v a
 {-# INLINE_STREAM dropWhileSlice #-}
 dropWhileSlice f v = case findIndex (not . f) v of
-                       Just n  -> dropSlice n v
+                       Just n  -> drop n v
                        Nothing -> v
 
 -- | Drop the longest prefix of elements that satisfy the predicate and copy
