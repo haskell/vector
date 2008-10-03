@@ -75,6 +75,25 @@ drop :: Int -> New a -> New a
 {-# INLINE_STREAM drop #-}
 drop n m = apply (\v -> MVector.slice v n (max 0 (MVector.length v - n))) m
 
+{-# RULES
+
+"slice/unstream [New]" forall s i n.
+  slice (unstream s) i n = unstream (Stream.extract s i n)
+
+"init/unstream [New]" forall s.
+  init (unstream s) = unstream (Stream.init s)
+
+"tail/unstream [New]" forall s.
+  tail (unstream s) = unstream (Stream.tail s)
+
+"take/unstream [New]" forall n s.
+  take n (unstream s) = unstream (Stream.take n s)
+
+"drop/unstream [New]" forall n s.
+  drop n (unstream s) = unstream (Stream.drop n s)
+
+  #-}
+
 update :: New a -> Stream (Int, a) -> New a
 {-# INLINE_STREAM update #-}
 update m s = modify m (\v -> MVector.update v s)
