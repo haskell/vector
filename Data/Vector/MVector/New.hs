@@ -48,6 +48,11 @@ transform f (New p) = New (MVector.transform f =<< p)
          p .
   transform f (transform g p) = transform (f . g) p
 
+"transform/unstream [New]"
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a)
+         s.
+  transform f (unstream s) = unstream (f s)
+
  #-}
 
 slice :: New a -> Int -> Int -> New a
