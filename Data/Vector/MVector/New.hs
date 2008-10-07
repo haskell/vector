@@ -3,7 +3,7 @@
 #include "phases.h"
 
 module Data.Vector.MVector.New (
-  New(..), run, unstream, transform, update, reverse,
+  New(..), run, unstream, transform, accum, update, reverse,
   slice, init, tail, take, drop
 ) where
 
@@ -93,6 +93,10 @@ drop n m = apply (\v -> MVector.slice v n (max 0 (MVector.length v - n))) m
   drop n (unstream s) = unstream (Stream.drop n s)
 
   #-}
+
+accum :: (a -> b -> a) -> New a -> Stream (Int, b) -> New a
+{-# INLINE_STREAM accum #-}
+accum f m s = modify m (\v -> MVector.accum f v s)
 
 update :: New a -> Stream (Int, a) -> New a
 {-# INLINE_STREAM update #-}

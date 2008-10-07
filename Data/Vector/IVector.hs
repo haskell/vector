@@ -31,7 +31,7 @@ module Data.Vector.IVector (
   slice, init, tail, take, drop,
 
   -- * Permutations
-  (//), update, bpermute,
+  accum, (//), update, bpermute,
 
   -- * Mapping and zipping
   map, zipWith, zip,
@@ -334,6 +334,11 @@ drop n v = slice v n (max 0 (length v - n))
 
 -- Permutations
 -- ------------
+
+accum :: IVector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
+{-# INLINE accum #-}
+accum f v us = new (New.accum f (New.unstream (stream v))
+                                (Stream.fromList us))
 
 (//) :: IVector v a => v a -> [(Int, a)] -> v a
 {-# INLINE (//) #-}

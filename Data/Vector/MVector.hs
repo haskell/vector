@@ -18,7 +18,7 @@ module Data.Vector.MVector (
 
   slice, new, newWith, read, write, copy, grow,
   unstream, transform,
-  update, reverse
+  accum, update, reverse
 ) where
 
 import qualified Data.Vector.Fusion.Stream      as Stream
@@ -229,12 +229,18 @@ unstreamUnknown s
                                  . double2Int
                                  $ int2Double (length v) * gROWTH_FACTOR
 
+accum :: MVector v m a => (a -> b -> a) -> v a -> Stream (Int, b) -> m ()
+{-# INLINE accum #-}
+accum f v s = Stream.mapM_ upd s
+  where
+    {-# INLINE upd #-}
+    upd (i,b) = do
+                  a <- read v i
+                  write v i (f a b)
+
 update :: MVector v m a => v a -> Stream (Int, a) -> m ()
 {-# INLINE update #-}
-update v s = Stream.mapM_ put s
-  where
-    {-# INLINE put #-}
-    put (i, x) = write v i x
+update = accum (const id)
 
 reverse :: MVector v m a => v a -> m ()
 {-# INLINE reverse #-}
