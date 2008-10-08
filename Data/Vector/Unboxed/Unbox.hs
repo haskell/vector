@@ -22,11 +22,15 @@ import GHC.Base (
 import GHC.Float (
     Float(..), Double(..)
   )
+import GHC.Word (
+    Word(..)
+  )
 
 import GHC.Prim (
     ByteArray#, MutableByteArray#, State#,
 
     Int#, indexIntArray#,    readIntArray#,    writeIntArray#,
+          indexWordArray#,   readWordArray#,   writeWordArray#,
           indexFloatArray#,  readFloatArray#,  writeFloatArray#,
           indexDoubleArray#, readDoubleArray#, writeDoubleArray#
   )
@@ -49,6 +53,14 @@ class Unbox a where
 
   -- | Store the given element at the given position
   write# :: MutableByteArray# s -> Int# -> a -> State# s -> State# s
+
+instance Unbox Word where
+  size# _                   = wORD_SCALE
+  at#    arr# i#            = W# (indexWordArray# arr# i#)
+  read#  arr# i# s#         = case readWordArray# arr# i# s# of
+                                (# s1#, n# #) -> (# s1#, W# n# #)
+  write# arr# i# (W# n#) s# = writeWordArray# arr# i# n# s#
+
 
 instance Unbox Int where
   size#  _                  = wORD_SCALE
