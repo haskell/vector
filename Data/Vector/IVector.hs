@@ -31,7 +31,7 @@ module Data.Vector.IVector (
   slice, init, tail, take, drop,
 
   -- * Permutations
-  accum, (//), update, bpermute,
+  accum, (//), update, backpermute,
 
   -- * Mapping and zipping
   map, zipWith, zip,
@@ -360,9 +360,9 @@ update :: (IVector v a, IVector v (Int, a)) => v a -> v (Int, a) -> v a
 {-# INLINE update #-}
 update v w = new (New.update (New.unstream (stream v)) (stream w))
 
-bpermute :: (IVector v a, IVector v Int) => v a -> v Int -> v a
-{-# INLINE bpermute #-}
-bpermute v is = v `seq` map (v!) is
+backpermute :: (IVector v a, IVector v Int) => v a -> v Int -> v a
+{-# INLINE backpermute #-}
+backpermute v is = v `seq` map (v!) is
 
 -- Mapping/zipping
 -- ---------------
