@@ -19,7 +19,7 @@ module Data.Vector.IVector (
   IVector,
 
   -- * Length information
-  length,
+  length, null,
 
   -- * Construction
   empty, singleton, cons, snoc, replicate, (++), copy,
@@ -80,7 +80,7 @@ import           Data.Vector.Fusion.Stream.Size
 
 import Control.Exception ( assert )
 
-import Prelude hiding ( length,
+import Prelude hiding ( length, null,
                         replicate, (++),
                         head, last,
                         init, tail, take, drop,
@@ -198,6 +198,17 @@ length v = vlength v
 
 "length/unstream [IVector]" forall v s.
   length (new' v (New.unstream s)) = Stream.length s
+
+  #-}
+
+null :: IVector v a => v a -> Bool
+{-# INLINE_STREAM null #-}
+null v = vlength v == 0
+
+{-# RULES
+
+"null/unstream [IVector]" forall v s.
+  null (new' v (New.unstream s)) = Stream.null s
 
   #-}
 
