@@ -193,7 +193,17 @@ last (Stream step s _) = last_loop0 s
 -- | Element at the given position
 (!!) :: Monad m => Stream m a -> Int -> m a
 {-# INLINE (!!) #-}
-s !! i = head (drop i s)
+Stream step s _ !! i | i < 0     = errorNegativeIndex "!!"
+                     | otherwise = loop s i
+  where
+    loop s i = i `seq`
+               do
+                 r <- step s
+                 case r of
+                   Yield x s' | i == 0    -> return x
+                              | otherwise -> loop s' (i-1)
+                   Skip    s'             -> loop s' i
+                   Done                   -> errorIndexOutOfRange "!!"
 
 -- Substreams
 -- ----------
@@ -695,7 +705,16 @@ fromList xs = Stream step xs Unknown
     step []     = return Done
 
 
+streamError :: String -> String -> a
+streamError fn msg = error $ "Data.Vector.Fusion.Stream.Monadic."
+                             Prelude.++ fn Prelude.++ ": " Prelude.++ msg
+
 errorEmptyStream :: String -> a
-errorEmptyStream s = error $ "Data.Vector.Fusion.Stream.Monadic."
-                        Prelude.++ s Prelude.++ ": empty stream"
+errorEmptyStream fn = streamError fn "empty stream"
+
+errorNegativeIndex :: String -> a
+errorNegativeIndex fn = streamError fn "negative index"
+
+errorIndexOutOfRange :: String -> a
+errorIndexOutOfRange fn = streamError fn "index out of range"
 
