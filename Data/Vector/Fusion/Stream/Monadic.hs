@@ -225,7 +225,7 @@ init (Stream step s sz) = Stream step' (Nothing, s) (sz - 1)
                            case r of
                              Yield x s' -> Skip (Just x,  s')
                              Skip    s' -> Skip (Nothing, s')
-                             Done       -> Done  -- FIXME: should be an error
+                             Done       -> errorEmptyStream "init"
                          ) (step s)
 
     step' (Just x,  s) = liftM (\r -> 
@@ -245,7 +245,7 @@ tail (Stream step s sz) = Stream step' (Left s) (sz - 1)
                         case r of
                           Yield x s' -> Skip (Right s')
                           Skip    s' -> Skip (Left  s')
-                          Done       -> Done    -- FIXME: should be error?
+                          Done       -> errorEmptyStream "tail"
                       ) (step s)
 
     step' (Right s) = liftM (\r ->
