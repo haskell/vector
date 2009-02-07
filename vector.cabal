@@ -45,3 +45,8 @@ Library
   Build-Depends: base, array, ghc-prim,
                  ghc >= 6.9
 
+-- -finline-if-enough-args is ESSENTIAL. If we don't have this the partial application
+-- of e.g. Stream.Monadic.++ to the monad dictionary at the use site in Stream.++ causes
+-- it to be fruitlessly inlined. This in turn leads to a huge RHS for Stream.++, so it
+-- doesn't get inlined at the final call site and fusion fails to occur.
+  Ghc-Options: -O2 -finline-if-enough-args
