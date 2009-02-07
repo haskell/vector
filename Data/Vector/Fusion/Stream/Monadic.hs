@@ -47,7 +47,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   foldr, foldrM, foldr1, foldr1M,
 
   -- * Unfolding
-  unfold, unfoldM,
+  unfoldr, unfoldrM,
 
   -- * Scans
   prescanl, prescanlM, prescanl', prescanlM',
@@ -628,14 +628,14 @@ foldr1M f (Stream step s _) = foldr1M_go0 s
 -- ---------
 
 -- | Unfold
-unfold :: Monad m => (s -> Maybe (a, s)) -> s -> Stream m a
-{-# INLINE_STREAM unfold #-}
-unfold f = unfoldM (return . f)
+unfoldr :: Monad m => (s -> Maybe (a, s)) -> s -> Stream m a
+{-# INLINE_STREAM unfoldr #-}
+unfoldr f = unfoldrM (return . f)
 
 -- | Unfold with a monadic function
-unfoldM :: Monad m => (s -> m (Maybe (a, s))) -> s -> Stream m a
-{-# INLINE_STREAM unfoldM #-}
-unfoldM f s = Stream step s Unknown
+unfoldrM :: Monad m => (s -> m (Maybe (a, s))) -> s -> Stream m a
+{-# INLINE_STREAM unfoldrM #-}
+unfoldrM f s = Stream step s Unknown
   where
     {-# INLINE step #-}
     step s = liftM (\r ->

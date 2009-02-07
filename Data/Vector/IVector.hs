@@ -48,6 +48,9 @@ module Data.Vector.IVector (
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
 
+  -- * Unfolding
+  unfoldr,
+
   -- * Scans
   prescanl, prescanl',
 
@@ -141,7 +144,7 @@ new' _ m = vnew (New.run m)
 -- | Convert a vector to a 'Stream'
 stream :: IVector v a => v a -> Stream a
 {-# INLINE_STREAM stream #-}
-stream v = v `seq` (Stream.unfold get 0 `Stream.sized` Exact n)
+stream v = v `seq` (Stream.unfoldr get 0 `Stream.sized` Exact n)
   where
     n = length v
 
@@ -479,6 +482,13 @@ foldr f z = Stream.foldr f z . stream
 foldr1 :: IVector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldr1 #-}
 foldr1 f = Stream.foldr1 f . stream
+
+-- Unfolding
+-- ---------
+
+unfoldr :: IVector v a => (b -> Maybe (a, b)) -> b -> v a
+{-# INLINE unfoldr #-}
+unfoldr f = unstream . Stream.unfoldr f
 
 -- Scans
 -- -----

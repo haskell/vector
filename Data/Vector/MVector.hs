@@ -169,7 +169,7 @@ grow v by = assert (by >= 0)
 
 mstream :: MVector v m a => v a -> MStream m a
 {-# INLINE mstream #-}
-mstream v = v `seq` (MStream.unfoldM get 0 `MStream.sized` Exact n)
+mstream v = v `seq` (MStream.unfoldrM get 0 `MStream.sized` Exact n)
   where
     n = length v
 

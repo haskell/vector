@@ -46,7 +46,7 @@ module Data.Vector.Fusion.Stream (
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
 
   -- * Unfolding
-  unfold,
+  unfoldr,
 
   -- * Scans
   prescanl, prescanl',
@@ -294,9 +294,9 @@ foldr1 f = unId . M.foldr1 f
 -- ---------
 
 -- | Unfold
-unfold :: (s -> Maybe (a, s)) -> s -> Stream a
-{-# INLINE unfold #-}
-unfold = M.unfold
+unfoldr :: (s -> Maybe (a, s)) -> s -> Stream a
+{-# INLINE unfoldr #-}
+unfoldr = M.unfoldr
 
 -- Scans
 -- -----
