@@ -47,6 +47,12 @@ module Data.Vector.IVector (
 
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
+ 
+  -- * Specialised folds
+  and, or,
+  
+  -- * Enumeration
+  enumFromTo,
 
   -- * Unfolding
   unfoldr,
@@ -90,7 +96,9 @@ import Prelude hiding ( length, null,
                         map, zipWith, zip,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
-                        foldl, foldl1, foldr, foldr1 )
+                        foldl, foldl1, foldr, foldr1,
+                        and, or,
+                        enumFromTo )
 
 -- | Class of immutable vectors.
 --
@@ -482,6 +490,28 @@ foldr f z = Stream.foldr f z . stream
 foldr1 :: IVector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldr1 #-}
 foldr1 f = Stream.foldr1 f . stream
+
+-- Specialised folds
+-- -----------------
+
+and :: IVector v Bool => v Bool -> Bool
+{-# INLINE and #-}
+and = foldl' (&&) True
+
+or :: IVector v Bool => v Bool -> Bool
+{-# INLINE or #-}
+or = foldl' (||) False
+
+-- Enumeration
+-- -----------
+
+enumFromTo :: (IVector v a, Enum a) => a -> a -> v a
+{-# INLINE enumFromTo #-}
+enumFromTo from to = unfoldr go (fromEnum from)
+  where
+    to_i = fromEnum to
+    go i | i <= to_i = Just (toEnum i, i + 1)
+         | otherwise = Nothing
 
 -- Unfolding
 -- ---------
