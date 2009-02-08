@@ -298,9 +298,11 @@ foldr1 f = unId . M.foldr1 f
 -- -----------------
 
 and :: Stream Bool -> Bool
+{-# INLINE and #-}
 and = unId . M.and
 
 or :: Stream Bool -> Bool
+{-# INLINE or #-}
 or = unId . M.or
 
 concatMap :: (a -> Stream b) -> Stream a -> Stream b

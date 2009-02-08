@@ -632,6 +632,7 @@ foldr1M f (Stream step s _) = foldr1M_go0 s
 -- -----------------
 
 and :: Monad m => Stream m Bool -> m Bool
+{-# INLINE_STREAM and #-}
 and (Stream step s _) = and_go s
   where
     and_go s = do
@@ -643,6 +644,7 @@ and (Stream step s _) = and_go s
                    Done           -> return True
 
 or :: Monad m => Stream m Bool -> m Bool
+{-# INLINE_STREAM or #-}
 or (Stream step s _) = or_go s
   where
     or_go s = do
