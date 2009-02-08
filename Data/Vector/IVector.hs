@@ -52,7 +52,7 @@ module Data.Vector.IVector (
   and, or, concatMap,
   
   -- * Enumeration
-  enumFromTo,
+  enumFromTo, enumFromThenTo,
 
   -- * Unfolding
   unfoldr,
@@ -98,7 +98,7 @@ import Prelude hiding ( length, null,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         and, or, concatMap,
-                        enumFromTo )
+                        enumFromTo, enumFromThenTo )
 
 -- | Class of immutable vectors.
 --
@@ -511,11 +511,19 @@ concatMap f = unstream . Stream.concatMap (stream . f) . stream
 
 enumFromTo :: (IVector v a, Enum a) => a -> a -> v a
 {-# INLINE enumFromTo #-}
-enumFromTo from to = unfoldr go (fromEnum from)
+enumFromTo from to = unfoldr enumFromTo_go (fromEnum from)
   where
     to_i = fromEnum to
-    go i | i <= to_i = Just (toEnum i, i + 1)
-         | otherwise = Nothing
+    enumFromTo_go i | i <= to_i = Just (toEnum i, i + 1)
+                    | otherwise = Nothing
+
+enumFromThenTo :: (IVector v a, Enum a) => a -> a -> a -> v a
+enumFromThenTo from next to = unfoldr enumFromThenTo_go (fromEnum from)
+  where
+    to_i = fromEnum to
+    step_i = fromEnum next - to_i
+    enumFromThenTo_go i | i <= to_i = Just (toEnum i, i + step_i)
+                        | otherwise = Nothing
 
 -- Unfolding
 -- ---------
