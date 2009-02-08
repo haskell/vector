@@ -46,6 +46,9 @@ module Data.Vector.Fusion.Stream.Monadic (
   foldl', foldlM', foldl1', foldl1M',
   foldr, foldrM, foldr1, foldr1M,
 
+  -- * Specialised folds
+  and, or,
+
   -- * Unfolding
   unfoldr, unfoldrM,
 
@@ -66,7 +69,8 @@ import Prelude hiding ( length, null,
                         map, mapM, mapM_, zipWith,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
-                        foldl, foldl1, foldr, foldr1 )
+                        foldl, foldl1, foldr, foldr1,
+                        and, or )
 import qualified Prelude
 
 -- | Result of taking a single step in a stream
@@ -623,6 +627,31 @@ foldr1M f (Stream step s _) = foldr1M_go0 s
                           Yield y s' -> f x =<< foldr1M_go1 y s'
                           Skip    s' -> foldr1M_go1 x s'
                           Done       -> return x
+
+-- Specialised folds
+-- -----------------
+
+and :: Monad m => Stream m Bool -> m Bool
+and (Stream step s _) = and_go s
+  where
+    and_go s = do
+                 r <- step s
+                 case r of
+                   Yield False _  -> return False
+                   Yield True  s' -> and_go s'
+                   Skip        s' -> and_go s'
+                   Done           -> return True
+
+or :: Monad m => Stream m Bool -> m Bool
+or (Stream step s _) = or_go s
+  where
+    or_go s = do
+                r <- step s
+                case r of
+                  Yield False s' -> or_go s'
+                  Yield True  _  -> return True
+                  Skip        s' -> or_go s'
+                  Done           -> return False
 
 -- Unfolding
 -- ---------

@@ -496,11 +496,11 @@ foldr1 f = Stream.foldr1 f . stream
 
 and :: IVector v Bool => v Bool -> Bool
 {-# INLINE and #-}
-and = foldl' (&&) True
+and = Stream.and . stream
 
 or :: IVector v Bool => v Bool -> Bool
 {-# INLINE or #-}
-or = foldl' (||) False
+or = Stream.or . stream
 
 -- Enumeration
 -- -----------

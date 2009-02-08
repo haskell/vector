@@ -45,6 +45,9 @@ module Data.Vector.Fusion.Stream (
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
 
+  -- * Specialised folds
+  and, or,
+
   -- * Unfolding
   unfoldr,
 
@@ -70,6 +73,7 @@ import Prelude hiding ( length, null,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
+                        and, or,
                         mapM_ )
 
 
@@ -289,6 +293,15 @@ foldr f z = unId . M.foldr f z
 foldr1 :: (a -> a -> a) -> Stream a -> a
 {-# INLINE foldr1 #-}
 foldr1 f = unId . M.foldr1 f
+
+-- Specialised folds
+-- -----------------
+
+and :: Stream Bool -> Bool
+and = unId . M.and
+
+or :: Stream Bool -> Bool
+or = unId . M.or
 
 -- Unfolding
 -- ---------
