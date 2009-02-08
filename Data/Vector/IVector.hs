@@ -328,12 +328,15 @@ tail v = slice v 1 (length v - 1)
 -- | Yield the first @n@ elements without copying.
 take :: IVector v a => Int -> v a -> v a
 {-# INLINE_STREAM take #-}
-take n v = slice v 0 (min n (length v))
+take n v = slice v 0 (min n' (length v))
+  where n' = max n 0
 
 -- | Yield all but the first @n@ elements without copying.
 drop :: IVector v a => Int -> v a -> v a
 {-# INLINE_STREAM drop #-}
-drop n v = slice v n (max 0 (length v - n))
+drop n v = slice v (min n' len) (max 0 (len - n'))
+  where n' = max n 0
+        len = length v
 
 {-# RULES
 
