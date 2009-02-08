@@ -211,7 +211,9 @@ testExtraFunctions _ =  [
 
 -- TODO: test non-IVector stuff?
 tests = [
-        testGroup "Data.Vector.Vector"                (testVectorType (undefined :: Data.Vector.Vector Int)),
-        testGroup "Data.Vector.Unboxed.Vector (Int)"  (testVectorType (undefined :: Data.Vector.Unboxed.Vector Int)),
-        testGroup "Data.Vector.Unboxed.Vector (Bool)" (testVectorType (undefined :: Data.Vector.Unboxed.Vector Bool))
+        testGroup "Data.Vector.Vector"                  (testVectorType (undefined :: Data.Vector.Vector Int)),
+        testGroup "Data.Vector.Unboxed.Vector (Bool)"   (testVectorType (undefined :: Data.Vector.Unboxed.Vector Bool)),
+        testGroup "Data.Vector.Unboxed.Vector (Int)"    (testVectorType (undefined :: Data.Vector.Unboxed.Vector Int)),
+        testGroup "Data.Vector.Unboxed.Vector (Float)"  (testVectorType (undefined :: Data.Vector.Unboxed.Vector Float)),
+        testGroup "Data.Vector.Unboxed.Vector (Double)" (testVectorType (undefined :: Data.Vector.Unboxed.Vector Double))
     ]

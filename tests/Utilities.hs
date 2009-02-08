@@ -39,6 +39,8 @@ instance DVUU.Unbox a => Model (DVU.Vector a) [a] where model = DVU.toList
 -- Identity models
 instance Model Bool     Bool     where model = id
 instance Model Int      Int      where model = id
+instance Model Float    Float    where model = id
+instance Model Double   Double   where model = id
 instance Model Ordering Ordering where model = id
 
 -- Functorish models
