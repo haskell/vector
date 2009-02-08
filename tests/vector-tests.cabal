@@ -1,0 +1,28 @@
+Name:           vector-tests
+Version:        0.2
+License:        BSD3
+License-File:   LICENSE
+Author:         Roman Leshchinskiy
+Maintainer:     Roman Leshchinskiy <rl@cse.unsw.edu.au>
+Copyright:      (c) Roman Leshchinskiy 2008
+Homepage:       http://darcs.haskell.org/vector
+Category:       Data Structures
+Synopsis:       Efficient Arrays
+Description:
+        Tests for the vector package
+
+Cabal-Version:  >= 1.2
+Build-Type:     Simple
+
+Executable "vector-tests"
+  Main-Is:  Main.hs
+
+  Extensions: ScopedTypeVariables,
+              MultiParamTypeClasses,
+              FlexibleContexts,
+              Rank2Types,
+              FunctionalDependencies,
+              UndecidableInstances
+
+  Build-Depends: base, vector, QuickCheck,
+                 test-framework, test-framework-quickcheck
