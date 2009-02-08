@@ -46,7 +46,7 @@ module Data.Vector.Fusion.Stream (
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
 
   -- * Specialised folds
-  and, or,
+  and, or, concatMap,
 
   -- * Unfolding
   unfoldr,
@@ -73,7 +73,7 @@ import Prelude hiding ( length, null,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
-                        and, or,
+                        and, or, concatMap,
                         mapM_ )
 
 
@@ -302,6 +302,10 @@ and = unId . M.and
 
 or :: Stream Bool -> Bool
 or = unId . M.or
+
+concatMap :: (a -> Stream b) -> Stream a -> Stream b
+{-# INLINE concatMap #-}
+concatMap = M.concatMap
 
 -- Unfolding
 -- ---------

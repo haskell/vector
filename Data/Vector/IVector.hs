@@ -49,7 +49,7 @@ module Data.Vector.IVector (
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
  
   -- * Specialised folds
-  and, or,
+  and, or, concatMap,
   
   -- * Enumeration
   enumFromTo,
@@ -97,7 +97,7 @@ import Prelude hiding ( length, null,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
-                        and, or,
+                        and, or, concatMap,
                         enumFromTo )
 
 -- | Class of immutable vectors.
@@ -501,6 +501,10 @@ and = Stream.and . stream
 or :: IVector v Bool => v Bool -> Bool
 {-# INLINE or #-}
 or = Stream.or . stream
+
+concatMap :: (IVector v a, IVector v b) => (a -> v b) -> v a -> v b
+{-# INLINE concatMap #-}
+concatMap f = unstream . Stream.concatMap (stream . f) . stream
 
 -- Enumeration
 -- -----------

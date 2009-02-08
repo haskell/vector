@@ -47,7 +47,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   foldr, foldrM, foldr1, foldr1M,
 
   -- * Specialised folds
-  and, or,
+  and, or, concatMap, concatMapM,
 
   -- * Unfolding
   unfoldr, unfoldrM,
@@ -70,7 +70,7 @@ import Prelude hiding ( length, null,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
-                        and, or )
+                        and, or, concatMap )
 import qualified Prelude
 
 -- | Result of taking a single step in a stream
@@ -652,6 +652,29 @@ or (Stream step s _) = or_go s
                   Yield True  _  -> return True
                   Skip        s' -> or_go s'
                   Done           -> return False
+
+concatMap :: Monad m => (a -> Stream m b) -> Stream m a -> Stream m b
+{-# INLINE concatMap #-}
+concatMap f = concatMapM (return . f)
+
+concatMapM :: Monad m => (a -> m (Stream m b)) -> Stream m a -> Stream m b
+{-# INLINE_STREAM concatMapM #-}
+concatMapM f (Stream step s _) = Stream concatMap_go (Left s) Unknown
+  where
+    concatMap_go (Left s) = do
+        r <- step s
+        case r of
+            Yield a s' -> do
+                b_stream <- f a
+                return $ Skip (Right (b_stream, s'))
+            Skip    s' -> return $ Skip (Left s')
+            Done       -> return Done
+    concatMap_go (Right (Stream inner_step inner_s sz, s)) = do
+        r <- inner_step inner_s
+        case r of
+            Yield b inner_s' -> return $ Yield b (Right (Stream inner_step inner_s' sz, s))
+            Skip    inner_s' -> return $ Skip (Right (Stream inner_step inner_s' sz, s))
+            Done             -> return $ Skip (Left s)
 
 -- Unfolding
 -- ---------
