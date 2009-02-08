@@ -132,8 +132,6 @@ testVersusLists _ = [
     -- TODO: implement Vector equivalents for some of the commented out list functions from Data.List
     prop_foldl'       = (V.foldl' :: (a -> a -> a) -> a -> v a -> a)  `eq3` foldl'
     prop_foldl1'      = (V.foldl1' :: (a -> a -> a) -> v a -> a)      `eqNotNull2` foldl1'
-    prop_unfoldr      = ((\n f a -> V.take n $ V.unfoldr f a) :: Int -> (Int -> Maybe (a, Int)) -> Int -> v a)
-                        `eq3` (\n f a -> take n   $ unfoldr f a)
     --prop_transpose    = V.transpose   `eq1` (transpose   :: [v a] -> [v a])
     --prop_group        = V.group       `eq1` (group       :: v a -> [v a])
     --prop_inits        = V.inits       `eq1` (inits       :: v a -> [v a])
@@ -152,6 +150,14 @@ testVersusLists _ = [
     --prop_mapAccumR  = eq3
     --    (V.mapAccumR :: (X -> W -> (X,W)) -> X -> B   -> (X, B))
     --    (  mapAccumR :: (X -> W -> (X,W)) -> X -> [W] -> (X, [W]))
+    
+    -- Because the vectors are strict, we need to be totally sure that the unfold eventually terminates. This
+    -- is achieved by injecting our own bit of state into the unfold - the maximum number of unfolds allowed.
+    limitUnfolds f (theirs, ours) | ours >= 0
+                                  , Just (out, theirs') <- f theirs = Just (out, (theirs', ours - 1))
+                                  | otherwise                       = Nothing
+    prop_unfoldr      = ((\n f a -> V.unfoldr (limitUnfolds f) (a, n)) :: Int -> ((Int, Int) -> Maybe (a, (Int, Int))) -> (Int, Int) -> v a)
+                        `eq3` (\n f a -> unfoldr (limitUnfolds f) (a, n))
 
     extra_tests = [
             testProperty "snoc"         prop_snoc
