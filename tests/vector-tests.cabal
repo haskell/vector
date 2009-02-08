@@ -17,12 +17,18 @@ Build-Type:     Simple
 Executable "vector-tests"
   Main-Is:  Main.hs
 
-  Extensions: ScopedTypeVariables,
+  Extensions: CPP,
+              ScopedTypeVariables,
+              PatternGuards,
               MultiParamTypeClasses,
               FlexibleContexts,
               Rank2Types,
               FunctionalDependencies,
+              TypeSynonymInstances,
               UndecidableInstances
 
   Build-Depends: base, vector, QuickCheck,
                  test-framework, test-framework-quickcheck
+
+  -- Don't let fusion occur or GHC will make our tests less informative in some cases :-)
+  Ghc-Options: -O0
