@@ -68,7 +68,6 @@ testVersusLists _ = [
             testProperty "last"         prop_last,
             --testProperty "maximum"      prop_maximum,
             --testProperty "minimum"      prop_minimum,
-            testProperty "unfoldr"      prop_unfoldr,
             testProperty "(==)"         prop_eq,
             testProperty "compare"      prop_compare
         ]
