@@ -107,7 +107,7 @@ testVersusLists _ = [
     prop_last         = (V.last :: v a -> a)                          `eqNotNull1` last
     --prop_maximum      = (V.maximum :: v a -> a)                       `eqNotNull1` maximum
     --prop_minimum      = (V.minimum :: v a -> a)                       `eqNotNull1` minimum
-    prop_eq           = ((==) :: v a -> v a -> Bool) `eq2` (==)
+    prop_eq           = ((==) :: v a -> v a -> Bool)                  `eq2` (==)
     prop_compare      = (compare :: v a -> v a -> Ordering)           `eq2` compare
     
     data_list_tests = [
