@@ -72,6 +72,9 @@ data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
                                       (Array# a)
 
+instance Show a => Show (Vector a) where
+    show = (Prelude.++ " :: Data.Vector.Vector") . ("fromList " Prelude.++) . show . toList
+
 instance IVector Vector a where
   {-# INLINE vnew #-}
   vnew init = runST (do

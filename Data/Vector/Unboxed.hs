@@ -31,6 +31,9 @@ data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
                                       ByteArray#
 
+instance (Show a, Unbox a) => Show (Vector a) where
+    show = (Prelude.++ " :: Data.Vector.Unboxed.Vector") . ("fromList " Prelude.++) . show . toList
+
 instance Unbox a => IVector Vector a where
   {-# INLINE vnew #-}
   vnew init = runST (do
