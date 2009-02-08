@@ -19,6 +19,12 @@ Description:
 Cabal-Version:  >= 1.2
 Build-Type:     Simple
 
+Flag EnableAssertions
+  Description: Enable assertions that check parameters to functions are reasonable.
+               These will impose a moderate performance cost on users of the library,
+               with the benefit that you get reasonable errors rather than segmentation faults!
+  Default:     False
+
 Library
   Extensions: CPP
   Exposed-Modules:
@@ -49,4 +55,16 @@ Library
 -- of e.g. Stream.Monadic.++ to the monad dictionary at the use site in Stream.++ causes
 -- it to be fruitlessly inlined. This in turn leads to a huge RHS for Stream.++, so it
 -- doesn't get inlined at the final call site and fusion fails to occur.
-  Ghc-Options: -O2 -finline-if-enough-args
+  Ghc-Options: -finline-if-enough-args
+  
+-- It's probably a good idea to compile the library with -O2 as well. However, it's probably
+-- not as essential as you think because most of the optimisation occurs when the library
+-- functions from here are inlined into the user programs (which SHOULD be compiled with -O2!).
+--
+-- We have to fiddle with the assertion stuff at this point too because -O2 implies -fno-ignore-asserts,
+-- meaning that their relative ordering is CRUCIAL. Setting them together guarantees it.
+  if flag(enableassertions)
+    -- Asserts are ignored by default at -O1 or higher
+    Ghc-Options: -O2 -fno-ignore-asserts
+  else
+    Ghc-Options: -O2
