@@ -251,5 +251,6 @@ reverse v = reverse_loop 0 (length v - 1)
                                  y <- unsafeRead v j
                                  unsafeWrite v i y
                                  unsafeWrite v j x
+                                 reverse_loop (i + 1) (j - 1)
     reverse_loop _ _ = return ()
 
