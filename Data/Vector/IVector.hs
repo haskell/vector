@@ -50,6 +50,7 @@ module Data.Vector.IVector (
  
   -- * Specialised folds
   and, or, concatMap,
+  sum, product, maximum, minimum,
   
   -- * Enumeration
   enumFromTo, enumFromThenTo,
@@ -98,6 +99,7 @@ import Prelude hiding ( length, null,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         and, or, concatMap,
+                        sum, product, maximum, minimum,
                         enumFromTo, enumFromThenTo )
 
 -- | Class of immutable vectors.
@@ -512,6 +514,22 @@ or = Stream.or . stream
 concatMap :: (IVector v a, IVector v b) => (a -> v b) -> v a -> v b
 {-# INLINE concatMap #-}
 concatMap f = unstream . Stream.concatMap (stream . f) . stream
+
+sum :: (IVector v a, Num a) => v a -> a
+{-# INLINE sum #-}
+sum = Stream.foldl' (+) 0 . stream
+
+product :: (IVector v a, Num a) => v a -> a
+{-# INLINE product #-}
+product = Stream.foldl' (*) 1 . stream
+
+maximum :: (IVector v a, Ord a) => v a -> a
+{-# INLINE maximum #-}
+maximum = Stream.foldl1' max . stream
+
+minimum :: (IVector v a, Ord a) => v a -> a
+{-# INLINE minimum #-}
+minimum = Stream.foldl1' min . stream
 
 -- Enumeration
 -- -----------

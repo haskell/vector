@@ -155,11 +155,11 @@ testPolymorphicFunctions _ = $(testProperties [
     --  vlength, vnew
 
 testOrdFunctions :: forall a v. (COMMON_CONTEXT(a, v), Ord a, Ord (v a)) => v a -> [Test]
-testOrdFunctions _ = $(testProperties ['prop_compare])
+testOrdFunctions _ = $(testProperties ['prop_compare, 'prop_maximum, 'prop_minimum])
   where
     prop_compare      = (compare :: v a -> v a -> Ordering) `eq2` compare
-    --prop_maximum      = (V.maximum :: v a -> a)             `eqNotNull1` maximum
-    --prop_minimum      = (V.minimum :: v a -> a)             `eqNotNull1` minimum
+    prop_maximum      = (V.maximum :: v a -> a)             `eqNotNull1` maximum
+    prop_minimum      = (V.minimum :: v a -> a)             `eqNotNull1` minimum
 
 testEnumFunctions :: forall a v. (COMMON_CONTEXT(a, v), Enum a) => v a -> [Test]
 testEnumFunctions _ = $(testProperties ['prop_enumFromTo, 'prop_enumFromThenTo])
@@ -174,10 +174,10 @@ testBoolFunctions _ = $(testProperties ['prop_and, 'prop_or])
     prop_or           = (V.or :: v Bool -> Bool)  `eq1` or
 
 testNumFunctions :: forall a v. (COMMON_CONTEXT(a, v), Num a) => v a -> [Test]
-testNumFunctions _ = $(testProperties [])
+testNumFunctions _ = $(testProperties ['prop_sum, 'prop_product])
   where
-    --prop_sum          = (V.sum :: v Int -> Int)     `eq1` sum
-    --prop_product      = (V.product :: v Int -> Int) `eq1` product
+    prop_sum          = (V.sum :: v a -> a)     `eq1` sum
+    prop_product      = (V.product :: v a -> a) `eq1` product
 
 testNestedVectorFunctions :: forall a v. (COMMON_CONTEXT(a, v)) => v a -> [Test]
 testNestedVectorFunctions _ = $(testProperties [])
