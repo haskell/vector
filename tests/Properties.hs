@@ -56,7 +56,7 @@ testVersusLists _ = [
             --testProperty "concat"       prop_concat,
             testProperty "length"       prop_length,
             testProperty "null"         prop_null,
-            --testProperty "reverse"      prop_reverse,
+            testProperty "reverse"      prop_reverse,
             --testProperty "all"          prop_all,
             --testProperty "any"          prop_any,
             testProperty "and"          prop_and,
@@ -101,7 +101,7 @@ testVersusLists _ = [
     --prop_concat       = (V.concat :: [v a] -> v a)                    `eq1` concat
     prop_length       = (V.length :: v a -> Int)                      `eq1` length
     prop_null         = (V.null :: v a -> Bool)                       `eq1` null
-    --prop_reverse      = (V.reverse :: v a -> v a)                     `eq1` reverse
+    prop_reverse      = (V.reverse :: v a -> v a)                     `eq1` reverse
     --prop_all          = (V.all :: (a -> Bool) -> v a -> Bool)         `eq2` all
     --prop_any          = (V.any :: (a -> Bool) -> v a -> Bool)         `eq2` any
     prop_and          = (V.and :: v Bool -> Bool)                     `eq1` and

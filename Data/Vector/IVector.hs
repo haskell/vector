@@ -31,7 +31,7 @@ module Data.Vector.IVector (
   slice, init, tail, take, drop,
 
   -- * Permutations
-  accum, (//), update, backpermute,
+  (//), update, bpermute,
 
   -- * Mapping and zipping
   map, zipWith, zip,
@@ -92,7 +92,7 @@ import Control.Exception ( assert )
 import Prelude hiding ( length, null,
                         replicate, (++),
                         head, last,
-                        init, tail, take, drop,
+                        init, tail, take, drop, reverse,
                         map, zipWith, zip,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
@@ -377,6 +377,10 @@ update v w = new (New.update (New.unstream (stream v)) (stream w))
 backpermute :: (IVector v a, IVector v Int) => v a -> v Int -> v a
 {-# INLINE backpermute #-}
 backpermute v is = v `seq` map (v!) is
+
+reverse :: (IVector v a) => v a -> v a
+{-# INLINE reverse #-}
+reverse = new . New.reverse . New.unstream . stream
 
 -- Mapping/zipping
 -- ---------------
