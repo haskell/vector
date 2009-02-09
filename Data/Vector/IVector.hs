@@ -514,17 +514,18 @@ concatMap f = unstream . Stream.concatMap (stream . f) . stream
 
 enumFromTo :: (IVector v a, Enum a) => a -> a -> v a
 {-# INLINE enumFromTo #-}
-enumFromTo from to = unfoldr enumFromTo_go (fromEnum from)
+enumFromTo from to = from `seq` to `seq` unfoldr enumFromTo_go (fromEnum from)
   where
     to_i = fromEnum to
     enumFromTo_go i | i <= to_i = Just (toEnum i, i + 1)
                     | otherwise = Nothing
 
 enumFromThenTo :: (IVector v a, Enum a) => a -> a -> a -> v a
-enumFromThenTo from next to = unfoldr enumFromThenTo_go (fromEnum from)
+enumFromThenTo from next to = from `seq` next `seq` to `seq` unfoldr enumFromThenTo_go from_i
   where
+    from_i = fromEnum from
     to_i = fromEnum to
-    step_i = fromEnum next - to_i
+    step_i = fromEnum next - from_i
     enumFromThenTo_go i | i <= to_i = Just (toEnum i, i + step_i)
                         | otherwise = Nothing
 
