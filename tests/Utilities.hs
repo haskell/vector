@@ -1,5 +1,3 @@
-{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies, TypeSynonymInstances, UndecidableInstances #-}
-
 module Utilities where
 
 import Test.QuickCheck

@@ -25,10 +25,14 @@ Executable "vector-tests"
               Rank2Types,
               FunctionalDependencies,
               TypeSynonymInstances,
-              UndecidableInstances
+              UndecidableInstances,
+              TemplateHaskell
 
-  Build-Depends: base, vector, QuickCheck,
-                 test-framework, test-framework-quickcheck
+  Build-Depends: base, template-haskell, vector,
+                 QuickCheck, test-framework, test-framework-quickcheck
 
   -- Don't let fusion occur or GHC will make our tests less informative in some cases :-)
   Ghc-Options: -O0
+  
+  -- It's good practice to show all warnings, but since this is just test code let's ignore type sigs
+  Ghc-Options: -Wall -fno-warn-orphans -fno-warn-missing-signatures
