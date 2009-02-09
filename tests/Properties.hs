@@ -72,6 +72,7 @@ testVersusLists _ = [
             testProperty "takeWhile"    prop_takeWhile,
             testProperty "filter"       prop_filter,
             testProperty "map"          prop_map,
+            --testProperty "zip"          prop_zip,
             testProperty "zipWith"      prop_zipWith,
             testProperty "replicate"    prop_replicate,
             --testProperty "span"         prop_span,
@@ -85,6 +86,7 @@ testVersusLists _ = [
             testProperty "foldr1"       prop_foldr1,
             testProperty "foldl1"       prop_foldl1,
             testProperty "foldl1'"      prop_foldl1',
+            --testProperty "(!)"          prop_index,
             testProperty "head"         prop_head,
             testProperty "tail"         prop_tail,
             testProperty "init"         prop_init,
@@ -95,7 +97,7 @@ testVersusLists _ = [
             testProperty "compare"      prop_compare
         ]
     
-    -- TODO: implement Vector equivalents for the commented out list functions from Prelude
+    -- TODO: implement Vector equivalents for some of the commented out list functions from Prelude
     --prop_concat       = (V.concat :: [v a] -> v a)                    `eq1` concat
     prop_length       = (V.length :: v a -> Int)                      `eq1` length
     prop_null         = (V.null :: v a -> Bool)                       `eq1` null
@@ -115,6 +117,7 @@ testVersusLists _ = [
     prop_takeWhile    = (V.takeWhile :: (a -> Bool) -> v a -> v a)    `eq2` takeWhile
     prop_filter       = (V.filter :: (a -> Bool) -> v a -> v a)       `eq2` filter
     prop_map          = (V.map :: (a -> a) -> v a -> v a)             `eq2` map
+    --prop_zip          = (V.zip :: v a -> v a -> v (a, a))             `eq2` zip
     prop_zipWith      = (V.zipWith :: (a -> a -> a) -> v a -> v a -> v a) `eq3` zipWith
     prop_replicate    = (V.replicate :: Int -> a -> v a)              `eq2` replicate
     --prop_span         = (V.span :: (a -> Bool) -> v a -> (v a, v a))  `eq2` span
@@ -126,6 +129,7 @@ testVersusLists _ = [
     prop_foldl        = (V.foldl :: (a -> a -> a) -> a -> v a -> a)   `eq3` foldl
     prop_foldr1       = (V.foldr1 :: (a -> a -> a) -> v a -> a)       `eqNotNull2` foldr1
     prop_foldl1       = (V.foldl1 :: (a -> a -> a) -> v a -> a)       `eqNotNull2` foldl1
+    --prop_index        = compare (V.!) to (!!)
     prop_head         = (V.head :: v a -> a)                          `eqNotNull1` head
     prop_tail         = (V.tail :: v a -> v a)                        `eqNotNull1` tail
     prop_init         = (V.init :: v a -> v a)                        `eqNotNull1` init
@@ -200,10 +204,8 @@ testExtraFunctions _ =  [
     -- TODO: add tests for the other extra functions
     -- IVector exports still needing tests:
     --  copy,
-    --  (!),
     --  slice,
     --  (//), update, bpermute,
-    --  zip,
     --  prescanl, prescanl',
     --  new,
     --  unsafeSlice, unsafeIndex,
