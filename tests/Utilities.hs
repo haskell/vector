@@ -43,16 +43,19 @@ instance Model Ordering Ordering where model = id
 
 -- Functorish models
 -- All of these need UndecidableInstances although they are actually well founded. Oh well.
-instance Model a b              => Model (Maybe a) (Maybe b) where model        = fmap model
-instance (Model a c, Model b d) => Model (a, b) (c, d)       where model (a, b) = (model a, model b)
-instance (Model c a, Model b d) => Model (a -> b) (c -> d)   where model f = model . f . model
+instance Model a b                            => Model (Maybe a) (Maybe b)    where model           = fmap model
+instance (Model a a', Model b b')             => Model (a, b) (a', b')        where model (a, b)    = (model a, model b)
+instance (Model a a', Model b b', Model c c') => Model (a, b, c) (a', b', c') where model (a, b, c) = (model a, model b, model c)
+instance (Model c a, Model b d)               => Model (a -> b) (c -> d)      where model f         = model . f . model
 
 
-eq0 f g =           model f         == g
-eq1 f g = \a     -> model (f a)     == g (model a)
-eq2 f g = \a b   -> model (f a b)   == g (model a) (model b)
-eq3 f g = \a b c -> model (f a b c) == g (model a) (model b) (model c)
+eq0 f g =             model f           == g
+eq1 f g = \a       -> model (f a)       == g (model a)
+eq2 f g = \a b     -> model (f a b)     == g (model a) (model b)
+eq3 f g = \a b c   -> model (f a b c)   == g (model a) (model b) (model c)
+eq4 f g = \a b c d -> model (f a b c d) == g (model a) (model b) (model c) (model d)
 
-eqNotNull1 f g = \x     -> (not (DVI.null x)) ==> eq1 f g x
-eqNotNull2 f g = \x y   -> (not (DVI.null y)) ==> eq2 f g x y
-eqNotNull3 f g = \x y z -> (not (DVI.null z)) ==> eq3 f g x y z
+eqNotNull1 f g = \a       -> (not (DVI.null a)) ==> eq1 f g a
+eqNotNull2 f g = \a b     -> (not (DVI.null b)) ==> eq2 f g a b
+eqNotNull3 f g = \a b c   -> (not (DVI.null c)) ==> eq3 f g a b c
+eqNotNull4 f g = \a b c d -> (not (DVI.null d)) ==> eq4 f g a b c d

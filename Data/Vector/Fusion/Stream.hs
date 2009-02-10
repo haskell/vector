@@ -33,8 +33,11 @@ module Data.Vector.Fusion.Stream (
   -- * Substreams
   extract, init, tail, take, drop,
 
-  -- * Mapping and zipping
-  map, zipWith,
+  -- * Mapping
+  map, concatMap,
+  
+  -- * Zipping
+  zipWith, zipWith3,
 
   -- * Filtering
   filter, takeWhile, dropWhile,
@@ -46,7 +49,7 @@ module Data.Vector.Fusion.Stream (
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
 
   -- * Specialised folds
-  and, or, concatMap,
+  and, or,
 
   -- * Unfolding
   unfoldr,
@@ -69,11 +72,12 @@ import Prelude hiding ( length, null,
                         replicate, (++),
                         head, last, (!!),
                         init, tail, take, drop,
-                        map, zipWith,
+                        map, concatMap,
+                        zipWith, zipWith3,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
-                        and, or, concatMap,
+                        and, or,
                         mapM_ )
 
 
@@ -203,7 +207,7 @@ drop :: Int -> Stream a -> Stream a
 {-# INLINE drop #-}
 drop = M.drop
 
--- Mapping/zipping
+-- Mapping
 -- ---------------
 
 -- | Map a function over a 'Stream'
@@ -211,10 +215,22 @@ map :: (a -> b) -> Stream a -> Stream b
 {-# INLINE map #-}
 map = M.map
 
+concatMap :: (a -> Stream b) -> Stream a -> Stream b
+{-# INLINE concatMap #-}
+concatMap = M.concatMap
+
+-- Zipping
+-- -------
+
 -- | Zip two 'Stream's with the given function
 zipWith :: (a -> b -> c) -> Stream a -> Stream b -> Stream c
 {-# INLINE zipWith #-}
 zipWith = M.zipWith
+
+-- | Zip three 'Stream's with the given function
+zipWith3 :: (a -> b -> c -> d) -> Stream a -> Stream b -> Stream c -> Stream d
+{-# INLINE zipWith3 #-}
+zipWith3 = M.zipWith3
 
 -- Filtering
 -- ---------
@@ -304,10 +320,6 @@ and = unId . M.and
 or :: Stream Bool -> Bool
 {-# INLINE or #-}
 or = unId . M.or
-
-concatMap :: (a -> Stream b) -> Stream a -> Stream b
-{-# INLINE concatMap #-}
-concatMap = M.concatMap
 
 -- Unfolding
 -- ---------

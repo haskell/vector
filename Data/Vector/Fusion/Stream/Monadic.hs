@@ -32,8 +32,11 @@ module Data.Vector.Fusion.Stream.Monadic (
   -- * Substreams
   extract, init, tail, take, drop,
 
-  -- * Mapping and zipping
-  map, mapM, mapM_, zipWith, zipWithM,
+  -- * Mapping
+  map, mapM, mapM_, concatMap,
+  
+  -- * Zipping
+  zipWith, zipWithM, zipWith3, zipWith3M,
 
   -- * Filtering
   filter, filterM, takeWhile, takeWhileM, dropWhile, dropWhileM,
@@ -47,7 +50,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   foldr, foldrM, foldr1, foldr1M,
 
   -- * Specialised folds
-  and, or, concatMap, concatMapM,
+  and, or, concatMapM,
 
   -- * Unfolding
   unfoldr, unfoldrM,
@@ -66,11 +69,12 @@ import Prelude hiding ( length, null,
                         replicate, (++),
                         head, last, (!!),
                         init, tail, take, drop,
-                        map, mapM, mapM_, zipWith,
+                        map, mapM, mapM_, concatMap,
+                        zipWith, zipWith3,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
-                        and, or, concatMap )
+                        and, or )
 import qualified Prelude
 
 -- | Result of taking a single step in a stream
@@ -295,8 +299,8 @@ drop n (Stream step s sz) = Stream step' (s, Just n) (sz - Exact n)
                            ) (step s)
                      
 
--- Mapping/zipping
--- ---------------
+-- Mapping
+-- -------
 
 instance Monad m => Functor (Stream m) where
   {-# INLINE fmap #-}
@@ -332,6 +336,9 @@ mapM_ m (Stream step s _) = mapM_go s
                     Skip    s' -> mapM_go s'
                     Done       -> return ()
 
+-- Zipping
+-- -------
+
 -- | Zip two 'Stream's with the given function
 zipWith :: Monad m => (a -> b -> c) -> Stream m a -> Stream m b -> Stream m c
 {-# INLINE zipWith #-}
@@ -360,6 +367,39 @@ zipWithM f (Stream stepa sa na) (Stream stepb sb nb)
                                      return $ Yield z (sa, sb', Nothing)
                                  Skip    sb' -> return $ Skip (sa, sb', Just x)
                                  Done        -> return $ Done
+
+-- | Zip three 'Stream's with the given function
+zipWith3 :: Monad m => (a -> b -> c -> d) -> Stream m a -> Stream m b -> Stream m c -> Stream m d
+{-# INLINE zipWith3 #-}
+zipWith3 f = zipWith3M (\a b c -> return (f a b c))
+
+-- | Zip three 'Stream's with the given monadic function
+zipWith3M :: Monad m => (a -> b -> c -> m d) -> Stream m a -> Stream m b -> Stream m c -> Stream m d
+{-# INLINE_STREAM zipWith3M #-}
+zipWith3M f (Stream stepa sa na) (Stream stepb sb nb) (Stream stepc sc nc)
+  = Stream step (sa, sb, sc, Nothing) (smaller na (smaller nb nc))
+  where
+    {-# INLINE step #-}
+    step (sa, sb, sc, Nothing) = do
+        r <- stepa sa
+        return $ case r of
+            Yield x sa' -> Skip (sa', sb, sc, Just (x, Nothing))
+            Skip    sa' -> Skip (sa', sb, sc, Nothing)
+            Done        -> Done
+
+    step (sa, sb, sc, Just (x, Nothing)) = do
+        r <- stepb sb
+        return $ case r of
+            Yield y sb' -> Skip (sa, sb', sc, Just (x, Just y))
+            Skip    sb' -> Skip (sa, sb', sc, Just (x, Nothing))
+            Done        -> Done
+
+    step (sa, sb, sc, Just (x, Just y)) = do
+        r <- stepc sc
+        case r of
+            Yield z sc' -> f x y z >>= (\res -> return $ Yield res (sa, sb, sc', Nothing))
+            Skip    sc' -> return $ Skip (sa, sb, sc', Just (x, Just y))
+            Done        -> return $ Done
 
 -- Filtering
 -- ---------

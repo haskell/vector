@@ -33,8 +33,11 @@ module Data.Vector.IVector (
   -- * Permutations
   accum, (//), update, backpermute, reverse,
 
-  -- * Mapping and zipping
-  map, zipWith, zip,
+  -- * Mapping
+  map, concatMap,
+
+  -- * Zipping and unzipping
+  zipWith, zipWith3, zip, zip3, unzip, unzip3,
 
   -- * Comparisons
   eq, cmp,
@@ -49,8 +52,7 @@ module Data.Vector.IVector (
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
  
   -- * Specialised folds
-  and, or, concatMap,
-  sum, product, maximum, minimum,
+  and, or, sum, product, maximum, minimum,
   
   -- * Enumeration
   enumFromTo, enumFromThenTo,
@@ -94,12 +96,12 @@ import Prelude hiding ( length, null,
                         replicate, (++),
                         head, last,
                         init, tail, take, drop, reverse,
-                        map, zipWith, zip,
+                        map, concatMap,
+                        zipWith, zipWith3, zip, zip3, unzip, unzip3,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
-                        and, or, concatMap,
-                        sum, product, maximum, minimum,
+                        and, or, sum, product, maximum, minimum,
                         enumFromTo, enumFromThenTo )
 
 -- | Class of immutable vectors.
@@ -384,8 +386,8 @@ reverse :: (IVector v a) => v a -> v a
 {-# INLINE reverse #-}
 reverse = new . New.reverse . New.unstream . stream
 
--- Mapping/zipping
--- ---------------
+-- Mapping
+-- -------
 
 -- | Map a function over a vector
 map :: (IVector v a, IVector v b) => (a -> b) -> v a -> v b
@@ -402,14 +404,38 @@ inplace_map f = unstream . inplace (MStream.map f) . stream
 
  #-}
 
+concatMap :: (IVector v a, IVector v b) => (a -> v b) -> v a -> v b
+{-# INLINE concatMap #-}
+concatMap f = unstream . Stream.concatMap (stream . f) . stream
+
+-- Zipping/unzipping
+-- -----------------
+
 -- | Zip two vectors with the given function.
 zipWith :: (IVector v a, IVector v b, IVector v c) => (a -> b -> c) -> v a -> v b -> v c
 {-# INLINE zipWith #-}
 zipWith f xs ys = unstream (Stream.zipWith f (stream xs) (stream ys))
 
+-- | Zip three vectors with the given function.
+zipWith3 :: (IVector v a, IVector v b, IVector v c, IVector v d) => (a -> b -> c -> d) -> v a -> v b -> v c -> v d
+{-# INLINE zipWith3 #-}
+zipWith3 f xs ys zs = unstream (Stream.zipWith3 f (stream xs) (stream ys) (stream zs))
+
 zip :: (IVector v a, IVector v b, IVector v (a,b)) => v a -> v b -> v (a, b)
 {-# INLINE zip #-}
 zip = zipWith (,)
+
+zip3 :: (IVector v a, IVector v b, IVector v c, IVector v (a, b, c)) => v a -> v b -> v c -> v (a, b, c)
+{-# INLINE zip3 #-}
+zip3 = zipWith3 (,,)
+
+unzip :: (IVector v a, IVector v b, IVector v (a,b)) => v (a, b) -> (v a, v b)
+{-# INLINE unzip #-}
+unzip xs = (map fst xs, map snd xs)
+
+unzip3 :: (IVector v a, IVector v b, IVector v c, IVector v (a, b, c)) => v (a, b, c) -> (v a, v b, v c)
+{-# INLINE unzip3 #-}
+unzip3 xs = (map (\(a, b, c) -> a) xs, map (\(a, b, c) -> b) xs, map (\(a, b, c) -> c) xs)
 
 -- Comparisons
 -- -----------
@@ -510,10 +536,6 @@ and = Stream.and . stream
 or :: IVector v Bool => v Bool -> Bool
 {-# INLINE or #-}
 or = Stream.or . stream
-
-concatMap :: (IVector v a, IVector v b) => (a -> v b) -> v a -> v b
-{-# INLINE concatMap #-}
-concatMap f = unstream . Stream.concatMap (stream . f) . stream
 
 sum :: (IVector v a, Num a) => v a -> a
 {-# INLINE sum #-}

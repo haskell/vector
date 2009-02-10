@@ -17,13 +17,18 @@ import Text.Show.Functions ()
 import Data.List           (foldl', foldl1', unfoldr, find, findIndex)
 
 #define COMMON_CONTEXT(a, v) \
-  Eq a, Eq (v a), \
-  Show a,     Arbitrary a,     Model a a, \
-  Show (v a), Arbitrary (v a), Model (v a) [a], V.IVector v a
+ VANILLA_CONTEXT(a, v), VECTOR_CONTEXT(a, v)
+
+#define VANILLA_CONTEXT(a, v) \
+  Eq a,     Show a,     Arbitrary a,     Model a a
+
+#define VECTOR_CONTEXT(a, v) \
+  Eq (v a), Show (v a), Arbitrary (v a), Model (v a) [a], V.IVector v a
 
 
--- TODO: implement Vector equivalents for some of the commented out list functions from Prelude
--- TODO: test and implement some of these other functions:
+-- TODO: implement Vector equivalents of list functions for some of the commented out properties
+
+-- TODO: test and implement some of these other Prelude functions:
 --  mapM *
 --  mapM_ *
 --  sequence
@@ -35,16 +40,24 @@ import Data.List           (foldl', foldl1', unfoldr, find, findIndex)
 --  scanr *
 --  scanr1 *
 --  lookup *
---  zip3 *
---  zipWith3 *
---  unzip *
---  unzip3 *
 --  lines
 --  words
 --  unlines
 --  unwords
 -- NB: this is an exhaustive list of all Prelude list functions that make sense for vectors.
 -- Ones with *s are the most plausible candidates.
+
+-- TODO: add tests for the other extra functions
+-- IVector exports still needing tests:
+--  copy,
+--  slice,
+--  (//), update, bpermute,
+--  prescanl, prescanl',
+--  new,
+--  unsafeSlice, unsafeIndex,
+--  vlength, vnew
+
+-- TODO: test non-IVector stuff?
 
 testSanity :: forall a v. (COMMON_CONTEXT(a, v)) => v a -> [Test]
 testSanity _ = [
@@ -66,7 +79,8 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_empty, 'prop_cons,
         'prop_head, 'prop_tail, 'prop_init, 'prop_last,
         'prop_drop, 'prop_dropWhile, 'prop_take, 'prop_takeWhile,
-        'prop_filter, 'prop_map, 'prop_zipWith, 'prop_replicate,
+        'prop_filter, 'prop_map, 'prop_replicate,
+        'prop_zipWith, 'prop_zipWith3,
         'prop_elem, 'prop_notElem,
         'prop_foldr, 'prop_foldl, 'prop_foldr1, 'prop_foldl1,
         'prop_foldl', 'prop_foldl1',
@@ -95,9 +109,9 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_takeWhile    = (V.takeWhile :: (a -> Bool) -> v a -> v a)    `eq2` takeWhile
     prop_filter       = (V.filter :: (a -> Bool) -> v a -> v a)       `eq2` filter
     prop_map          = (V.map :: (a -> a) -> v a -> v a)             `eq2` map
-    --prop_zip          = (V.zip :: v a -> v a -> v (a, a))             `eq2` zip
-    prop_zipWith      = (V.zipWith :: (a -> a -> a) -> v a -> v a -> v a) `eq3` zipWith
     prop_replicate    = (V.replicate :: Int -> a -> v a)              `eq2` replicate
+    prop_zipWith      = (V.zipWith :: (a -> a -> a) -> v a -> v a -> v a) `eq3` zipWith
+    prop_zipWith3     = (V.zipWith3 :: (a -> a -> a -> a) -> v a -> v a -> v a -> v a) `eq4` zipWith3
     --prop_span         = (V.span :: (a -> Bool) -> v a -> (v a, v a))  `eq2` span
     --prop_break        = (V.break :: (a -> Bool) -> v a -> (v a, v a)) `eq2` break
     --prop_splitAt      = (V.splitAt :: Int -> v a -> (v a, v a))       `eq2` splitAt
@@ -111,7 +125,6 @@ testPolymorphicFunctions _ = $(testProperties [
     --prop_any          = (V.any :: (a -> Bool) -> v a -> Bool)         `eq2` any
 
     -- Data.List
-    -- TODO: implement Vector equivalents for some of the commented out list functions from Data.List
     prop_foldl'       = (V.foldl' :: (a -> a -> a) -> a -> v a -> a)     `eq3` foldl'
     prop_foldl1'      = (V.foldl1' :: (a -> a -> a) -> v a -> a)         `eqNotNull2` foldl1'
     prop_find         = (V.find :: (a -> Bool) -> v a -> Maybe a)        `eq2` find
@@ -143,16 +156,14 @@ testPolymorphicFunctions _ = $(testProperties [
     
     snoc xs x = xs ++ [x]
     prop_snoc = (V.snoc :: v a -> a -> v a) `eq2` snoc
-    
-    -- TODO: add tests for the other extra functions
-    -- IVector exports still needing tests:
-    --  copy,
-    --  slice,
-    --  (//), update, bpermute,
-    --  prescanl, prescanl',
-    --  new,
-    --  unsafeSlice, unsafeIndex,
-    --  vlength, vnew
+
+testTuplyFunctions:: forall a v. (COMMON_CONTEXT(a, v), VECTOR_CONTEXT((a, a), v), VECTOR_CONTEXT((a, a, a), v)) => v a -> [Test]
+testTuplyFunctions _ = $(testProperties ['prop_zip, 'prop_zip3, 'prop_unzip, 'prop_unzip3])
+  where
+    prop_zip          = (V.zip :: v a -> v a -> v (a, a))             `eq2` zip
+    prop_zip3         = (V.zip3 :: v a -> v a -> v a -> v (a, a, a))  `eq3` zip3
+    prop_unzip        = (V.unzip :: v (a, a) -> (v a, v a))           `eq1` unzip
+    prop_unzip3       = (V.unzip3 :: v (a, a, a) -> (v a, v a, v a))  `eq1` unzip3
 
 testOrdFunctions :: forall a v. (COMMON_CONTEXT(a, v), Ord a, Ord (v a)) => v a -> [Test]
 testOrdFunctions _ = $(testProperties ['prop_compare, 'prop_maximum, 'prop_minimum])
@@ -197,6 +208,7 @@ testGeneralBoxedVector dummy = concatMap ($ dummy) [
         testPolymorphicFunctions,
         testOrdFunctions,
         testEnumFunctions,
+        testTuplyFunctions,
         testNestedVectorFunctions
     ]
 
@@ -213,7 +225,6 @@ testGeneralUnboxedVector dummy = concatMap ($ dummy) [
 testBoolUnboxedVector dummy = testGeneralUnboxedVector dummy ++ testBoolFunctions dummy
 testNumericUnboxedVector dummy = testGeneralUnboxedVector dummy ++ testNumFunctions dummy
 
--- TODO: test non-IVector stuff?
 tests = [
         testGroup "Data.Vector.Vector (Bool)"           (testBoolBoxedVector      (undefined :: Data.Vector.Vector Bool)),
         testGroup "Data.Vector.Vector (Int)"            (testNumericBoxedVector   (undefined :: Data.Vector.Vector Int)),
