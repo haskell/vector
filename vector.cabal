@@ -10,11 +10,9 @@ Category:       Data Structures
 Synopsis:       Efficient Arrays
 Description:
         .
-        An efficient implementation of Int-indexed arrays with a powerful
-        loop fusion framework.
+        An efficient but highly experimental implementation of Int-indexed
+        arrays with a powerful loop fusion framework.
         .
-        This code is highly experimental and for the most part untested. Use
-        at your own risk!
 
 Cabal-Version:  >= 1.2
 Build-Type:     Simple
