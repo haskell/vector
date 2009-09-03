@@ -31,7 +31,7 @@ module Data.Vector.IVector (
   slice, init, tail, take, drop,
 
   -- * Permutations
-  (//), update, bpermute,
+  accum, (//), update, backpermute, reverse,
 
   -- * Mapping and zipping
   map, zipWith, zip,
