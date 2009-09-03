@@ -68,6 +68,8 @@ import Prelude hiding ( length, null,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1 )
 
+import qualified Prelude
+
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
                                       (Array# a)
