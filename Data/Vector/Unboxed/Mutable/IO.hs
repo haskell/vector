@@ -1,7 +1,7 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 
 -- |
--- Module      : Data.Vector.Mutable.IO
+-- Module      : Data.Vector.Mutable.Unboxed.IO
 -- Copyright   : (c) Roman Leshchinskiy 2009
 -- License     : BSD-style
 --
@@ -9,14 +9,15 @@
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Mutable boxed vectors in the IO monad.
+-- Mutable unboxed vectors in the IO monad.
 --
 
-module Data.Vector.Mutable.IO ( Vector(..) )
+module Data.Vector.Unboxed.Mutable.IO ( Vector(..) )
 where
 
 import           Data.Vector.MVector ( MVector(..), MVectorPure(..) )
-import qualified Data.Vector.Mutable.ST as STV
+import qualified Data.Vector.Unboxed.Mutable.ST as STV
+import           Data.Vector.Unboxed.Unbox ( Unbox )
 
 import GHC.Base   ( RealWorld )
 import GHC.ST     ( ST(..) )
@@ -27,7 +28,7 @@ import Prelude hiding ( length )
 -- | IO-based mutable vectors
 newtype Vector a = Vector (STV.Vector RealWorld a)
 
-instance MVectorPure Vector a where
+instance Unbox a => MVectorPure Vector a where
   {-# INLINE length #-}
   length (Vector v) = length v
 
@@ -37,7 +38,7 @@ instance MVectorPure Vector a where
   {-# INLINE overlaps #-}
   overlaps (Vector v1) (Vector v2) = overlaps v1 v2
 
-instance MVector Vector IO a where
+instance Unbox a => MVector Vector IO a where
   {-# INLINE unsafeNew #-}
   unsafeNew n = Vector `fmap` stToIO (unsafeNew n)
 
