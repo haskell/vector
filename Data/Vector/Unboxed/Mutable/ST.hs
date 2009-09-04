@@ -1,7 +1,7 @@
 {-# LANGUAGE MagicHash, UnboxedTuples, MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables #-}
 
 -- |
--- Module      : Data.Vector.Unboxed.Mutable
+-- Module      : Data.Vector.Unboxed.Mutable.ST
 -- Copyright   : (c) Roman Leshchinskiy 2008
 -- License     : BSD-style
 --
@@ -9,10 +9,10 @@
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Mutable unboxed vectors based on 'Unbox'.
+-- Mutable unboxed vectors based on 'Unbox' in the ST monad.
 --
 
-module Data.Vector.Unboxed.Mutable ( Vector(..) )
+module Data.Vector.Unboxed.Mutable.ST ( Vector(..) )
 where
 
 import qualified Data.Vector.MVector as MVector

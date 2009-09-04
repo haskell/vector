@@ -17,7 +17,7 @@ module Data.Vector.Unboxed (
 ) where
 
 import           Data.Vector.IVector
-import qualified Data.Vector.Unboxed.Mutable as Mut
+import qualified Data.Vector.Unboxed.Mutable.ST as Mut
 import           Data.Vector.Unboxed.Unbox
 
 import Control.Monad.ST ( runST )
