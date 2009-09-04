@@ -28,7 +28,7 @@ module Data.Vector (
   slice, init, tail, take, drop,
 
   -- * Permutations
-  accum, (//), update, backpermute,
+  accum, (//), update, backpermute, reverse,
 
   -- * Mapping and zipping
   map, zipWith, zip,
@@ -62,7 +62,7 @@ import GHC.Base ( Int(..) )
 import Prelude hiding ( length, null,
                         replicate, (++),
                         head, last,
-                        init, tail, take, drop,
+                        init, tail, take, drop, reverse,
                         map, zipWith, zip,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
@@ -219,6 +219,10 @@ update = IV.update
 backpermute :: Vector a -> Vector Int -> Vector a
 {-# INLINE backpermute #-}
 backpermute = IV.backpermute
+
+reverse :: Vector a -> Vector a
+{-# INLINE reverse #-}
+reverse = IV.reverse
 
 -- Mapping/zipping
 -- ---------------
