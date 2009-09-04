@@ -39,6 +39,7 @@ Library
         Data.Vector.Unboxed
 
         Data.Vector.Mutable.ST
+        Data.Vector.Mutable.IO
         Data.Vector
   Include-Dirs:
         include
