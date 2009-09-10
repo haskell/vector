@@ -22,7 +22,7 @@ module Data.Vector (
   empty, singleton, cons, snoc, replicate, (++), copy,
 
   -- * Accessing individual elements
-  (!), head, last,
+  (!), head, last, indexM, headM, lastM,
 
   -- * Subvectors
   slice, init, tail, take, drop,
@@ -30,8 +30,11 @@ module Data.Vector (
   -- * Permutations
   accum, (//), update, backpermute, reverse,
 
-  -- * Mapping and zipping
-  map, zipWith, zip,
+  -- * Mapping
+  map, concatMap,
+
+  -- * Zipping and unzipping
+  zipWith, zipWith3, zip, zip3, unzip, unzip3,
 
   -- * Filtering
   filter, takeWhile, dropWhile,
@@ -42,8 +45,17 @@ module Data.Vector (
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
 
+  -- * Specialised folds
+  and, or, sum, product, maximum, minimum,
+
+  -- * Unfolding
+  unfoldr,
+
   -- * Scans
   prescanl, prescanl',
+
+  -- * Enumeration
+  enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
   toList, fromList
@@ -63,10 +75,13 @@ import Prelude hiding ( length, null,
                         replicate, (++),
                         head, last,
                         init, tail, take, drop, reverse,
-                        map, zipWith, zip,
+                        map, concatMap,
+                        zipWith, zipWith3, zip, zip3, unzip, unzip3,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
-                        foldl, foldl1, foldr, foldr1 )
+                        foldl, foldl1, foldr, foldr1,
+                        and, or, sum, product, minimum, maximum,
+                        enumFromTo, enumFromThenTo )
 
 import qualified Prelude
 
@@ -170,6 +185,20 @@ last :: Vector a -> a
 {-# INLINE last #-}
 last = IV.last
 
+-- | Monadic indexing which can be strict in the vector while remaining lazy in
+-- the element
+indexM :: Monad m => Vector a -> Int -> m a
+{-# INLINE indexM #-}
+indexM = IV.indexM
+
+headM :: Monad m => Vector a -> m a
+{-# INLINE headM #-}
+headM = IV.headM
+
+lastM :: Monad m => Vector a -> m a
+{-# INLINE lastM #-}
+lastM = IV.lastM
+
 -- Subarrays
 -- ---------
 
@@ -224,22 +253,46 @@ reverse :: Vector a -> Vector a
 {-# INLINE reverse #-}
 reverse = IV.reverse
 
--- Mapping/zipping
--- ---------------
+-- Mapping
+-- -------
 
 -- | Map a function over a vector
 map :: (a -> b) -> Vector a -> Vector b
 {-# INLINE map #-}
 map = IV.map
 
+concatMap :: (a -> Vector b) -> Vector a -> Vector b
+{-# INLINE concatMap #-}
+concatMap = IV.concatMap
+
+-- Zipping/unzipping
+-- -----------------
+
 -- | Zip two vectors with the given function.
 zipWith :: (a -> b -> c) -> Vector a -> Vector b -> Vector c
 {-# INLINE zipWith #-}
 zipWith = IV.zipWith
 
+-- | Zip three vectors with the given function.
+zipWith3 :: (a -> b -> c -> d) -> Vector a -> Vector b -> Vector c -> Vector d
+{-# INLINE zipWith3 #-}
+zipWith3 = IV.zipWith3
+
 zip :: Vector a -> Vector b -> Vector (a, b)
 {-# INLINE zip #-}
 zip = IV.zip
+
+zip3 :: Vector a -> Vector b -> Vector c -> Vector (a, b, c)
+{-# INLINE zip3 #-}
+zip3 = IV.zip3
+
+unzip :: Vector (a, b) -> (Vector a, Vector b)
+{-# INLINE unzip #-}
+unzip = IV.unzip
+
+unzip3 :: Vector (a, b, c) -> (Vector a, Vector b, Vector c)
+{-# INLINE unzip3 #-}
+unzip3 = IV.unzip3
 
 -- Filtering
 -- ---------
@@ -319,6 +372,40 @@ foldr1 :: (a -> a -> a) -> Vector a -> a
 {-# INLINE foldr1 #-}
 foldr1 = IV.foldr1
 
+-- Specialised folds
+-- -----------------
+
+and :: Vector Bool -> Bool
+{-# INLINE and #-}
+and = IV.and
+
+or :: Vector Bool -> Bool
+{-# INLINE or #-}
+or = IV.or
+
+sum :: Num a => Vector a -> a
+{-# INLINE sum #-}
+sum = IV.sum
+
+product :: Num a => Vector a -> a
+{-# INLINE product #-}
+product = IV.product
+
+maximum :: Ord a => Vector a -> a
+{-# INLINE maximum #-}
+maximum = IV.maximum
+
+minimum :: Ord a => Vector a -> a
+{-# INLINE minimum #-}
+minimum = IV.minimum
+
+-- Unfolding
+-- ---------
+
+unfoldr :: (b -> Maybe (a, b)) -> b -> Vector a
+{-# INLINE unfoldr #-}
+unfoldr = IV.unfoldr
+
 -- Scans
 -- -----
 
@@ -331,6 +418,20 @@ prescanl = IV.prescanl
 prescanl' :: (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE prescanl' #-}
 prescanl' = IV.prescanl'
+
+-- Enumeration
+-- -----------
+
+enumFromTo :: Enum a => a -> a -> Vector a
+{-# INLINE enumFromTo #-}
+enumFromTo = IV.enumFromTo
+
+enumFromThenTo :: Enum a => a -> a -> a -> Vector a
+{-# INLINE enumFromThenTo #-}
+enumFromThenTo = IV.enumFromThenTo
+
+-- Conversion to/from lists
+-- ------------------------
 
 -- | Convert a vector to a list
 toList :: Vector a -> [a]
