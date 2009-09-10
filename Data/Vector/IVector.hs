@@ -73,7 +73,7 @@ module Data.Vector.IVector (
   new,
 
   -- * Unsafe functions
-  unsafeSlice, unsafeIndex,
+  unsafeSlice, unsafeIndexM,
 
   -- * Utility functions
   vlength, vnew
@@ -117,26 +117,28 @@ class IVector v a where
   -- | Yield a part of the vector without copying it. No range checks!
   unsafeSlice  :: v a -> Int -> Int -> v a
 
-  -- | Apply the given function to the element at the given position. This
-  -- interface prevents us from being too lazy. Suppose we had
+  -- | Yield the element at the given position in a monad. The monad allows us
+  -- to be strict in the vector if we want. Suppose we had
   --
-  -- > unsafeIndex' :: v a -> Int -> a
+  -- > unsafeIndex :: v a -> Int -> a
   --
   -- instead. Now, if we wanted to copy a vector, we'd do something like
   --
-  -- > copy mv v ... = ... unsafeWrite mv i (unsafeIndex' v i) ...
+  -- > copy mv v ... = ... unsafeWrite mv i (unsafeIndex v i) ...
   --
   -- For lazy vectors, the indexing would not be evaluated which means that we
   -- would retain a reference to the original vector in each element we write.
-  -- This would be bad!
+  -- This is not what we want!
   --
-  -- With 'unsafeIndex', we can do
+  -- With 'unsafeIndexM', we can do
   --
-  -- > copy mv v ... = ... unsafeIndex v i (unsafeWrite mv i) ...
+  -- > copy mv v ... = ... case unsafeIndexM v i of
+  --                         Box x -> unsafeWrite mv i x ...
   --
-  -- which does not have this problem.
+  -- which does not have this problem because indexing (but not the returned
+  -- element!) is evaluated immediately.
   --
-  unsafeIndex  :: v a -> Int -> (a -> b) -> b
+  unsafeIndexM  :: Monad m => v a -> Int -> m a
 
 -- Fusion
 -- ------
@@ -162,7 +164,7 @@ stream v = v `seq` (Stream.unfoldr get 0 `Stream.sized` Exact n)
     n = length v
 
     {-# INLINE get #-}
-    get i | i < n     = unsafeIndex v i $ \x -> Just (x, i+1)
+    get i | i < n     = case unsafeIndexM v i of Box x -> Just (x, i+1)
           | otherwise = Nothing
 
 -- | Create a vector from a 'Stream'
@@ -281,7 +283,7 @@ copy = unstream . stream
 (!) :: IVector v a => v a -> Int -> a
 {-# INLINE_STREAM (!) #-}
 v ! i = assert (i >= 0 && i < length v)
-      $ unsafeIndex v i id
+      $ unId (unsafeIndexM v i)
 
 -- | First element
 head :: IVector v a => v a -> a
@@ -311,7 +313,7 @@ last v = v ! (length v - 1)
 indexM :: (IVector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_STREAM indexM #-}
 indexM v i = assert (i >= 0 && i < length v)
-           $ unsafeIndex v i return
+           $ unsafeIndexM v i
 
 headM :: (IVector v a, Monad m) => v a -> m a
 {-# INLINE_STREAM headM #-}

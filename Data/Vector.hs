@@ -90,9 +90,9 @@ instance IVector Vector a where
   {-# INLINE unsafeSlice #-}
   unsafeSlice (Vector i _ arr#) j n = Vector (i+j) n arr#
 
-  {-# INLINE unsafeIndex #-}
-  unsafeIndex (Vector (I# i#) _ arr#) (I# j#) f
-    = case indexArray# arr# (i# +# j#) of (# x #) -> f x
+  {-# INLINE unsafeIndexM #-}
+  unsafeIndexM (Vector (I# i#) _ arr#) (I# j#)
+    = case indexArray# arr# (i# +# j#) of (# x #) -> return x
 
 instance Eq a => Eq (Vector a) where
   {-# INLINE (==) #-}

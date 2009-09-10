@@ -47,8 +47,8 @@ instance Unbox a => IVector Vector a where
   {-# INLINE unsafeSlice #-}
   unsafeSlice (Vector i _ arr#) j n = Vector (i+j) n arr#
 
-  {-# INLINE unsafeIndex #-}
-  unsafeIndex (Vector (I# i#) _ arr#) (I# j#) f = f (at# arr# (i# +# j#))
+  {-# INLINE unsafeIndexM #-}
+  unsafeIndexM (Vector (I# i#) _ arr#) (I# j#) = return (at# arr# (i# +# j#))
 
 instance (Unbox a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
