@@ -25,7 +25,7 @@ module Data.Vector.IVector (
   empty, singleton, cons, snoc, replicate, (++), copy,
 
   -- * Accessing individual elements
-  (!), head, last,
+  (!), head, last, indexM, headM, lastM,
 
   -- * Subvectors
   slice, init, tail, take, drop,
@@ -302,6 +302,34 @@ last v = v ! (length v - 1)
 
 "last/unstream [IVector]" forall v s.
   last (new' v (New.unstream s)) = Stream.last s
+
+ #-}
+
+-- | Monadic indexing which can be strict in the array while remaining lazy in
+-- the element.
+indexM :: (IVector v a, Monad m) => v a -> Int -> m a
+{-# INLINE_STREAM indexM #-}
+indexM v i = assert (i >= 0 && i < length v)
+           $ unsafeIndex v i return
+
+headM :: (IVector v a, Monad m) => v a -> m a
+{-# INLINE_STREAM headM #-}
+headM v = indexM v 0
+
+lastM :: (IVector v a, Monad m) => v a -> m a
+{-# INLINE_STREAM lastM #-}
+lastM v = indexM v (length v - 1)
+
+{-# RULES
+
+"indexM/unstream [IVector]" forall v i s.
+  indexM (new' v (New.unstream s)) i = return (s Stream.!! i)
+
+"headM/unstream [IVector]" forall v s.
+  headM (new' v (New.unstream s)) = return (Stream.head s)
+
+"lastM/unstream [IVector]" forall v s.
+  lastM (new' v (New.unstream s)) = return (Stream.last s)
 
  #-}
 
