@@ -89,6 +89,7 @@ import qualified Data.Vector.Fusion.Stream as Stream
 import           Data.Vector.Fusion.Stream ( Stream, MStream )
 import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
+import           Data.Vector.Fusion.Util
 
 import Control.Exception ( assert )
 
@@ -406,9 +407,18 @@ update :: (IVector v a, IVector v (Int, a)) => v a -> v (Int, a) -> v a
 {-# INLINE update #-}
 update v w = new (New.update (New.unstream (stream v)) (stream w))
 
+-- This somewhat non-intuitive definition ensures that the resulting vector
+-- does not retain references to the original one even if it is lazy in its
+-- elements. This would not be the case if we simply used
+--
+-- backpermute v is = map (v!) is
 backpermute :: (IVector v a, IVector v Int) => v a -> v Int -> v a
 {-# INLINE backpermute #-}
-backpermute v is = v `seq` map (v!) is
+backpermute v is = unstream
+                 . MStream.trans (Id . unBox)
+                 . MStream.mapM (indexM v)
+                 . MStream.trans (Box . unId)
+                 $ stream is
 
 reverse :: (IVector v a) => v a -> v a
 {-# INLINE reverse #-}
