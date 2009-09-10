@@ -16,7 +16,7 @@
 
 module Data.Vector.Fusion.Stream (
   -- * Types
-  Step(..), Stream, MStream, Id(..),
+  Step(..), Stream, MStream,
 
   -- * Size hints
   size, sized,
@@ -65,6 +65,7 @@ module Data.Vector.Fusion.Stream (
 ) where
 
 import Data.Vector.Fusion.Stream.Size
+import Data.Vector.Fusion.Util
 import Data.Vector.Fusion.Stream.Monadic ( Step(..) )
 import qualified Data.Vector.Fusion.Stream.Monadic as M
 
@@ -79,17 +80,6 @@ import Prelude hiding ( length, null,
                         foldl, foldl1, foldr, foldr1,
                         and, or,
                         mapM_ )
-
-
--- | Identity monad
-newtype Id a = Id { unId :: a }
-
-instance Functor Id where
-  fmap f (Id x) = Id (f x)
-
-instance Monad Id where
-  return     = Id
-  Id x >>= f = f x
 
 -- | The type of pure streams 
 type Stream = M.Stream Id
