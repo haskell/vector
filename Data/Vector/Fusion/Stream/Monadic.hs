@@ -1,4 +1,4 @@
-{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE ExistentialQuantification, Rank2Types #-}
 
 -- |
 -- Module      : Data.Vector.Fusion.Stream.Monadic
@@ -33,7 +33,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   extract, init, tail, take, drop,
 
   -- * Mapping
-  map, mapM, mapM_, concatMap,
+  map, mapM, mapM_, trans, concatMap,
   
   -- * Zipping
   zipWith, zipWithM, zipWith3, zipWith3M,
@@ -335,6 +335,12 @@ mapM_ m (Stream step s _) = mapM_go s
                     Yield x s' -> do { m x; mapM_go s' }
                     Skip    s' -> mapM_go s'
                     Done       -> return ()
+
+-- | Transform a 'Stream' to use a different monad
+trans :: (Monad m, Monad m') => (forall a. m a -> m' a)
+                             -> Stream m a -> Stream m' a
+{-# INLINE_STREAM trans #-}
+trans f (Stream step s n) = Stream (f . step) s n
 
 -- Zipping
 -- -------
