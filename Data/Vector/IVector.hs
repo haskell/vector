@@ -565,6 +565,7 @@ enumFromTo from to = from `seq` to `seq` unfoldr enumFromTo_go (fromEnum from)
                     | otherwise = Nothing
 
 enumFromThenTo :: (IVector v a, Enum a) => a -> a -> a -> v a
+{-# INLINE enumFromThenTo #-}
 enumFromThenTo from next to = from `seq` next `seq` to `seq` unfoldr enumFromThenTo_go from_i
   where
     from_i = fromEnum from
