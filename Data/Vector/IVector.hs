@@ -53,15 +53,15 @@ module Data.Vector.IVector (
  
   -- * Specialised folds
   and, or, sum, product, maximum, minimum,
-  
-  -- * Enumeration
-  enumFromTo, enumFromThenTo,
 
   -- * Unfolding
   unfoldr,
 
   -- * Scans
   prescanl, prescanl',
+
+  -- * Enumeration
+  enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
   toList, fromList,
@@ -308,7 +308,7 @@ last v = v ! (length v - 1)
 
  #-}
 
--- | Monadic indexing which can be strict in the array while remaining lazy in
+-- | Monadic indexing which can be strict in the vector while remaining lazy in
 -- the element.
 indexM :: (IVector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_STREAM indexM #-}
@@ -593,27 +593,6 @@ minimum :: (IVector v a, Ord a) => v a -> a
 {-# INLINE minimum #-}
 minimum = Stream.foldl1' min . stream
 
--- Enumeration
--- -----------
-
-enumFromTo :: (IVector v a, Enum a) => a -> a -> v a
-{-# INLINE enumFromTo #-}
-enumFromTo from to = from `seq` to `seq` unfoldr enumFromTo_go (fromEnum from)
-  where
-    to_i = fromEnum to
-    enumFromTo_go i | i <= to_i = Just (toEnum i, i + 1)
-                    | otherwise = Nothing
-
-enumFromThenTo :: (IVector v a, Enum a) => a -> a -> a -> v a
-{-# INLINE enumFromThenTo #-}
-enumFromThenTo from next to = from `seq` next `seq` to `seq` unfoldr enumFromThenTo_go from_i
-  where
-    from_i = fromEnum from
-    to_i = fromEnum to
-    step_i = fromEnum next - from_i
-    enumFromThenTo_go i | i <= to_i = Just (toEnum i, i + step_i)
-                        | otherwise = Nothing
-
 -- Unfolding
 -- ---------
 
@@ -654,6 +633,27 @@ inplace_prescanl' f z = unstream . inplace (MStream.prescanl' f z) . stream
 
  #-}
 
+
+-- Enumeration
+-- -----------
+
+enumFromTo :: (IVector v a, Enum a) => a -> a -> v a
+{-# INLINE enumFromTo #-}
+enumFromTo from to = from `seq` to `seq` unfoldr enumFromTo_go (fromEnum from)
+  where
+    to_i = fromEnum to
+    enumFromTo_go i | i <= to_i = Just (toEnum i, i + 1)
+                    | otherwise = Nothing
+
+enumFromThenTo :: (IVector v a, Enum a) => a -> a -> a -> v a
+{-# INLINE enumFromThenTo #-}
+enumFromThenTo from next to = from `seq` next `seq` to `seq` unfoldr enumFromThenTo_go from_i
+  where
+    from_i = fromEnum from
+    to_i = fromEnum to
+    step_i = fromEnum next - from_i
+    enumFromThenTo_go i | i <= to_i = Just (toEnum i, i + step_i)
+                        | otherwise = Nothing
 
 -- | Convert a vector to a list
 toList :: IVector v a => v a -> [a]
