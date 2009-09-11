@@ -133,7 +133,7 @@ class IVector v a where
   -- With 'unsafeIndexM', we can do
   --
   -- > copy mv v ... = ... case unsafeIndexM v i of
-  --                         Box x -> unsafeWrite mv i x ...
+  -- >                       Box x -> unsafeWrite mv i x ...
   --
   -- which does not have this problem because indexing (but not the returned
   -- element!) is evaluated immediately.
