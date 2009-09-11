@@ -49,7 +49,7 @@ Library
   Install-Includes:
         phases.h
 
-  Build-Depends: base, array, ghc-prim,
+  Build-Depends: base >= 2 && < 4, array, ghc-prim,
                  ghc >= 6.9
 
 -- -finline-if-enough-args is ESSENTIAL. If we don't have this the partial application
