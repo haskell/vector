@@ -17,6 +17,15 @@ Description:
 Cabal-Version:  >= 1.2
 Build-Type:     Simple
 
+Extra-Source-Files:
+      tests/vector-tests.cabal
+      tests/LICENSE
+      tests/Setup.hs
+      tests/Main.hs
+      tests/Boilerplater.hs
+      tests/Properties.hs
+      tests/Utilities.hs
+
 Flag EnableAssertions
   Description: Enable assertions that check parameters to functions are reasonable.
                These will impose a moderate performance cost on users of the library,
