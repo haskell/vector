@@ -16,7 +16,7 @@
 
 module Data.Vector.IVector (
   -- * Immutable vectors
-  IVector,
+  IVector(..),
 
   -- * Length information
   length, null,
@@ -72,13 +72,7 @@ module Data.Vector.IVector (
   stream, unstream,
 
   -- * MVector-based initialisation
-  new,
-
-  -- * Unsafe functions
-  unsafeSlice, unsafeIndexM,
-
-  -- * Utility functions
-  vlength, vnew
+  new
 ) where
 
 import qualified Data.Vector.MVector as MVector
