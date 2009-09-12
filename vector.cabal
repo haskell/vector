@@ -49,6 +49,10 @@ Library
         Data.Vector.Unboxed.Mutable.IO
         Data.Vector.Unboxed
 
+        Data.Vector.Storable.Internal
+        Data.Vector.Storable.Mutable
+        Data.Vector.Storable
+
         Data.Vector.Mutable.ST
         Data.Vector.Mutable.IO
         Data.Vector
