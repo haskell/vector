@@ -60,7 +60,7 @@ module Data.Vector.IVector (
   -- * Scans
   prescanl, prescanl',
   postscanl, postscanl',
-  scanl, scanl',
+  scanl, scanl', scanl1, scanl1',
 
   -- * Enumeration
   enumFromTo, enumFromThenTo,
@@ -105,7 +105,7 @@ import Prelude hiding ( length, null,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         and, or, sum, product, maximum, minimum,
-                        scanl,
+                        scanl, scanl1,
                         enumFromTo, enumFromThenTo )
 
 -- | Class of immutable vectors.
@@ -675,6 +675,16 @@ scanl f z = unstream . Stream.scanl f z . stream
 scanl' :: (IVector v a, IVector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE scanl' #-}
 scanl' f z = unstream . Stream.scanl' f z . stream
+
+-- | Scan over a non-empty vector
+scanl1 :: IVector v a => (a -> a -> a) -> v a -> v a
+{-# INLINE scanl1 #-}
+scanl1 f = unstream . inplace (MStream.scanl1 f) . stream
+
+-- | Scan over a non-empty vector with a strict accumulator
+scanl1' :: IVector v a => (a -> a -> a) -> v a -> v a
+{-# INLINE scanl1' #-}
+scanl1' f = unstream . inplace (MStream.scanl1' f) . stream
 
 -- Enumeration
 -- -----------

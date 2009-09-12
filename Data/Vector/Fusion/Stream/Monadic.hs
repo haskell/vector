@@ -59,6 +59,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   prescanl, prescanlM, prescanl', prescanlM',
   postscanl, postscanlM, postscanl', postscanlM',
   scanl, scanlM, scanl', scanlM',
+  scanl1, scanl1M, scanl1', scanl1M',
 
   -- * Conversions
   toList, fromList
@@ -77,7 +78,7 @@ import Prelude hiding ( length, null,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         and, or,
-                        scanl )
+                        scanl, scanl1 )
 import qualified Prelude
 
 -- | Result of taking a single step in a stream
@@ -851,6 +852,62 @@ scanl' f = scanlM' (\a b -> return (f a b))
 scanlM' :: Monad m => (a -> b -> m a) -> a -> Stream m b -> Stream m a
 {-# INLINE scanlM' #-}
 scanlM' f z s = z `seq` (z `cons` postscanlM f z s)
+
+-- | Scan over a non-empty 'Stream'
+scanl1 :: Monad m => (a -> a -> a) -> Stream m a -> Stream m a
+{-# INLINE scanl1 #-}
+scanl1 f = scanl1M (\x y -> return (f x y))
+
+-- | Scan over a non-empty 'Stream' with a monadic operator
+scanl1M :: Monad m => (a -> a -> m a) -> Stream m a -> Stream m a
+{-# INLINE_STREAM scanl1M #-}
+scanl1M f (Stream step s sz) = Stream step' (s, Nothing) sz
+  where
+    {-# INLINE step' #-}
+    step' (s, Nothing) = do
+                           r <- step s
+                           case r of
+                             Yield x s' -> return $ Yield x (s', Just x)
+                             Skip    s' -> return $ Skip (s', Nothing)
+                             Done       -> errorEmptyStream "scanl1M"
+
+    step' (s, Just x) = do
+                          r <- step s
+                          case r of
+                            Yield y s' -> do
+                                            z <- f x y
+                                            return $ Yield z (s', Just z)
+                            Skip    s' -> return $ Skip (s', Just x)
+                            Done       -> return Done
+
+-- | Scan over a non-empty 'Stream' with a strict accumulator
+scanl1' :: Monad m => (a -> a -> a) -> Stream m a -> Stream m a
+{-# INLINE scanl1' #-}
+scanl1' f = scanl1M' (\x y -> return (f x y))
+
+-- | Scan over a non-empty 'Stream' with a strict accumulator and a monadic
+-- operator
+scanl1M' :: Monad m => (a -> a -> m a) -> Stream m a -> Stream m a
+{-# INLINE_STREAM scanl1M' #-}
+scanl1M' f (Stream step s sz) = Stream step' (s, Nothing) sz
+  where
+    {-# INLINE step' #-}
+    step' (s, Nothing) = do
+                           r <- step s
+                           case r of
+                             Yield x s' -> x `seq` return (Yield x (s', Just x))
+                             Skip    s' -> return $ Skip (s', Nothing)
+                             Done       -> errorEmptyStream "scanl1M"
+
+    step' (s, Just x) = x `seq`
+                        do
+                          r <- step s
+                          case r of
+                            Yield y s' -> do
+                                            z <- f x y
+                                            z `seq` return (Yield z (s', Just z))
+                            Skip    s' -> return $ Skip (s', Just x)
+                            Done       -> return Done
 
 -- Conversions
 -- -----------

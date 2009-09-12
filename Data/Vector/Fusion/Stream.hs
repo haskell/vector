@@ -58,6 +58,7 @@ module Data.Vector.Fusion.Stream (
   prescanl, prescanl',
   postscanl, postscanl',
   scanl, scanl',
+  scanl1, scanl1',
 
   -- * Conversions
   toList, fromList, liftStream,
@@ -81,7 +82,7 @@ import Prelude hiding ( length, null,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         and, or,
-                        scanl,
+                        scanl, scanl1,
                         mapM_ )
 
 -- | The type of pure streams 
@@ -354,6 +355,17 @@ scanl = M.scanl
 scanl' :: (a -> b -> a) -> a -> Stream b -> Stream a
 {-# INLINE scanl' #-}
 scanl' = M.scanl'
+
+-- | Scan over a non-empty 'Stream'
+scanl1 :: (a -> a -> a) -> Stream a -> Stream a
+{-# INLINE scanl1 #-}
+scanl1 = M.scanl1
+
+-- | Scan over a non-empty 'Stream' with a strict accumulator
+scanl1' :: (a -> a -> a) -> Stream a -> Stream a
+{-# INLINE scanl1' #-}
+scanl1' = M.scanl1'
+
 
 -- Comparisons
 -- -----------

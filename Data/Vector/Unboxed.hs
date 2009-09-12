@@ -54,7 +54,7 @@ module Data.Vector.Unboxed (
   -- * Scans
   prescanl, prescanl',
   postscanl, postscanl',
-  scanl, scanl',
+  scanl, scanl', scanl1, scanl1',
 
   -- * Enumeration
   enumFromTo, enumFromThenTo,
@@ -84,7 +84,7 @@ import Prelude hiding ( length, null,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         and, or, sum, product, minimum, maximum,
-                        scanl,
+                        scanl, scanl1,
                         enumFromTo, enumFromThenTo )
 
 import qualified Prelude
@@ -412,6 +412,16 @@ scanl = IV.scanl
 scanl' :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE scanl' #-}
 scanl' = IV.scanl'
+
+-- | Scan over a non-empty 'Vector'
+scanl1 :: Unbox a => (a -> a -> a) -> Vector a -> Vector a
+{-# INLINE scanl1 #-}
+scanl1 = IV.scanl1
+
+-- | Scan over a non-empty 'Vector' with a strict accumulator
+scanl1' :: Unbox a => (a -> a -> a) -> Vector a -> Vector a
+{-# INLINE scanl1' #-}
+scanl1' = IV.scanl1'
 
 -- Enumeration
 -- -----------
