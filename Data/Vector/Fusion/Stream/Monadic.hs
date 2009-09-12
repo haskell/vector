@@ -57,6 +57,8 @@ module Data.Vector.Fusion.Stream.Monadic (
 
   -- * Scans
   prescanl, prescanlM, prescanl', prescanlM',
+  postscanl, postscanlM, postscanl', postscanlM',
+  scanl, scanlM, scanl', scanlM',
 
   -- * Conversions
   toList, fromList
@@ -74,7 +76,8 @@ import Prelude hiding ( length, null,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
-                        and, or )
+                        and, or,
+                        scanl )
 import qualified Prelude
 
 -- | Result of taking a single step in a stream
@@ -787,6 +790,67 @@ prescanlM' f z (Stream step s sz) = Stream step' (s,z) sz
                                       return $ Yield x (s', z)
                       Skip    s' -> return $ Skip (s', x)
                       Done       -> return Done
+
+-- | Suffix scan
+postscanl :: Monad m => (a -> b -> a) -> a -> Stream m b -> Stream m a
+{-# INLINE postscanl #-}
+postscanl f = postscanlM (\a b -> return (f a b))
+
+-- | Suffix scan with a monadic operator
+postscanlM :: Monad m => (a -> b -> m a) -> a -> Stream m b -> Stream m a
+{-# INLINE_STREAM postscanlM #-}
+postscanlM f z (Stream step s sz) = Stream step' (s,z) sz
+  where
+    {-# INLINE step' #-}
+    step' (s,x) = do
+                    r <- step s
+                    case r of
+                      Yield y s' -> do
+                                      z <- f x y
+                                      return $ Yield z (s',z)
+                      Skip    s' -> return $ Skip (s',x)
+                      Done       -> return Done
+
+-- | Suffix scan with strict accumulator
+postscanl' :: Monad m => (a -> b -> a) -> a -> Stream m b -> Stream m a
+{-# INLINE postscanl' #-}
+postscanl' f = postscanlM' (\a b -> return (f a b))
+
+-- | Suffix scan with strict acccumulator and a monadic operator
+postscanlM' :: Monad m => (a -> b -> m a) -> a -> Stream m b -> Stream m a
+{-# INLINE_STREAM postscanlM' #-}
+postscanlM' f z (Stream step s sz) = z `seq` Stream step' (s,z) sz
+  where
+    {-# INLINE step' #-}
+    step' (s,x) = x `seq`
+                  do
+                    r <- step s
+                    case r of
+                      Yield y s' -> do
+                                      z <- f x y
+                                      z `seq` return (Yield z (s',z))
+                      Skip    s' -> return $ Skip (s',x)
+                      Done       -> return Done
+
+-- | Haskell-style scan
+scanl :: Monad m => (a -> b -> a) -> a -> Stream m b -> Stream m a
+{-# INLINE scanl #-}
+scanl f = scanlM (\a b -> return (f a b))
+
+-- | Haskell-style scan with a monadic operator
+scanlM :: Monad m => (a -> b -> m a) -> a -> Stream m b -> Stream m a
+{-# INLINE scanlM #-}
+scanlM f z s = z `cons` postscanlM f z s
+
+-- | Haskell-style scan with strict accumulator
+scanl' :: Monad m => (a -> b -> a) -> a -> Stream m b -> Stream m a
+{-# INLINE scanl' #-}
+scanl' f = scanlM' (\a b -> return (f a b))
+
+-- | Haskell-style scan with strict accumulator and a monadic operator
+scanlM' :: Monad m => (a -> b -> m a) -> a -> Stream m b -> Stream m a
+{-# INLINE scanlM' #-}
+scanlM' f z s = z `seq` (z `cons` postscanlM f z s)
 
 -- Conversions
 -- -----------

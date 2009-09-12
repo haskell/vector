@@ -53,6 +53,8 @@ module Data.Vector (
 
   -- * Scans
   prescanl, prescanl',
+  postscanl, postscanl',
+  scanl, scanl',
 
   -- * Enumeration
   enumFromTo, enumFromThenTo,
@@ -81,6 +83,7 @@ import Prelude hiding ( length, null,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         and, or, sum, product, minimum, maximum,
+                        scanl,
                         enumFromTo, enumFromThenTo )
 
 import qualified Prelude
@@ -418,6 +421,26 @@ prescanl = IV.prescanl
 prescanl' :: (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE prescanl' #-}
 prescanl' = IV.prescanl'
+
+-- | Suffix scan
+postscanl :: (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE postscanl #-}
+postscanl = IV.postscanl
+
+-- | Suffix scan with strict accumulator
+postscanl' :: (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE postscanl' #-}
+postscanl' = IV.postscanl'
+
+-- | Haskell-style scan
+scanl :: (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE scanl #-}
+scanl = IV.scanl
+
+-- | Haskell-style scan with strict accumulator
+scanl' :: (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE scanl' #-}
+scanl' = IV.scanl'
 
 -- Enumeration
 -- -----------

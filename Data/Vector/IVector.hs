@@ -59,6 +59,8 @@ module Data.Vector.IVector (
 
   -- * Scans
   prescanl, prescanl',
+  postscanl, postscanl',
+  scanl, scanl',
 
   -- * Enumeration
   enumFromTo, enumFromThenTo,
@@ -103,6 +105,7 @@ import Prelude hiding ( length, null,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         and, or, sum, product, maximum, minimum,
+                        scanl,
                         enumFromTo, enumFromThenTo )
 
 -- | Class of immutable vectors.
@@ -633,6 +636,45 @@ inplace_prescanl' f z = unstream . inplace (MStream.prescanl' f z) . stream
 
  #-}
 
+-- | Suffix scan
+postscanl :: (IVector v a, IVector v b) => (a -> b -> a) -> a -> v b -> v a
+{-# INLINE postscanl #-}
+postscanl f z = unstream . Stream.postscanl f z . stream
+
+inplace_postscanl :: IVector v a => (a -> a -> a) -> a -> v a -> v a
+{-# INLINE inplace_postscanl #-}
+inplace_postscanl f z = unstream . inplace (MStream.postscanl f z) . stream
+
+{-# RULES
+
+"postscanl -> inplace_postscanl [IVector]" postscanl = inplace_postscanl
+
+ #-}
+
+-- | Suffix scan with strict accumulator
+postscanl' :: (IVector v a, IVector v b) => (a -> b -> a) -> a -> v b -> v a
+{-# INLINE postscanl' #-}
+postscanl' f z = unstream . Stream.postscanl' f z . stream
+
+inplace_postscanl' :: IVector v a => (a -> a -> a) -> a -> v a -> v a
+{-# INLINE inplace_postscanl' #-}
+inplace_postscanl' f z = unstream . inplace (MStream.postscanl' f z) . stream
+
+{-# RULES
+
+"postscanl' -> inplace_postscanl' [IVector]" postscanl' = inplace_postscanl'
+
+ #-}
+
+-- | Haskell-style scan
+scanl :: (IVector v a, IVector v b) => (a -> b -> a) -> a -> v b -> v a
+{-# INLINE scanl #-}
+scanl f z = unstream . Stream.scanl f z . stream
+
+-- | Haskell-style scan with strict accumulator
+scanl' :: (IVector v a, IVector v b) => (a -> b -> a) -> a -> v b -> v a
+{-# INLINE scanl' #-}
+scanl' f z = unstream . Stream.scanl' f z . stream
 
 -- Enumeration
 -- -----------
