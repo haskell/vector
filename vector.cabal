@@ -44,10 +44,10 @@ Library
         Data.Vector.MVector.New
         Data.Vector.IVector
 
-        Data.Vector.Unboxed.Unbox
-        Data.Vector.Unboxed.Mutable.ST
-        Data.Vector.Unboxed.Mutable.IO
-        Data.Vector.Unboxed
+        Data.Vector.Primitive.Prim
+        Data.Vector.Primitive.Mutable.ST
+        Data.Vector.Primitive.Mutable.IO
+        Data.Vector.Primitive
 
         Data.Vector.Storable.Internal
         Data.Vector.Storable.Mutable

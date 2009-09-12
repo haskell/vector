@@ -1,7 +1,7 @@
 {-# LANGUAGE MagicHash, UnboxedTuples, FlexibleInstances, MultiParamTypeClasses #-}
 
 -- |
--- Module      : Data.Vector.Unboxed
+-- Module      : Data.Vector.Primitive
 -- Copyright   : (c) Roman Leshchinskiy 2008
 -- License     : BSD-style
 --
@@ -9,10 +9,10 @@
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Unboxed vectors based on 'Unbox'.
+-- Unboxed vectors of primitive types.
 --
 
-module Data.Vector.Unboxed (
+module Data.Vector.Primitive (
   Vector,
 
   -- * Length information
@@ -65,8 +65,8 @@ module Data.Vector.Unboxed (
 
 import           Data.Vector.IVector ( IVector(..) )
 import qualified Data.Vector.IVector            as IV
-import qualified Data.Vector.Unboxed.Mutable.ST as Mut
-import           Data.Vector.Unboxed.Unbox
+import qualified Data.Vector.Primitive.Mutable.ST as Mut
+import           Data.Vector.Primitive.Prim
 
 import Control.Monad.ST ( runST )
 
@@ -89,15 +89,15 @@ import Prelude hiding ( length, null,
 
 import qualified Prelude
 
--- | Unboxed vectors
+-- | Unboxed vectors of primitive types
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
                                       ByteArray#
 
-instance (Show a, Unbox a) => Show (Vector a) where
-    show = (Prelude.++ " :: Data.Vector.Unboxed.Vector") . ("fromList " Prelude.++) . show . toList
+instance (Show a, Prim a) => Show (Vector a) where
+    show = (Prelude.++ " :: Data.Vector.Primitive.Vector") . ("fromList " Prelude.++) . show . toList
 
-instance Unbox a => IVector Vector a where
+instance Prim a => IVector Vector a where
   {-# INLINE vnew #-}
   vnew init = runST (do
                        Mut.Vector i n marr# <- init
@@ -113,22 +113,22 @@ instance Unbox a => IVector Vector a where
   {-# INLINE unsafeIndexM #-}
   unsafeIndexM (Vector (I# i#) _ arr#) (I# j#) = return (at# arr# (i# +# j#))
 
-instance (Unbox a, Eq a) => Eq (Vector a) where
+instance (Prim a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
   (==) = IV.eq
 
-instance (Unbox a, Ord a) => Ord (Vector a) where
+instance (Prim a, Ord a) => Ord (Vector a) where
   {-# INLINE compare #-}
   compare = IV.cmp
 
 -- Length
 -- ------
 
-length :: Unbox a => Vector a -> Int
+length :: Prim a => Vector a -> Int
 {-# INLINE length #-}
 length = IV.length
 
-null :: Unbox a => Vector a -> Bool
+null :: Prim a => Vector a -> Bool
 {-# INLINE null #-}
 null = IV.null
 
@@ -136,38 +136,38 @@ null = IV.null
 -- ------------
 
 -- | Empty vector
-empty :: Unbox a => Vector a
+empty :: Prim a => Vector a
 {-# INLINE empty #-}
 empty = IV.empty
 
 -- | Vector with exaclty one element
-singleton :: Unbox a => a -> Vector a
+singleton :: Prim a => a -> Vector a
 {-# INLINE singleton #-}
 singleton = IV.singleton
 
 -- | Vector of the given length with the given value in each position
-replicate :: Unbox a => Int -> a -> Vector a
+replicate :: Prim a => Int -> a -> Vector a
 {-# INLINE replicate #-}
 replicate = IV.replicate
 
 -- | Prepend an element
-cons :: Unbox a => a -> Vector a -> Vector a
+cons :: Prim a => a -> Vector a -> Vector a
 {-# INLINE cons #-}
 cons = IV.cons
 
 -- | Append an element
-snoc :: Unbox a => Vector a -> a -> Vector a
+snoc :: Prim a => Vector a -> a -> Vector a
 {-# INLINE snoc #-}
 snoc = IV.snoc
 
 infixr 5 ++
 -- | Concatenate two vectors
-(++) :: Unbox a => Vector a -> Vector a -> Vector a
+(++) :: Prim a => Vector a -> Vector a -> Vector a
 {-# INLINE (++) #-}
 (++) = (IV.++)
 
 -- | Create a copy of a vector. Useful when dealing with slices.
-copy :: Unbox a => Vector a -> Vector a
+copy :: Prim a => Vector a -> Vector a
 {-# INLINE copy #-}
 copy = IV.copy
 
@@ -175,17 +175,17 @@ copy = IV.copy
 -- -----------------------------
 
 -- | Indexing
-(!) :: Unbox a => Vector a -> Int -> a
+(!) :: Prim a => Vector a -> Int -> a
 {-# INLINE (!) #-}
 (!) = (IV.!)
 
 -- | First element
-head :: Unbox a => Vector a -> a
+head :: Prim a => Vector a -> a
 {-# INLINE head #-}
 head = IV.head
 
 -- | Last element
-last :: Unbox a => Vector a -> a
+last :: Prim a => Vector a -> a
 {-# INLINE last #-}
 last = IV.last
 
@@ -194,48 +194,48 @@ last = IV.last
 
 -- | Yield a part of the vector without copying it. Safer version of
 -- 'unsafeSlice'.
-slice :: Unbox a => Vector a -> Int   -- ^ starting index
+slice :: Prim a => Vector a -> Int   -- ^ starting index
                              -> Int   -- ^ length
                              -> Vector a
 {-# INLINE slice #-}
 slice = IV.slice
 
 -- | Yield all but the last element without copying.
-init :: Unbox a => Vector a -> Vector a
+init :: Prim a => Vector a -> Vector a
 {-# INLINE init #-}
 init = IV.init
 
 -- | All but the first element (without copying).
-tail :: Unbox a => Vector a -> Vector a
+tail :: Prim a => Vector a -> Vector a
 {-# INLINE tail #-}
 tail = IV.tail
 
 -- | Yield the first @n@ elements without copying.
-take :: Unbox a => Int -> Vector a -> Vector a
+take :: Prim a => Int -> Vector a -> Vector a
 {-# INLINE take #-}
 take = IV.take
 
 -- | Yield all but the first @n@ elements without copying.
-drop :: Unbox a => Int -> Vector a -> Vector a
+drop :: Prim a => Int -> Vector a -> Vector a
 {-# INLINE drop #-}
 drop = IV.drop
 
 -- Permutations
 -- ------------
 
-accum :: Unbox a => (a -> b -> a) -> Vector a -> [(Int,b)] -> Vector a
+accum :: Prim a => (a -> b -> a) -> Vector a -> [(Int,b)] -> Vector a
 {-# INLINE accum #-}
 accum = IV.accum
 
-(//) :: Unbox a => Vector a -> [(Int, a)] -> Vector a
+(//) :: Prim a => Vector a -> [(Int, a)] -> Vector a
 {-# INLINE (//) #-}
 (//) = (IV.//)
 
-backpermute :: Unbox a => Vector a -> Vector Int -> Vector a
+backpermute :: Prim a => Vector a -> Vector Int -> Vector a
 {-# INLINE backpermute #-}
 backpermute = IV.backpermute
 
-reverse :: Unbox a => Vector a -> Vector a
+reverse :: Prim a => Vector a -> Vector a
 {-# INLINE reverse #-}
 reverse = IV.reverse
 
@@ -243,11 +243,11 @@ reverse = IV.reverse
 -- -------
 
 -- | Map a function over a vector
-map :: (Unbox a, Unbox b) => (a -> b) -> Vector a -> Vector b
+map :: (Prim a, Prim b) => (a -> b) -> Vector a -> Vector b
 {-# INLINE map #-}
 map = IV.map
 
-concatMap :: (Unbox a, Unbox b) => (a -> Vector b) -> Vector a -> Vector b
+concatMap :: (Prim a, Prim b) => (a -> Vector b) -> Vector a -> Vector b
 {-# INLINE concatMap #-}
 concatMap = IV.concatMap
 
@@ -255,13 +255,13 @@ concatMap = IV.concatMap
 -- -----------------
 
 -- | Zip two vectors with the given function.
-zipWith :: (Unbox a, Unbox b, Unbox c)
+zipWith :: (Prim a, Prim b, Prim c)
         => (a -> b -> c) -> Vector a -> Vector b -> Vector c
 {-# INLINE zipWith #-}
 zipWith = IV.zipWith
 
 -- | Zip three vectors with the given function.
-zipWith3 :: (Unbox a, Unbox b, Unbox c, Unbox d)
+zipWith3 :: (Prim a, Prim b, Prim c, Prim d)
          => (a -> b -> c -> d) -> Vector a -> Vector b -> Vector c -> Vector d
 {-# INLINE zipWith3 #-}
 zipWith3 = IV.zipWith3
@@ -270,17 +270,17 @@ zipWith3 = IV.zipWith3
 -- ---------
 
 -- | Drop elements which do not satisfy the predicate
-filter :: Unbox a => (a -> Bool) -> Vector a -> Vector a
+filter :: Prim a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE filter #-}
 filter = IV.filter
 
 -- | Yield the longest prefix of elements satisfying the predicate.
-takeWhile :: Unbox a => (a -> Bool) -> Vector a -> Vector a
+takeWhile :: Prim a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE takeWhile #-}
 takeWhile = IV.takeWhile
 
 -- | Drop the longest prefix of elements that satisfy the predicate.
-dropWhile :: Unbox a => (a -> Bool) -> Vector a -> Vector a
+dropWhile :: Prim a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE dropWhile #-}
 dropWhile = IV.dropWhile
 
@@ -289,25 +289,25 @@ dropWhile = IV.dropWhile
 
 infix 4 `elem`
 -- | Check whether the vector contains an element
-elem :: (Unbox a, Eq a) => a -> Vector a -> Bool
+elem :: (Prim a, Eq a) => a -> Vector a -> Bool
 {-# INLINE elem #-}
 elem = IV.elem
 
 infix 4 `notElem`
 -- | Inverse of `elem`
-notElem :: (Unbox a, Eq a) => a -> Vector a -> Bool
+notElem :: (Prim a, Eq a) => a -> Vector a -> Bool
 {-# INLINE notElem #-}
 notElem = IV.notElem
 
 -- | Yield 'Just' the first element matching the predicate or 'Nothing' if no
 -- such element exists.
-find :: Unbox a => (a -> Bool) -> Vector a -> Maybe a
+find :: Prim a => (a -> Bool) -> Vector a -> Maybe a
 {-# INLINE find #-}
 find = IV.find
 
 -- | Yield 'Just' the index of the first element matching the predicate or
 -- 'Nothing' if no such element exists.
-findIndex :: Unbox a => (a -> Bool) -> Vector a -> Maybe Int
+findIndex :: Prim a => (a -> Bool) -> Vector a -> Maybe Int
 {-# INLINE findIndex #-}
 findIndex = IV.findIndex
 
@@ -315,32 +315,32 @@ findIndex = IV.findIndex
 -- -------
 
 -- | Left fold
-foldl :: Unbox b => (a -> b -> a) -> a -> Vector b -> a
+foldl :: Prim b => (a -> b -> a) -> a -> Vector b -> a
 {-# INLINE foldl #-}
 foldl = IV.foldl
 
 -- | Lefgt fold on non-empty vectors
-foldl1 :: Unbox a => (a -> a -> a) -> Vector a -> a
+foldl1 :: Prim a => (a -> a -> a) -> Vector a -> a
 {-# INLINE foldl1 #-}
 foldl1 = IV.foldl1
 
 -- | Left fold with strict accumulator
-foldl' :: Unbox b => (a -> b -> a) -> a -> Vector b -> a
+foldl' :: Prim b => (a -> b -> a) -> a -> Vector b -> a
 {-# INLINE foldl' #-}
 foldl' = IV.foldl'
 
 -- | Left fold on non-empty vectors with strict accumulator
-foldl1' :: Unbox a => (a -> a -> a) -> Vector a -> a
+foldl1' :: Prim a => (a -> a -> a) -> Vector a -> a
 {-# INLINE foldl1' #-}
 foldl1' = IV.foldl1'
 
 -- | Right fold
-foldr :: Unbox a => (a -> b -> b) -> b -> Vector a -> b
+foldr :: Prim a => (a -> b -> b) -> b -> Vector a -> b
 {-# INLINE foldr #-}
 foldr = IV.foldr
 
 -- | Right fold on non-empty vectors
-foldr1 :: Unbox a => (a -> a -> a) -> Vector a -> a
+foldr1 :: Prim a => (a -> a -> a) -> Vector a -> a
 {-# INLINE foldr1 #-}
 foldr1 = IV.foldr1
 
@@ -357,26 +357,26 @@ or :: Vector Bool -> Bool
 or = IV.or
 -}
 
-sum :: (Unbox a, Num a) => Vector a -> a
+sum :: (Prim a, Num a) => Vector a -> a
 {-# INLINE sum #-}
 sum = IV.sum
 
-product :: (Unbox a, Num a) => Vector a -> a
+product :: (Prim a, Num a) => Vector a -> a
 {-# INLINE product #-}
 product = IV.product
 
-maximum :: (Unbox a, Ord a) => Vector a -> a
+maximum :: (Prim a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
 maximum = IV.maximum
 
-minimum :: (Unbox a, Ord a) => Vector a -> a
+minimum :: (Prim a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
 minimum = IV.minimum
 
 -- Unfolding
 -- ---------
 
-unfoldr :: Unbox a => (b -> Maybe (a, b)) -> b -> Vector a
+unfoldr :: Prim a => (b -> Maybe (a, b)) -> b -> Vector a
 {-# INLINE unfoldr #-}
 unfoldr = IV.unfoldr
 
@@ -384,53 +384,53 @@ unfoldr = IV.unfoldr
 -- -----
 
 -- | Prefix scan
-prescanl :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
+prescanl :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE prescanl #-}
 prescanl = IV.prescanl
 
 -- | Prefix scan with strict accumulator
-prescanl' :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
+prescanl' :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE prescanl' #-}
 prescanl' = IV.prescanl'
 
 -- | Suffix scan
-postscanl :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
+postscanl :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE postscanl #-}
 postscanl = IV.postscanl
 
 -- | Suffix scan with strict accumulator
-postscanl' :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
+postscanl' :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE postscanl' #-}
 postscanl' = IV.postscanl'
 
 -- | Haskell-style scan
-scanl :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
+scanl :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE scanl #-}
 scanl = IV.scanl
 
 -- | Haskell-style scan with strict accumulator
-scanl' :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
+scanl' :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE scanl' #-}
 scanl' = IV.scanl'
 
 -- | Scan over a non-empty 'Vector'
-scanl1 :: Unbox a => (a -> a -> a) -> Vector a -> Vector a
+scanl1 :: Prim a => (a -> a -> a) -> Vector a -> Vector a
 {-# INLINE scanl1 #-}
 scanl1 = IV.scanl1
 
 -- | Scan over a non-empty 'Vector' with a strict accumulator
-scanl1' :: Unbox a => (a -> a -> a) -> Vector a -> Vector a
+scanl1' :: Prim a => (a -> a -> a) -> Vector a -> Vector a
 {-# INLINE scanl1' #-}
 scanl1' = IV.scanl1'
 
 -- Enumeration
 -- -----------
 
-enumFromTo :: (Unbox a, Enum a) => a -> a -> Vector a
+enumFromTo :: (Prim a, Enum a) => a -> a -> Vector a
 {-# INLINE enumFromTo #-}
 enumFromTo = IV.enumFromTo
 
-enumFromThenTo :: (Unbox a, Enum a) => a -> a -> a -> Vector a
+enumFromThenTo :: (Prim a, Enum a) => a -> a -> a -> Vector a
 {-# INLINE enumFromThenTo #-}
 enumFromThenTo = IV.enumFromThenTo
 
@@ -438,12 +438,12 @@ enumFromThenTo = IV.enumFromThenTo
 -- ------------------------
 
 -- | Convert a vector to a list
-toList :: Unbox a => Vector a -> [a]
+toList :: Prim a => Vector a -> [a]
 {-# INLINE toList #-}
 toList = IV.toList
 
 -- | Convert a list to a vector
-fromList :: Unbox a => [a] -> Vector a
+fromList :: Prim a => [a] -> Vector a
 {-# INLINE fromList #-}
 fromList = IV.fromList
 

@@ -1,7 +1,7 @@
 {-# LANGUAGE MagicHash, UnboxedTuples #-}
 
 -- |
--- Module      : Data.Vector.Unboxed.Unbox
+-- Module      : Data.Vector.Primitive.Prim
 -- Copyright   : (c) Roman Leshchinskiy 2008
 -- License     : BSD-style
 --
@@ -9,11 +9,11 @@
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Primitives for manipulating unboxed arrays
+-- Primitives for manipulating unboxed arrays of primitive types.
 --
 
-module Data.Vector.Unboxed.Unbox (
-  Unbox(..)
+module Data.Vector.Primitive.Prim (
+  Prim(..)
 ) where
 
 import GHC.Base (
@@ -38,8 +38,8 @@ import Data.Array.Base (
     wORD_SCALE, fLOAT_SCALE, dOUBLE_SCALE
   )
 
--- | Class of types which can be stored in unboxed arrays
-class Unbox a where
+-- | Class of types that can be stored in primitive arrays
+class Prim a where
   -- | Yield the size in bytes of a 'ByteArray#' which can store @n@ elements
   size#  :: a     -- ^ Dummy type parameter, never evaluated
          -> Int#  -- ^ Number of elements
@@ -54,7 +54,7 @@ class Unbox a where
   -- | Store the given element at the given position
   write# :: MutableByteArray# s -> Int# -> a -> State# s -> State# s
 
-instance Unbox Word where
+instance Prim Word where
   size# _                   = wORD_SCALE
   at#    arr# i#            = W# (indexWordArray# arr# i#)
   read#  arr# i# s#         = case readWordArray# arr# i# s# of
@@ -62,21 +62,21 @@ instance Unbox Word where
   write# arr# i# (W# n#) s# = writeWordArray# arr# i# n# s#
 
 
-instance Unbox Int where
+instance Prim Int where
   size#  _                  = wORD_SCALE
   at#    arr# i#            = I# (indexIntArray# arr# i#)
   read#  arr# i# s#         = case readIntArray# arr# i# s# of
                                 (# s1#, n# #) -> (# s1#, I# n# #)
   write# arr# i# (I# n#) s# = writeIntArray# arr# i# n# s#
 
-instance Unbox Float where
+instance Prim Float where
   size#  _                  = fLOAT_SCALE
   at#    arr# i#            = F# (indexFloatArray# arr# i#)
   read#  arr# i# s#         = case readFloatArray# arr# i# s# of
                                 (# s1#, x# #) -> (# s1#, F# x# #)
   write# arr# i# (F# x#) s# = writeFloatArray# arr# i# x# s#
 
-instance Unbox Double where
+instance Prim Double where
   size#  _                  = dOUBLE_SCALE
   at#    arr# i#            = D# (indexDoubleArray# arr# i#)
   read#  arr# i# s#         = case readDoubleArray# arr# i# s# of

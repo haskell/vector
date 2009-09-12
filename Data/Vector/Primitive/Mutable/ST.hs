@@ -1,7 +1,7 @@
 {-# LANGUAGE MagicHash, UnboxedTuples, MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables #-}
 
 -- |
--- Module      : Data.Vector.Unboxed.Mutable.ST
+-- Module      : Data.Vector.Primitive.Mutable.ST
 -- Copyright   : (c) Roman Leshchinskiy 2008
 -- License     : BSD-style
 --
@@ -9,15 +9,15 @@
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Mutable unboxed vectors based on 'Unbox' in the ST monad.
+-- Mutable primitive vectors based in the ST monad.
 --
 
-module Data.Vector.Unboxed.Mutable.ST ( Vector(..) )
+module Data.Vector.Primitive.Mutable.ST ( Vector(..) )
 where
 
 import qualified Data.Vector.MVector as MVector
 import           Data.Vector.MVector ( MVector, MVectorPure )
-import           Data.Vector.Unboxed.Unbox
+import           Data.Vector.Primitive.Prim
 
 import GHC.Prim ( MutableByteArray#,
                   newByteArray#, sameMutableByteArray#, (+#) )
@@ -31,7 +31,7 @@ data Vector s a = Vector {-# UNPACK #-} !Int
                          {-# UNPACK #-} !Int
                                         (MutableByteArray# s)
 
-instance Unbox a => MVectorPure (Vector s) a where
+instance Prim a => MVectorPure (Vector s) a where
   length (Vector _ n _) = n
   unsafeSlice (Vector i _ arr#) j m = Vector (i+j) m arr#
 
@@ -43,7 +43,7 @@ instance Unbox a => MVectorPure (Vector s) a where
       between x y z = x >= y && x < z
 
 
-instance Unbox a => MVector (Vector s) (ST s) a where
+instance Prim a => MVector (Vector s) (ST s) a where
   {-# INLINE unsafeNew #-}
   unsafeNew (I# n#) = ST (\s# ->
       case newByteArray# (size# (undefined :: a) n#) s# of
