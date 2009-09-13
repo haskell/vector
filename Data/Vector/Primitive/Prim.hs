@@ -1,4 +1,4 @@
-{-# LANGUAGE MagicHash, UnboxedTuples #-}
+{-# LANGUAGE MagicHash, UnboxedTuples, CPP #-}
 
 -- |
 -- Module      : Data.Vector.Primitive.Prim
@@ -17,23 +17,19 @@ module Data.Vector.Primitive.Prim (
 ) where
 
 import GHC.Base (
-    Int(..)
+    Int(..), Char(..),
   )
 import GHC.Float (
     Float(..), Double(..)
   )
 import GHC.Word (
-    Word(..)
+    Word(..), Word8(..), Word16(..), Word32(..), Word64(..)
+  )
+import GHC.Int (
+    Int8(..), Int16(..), Int32(..), Int64(..)
   )
 
-import GHC.Prim (
-    ByteArray#, MutableByteArray#, State#,
-
-    Int#, indexIntArray#,    readIntArray#,    writeIntArray#,
-          indexWordArray#,   readWordArray#,   writeWordArray#,
-          indexFloatArray#,  readFloatArray#,  writeFloatArray#,
-          indexDoubleArray#, readDoubleArray#, writeDoubleArray#
-  )
+import GHC.Prim
 import Data.Array.Base (
     wORD_SCALE, fLOAT_SCALE, dOUBLE_SCALE
   )
@@ -54,32 +50,40 @@ class Prim a where
   -- | Store the given element at the given position
   write# :: MutableByteArray# s -> Int# -> a -> State# s -> State# s
 
-instance Prim Word where
-  size# _                   = wORD_SCALE
-  at#    arr# i#            = W# (indexWordArray# arr# i#)
-  read#  arr# i# s#         = case readWordArray# arr# i# s# of
-                                (# s1#, n# #) -> (# s1#, W# n# #)
-  write# arr# i# (W# n#) s# = writeWordArray# arr# i# n# s#
+-- FIXME: use Template Haskell as soon as it properly supports unboxed types
+-- and especially tuples
+#define derivePrim(ty, ctr, scale, idx, rd, wr)  \
+instance Prim ty where {                         \
+  size#  _         = scale                       \
+; at#    arr# i#   = ctr (idx arr# i#)           \
+; read#  arr# i# s# = case rd arr# i# s# of      \
+                        { (# s1#, x# #) -> (# s1#, ctr x# #) } \
+; write# arr# i# (ctr x#) s# = wr arr# i# x# s# }
 
-
-instance Prim Int where
-  size#  _                  = wORD_SCALE
-  at#    arr# i#            = I# (indexIntArray# arr# i#)
-  read#  arr# i# s#         = case readIntArray# arr# i# s# of
-                                (# s1#, n# #) -> (# s1#, I# n# #)
-  write# arr# i# (I# n#) s# = writeIntArray# arr# i# n# s#
-
-instance Prim Float where
-  size#  _                  = fLOAT_SCALE
-  at#    arr# i#            = F# (indexFloatArray# arr# i#)
-  read#  arr# i# s#         = case readFloatArray# arr# i# s# of
-                                (# s1#, x# #) -> (# s1#, F# x# #)
-  write# arr# i# (F# x#) s# = writeFloatArray# arr# i# x# s#
-
-instance Prim Double where
-  size#  _                  = dOUBLE_SCALE
-  at#    arr# i#            = D# (indexDoubleArray# arr# i#)
-  read#  arr# i# s#         = case readDoubleArray# arr# i# s# of
-                                (# s1#, x# #) -> (# s1#, D# x# #)
-  write# arr# i# (D# x#) s# = writeDoubleArray# arr# i# x# s#
+derivePrim(Word, W#, wORD_SCALE,
+           indexWordArray#, readWordArray#, writeWordArray#)
+derivePrim(Word8, W8#, (\n# -> n#),
+           indexWord8Array#, readWord8Array#, writeWord8Array#)
+derivePrim(Word16, W16#, (*# 2#),
+           indexWord16Array#, readWord16Array#, writeWord16Array#)
+derivePrim(Word32, W32#, (*# 4#),
+           indexWord32Array#, readWord32Array#, writeWord32Array#)
+derivePrim(Word64, W64#, (*# 8#),
+           indexWord64Array#, readWord64Array#, writeWord64Array#)
+derivePrim(Int, I#, wORD_SCALE,
+           indexIntArray#, readIntArray#, writeIntArray#)
+derivePrim(Int8, I8#, (\n# -> n#),
+           indexInt8Array#, readInt8Array#, writeInt8Array#)
+derivePrim(Int16, I16#, (*# 2#),
+           indexInt16Array#, readInt16Array#, writeInt16Array#)
+derivePrim(Int32, I32#, (*# 4#),
+           indexInt32Array#, readInt32Array#, writeInt32Array#)
+derivePrim(Int64, I64#, (*# 8#),
+           indexInt64Array#, readInt64Array#, writeInt64Array#)
+derivePrim(Float, F#, fLOAT_SCALE,
+           indexFloatArray#, readFloatArray#, writeFloatArray#)
+derivePrim(Double, D#, dOUBLE_SCALE,
+           indexDoubleArray#, readDoubleArray#, writeDoubleArray#)
+derivePrim(Char, C#, (*# 4#),
+           indexWideCharArray#, readWideCharArray#, writeWideCharArray#)
 
