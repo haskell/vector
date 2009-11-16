@@ -126,7 +126,7 @@ singleton :: Monad m => a -> Stream m a
 {-# INLINE_STREAM singleton #-}
 singleton x = Stream (return . step) True (Exact 1)
   where
-    {-# INLINE step #-}
+    {-# INLINE_INNER step #-}
     step True  = Yield x False
     step False = Done
 
@@ -135,7 +135,7 @@ replicate :: Monad m => Int -> a -> Stream m a
 {-# INLINE_STREAM replicate #-}
 replicate n x = Stream (return . step) n (Exact (max n 0))
   where
-    {-# INLINE step #-}
+    {-# INLINE_INNER step #-}
     step i | i > 0     = Yield x (i-1)
            | otherwise = Done
 
@@ -155,6 +155,7 @@ infixr 5 ++
 {-# INLINE_STREAM (++) #-}
 Stream stepa sa na ++ Stream stepb sb nb = Stream step (Left sa) (na + nb)
   where
+    {-# INLINE_INNER step #-}
     step (Left  sa) = do
                         r <- stepa sa
                         case r of
@@ -232,7 +233,7 @@ init :: Monad m => Stream m a -> Stream m a
 {-# INLINE_STREAM init #-}
 init (Stream step s sz) = Stream step' (Nothing, s) (sz - 1)
   where
-    {-# INLINE step' #-}
+    {-# INLINE_INNER step' #-}
     step' (Nothing, s) = liftM (\r ->
                            case r of
                              Yield x s' -> Skip (Just x,  s')
@@ -252,7 +253,7 @@ tail :: Monad m => Stream m a -> Stream m a
 {-# INLINE_STREAM tail #-}
 tail (Stream step s sz) = Stream step' (Left s) (sz - 1)
   where
-    {-# INLINE step' #-}
+    {-# INLINE_INNER step' #-}
     step' (Left  s) = liftM (\r ->
                         case r of
                           Yield x s' -> Skip (Right s')
@@ -272,7 +273,7 @@ take :: Monad m => Int -> Stream m a -> Stream m a
 {-# INLINE_STREAM take #-}
 take n (Stream step s sz) = Stream step' (s, 0) (smaller (Exact n) sz)
   where
-    {-# INLINE step' #-}
+    {-# INLINE_INNER step' #-}
     step' (s, i) | i < n = liftM (\r ->
                              case r of
                                Yield x s' -> Yield x (s', i+1)
@@ -286,7 +287,7 @@ drop :: Monad m => Int -> Stream m a -> Stream m a
 {-# INLINE_STREAM drop #-}
 drop n (Stream step s sz) = Stream step' (s, Just n) (sz - Exact n)
   where
-    {-# INLINE step' #-}
+    {-# INLINE_INNER step' #-}
     step' (s, Just i) | i > 0 = liftM (\r ->
                                 case r of
                                    Yield x s' -> Skip (s', Just (i-1))
@@ -320,7 +321,7 @@ mapM :: Monad m => (a -> m b) -> Stream m a -> Stream m b
 {-# INLINE_STREAM mapM #-}
 mapM f (Stream step s n) = Stream step' s n
   where
-    {-# INLINE step' #-}
+    {-# INLINE_INNER step' #-}
     step' s = do
                 r <- step s
                 case r of
@@ -360,7 +361,7 @@ zipWithM :: Monad m => (a -> b -> m c) -> Stream m a -> Stream m b -> Stream m c
 zipWithM f (Stream stepa sa na) (Stream stepb sb nb)
   = Stream step (sa, sb, Nothing) (smaller na nb)
   where
-    {-# INLINE step #-}
+    {-# INLINE_INNER step #-}
     step (sa, sb, Nothing) = liftM (\r ->
                                case r of
                                  Yield x sa' -> Skip (sa', sb, Just x)
@@ -389,7 +390,7 @@ zipWith3M :: Monad m => (a -> b -> c -> m d) -> Stream m a -> Stream m b -> Stre
 zipWith3M f (Stream stepa sa na) (Stream stepb sb nb) (Stream stepc sc nc)
   = Stream step (sa, sb, sc, Nothing) (smaller na (smaller nb nc))
   where
-    {-# INLINE step #-}
+    {-# INLINE_INNER step #-}
     step (sa, sb, sc, Nothing) = do
         r <- stepa sa
         return $ case r of
@@ -424,7 +425,7 @@ filterM :: Monad m => (a -> m Bool) -> Stream m a -> Stream m a
 {-# INLINE_STREAM filterM #-}
 filterM f (Stream step s n) = Stream step' s (toMax n)
   where
-    {-# INLINE step' #-}
+    {-# INLINE_INNER step' #-}
     step' s = do
                 r <- step s
                 case r of
@@ -445,7 +446,7 @@ takeWhileM :: Monad m => (a -> m Bool) -> Stream m a -> Stream m a
 {-# INLINE_STREAM takeWhileM #-}
 takeWhileM f (Stream step s n) = Stream step' s (toMax n)
   where
-    {-# INLINE step' #-}
+    {-# INLINE_INNER step' #-}
     step' s = do
                 r <- step s
                 case r of
@@ -470,7 +471,7 @@ dropWhileM f (Stream step s n) = Stream step' (DropWhile_Drop s) (toMax n)
     -- NOTE: we jump through hoops here to have only one Yield; local data
     -- declarations would be nice!
 
-    {-# INLINE step' #-}
+    {-# INLINE_INNER step' #-}
     step' (DropWhile_Drop s)
       = do
           r <- step s
@@ -756,7 +757,7 @@ unfoldrM :: Monad m => (s -> m (Maybe (a, s))) -> s -> Stream m a
 {-# INLINE_STREAM unfoldrM #-}
 unfoldrM f s = Stream step s Unknown
   where
-    {-# INLINE step #-}
+    {-# INLINE_INNER step #-}
     step s = liftM (\r ->
                case r of
                  Just (x, s') -> Yield x s'
@@ -776,7 +777,7 @@ prescanlM :: Monad m => (a -> b -> m a) -> a -> Stream m b -> Stream m a
 {-# INLINE_STREAM prescanlM #-}
 prescanlM f z (Stream step s sz) = Stream step' (s,z) sz
   where
-    {-# INLINE step' #-}
+    {-# INLINE_INNER step' #-}
     step' (s,x) = do
                     r <- step s
                     case r of
@@ -796,7 +797,7 @@ prescanlM' :: Monad m => (a -> b -> m a) -> a -> Stream m b -> Stream m a
 {-# INLINE_STREAM prescanlM' #-}
 prescanlM' f z (Stream step s sz) = Stream step' (s,z) sz
   where
-    {-# INLINE step' #-}
+    {-# INLINE_INNER step' #-}
     step' (s,x) = x `seq`
                   do
                     r <- step s
@@ -817,7 +818,7 @@ postscanlM :: Monad m => (a -> b -> m a) -> a -> Stream m b -> Stream m a
 {-# INLINE_STREAM postscanlM #-}
 postscanlM f z (Stream step s sz) = Stream step' (s,z) sz
   where
-    {-# INLINE step' #-}
+    {-# INLINE_INNER step' #-}
     step' (s,x) = do
                     r <- step s
                     case r of
@@ -837,7 +838,7 @@ postscanlM' :: Monad m => (a -> b -> m a) -> a -> Stream m b -> Stream m a
 {-# INLINE_STREAM postscanlM' #-}
 postscanlM' f z (Stream step s sz) = z `seq` Stream step' (s,z) sz
   where
-    {-# INLINE step' #-}
+    {-# INLINE_INNER step' #-}
     step' (s,x) = x `seq`
                   do
                     r <- step s
@@ -878,7 +879,7 @@ scanl1M :: Monad m => (a -> a -> m a) -> Stream m a -> Stream m a
 {-# INLINE_STREAM scanl1M #-}
 scanl1M f (Stream step s sz) = Stream step' (s, Nothing) sz
   where
-    {-# INLINE step' #-}
+    {-# INLINE_INNER step' #-}
     step' (s, Nothing) = do
                            r <- step s
                            case r of
@@ -906,7 +907,7 @@ scanl1M' :: Monad m => (a -> a -> m a) -> Stream m a -> Stream m a
 {-# INLINE_STREAM scanl1M' #-}
 scanl1M' f (Stream step s sz) = Stream step' (s, Nothing) sz
   where
-    {-# INLINE step' #-}
+    {-# INLINE_INNER step' #-}
     step' (s, Nothing) = do
                            r <- step s
                            case r of

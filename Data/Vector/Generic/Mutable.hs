@@ -172,7 +172,7 @@ mstream v = v `seq` (MStream.unfoldrM get 0 `MStream.sized` Exact n)
   where
     n = length v
 
-    {-# INLINE get #-}
+    {-# INLINE_INNER get #-}
     get i | i < n     = do x <- unsafeRead v i
                            return $ Just (x, i+1)
           | otherwise = return $ Nothing
@@ -183,6 +183,7 @@ munstream v s = v `seq` do
                           n' <- MStream.foldM put 0 s
                           return $ slice v 0 n'
   where
+    {-# INLINE_INNER put #-}
     put i x = do { write v i x; return (i+1) }
 
 transform :: MVector v m a => (MStream m a -> MStream m a) -> v a -> m (v a)
@@ -215,13 +216,13 @@ unstreamUnknown s
       (v', n) <- Stream.foldM put (v, 0) s
       return $ slice v' 0 n
   where
-    {-# INLINE put #-}
+    {-# INLINE_INNER put #-}
     put (v, i) x = do
                      v' <- enlarge v i
                      unsafeWrite v' i x
                      return (v', i+1)
 
-    {-# INLINE enlarge #-}
+    {-# INLINE_INNER enlarge #-}
     enlarge v i | i < length v = return v
                 | otherwise    = unsafeGrow v
                                  . max 1
@@ -232,7 +233,7 @@ accum :: MVector v m a => (a -> b -> a) -> v a -> Stream (Int, b) -> m ()
 {-# INLINE accum #-}
 accum f !v s = Stream.mapM_ upd s
   where
-    {-# INLINE upd #-}
+    {-# INLINE_INNER upd #-}
     upd (i,b) = do
                   a <- read v i
                   write v i (f a b)
