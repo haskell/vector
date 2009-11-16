@@ -64,8 +64,8 @@ module Data.Vector.Primitive (
 ) where
 
 import           Data.Vector.IVector ( IVector(..) )
-import qualified Data.Vector.IVector            as IV
-import qualified Data.Vector.Primitive.Mutable.ST as Mut
+import qualified Data.Vector.IVector           as IV
+import qualified Data.Vector.Primitive.Mutable as Mut
 import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim )
 

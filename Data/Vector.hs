@@ -64,8 +64,8 @@ module Data.Vector (
 ) where
 
 import           Data.Vector.IVector ( IVector(..) )
-import qualified Data.Vector.IVector    as IV
-import qualified Data.Vector.Mutable    as Mut
+import qualified Data.Vector.IVector as IV
+import qualified Data.Vector.Mutable as Mut
 import           Data.Primitive.Array
 
 import Control.Monad.ST ( runST )
