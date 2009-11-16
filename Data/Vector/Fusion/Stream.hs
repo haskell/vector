@@ -161,7 +161,7 @@ singleton = M.singleton
 
 -- | Replicate a value to a given length
 replicate :: Int -> a -> Stream a
-{-# INLINE_STREAM replicate #-}
+{-# INLINE replicate #-}
 replicate = M.replicate
 
 -- | Prepend an element
@@ -443,12 +443,12 @@ instance Ord a => Ord (M.Stream Id a) where
 
 -- | Apply a monadic action to each element of the stream
 mapM_ :: Monad m => (a -> m ()) -> Stream a -> m ()
-{-# INLINE_STREAM mapM_ #-}
+{-# INLINE mapM_ #-}
 mapM_ f = M.mapM_ f . liftStream
 
 -- | Monadic fold
 foldM :: Monad m => (a -> b -> m a) -> a -> Stream b -> m a
-{-# INLINE_STREAM foldM #-}
+{-# INLINE foldM #-}
 foldM m z = M.foldM m z . liftStream
 
 -- | Monadic fold over non-empty stream
