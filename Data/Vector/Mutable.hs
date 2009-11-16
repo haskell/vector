@@ -15,8 +15,8 @@
 module Data.Vector.Mutable ( Vector(..), IOVector, STVector )
 where
 
-import qualified Data.Vector.MVector as MVector
-import           Data.Vector.MVector ( MVector, MVectorPure )
+import qualified Data.Vector.Generic.Mutable as G
+import           Data.Vector.Generic.Mutable ( MVector(..), MVectorPure(..) )
 import           Data.Primitive.Array
 import           Control.Monad.Primitive ( PrimMonad )
 import           Control.Monad.ST ( ST )
@@ -59,7 +59,7 @@ instance PrimMonad m => MVector (Vector m) m a where
   unsafeWrite (Vector i _ arr) j x = writeArray arr (i+j) x
 
   {-# INLINE clear #-}
-  clear v = MVector.set v uninitialised
+  clear v = G.set v uninitialised
 
 uninitialised :: a
 uninitialised = error "Data.Vector.Mutable: uninitialised element"

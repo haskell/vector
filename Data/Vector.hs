@@ -63,8 +63,7 @@ module Data.Vector (
   toList, fromList
 ) where
 
-import           Data.Vector.IVector ( IVector(..) )
-import qualified Data.Vector.IVector as IV
+import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Mutable as Mut
 import           Data.Primitive.Array
 
@@ -92,7 +91,7 @@ data Vector a = Vector {-# UNPACK #-} !Int
 instance Show a => Show (Vector a) where
     show = (Prelude.++ " :: Data.Vector.Vector") . ("fromList " Prelude.++) . show . toList
 
-instance IVector Vector a where
+instance G.Vector Vector a where
   {-# INLINE vnew #-}
   vnew init = runST (do
                        Mut.Vector i n marr <- init
@@ -110,22 +109,22 @@ instance IVector Vector a where
 
 instance Eq a => Eq (Vector a) where
   {-# INLINE (==) #-}
-  (==) = IV.eq
+  (==) = G.eq
 
 instance Ord a => Ord (Vector a) where
   {-# INLINE compare #-}
-  compare = IV.cmp
+  compare = G.cmp
 
 -- Length
 -- ------
 
 length :: Vector a -> Int
 {-# INLINE length #-}
-length = IV.length
+length = G.length
 
 null :: Vector a -> Bool
 {-# INLINE null #-}
-null = IV.null
+null = G.null
 
 -- Construction
 -- ------------
@@ -133,38 +132,38 @@ null = IV.null
 -- | Empty vector
 empty :: Vector a
 {-# INLINE empty #-}
-empty = IV.empty
+empty = G.empty
 
 -- | Vector with exaclty one element
 singleton :: a -> Vector a
 {-# INLINE singleton #-}
-singleton = IV.singleton
+singleton = G.singleton
 
 -- | Vector of the given length with the given value in each position
 replicate :: Int -> a -> Vector a
 {-# INLINE replicate #-}
-replicate = IV.replicate
+replicate = G.replicate
 
 -- | Prepend an element
 cons :: a -> Vector a -> Vector a
 {-# INLINE cons #-}
-cons = IV.cons
+cons = G.cons
 
 -- | Append an element
 snoc :: Vector a -> a -> Vector a
 {-# INLINE snoc #-}
-snoc = IV.snoc
+snoc = G.snoc
 
 infixr 5 ++
 -- | Concatenate two vectors
 (++) :: Vector a -> Vector a -> Vector a
 {-# INLINE (++) #-}
-(++) = (IV.++)
+(++) = (G.++)
 
 -- | Create a copy of a vector. Useful when dealing with slices.
 copy :: Vector a -> Vector a
 {-# INLINE copy #-}
-copy = IV.copy
+copy = G.copy
 
 -- Accessing individual elements
 -- -----------------------------
@@ -172,31 +171,31 @@ copy = IV.copy
 -- | Indexing
 (!) :: Vector a -> Int -> a
 {-# INLINE (!) #-}
-(!) = (IV.!)
+(!) = (G.!)
 
 -- | First element
 head :: Vector a -> a
 {-# INLINE head #-}
-head = IV.head
+head = G.head
 
 -- | Last element
 last :: Vector a -> a
 {-# INLINE last #-}
-last = IV.last
+last = G.last
 
 -- | Monadic indexing which can be strict in the vector while remaining lazy in
 -- the element
 indexM :: Monad m => Vector a -> Int -> m a
 {-# INLINE indexM #-}
-indexM = IV.indexM
+indexM = G.indexM
 
 headM :: Monad m => Vector a -> m a
 {-# INLINE headM #-}
-headM = IV.headM
+headM = G.headM
 
 lastM :: Monad m => Vector a -> m a
 {-# INLINE lastM #-}
-lastM = IV.lastM
+lastM = G.lastM
 
 -- Subarrays
 -- ---------
@@ -207,50 +206,50 @@ slice :: Vector a -> Int   -- ^ starting index
                   -> Int   -- ^ length
                   -> Vector a
 {-# INLINE slice #-}
-slice = IV.slice
+slice = G.slice
 
 -- | Yield all but the last element without copying.
 init :: Vector a -> Vector a
 {-# INLINE init #-}
-init = IV.init
+init = G.init
 
 -- | All but the first element (without copying).
 tail :: Vector a -> Vector a
 {-# INLINE tail #-}
-tail = IV.tail
+tail = G.tail
 
 -- | Yield the first @n@ elements without copying.
 take :: Int -> Vector a -> Vector a
 {-# INLINE take #-}
-take = IV.take
+take = G.take
 
 -- | Yield all but the first @n@ elements without copying.
 drop :: Int -> Vector a -> Vector a
 {-# INLINE drop #-}
-drop = IV.drop
+drop = G.drop
 
 -- Permutations
 -- ------------
 
 accum :: (a -> b -> a) -> Vector a -> [(Int,b)] -> Vector a
 {-# INLINE accum #-}
-accum = IV.accum
+accum = G.accum
 
 (//) :: Vector a -> [(Int, a)] -> Vector a
 {-# INLINE (//) #-}
-(//) = (IV.//)
+(//) = (G.//)
 
 update :: Vector a -> Vector (Int, a) -> Vector a
 {-# INLINE update #-}
-update = IV.update
+update = G.update
 
 backpermute :: Vector a -> Vector Int -> Vector a
 {-# INLINE backpermute #-}
-backpermute = IV.backpermute
+backpermute = G.backpermute
 
 reverse :: Vector a -> Vector a
 {-# INLINE reverse #-}
-reverse = IV.reverse
+reverse = G.reverse
 
 -- Mapping
 -- -------
@@ -258,11 +257,11 @@ reverse = IV.reverse
 -- | Map a function over a vector
 map :: (a -> b) -> Vector a -> Vector b
 {-# INLINE map #-}
-map = IV.map
+map = G.map
 
 concatMap :: (a -> Vector b) -> Vector a -> Vector b
 {-# INLINE concatMap #-}
-concatMap = IV.concatMap
+concatMap = G.concatMap
 
 -- Zipping/unzipping
 -- -----------------
@@ -270,28 +269,28 @@ concatMap = IV.concatMap
 -- | Zip two vectors with the given function.
 zipWith :: (a -> b -> c) -> Vector a -> Vector b -> Vector c
 {-# INLINE zipWith #-}
-zipWith = IV.zipWith
+zipWith = G.zipWith
 
 -- | Zip three vectors with the given function.
 zipWith3 :: (a -> b -> c -> d) -> Vector a -> Vector b -> Vector c -> Vector d
 {-# INLINE zipWith3 #-}
-zipWith3 = IV.zipWith3
+zipWith3 = G.zipWith3
 
 zip :: Vector a -> Vector b -> Vector (a, b)
 {-# INLINE zip #-}
-zip = IV.zip
+zip = G.zip
 
 zip3 :: Vector a -> Vector b -> Vector c -> Vector (a, b, c)
 {-# INLINE zip3 #-}
-zip3 = IV.zip3
+zip3 = G.zip3
 
 unzip :: Vector (a, b) -> (Vector a, Vector b)
 {-# INLINE unzip #-}
-unzip = IV.unzip
+unzip = G.unzip
 
 unzip3 :: Vector (a, b, c) -> (Vector a, Vector b, Vector c)
 {-# INLINE unzip3 #-}
-unzip3 = IV.unzip3
+unzip3 = G.unzip3
 
 -- Filtering
 -- ---------
@@ -299,17 +298,17 @@ unzip3 = IV.unzip3
 -- | Drop elements which do not satisfy the predicate
 filter :: (a -> Bool) -> Vector a -> Vector a
 {-# INLINE filter #-}
-filter = IV.filter
+filter = G.filter
 
 -- | Yield the longest prefix of elements satisfying the predicate.
 takeWhile :: (a -> Bool) -> Vector a -> Vector a
 {-# INLINE takeWhile #-}
-takeWhile = IV.takeWhile
+takeWhile = G.takeWhile
 
 -- | Drop the longest prefix of elements that satisfy the predicate.
 dropWhile :: (a -> Bool) -> Vector a -> Vector a
 {-# INLINE dropWhile #-}
-dropWhile = IV.dropWhile
+dropWhile = G.dropWhile
 
 -- Searching
 -- ---------
@@ -318,25 +317,25 @@ infix 4 `elem`
 -- | Check whether the vector contains an element
 elem :: Eq a => a -> Vector a -> Bool
 {-# INLINE elem #-}
-elem = IV.elem
+elem = G.elem
 
 infix 4 `notElem`
 -- | Inverse of `elem`
 notElem :: Eq a => a -> Vector a -> Bool
 {-# INLINE notElem #-}
-notElem = IV.notElem
+notElem = G.notElem
 
 -- | Yield 'Just' the first element matching the predicate or 'Nothing' if no
 -- such element exists.
 find :: (a -> Bool) -> Vector a -> Maybe a
 {-# INLINE find #-}
-find = IV.find
+find = G.find
 
 -- | Yield 'Just' the index of the first element matching the predicate or
 -- 'Nothing' if no such element exists.
 findIndex :: (a -> Bool) -> Vector a -> Maybe Int
 {-# INLINE findIndex #-}
-findIndex = IV.findIndex
+findIndex = G.findIndex
 
 -- Folding
 -- -------
@@ -344,66 +343,66 @@ findIndex = IV.findIndex
 -- | Left fold
 foldl :: (a -> b -> a) -> a -> Vector b -> a
 {-# INLINE foldl #-}
-foldl = IV.foldl
+foldl = G.foldl
 
 -- | Lefgt fold on non-empty vectors
 foldl1 :: (a -> a -> a) -> Vector a -> a
 {-# INLINE foldl1 #-}
-foldl1 = IV.foldl1
+foldl1 = G.foldl1
 
 -- | Left fold with strict accumulator
 foldl' :: (a -> b -> a) -> a -> Vector b -> a
 {-# INLINE foldl' #-}
-foldl' = IV.foldl'
+foldl' = G.foldl'
 
 -- | Left fold on non-empty vectors with strict accumulator
 foldl1' :: (a -> a -> a) -> Vector a -> a
 {-# INLINE foldl1' #-}
-foldl1' = IV.foldl1'
+foldl1' = G.foldl1'
 
 -- | Right fold
 foldr :: (a -> b -> b) -> b -> Vector a -> b
 {-# INLINE foldr #-}
-foldr = IV.foldr
+foldr = G.foldr
 
 -- | Right fold on non-empty vectors
 foldr1 :: (a -> a -> a) -> Vector a -> a
 {-# INLINE foldr1 #-}
-foldr1 = IV.foldr1
+foldr1 = G.foldr1
 
 -- Specialised folds
 -- -----------------
 
 and :: Vector Bool -> Bool
 {-# INLINE and #-}
-and = IV.and
+and = G.and
 
 or :: Vector Bool -> Bool
 {-# INLINE or #-}
-or = IV.or
+or = G.or
 
 sum :: Num a => Vector a -> a
 {-# INLINE sum #-}
-sum = IV.sum
+sum = G.sum
 
 product :: Num a => Vector a -> a
 {-# INLINE product #-}
-product = IV.product
+product = G.product
 
 maximum :: Ord a => Vector a -> a
 {-# INLINE maximum #-}
-maximum = IV.maximum
+maximum = G.maximum
 
 minimum :: Ord a => Vector a -> a
 {-# INLINE minimum #-}
-minimum = IV.minimum
+minimum = G.minimum
 
 -- Unfolding
 -- ---------
 
 unfoldr :: (b -> Maybe (a, b)) -> b -> Vector a
 {-# INLINE unfoldr #-}
-unfoldr = IV.unfoldr
+unfoldr = G.unfoldr
 
 -- Scans
 -- -----
@@ -411,53 +410,53 @@ unfoldr = IV.unfoldr
 -- | Prefix scan
 prescanl :: (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE prescanl #-}
-prescanl = IV.prescanl
+prescanl = G.prescanl
 
 -- | Prefix scan with strict accumulator
 prescanl' :: (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE prescanl' #-}
-prescanl' = IV.prescanl'
+prescanl' = G.prescanl'
 
 -- | Suffix scan
 postscanl :: (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE postscanl #-}
-postscanl = IV.postscanl
+postscanl = G.postscanl
 
 -- | Suffix scan with strict accumulator
 postscanl' :: (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE postscanl' #-}
-postscanl' = IV.postscanl'
+postscanl' = G.postscanl'
 
 -- | Haskell-style scan
 scanl :: (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE scanl #-}
-scanl = IV.scanl
+scanl = G.scanl
 
 -- | Haskell-style scan with strict accumulator
 scanl' :: (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE scanl' #-}
-scanl' = IV.scanl'
+scanl' = G.scanl'
 
 -- | Scan over a non-empty 'Vector'
 scanl1 :: (a -> a -> a) -> Vector a -> Vector a
 {-# INLINE scanl1 #-}
-scanl1 = IV.scanl1
+scanl1 = G.scanl1
 
 -- | Scan over a non-empty 'Vector' with a strict accumulator
 scanl1' :: (a -> a -> a) -> Vector a -> Vector a
 {-# INLINE scanl1' #-}
-scanl1' = IV.scanl1'
+scanl1' = G.scanl1'
 
 -- Enumeration
 -- -----------
 
 enumFromTo :: Enum a => a -> a -> Vector a
 {-# INLINE enumFromTo #-}
-enumFromTo = IV.enumFromTo
+enumFromTo = G.enumFromTo
 
 enumFromThenTo :: Enum a => a -> a -> a -> Vector a
 {-# INLINE enumFromThenTo #-}
-enumFromThenTo = IV.enumFromThenTo
+enumFromThenTo = G.enumFromThenTo
 
 -- Conversion to/from lists
 -- ------------------------
@@ -465,10 +464,10 @@ enumFromThenTo = IV.enumFromThenTo
 -- | Convert a vector to a list
 toList :: Vector a -> [a]
 {-# INLINE toList #-}
-toList = IV.toList
+toList = G.toList
 
 -- | Convert a list to a vector
 fromList :: [a] -> Vector a
 {-# INLINE fromList #-}
-fromList = IV.fromList
+fromList = G.fromList
 

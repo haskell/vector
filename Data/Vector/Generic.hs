@@ -1,8 +1,8 @@
 {-# LANGUAGE Rank2Types, MultiParamTypeClasses, FlexibleContexts,
              ScopedTypeVariables #-}
 -- |
--- Module      : Data.Vector.IVector
--- Copyright   : (c) Roman Leshchinskiy 2008
+-- Module      : Data.Vector.Generic
+-- Copyright   : (c) Roman Leshchinskiy 2008-2009
 -- License     : BSD-style
 --
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
@@ -14,9 +14,9 @@
 
 #include "phases.h"
 
-module Data.Vector.IVector (
+module Data.Vector.Generic (
   -- * Immutable vectors
-  IVector(..),
+  Vector(..),
 
   -- * Length information
   length, null,
@@ -75,11 +75,11 @@ module Data.Vector.IVector (
   new
 ) where
 
-import qualified Data.Vector.MVector as MVector
-import           Data.Vector.MVector ( MVector )
+import qualified Data.Vector.Generic.Mutable as Mut
+import           Data.Vector.Generic.Mutable ( MVector )
 
-import qualified Data.Vector.MVector.New as New
-import           Data.Vector.MVector.New ( New )
+import qualified Data.Vector.Generic.New as New
+import           Data.Vector.Generic.New ( New )
 
 import qualified Data.Vector.Fusion.Stream as Stream
 import           Data.Vector.Fusion.Stream ( Stream, MStream )
@@ -104,7 +104,7 @@ import Prelude hiding ( length, null,
 
 -- | Class of immutable vectors.
 --
-class IVector v a where
+class Vector v a where
   -- | Construct a pure vector from a monadic initialiser (not fusible!)
   vnew         :: (forall mv m. MVector mv m a => m (mv a)) -> v a
 
@@ -141,7 +141,7 @@ class IVector v a where
 -- ------
 
 -- | Construct a pure vector from a monadic initialiser 
-new :: IVector v a => New a -> v a
+new :: Vector v a => New a -> v a
 {-# INLINE new #-}
 new m = new' undefined m
 
@@ -149,12 +149,12 @@ new m = new' undefined m
 -- the rule @uninplace@.
 --
 -- See http://hackage.haskell.org/trac/ghc/ticket/2600
-new' :: IVector v a => v a -> New a -> v a
+new' :: Vector v a => v a -> New a -> v a
 {-# INLINE_STREAM new' #-}
 new' _ m = vnew (New.run m)
 
 -- | Convert a vector to a 'Stream'
-stream :: IVector v a => v a -> Stream a
+stream :: Vector v a => v a -> Stream a
 {-# INLINE_STREAM stream #-}
 stream v = v `seq` (Stream.unfoldr get 0 `Stream.sized` Exact n)
   where
@@ -165,16 +165,16 @@ stream v = v `seq` (Stream.unfoldr get 0 `Stream.sized` Exact n)
           | otherwise = Nothing
 
 -- | Create a vector from a 'Stream'
-unstream :: IVector v a => Stream a -> v a
+unstream :: Vector v a => Stream a -> v a
 {-# INLINE unstream #-}
 unstream s = new (New.unstream s)
 
 {-# RULES
 
-"stream/unstream [IVector]" forall v s.
+"stream/unstream [Vector]" forall v s.
   stream (new' v (New.unstream s)) = s
 
-"New.unstream/stream/new [IVector]" forall v p.
+"New.unstream/stream/new [Vector]" forall v p.
   New.unstream (stream (new' v p)) = p
 
  #-}
@@ -186,15 +186,15 @@ inplace f s = f s
 
 {-# RULES
 
-"inplace [IVector]"
+"inplace [Vector]"
   forall (f :: forall m. Monad m => MStream m a -> MStream m a) v m.
   New.unstream (inplace f (stream (new' v m))) = New.transform f m
 
-"uninplace [IVector]"
+"uninplace [Vector]"
   forall (f :: forall m. Monad m => MStream m a -> MStream m a) v m.
   stream (new' v (New.transform f m)) = inplace f (stream (new' v m))
 
-"inplace/inplace [IVector]"
+"inplace/inplace [Vector]"
   forall (f :: forall m. Monad m => MStream m a -> MStream m a)
          (g :: forall m. Monad m => MStream m a -> MStream m a)
          s.
@@ -205,24 +205,24 @@ inplace f s = f s
 -- Length
 -- ------
 
-length :: IVector v a => v a -> Int
+length :: Vector v a => v a -> Int
 {-# INLINE_STREAM length #-}
 length v = vlength v
 
 {-# RULES
 
-"length/unstream [IVector]" forall v s.
+"length/unstream [Vector]" forall v s.
   length (new' v (New.unstream s)) = Stream.length s
 
   #-}
 
-null :: IVector v a => v a -> Bool
+null :: Vector v a => v a -> Bool
 {-# INLINE_STREAM null #-}
 null v = vlength v == 0
 
 {-# RULES
 
-"null/unstream [IVector]" forall v s.
+"null/unstream [Vector]" forall v s.
   null (new' v (New.unstream s)) = Stream.null s
 
   #-}
@@ -231,44 +231,44 @@ null v = vlength v == 0
 -- ------------
 
 -- | Empty vector
-empty :: IVector v a => v a
+empty :: Vector v a => v a
 {-# INLINE empty #-}
 empty = unstream Stream.empty
 
 -- | Vector with exaclty one element
-singleton :: IVector v a => a -> v a
+singleton :: Vector v a => a -> v a
 {-# INLINE singleton #-}
 singleton x = unstream (Stream.singleton x)
 
 -- | Vector of the given length with the given value in each position
-replicate :: IVector v a => Int -> a -> v a
+replicate :: Vector v a => Int -> a -> v a
 {-# INLINE replicate #-}
 replicate n = unstream . Stream.replicate n
 
 -- | Prepend an element
-cons :: IVector v a => a -> v a -> v a
+cons :: Vector v a => a -> v a -> v a
 {-# INLINE cons #-}
 cons x = unstream . Stream.cons x . stream
 
 -- | Append an element
-snoc :: IVector v a => v a -> a -> v a
+snoc :: Vector v a => v a -> a -> v a
 {-# INLINE snoc #-}
 snoc v = unstream . Stream.snoc (stream v)
 
 infixr 5 ++
 -- | Concatenate two vectors
-(++) :: IVector v a => v a -> v a -> v a
+(++) :: Vector v a => v a -> v a -> v a
 {-# INLINE (++) #-}
 v ++ w = unstream (stream v Stream.++ stream w)
 
 -- | Create a copy of a vector. Useful when dealing with slices.
-copy :: IVector v a => v a -> v a
+copy :: Vector v a => v a -> v a
 {-# INLINE_STREAM copy #-}
 copy = unstream . stream
 
 {-# RULES
 
-"copy/unstream [IVector]" forall v s.
+"copy/unstream [Vector]" forall v s.
   copy (new' v (New.unstream s)) = new' v (New.unstream s)
 
  #-}
@@ -277,58 +277,58 @@ copy = unstream . stream
 -- -----------------------------
 
 -- | Indexing
-(!) :: IVector v a => v a -> Int -> a
+(!) :: Vector v a => v a -> Int -> a
 {-# INLINE_STREAM (!) #-}
 v ! i = assert (i >= 0 && i < length v)
       $ unId (unsafeIndexM v i)
 
 -- | First element
-head :: IVector v a => v a -> a
+head :: Vector v a => v a -> a
 {-# INLINE_STREAM head #-}
 head v = v ! 0
 
 -- | Last element
-last :: IVector v a => v a -> a
+last :: Vector v a => v a -> a
 {-# INLINE_STREAM last #-}
 last v = v ! (length v - 1)
 
 {-# RULES
 
-"(!)/unstream [IVector]" forall v i s.
+"(!)/unstream [Vector]" forall v i s.
   new' v (New.unstream s) ! i = s Stream.!! i
 
-"head/unstream [IVector]" forall v s.
+"head/unstream [Vector]" forall v s.
   head (new' v (New.unstream s)) = Stream.head s
 
-"last/unstream [IVector]" forall v s.
+"last/unstream [Vector]" forall v s.
   last (new' v (New.unstream s)) = Stream.last s
 
  #-}
 
 -- | Monadic indexing which can be strict in the vector while remaining lazy in
 -- the element.
-indexM :: (IVector v a, Monad m) => v a -> Int -> m a
+indexM :: (Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_STREAM indexM #-}
 indexM v i = assert (i >= 0 && i < length v)
            $ unsafeIndexM v i
 
-headM :: (IVector v a, Monad m) => v a -> m a
+headM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_STREAM headM #-}
 headM v = indexM v 0
 
-lastM :: (IVector v a, Monad m) => v a -> m a
+lastM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_STREAM lastM #-}
 lastM v = indexM v (length v - 1)
 
 {-# RULES
 
-"indexM/unstream [IVector]" forall v i s.
+"indexM/unstream [Vector]" forall v i s.
   indexM (new' v (New.unstream s)) i = return (s Stream.!! i)
 
-"headM/unstream [IVector]" forall v s.
+"headM/unstream [Vector]" forall v s.
   headM (new' v (New.unstream s)) = return (Stream.head s)
 
-"lastM/unstream [IVector]" forall v s.
+"lastM/unstream [Vector]" forall v s.
   lastM (new' v (New.unstream s)) = return (Stream.last s)
 
  #-}
@@ -340,7 +340,7 @@ lastM v = indexM v (length v - 1)
 
 -- | Yield a part of the vector without copying it. Safer version of
 -- 'unsafeSlice'.
-slice :: IVector v a => v a -> Int   -- ^ starting index
+slice :: Vector v a => v a -> Int   -- ^ starting index
                             -> Int   -- ^ length
                             -> v a
 {-# INLINE_STREAM slice #-}
@@ -348,23 +348,23 @@ slice v i n = assert (i >= 0 && n >= 0  && i+n <= length v)
             $ unsafeSlice v i n
 
 -- | Yield all but the last element without copying.
-init :: IVector v a => v a -> v a
+init :: Vector v a => v a -> v a
 {-# INLINE_STREAM init #-}
 init v = slice v 0 (length v - 1)
 
 -- | All but the first element (without copying).
-tail :: IVector v a => v a -> v a
+tail :: Vector v a => v a -> v a
 {-# INLINE_STREAM tail #-}
 tail v = slice v 1 (length v - 1)
 
 -- | Yield the first @n@ elements without copying.
-take :: IVector v a => Int -> v a -> v a
+take :: Vector v a => Int -> v a -> v a
 {-# INLINE_STREAM take #-}
 take n v = slice v 0 (min n' (length v))
   where n' = max n 0
 
 -- | Yield all but the first @n@ elements without copying.
-drop :: IVector v a => Int -> v a -> v a
+drop :: Vector v a => Int -> v a -> v a
 {-# INLINE_STREAM drop #-}
 drop n v = slice v (min n' len) (max 0 (len - n'))
   where n' = max n 0
@@ -372,19 +372,19 @@ drop n v = slice v (min n' len) (max 0 (len - n'))
 
 {-# RULES
 
-"slice/new [IVector]" forall v p i n.
+"slice/new [Vector]" forall v p i n.
   slice (new' v p) i n = new' v (New.slice p i n)
 
-"init/new [IVector]" forall v p.
+"init/new [Vector]" forall v p.
   init (new' v p) = new' v (New.init p)
 
-"tail/new [IVector]" forall v p.
+"tail/new [Vector]" forall v p.
   tail (new' v p) = new' v (New.tail p)
 
-"take/new [IVector]" forall n v p.
+"take/new [Vector]" forall n v p.
   take n (new' v p) = new' v (New.take n p)
 
-"drop/new [IVector]" forall n v p.
+"drop/new [Vector]" forall n v p.
   drop n (new' v p) = new' v (New.drop n p)
 
   #-}
@@ -392,17 +392,17 @@ drop n v = slice v (min n' len) (max 0 (len - n'))
 -- Permutations
 -- ------------
 
-accum :: IVector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
+accum :: Vector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
 {-# INLINE accum #-}
 accum f v us = new (New.accum f (New.unstream (stream v))
                                 (Stream.fromList us))
 
-(//) :: IVector v a => v a -> [(Int, a)] -> v a
+(//) :: Vector v a => v a -> [(Int, a)] -> v a
 {-# INLINE (//) #-}
 v // us = new (New.update (New.unstream (stream v))
                           (Stream.fromList us))
 
-update :: (IVector v a, IVector v (Int, a)) => v a -> v (Int, a) -> v a
+update :: (Vector v a, Vector v (Int, a)) => v a -> v (Int, a) -> v a
 {-# INLINE update #-}
 update v w = new (New.update (New.unstream (stream v)) (stream w))
 
@@ -411,7 +411,7 @@ update v w = new (New.update (New.unstream (stream v)) (stream w))
 -- elements. This would not be the case if we simply used
 --
 -- backpermute v is = map (v!) is
-backpermute :: (IVector v a, IVector v Int) => v a -> v Int -> v a
+backpermute :: (Vector v a, Vector v Int) => v a -> v Int -> v a
 {-# INLINE backpermute #-}
 backpermute v is = unstream
                  . MStream.trans (Id . unBox)
@@ -419,7 +419,7 @@ backpermute v is = unstream
                  . MStream.trans (Box . unId)
                  $ stream is
 
-reverse :: (IVector v a) => v a -> v a
+reverse :: (Vector v a) => v a -> v a
 {-# INLINE reverse #-}
 reverse = new . New.reverse . New.unstream . stream
 
@@ -427,21 +427,21 @@ reverse = new . New.reverse . New.unstream . stream
 -- -------
 
 -- | Map a function over a vector
-map :: (IVector v a, IVector v b) => (a -> b) -> v a -> v b
+map :: (Vector v a, Vector v b) => (a -> b) -> v a -> v b
 {-# INLINE map #-}
 map f = unstream . Stream.map f . stream
 
-inplace_map :: IVector v a => (a -> a) -> v a -> v a
+inplace_map :: Vector v a => (a -> a) -> v a -> v a
 {-# INLINE inplace_map #-}
 inplace_map f = unstream . inplace (MStream.map f) . stream
 
 {-# RULES
 
-"map->inplace_map [IVector]" map = inplace_map
+"map->inplace_map [Vector]" map = inplace_map
 
  #-}
 
-concatMap :: (IVector v a, IVector v b) => (a -> v b) -> v a -> v b
+concatMap :: (Vector v a, Vector v b) => (a -> v b) -> v a -> v b
 {-# INLINE concatMap #-}
 concatMap f = unstream . Stream.concatMap (stream . f) . stream
 
@@ -449,39 +449,39 @@ concatMap f = unstream . Stream.concatMap (stream . f) . stream
 -- -----------------
 
 -- | Zip two vectors with the given function.
-zipWith :: (IVector v a, IVector v b, IVector v c) => (a -> b -> c) -> v a -> v b -> v c
+zipWith :: (Vector v a, Vector v b, Vector v c) => (a -> b -> c) -> v a -> v b -> v c
 {-# INLINE zipWith #-}
 zipWith f xs ys = unstream (Stream.zipWith f (stream xs) (stream ys))
 
 -- | Zip three vectors with the given function.
-zipWith3 :: (IVector v a, IVector v b, IVector v c, IVector v d) => (a -> b -> c -> d) -> v a -> v b -> v c -> v d
+zipWith3 :: (Vector v a, Vector v b, Vector v c, Vector v d) => (a -> b -> c -> d) -> v a -> v b -> v c -> v d
 {-# INLINE zipWith3 #-}
 zipWith3 f xs ys zs = unstream (Stream.zipWith3 f (stream xs) (stream ys) (stream zs))
 
-zip :: (IVector v a, IVector v b, IVector v (a,b)) => v a -> v b -> v (a, b)
+zip :: (Vector v a, Vector v b, Vector v (a,b)) => v a -> v b -> v (a, b)
 {-# INLINE zip #-}
 zip = zipWith (,)
 
-zip3 :: (IVector v a, IVector v b, IVector v c, IVector v (a, b, c)) => v a -> v b -> v c -> v (a, b, c)
+zip3 :: (Vector v a, Vector v b, Vector v c, Vector v (a, b, c)) => v a -> v b -> v c -> v (a, b, c)
 {-# INLINE zip3 #-}
 zip3 = zipWith3 (,,)
 
-unzip :: (IVector v a, IVector v b, IVector v (a,b)) => v (a, b) -> (v a, v b)
+unzip :: (Vector v a, Vector v b, Vector v (a,b)) => v (a, b) -> (v a, v b)
 {-# INLINE unzip #-}
 unzip xs = (map fst xs, map snd xs)
 
-unzip3 :: (IVector v a, IVector v b, IVector v c, IVector v (a, b, c)) => v (a, b, c) -> (v a, v b, v c)
+unzip3 :: (Vector v a, Vector v b, Vector v c, Vector v (a, b, c)) => v (a, b, c) -> (v a, v b, v c)
 {-# INLINE unzip3 #-}
 unzip3 xs = (map (\(a, b, c) -> a) xs, map (\(a, b, c) -> b) xs, map (\(a, b, c) -> c) xs)
 
 -- Comparisons
 -- -----------
 
-eq :: (IVector v a, Eq a) => v a -> v a -> Bool
+eq :: (Vector v a, Eq a) => v a -> v a -> Bool
 {-# INLINE eq #-}
 xs `eq` ys = stream xs == stream ys
 
-cmp :: (IVector v a, Ord a) => v a -> v a -> Ordering
+cmp :: (Vector v a, Ord a) => v a -> v a -> Ordering
 {-# INLINE cmp #-}
 cmp xs ys = compare (stream xs) (stream ys)
 
@@ -489,17 +489,17 @@ cmp xs ys = compare (stream xs) (stream ys)
 -- ---------
 
 -- | Drop elements which do not satisfy the predicate
-filter :: IVector v a => (a -> Bool) -> v a -> v a
+filter :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE filter #-}
 filter f = unstream . inplace (MStream.filter f) . stream
 
 -- | Yield the longest prefix of elements satisfying the predicate.
-takeWhile :: IVector v a => (a -> Bool) -> v a -> v a
+takeWhile :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE takeWhile #-}
 takeWhile f = unstream . Stream.takeWhile f . stream
 
 -- | Drop the longest prefix of elements that satisfy the predicate.
-dropWhile :: IVector v a => (a -> Bool) -> v a -> v a
+dropWhile :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE dropWhile #-}
 dropWhile f = unstream . Stream.dropWhile f . stream
 
@@ -508,25 +508,25 @@ dropWhile f = unstream . Stream.dropWhile f . stream
 
 infix 4 `elem`
 -- | Check whether the vector contains an element
-elem :: (IVector v a, Eq a) => a -> v a -> Bool
+elem :: (Vector v a, Eq a) => a -> v a -> Bool
 {-# INLINE elem #-}
 elem x = Stream.elem x . stream
 
 infix 4 `notElem`
 -- | Inverse of `elem`
-notElem :: (IVector v a, Eq a) => a -> v a -> Bool
+notElem :: (Vector v a, Eq a) => a -> v a -> Bool
 {-# INLINE notElem #-}
 notElem x = Stream.notElem x . stream
 
 -- | Yield 'Just' the first element matching the predicate or 'Nothing' if no
 -- such element exists.
-find :: IVector v a => (a -> Bool) -> v a -> Maybe a
+find :: Vector v a => (a -> Bool) -> v a -> Maybe a
 {-# INLINE find #-}
 find f = Stream.find f . stream
 
 -- | Yield 'Just' the index of the first element matching the predicate or
 -- 'Nothing' if no such element exists.
-findIndex :: IVector v a => (a -> Bool) -> v a -> Maybe Int
+findIndex :: Vector v a => (a -> Bool) -> v a -> Maybe Int
 {-# INLINE findIndex #-}
 findIndex f = Stream.findIndex f . stream
 
@@ -534,66 +534,66 @@ findIndex f = Stream.findIndex f . stream
 -- -------
 
 -- | Left fold
-foldl :: IVector v b => (a -> b -> a) -> a -> v b -> a
+foldl :: Vector v b => (a -> b -> a) -> a -> v b -> a
 {-# INLINE foldl #-}
 foldl f z = Stream.foldl f z . stream
 
 -- | Lefgt fold on non-empty vectors
-foldl1 :: IVector v a => (a -> a -> a) -> v a -> a
+foldl1 :: Vector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldl1 #-}
 foldl1 f = Stream.foldl1 f . stream
 
 -- | Left fold with strict accumulator
-foldl' :: IVector v b => (a -> b -> a) -> a -> v b -> a
+foldl' :: Vector v b => (a -> b -> a) -> a -> v b -> a
 {-# INLINE foldl' #-}
 foldl' f z = Stream.foldl' f z . stream
 
 -- | Left fold on non-empty vectors with strict accumulator
-foldl1' :: IVector v a => (a -> a -> a) -> v a -> a
+foldl1' :: Vector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldl1' #-}
 foldl1' f = Stream.foldl1' f . stream
 
 -- | Right fold
-foldr :: IVector v a => (a -> b -> b) -> b -> v a -> b
+foldr :: Vector v a => (a -> b -> b) -> b -> v a -> b
 {-# INLINE foldr #-}
 foldr f z = Stream.foldr f z . stream
 
 -- | Right fold on non-empty vectors
-foldr1 :: IVector v a => (a -> a -> a) -> v a -> a
+foldr1 :: Vector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldr1 #-}
 foldr1 f = Stream.foldr1 f . stream
 
 -- Specialised folds
 -- -----------------
 
-and :: IVector v Bool => v Bool -> Bool
+and :: Vector v Bool => v Bool -> Bool
 {-# INLINE and #-}
 and = Stream.and . stream
 
-or :: IVector v Bool => v Bool -> Bool
+or :: Vector v Bool => v Bool -> Bool
 {-# INLINE or #-}
 or = Stream.or . stream
 
-sum :: (IVector v a, Num a) => v a -> a
+sum :: (Vector v a, Num a) => v a -> a
 {-# INLINE sum #-}
 sum = Stream.foldl' (+) 0 . stream
 
-product :: (IVector v a, Num a) => v a -> a
+product :: (Vector v a, Num a) => v a -> a
 {-# INLINE product #-}
 product = Stream.foldl' (*) 1 . stream
 
-maximum :: (IVector v a, Ord a) => v a -> a
+maximum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE maximum #-}
 maximum = Stream.foldl1' max . stream
 
-minimum :: (IVector v a, Ord a) => v a -> a
+minimum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE minimum #-}
 minimum = Stream.foldl1' min . stream
 
 -- Unfolding
 -- ---------
 
-unfoldr :: IVector v a => (b -> Maybe (a, b)) -> b -> v a
+unfoldr :: Vector v a => (b -> Maybe (a, b)) -> b -> v a
 {-# INLINE unfoldr #-}
 unfoldr f = unstream . Stream.unfoldr f
 
@@ -601,89 +601,89 @@ unfoldr f = unstream . Stream.unfoldr f
 -- -----
 
 -- | Prefix scan
-prescanl :: (IVector v a, IVector v b) => (a -> b -> a) -> a -> v b -> v a
+prescanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE prescanl #-}
 prescanl f z = unstream . Stream.prescanl f z . stream
 
-inplace_prescanl :: IVector v a => (a -> a -> a) -> a -> v a -> v a
+inplace_prescanl :: Vector v a => (a -> a -> a) -> a -> v a -> v a
 {-# INLINE inplace_prescanl #-}
 inplace_prescanl f z = unstream . inplace (MStream.prescanl f z) . stream
 
 {-# RULES
 
-"prescanl -> inplace_prescanl [IVector]" prescanl = inplace_prescanl
+"prescanl -> inplace_prescanl [Vector]" prescanl = inplace_prescanl
 
  #-}
 
 -- | Prefix scan with strict accumulator
-prescanl' :: (IVector v a, IVector v b) => (a -> b -> a) -> a -> v b -> v a
+prescanl' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE prescanl' #-}
 prescanl' f z = unstream . Stream.prescanl' f z . stream
 
-inplace_prescanl' :: IVector v a => (a -> a -> a) -> a -> v a -> v a
+inplace_prescanl' :: Vector v a => (a -> a -> a) -> a -> v a -> v a
 {-# INLINE inplace_prescanl' #-}
 inplace_prescanl' f z = unstream . inplace (MStream.prescanl' f z) . stream
 
 {-# RULES
 
-"prescanl' -> inplace_prescanl' [IVector]" prescanl' = inplace_prescanl'
+"prescanl' -> inplace_prescanl' [Vector]" prescanl' = inplace_prescanl'
 
  #-}
 
 -- | Suffix scan
-postscanl :: (IVector v a, IVector v b) => (a -> b -> a) -> a -> v b -> v a
+postscanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE postscanl #-}
 postscanl f z = unstream . Stream.postscanl f z . stream
 
-inplace_postscanl :: IVector v a => (a -> a -> a) -> a -> v a -> v a
+inplace_postscanl :: Vector v a => (a -> a -> a) -> a -> v a -> v a
 {-# INLINE inplace_postscanl #-}
 inplace_postscanl f z = unstream . inplace (MStream.postscanl f z) . stream
 
 {-# RULES
 
-"postscanl -> inplace_postscanl [IVector]" postscanl = inplace_postscanl
+"postscanl -> inplace_postscanl [Vector]" postscanl = inplace_postscanl
 
  #-}
 
 -- | Suffix scan with strict accumulator
-postscanl' :: (IVector v a, IVector v b) => (a -> b -> a) -> a -> v b -> v a
+postscanl' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE postscanl' #-}
 postscanl' f z = unstream . Stream.postscanl' f z . stream
 
-inplace_postscanl' :: IVector v a => (a -> a -> a) -> a -> v a -> v a
+inplace_postscanl' :: Vector v a => (a -> a -> a) -> a -> v a -> v a
 {-# INLINE inplace_postscanl' #-}
 inplace_postscanl' f z = unstream . inplace (MStream.postscanl' f z) . stream
 
 {-# RULES
 
-"postscanl' -> inplace_postscanl' [IVector]" postscanl' = inplace_postscanl'
+"postscanl' -> inplace_postscanl' [Vector]" postscanl' = inplace_postscanl'
 
  #-}
 
 -- | Haskell-style scan
-scanl :: (IVector v a, IVector v b) => (a -> b -> a) -> a -> v b -> v a
+scanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE scanl #-}
 scanl f z = unstream . Stream.scanl f z . stream
 
 -- | Haskell-style scan with strict accumulator
-scanl' :: (IVector v a, IVector v b) => (a -> b -> a) -> a -> v b -> v a
+scanl' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE scanl' #-}
 scanl' f z = unstream . Stream.scanl' f z . stream
 
 -- | Scan over a non-empty vector
-scanl1 :: IVector v a => (a -> a -> a) -> v a -> v a
+scanl1 :: Vector v a => (a -> a -> a) -> v a -> v a
 {-# INLINE scanl1 #-}
 scanl1 f = unstream . inplace (MStream.scanl1 f) . stream
 
 -- | Scan over a non-empty vector with a strict accumulator
-scanl1' :: IVector v a => (a -> a -> a) -> v a -> v a
+scanl1' :: Vector v a => (a -> a -> a) -> v a -> v a
 {-# INLINE scanl1' #-}
 scanl1' f = unstream . inplace (MStream.scanl1' f) . stream
 
 -- Enumeration
 -- -----------
 
-enumFromTo :: (IVector v a, Enum a) => a -> a -> v a
+enumFromTo :: (Vector v a, Enum a) => a -> a -> v a
 {-# INLINE enumFromTo #-}
 enumFromTo from to = from `seq` to `seq` unfoldr enumFromTo_go (fromEnum from)
   where
@@ -691,7 +691,7 @@ enumFromTo from to = from `seq` to `seq` unfoldr enumFromTo_go (fromEnum from)
     enumFromTo_go i | i <= to_i = Just (toEnum i, i + 1)
                     | otherwise = Nothing
 
-enumFromThenTo :: (IVector v a, Enum a) => a -> a -> a -> v a
+enumFromThenTo :: (Vector v a, Enum a) => a -> a -> a -> v a
 {-# INLINE enumFromThenTo #-}
 enumFromThenTo from next to = from `seq` next `seq` to `seq` unfoldr enumFromThenTo_go from_i
   where
@@ -702,12 +702,12 @@ enumFromThenTo from next to = from `seq` next `seq` to `seq` unfoldr enumFromThe
                         | otherwise = Nothing
 
 -- | Convert a vector to a list
-toList :: IVector v a => v a -> [a]
+toList :: Vector v a => v a -> [a]
 {-# INLINE toList #-}
 toList = Stream.toList . stream
 
 -- | Convert a list to a vector
-fromList :: IVector v a => [a] -> v a
+fromList :: Vector v a => [a] -> v a
 {-# INLINE fromList #-}
 fromList = unstream . Stream.fromList
 

@@ -1,6 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 -- |
--- Module      : Data.Vector.MVector
+-- Module      : Data.Vector.Generic.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2008
 -- License     : BSD-style
 --
@@ -13,7 +13,7 @@
 
 #include "phases.h"
 
-module Data.Vector.MVector (
+module Data.Vector.Generic.Mutable (
   MVectorPure(..), MVector(..),
 
   slice, new, newWith, read, write, copy, grow,

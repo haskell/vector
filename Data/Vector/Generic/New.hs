@@ -2,13 +2,13 @@
 
 #include "phases.h"
 
-module Data.Vector.MVector.New (
+module Data.Vector.Generic.New (
   New(..), run, unstream, transform, accum, update, reverse,
   slice, init, tail, take, drop
 ) where
 
-import qualified Data.Vector.MVector as MVector
-import           Data.Vector.MVector ( MVector, MVectorPure )
+import qualified Data.Vector.Generic.Mutable as MVector
+import           Data.Vector.Generic.Mutable ( MVector, MVectorPure )
 
 import           Data.Vector.Fusion.Stream ( Stream, MStream )
 import qualified Data.Vector.Fusion.Stream as Stream

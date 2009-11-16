@@ -12,8 +12,7 @@
 module Data.Vector.Primitive.Mutable ( Vector(..) )
 where
 
-import qualified Data.Vector.MVector as MVector
-import           Data.Vector.MVector ( MVector, MVectorPure )
+import           Data.Vector.Generic.Mutable ( MVector(..), MVectorPure(..) )
 import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim, sizeOf )
 import           Control.Monad.Primitive

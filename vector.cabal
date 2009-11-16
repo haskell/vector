@@ -40,9 +40,9 @@ Library
         Data.Vector.Fusion.Stream.Monadic
         Data.Vector.Fusion.Stream
 
-        Data.Vector.MVector
-        Data.Vector.MVector.New
-        Data.Vector.IVector
+        Data.Vector.Generic.Mutable
+        Data.Vector.Generic.New
+        Data.Vector.Generic
 
         Data.Vector.Primitive.Mutable
         Data.Vector.Primitive

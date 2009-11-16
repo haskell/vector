@@ -15,8 +15,7 @@
 module Data.Vector.Storable.Mutable( Vector(..) )
 where
 
-import qualified Data.Vector.MVector as MVector
-import           Data.Vector.MVector ( MVector, MVectorPure )
+import Data.Vector.Generic.Mutable ( MVector(..), MVectorPure(..) )
 
 import Foreign.Storable
 import Foreign.ForeignPtr
