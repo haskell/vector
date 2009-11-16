@@ -413,10 +413,11 @@ update v w = new (New.update (New.unstream (stream v)) (stream w))
 -- backpermute v is = map (v!) is
 backpermute :: (Vector v a, Vector v Int) => v a -> v Int -> v a
 {-# INLINE backpermute #-}
-backpermute v is = unstream
-                 . MStream.trans (Id . unBox)
-                 . MStream.mapM (indexM v)
-                 . MStream.trans (Box . unId)
+backpermute v is = seq v
+                 $ unstream
+                 $ MStream.trans (Id . unBox)
+                 $ MStream.mapM (indexM v)
+                 $ MStream.trans (Box . unId)
                  $ stream is
 
 reverse :: (Vector v a) => v a -> v a
