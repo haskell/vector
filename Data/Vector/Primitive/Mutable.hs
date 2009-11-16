@@ -1,35 +1,29 @@
-{-# LANGUAGE MagicHash, UnboxedTuples, MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables #-}
-
--- |
--- Module      : Data.Vector.Primitive.Mutable.ST
--- Copyright   : (c) Roman Leshchinskiy 2008
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables #-}
+-- Copyright   : (c) Roman Leshchinskiy 2008-2009
 -- License     : BSD-style
 --
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Mutable primitive vectors based in the ST monad.
+-- Mutable primitive vectors.
 --
 
-module Data.Vector.Primitive.Mutable.ST ( Vector(..) )
+module Data.Vector.Primitive.Mutable ( Vector(..) )
 where
 
 import qualified Data.Vector.MVector as MVector
 import           Data.Vector.MVector ( MVector, MVectorPure )
 import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim, sizeOf )
-
-import GHC.ST   ( ST(..) )
-
-import GHC.Base ( Int(..) )
+import           Control.Monad.Primitive
 
 -- | Mutable unboxed vectors. They live in the 'ST' monad.
-data Vector s a = Vector {-# UNPACK #-} !Int
+data Vector m a = Vector {-# UNPACK #-} !Int
                          {-# UNPACK #-} !Int
-                         {-# UNPACK #-} !(MutableByteArray s)
+                         {-# UNPACK #-} !(MutableByteArray m)
 
-instance Prim a => MVectorPure (Vector s) a where
+instance Prim a => MVectorPure (Vector m) a where
   length (Vector _ n _) = n
   unsafeSlice (Vector i _ arr) j m = Vector (i+j) m arr
 
@@ -41,7 +35,7 @@ instance Prim a => MVectorPure (Vector s) a where
       between x y z = x >= y && x < z
 
 
-instance Prim a => MVector (Vector s) (ST s) a where
+instance (Prim a, PrimMonad m) => MVector (Vector m) m a where
   {-# INLINE unsafeNew #-}
   unsafeNew n = do
                   arr <- newByteArray (n * sizeOf (undefined :: a))

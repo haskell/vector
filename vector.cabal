@@ -44,8 +44,7 @@ Library
         Data.Vector.MVector.New
         Data.Vector.IVector
 
-        Data.Vector.Primitive.Mutable.ST
-        Data.Vector.Primitive.Mutable.IO
+        Data.Vector.Primitive.Mutable
         Data.Vector.Primitive
 
         Data.Vector.Storable.Internal
