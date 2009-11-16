@@ -9,7 +9,7 @@
 -- Mutable primitive vectors.
 --
 
-module Data.Vector.Primitive.Mutable ( Vector(..) )
+module Data.Vector.Primitive.Mutable ( Vector(..), IOVector, STVector )
 where
 
 import           Data.Vector.Generic.Mutable ( MVector(..), MVectorPure(..) )
