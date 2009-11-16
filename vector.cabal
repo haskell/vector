@@ -59,8 +59,7 @@ Library
   Install-Includes:
         phases.h
 
-  Build-Depends: base >= 2 && < 5, array, ghc-prim,
-                 ghc >= 6.9, primitive-types
+  Build-Depends: base >= 2 && < 5, ghc >= 6.9, primitive-types
 
 -- -finline-if-enough-args is ESSENTIAL. If we don't have this the partial application
 -- of e.g. Stream.Monadic.++ to the monad dictionary at the use site in Stream.++ causes
