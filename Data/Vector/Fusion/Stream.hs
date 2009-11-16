@@ -1,4 +1,4 @@
-{-# LANGUAGE ExistentialQuantification, FlexibleInstances #-}
+{-# LANGUAGE ExistentialQuantification, FlexibleInstances, Rank2Types #-}
 
 -- |
 -- Module      : Data.Vector.Fusion.Stream
@@ -17,6 +17,9 @@
 module Data.Vector.Fusion.Stream (
   -- * Types
   Step(..), Stream, MStream,
+
+  -- * In-place markers
+  inplace, inplace',
 
   -- * Size hints
   size, sized,
@@ -90,6 +93,30 @@ type Stream = M.Stream Id
 
 -- | Alternative name for monadic streams
 type MStream = M.Stream
+
+inplace :: (forall m. Monad m => M.Stream m a -> M.Stream m a)
+        -> Stream a -> Stream a
+{-# INLINE_STREAM inplace #-}
+inplace f s = f s
+
+inplace' :: (forall m. Monad m => M.Stream m a -> M.Stream m b)
+         -> Stream a -> Stream b
+{-# INLINE_STREAM inplace' #-}
+inplace' f s = f s
+
+{-# RULES
+
+"inplace/inplace [Vector]"
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a)
+         (g :: forall m. Monad m => MStream m a -> MStream m a)
+         s.
+  inplace f (inplace g s) = inplace (f . g) s
+
+"inplace' [Vector]"
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a).
+  inplace' f = inplace f
+
+  #-}
 
 -- | Convert a pure stream to a monadic stream
 liftStream :: Monad m => Stream a -> M.Stream m a

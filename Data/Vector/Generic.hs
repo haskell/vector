@@ -82,7 +82,7 @@ import qualified Data.Vector.Generic.New as New
 import           Data.Vector.Generic.New ( New )
 
 import qualified Data.Vector.Fusion.Stream as Stream
-import           Data.Vector.Fusion.Stream ( Stream, MStream )
+import           Data.Vector.Fusion.Stream ( Stream, MStream, inplace, inplace' )
 import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
 import           Data.Vector.Fusion.Util
@@ -179,11 +179,6 @@ unstream s = new (New.unstream s)
 
  #-}
 
-inplace :: (forall m. Monad m => MStream m a -> MStream m a)
-        -> Stream a -> Stream a
-{-# INLINE_STREAM inplace #-}
-inplace f s = f s
-
 {-# RULES
 
 "inplace [Vector]"
@@ -193,12 +188,6 @@ inplace f s = f s
 "uninplace [Vector]"
   forall (f :: forall m. Monad m => MStream m a -> MStream m a) v m.
   stream (new' v (New.transform f m)) = inplace f (stream (new' v m))
-
-"inplace/inplace [Vector]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a)
-         (g :: forall m. Monad m => MStream m a -> MStream m a)
-         s.
-  inplace f (inplace g s) = inplace (f . g) s
 
  #-}
 
@@ -430,17 +419,7 @@ reverse = new . New.reverse . New.unstream . stream
 -- | Map a function over a vector
 map :: (Vector v a, Vector v b) => (a -> b) -> v a -> v b
 {-# INLINE map #-}
-map f = unstream . Stream.map f . stream
-
-inplace_map :: Vector v a => (a -> a) -> v a -> v a
-{-# INLINE inplace_map #-}
-inplace_map f = unstream . inplace (MStream.map f) . stream
-
-{-# RULES
-
-"map->inplace_map [Vector]" map = inplace_map
-
- #-}
+map f = unstream . inplace' (MStream.map f) . stream
 
 concatMap :: (Vector v a, Vector v b) => (a -> v b) -> v a -> v b
 {-# INLINE concatMap #-}
@@ -604,62 +583,22 @@ unfoldr f = unstream . Stream.unfoldr f
 -- | Prefix scan
 prescanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE prescanl #-}
-prescanl f z = unstream . Stream.prescanl f z . stream
-
-inplace_prescanl :: Vector v a => (a -> a -> a) -> a -> v a -> v a
-{-# INLINE inplace_prescanl #-}
-inplace_prescanl f z = unstream . inplace (MStream.prescanl f z) . stream
-
-{-# RULES
-
-"prescanl -> inplace_prescanl [Vector]" prescanl = inplace_prescanl
-
- #-}
+prescanl f z = unstream . inplace' (MStream.prescanl f z) . stream
 
 -- | Prefix scan with strict accumulator
 prescanl' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE prescanl' #-}
-prescanl' f z = unstream . Stream.prescanl' f z . stream
-
-inplace_prescanl' :: Vector v a => (a -> a -> a) -> a -> v a -> v a
-{-# INLINE inplace_prescanl' #-}
-inplace_prescanl' f z = unstream . inplace (MStream.prescanl' f z) . stream
-
-{-# RULES
-
-"prescanl' -> inplace_prescanl' [Vector]" prescanl' = inplace_prescanl'
-
- #-}
+prescanl' f z = unstream . inplace' (MStream.prescanl' f z) . stream
 
 -- | Suffix scan
 postscanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE postscanl #-}
-postscanl f z = unstream . Stream.postscanl f z . stream
-
-inplace_postscanl :: Vector v a => (a -> a -> a) -> a -> v a -> v a
-{-# INLINE inplace_postscanl #-}
-inplace_postscanl f z = unstream . inplace (MStream.postscanl f z) . stream
-
-{-# RULES
-
-"postscanl -> inplace_postscanl [Vector]" postscanl = inplace_postscanl
-
- #-}
+postscanl f z = unstream . inplace' (MStream.postscanl f z) . stream
 
 -- | Suffix scan with strict accumulator
 postscanl' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE postscanl' #-}
-postscanl' f z = unstream . Stream.postscanl' f z . stream
-
-inplace_postscanl' :: Vector v a => (a -> a -> a) -> a -> v a -> v a
-{-# INLINE inplace_postscanl' #-}
-inplace_postscanl' f z = unstream . inplace (MStream.postscanl' f z) . stream
-
-{-# RULES
-
-"postscanl' -> inplace_postscanl' [Vector]" postscanl' = inplace_postscanl'
-
- #-}
+postscanl' f z = unstream . inplace' (MStream.postscanl' f z) . stream
 
 -- | Haskell-style scan
 scanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
