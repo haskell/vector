@@ -67,7 +67,7 @@ module Data.Vector.Fusion.Stream (
   toList, fromList, liftStream,
 
   -- * Monadic combinators
-  mapM_, foldM
+  mapM_, foldM, fold1M, foldM', fold1M'
 ) where
 
 import Data.Vector.Fusion.Stream.Size
@@ -450,6 +450,22 @@ mapM_ f = M.mapM_ f . liftStream
 foldM :: Monad m => (a -> b -> m a) -> a -> Stream b -> m a
 {-# INLINE_STREAM foldM #-}
 foldM m z = M.foldM m z . liftStream
+
+-- | Monadic fold over non-empty stream
+fold1M :: Monad m => (a -> a -> m a) -> Stream a -> m a
+{-# INLINE fold1M #-}
+fold1M m = M.fold1M m . liftStream
+
+-- | Monadic fold with strict accumulator
+foldM' :: Monad m => (a -> b -> m a) -> a -> Stream b -> m a
+{-# INLINE foldM' #-}
+foldM' m z = M.foldM' m z . liftStream
+
+-- | Monad fold over non-empty stream with strict accumulator
+fold1M' :: Monad m => (a -> a -> m a) -> Stream a -> m a
+{-# INLINE fold1M' #-}
+fold1M' m = M.fold1M' m . liftStream
+
 
 -- Conversions
 -- -----------

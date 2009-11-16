@@ -45,8 +45,8 @@ module Data.Vector.Fusion.Stream.Monadic (
   elem, notElem, find, findM, findIndex, findIndexM,
 
   -- * Folding
-  foldl, foldlM, foldM, foldl1, foldl1M,
-  foldl', foldlM', foldl1', foldl1M',
+  foldl, foldlM, foldl1, foldl1M, foldM, fold1M,
+  foldl', foldlM', foldl1', foldl1M', foldM', fold1M',
   foldr, foldrM, foldr1, foldr1M,
 
   -- * Specialised folds
@@ -601,6 +601,11 @@ foldl1M f (Stream step s sz) = foldl1M_go s
                        Skip    s' -> foldl1M_go s'
                        Done       -> errorEmptyStream "foldl1M"
 
+-- | Same as 'foldl1M'
+fold1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
+{-# INLINE fold1M #-}
+fold1M = foldl1M
+
 -- | Left fold with a strict accumulator
 foldl' :: Monad m => (a -> b -> a) -> a -> Stream m b -> m a
 {-# INLINE foldl' #-}
@@ -619,6 +624,11 @@ foldlM' m z (Stream step s _) = foldlM'_go z s
                          Skip    s' -> foldlM'_go z s'
                          Done       -> return z
 
+-- | Same as 'foldlM''
+foldM' :: Monad m => (a -> b -> m a) -> a -> Stream m b -> m a
+{-# INLINE foldM' #-}
+foldM' = foldlM'
+
 -- | Left fold over a non-empty 'Stream' with a strict accumulator
 foldl1' :: Monad m => (a -> a -> a) -> Stream m a -> m a
 {-# INLINE foldl1' #-}
@@ -636,6 +646,11 @@ foldl1M' f (Stream step s sz) = foldl1M'_go s
                         Yield x s' -> foldlM' f x (Stream step s' (sz - 1))
                         Skip    s' -> foldl1M'_go s'
                         Done       -> errorEmptyStream "foldl1M'"
+
+-- | Same as 'foldl1M''
+fold1M' :: Monad m => (a -> a -> m a) -> Stream m a -> m a
+{-# INLINE fold1M' #-}
+fold1M' = foldl1M'
 
 -- | Right fold
 foldr :: Monad m => (a -> b -> b) -> b -> Stream m a -> m b
