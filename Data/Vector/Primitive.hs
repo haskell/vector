@@ -70,10 +70,6 @@ import           Data.Primitive ( Prim )
 
 import Control.Monad.ST ( runST )
 
-import GHC.ST   ( ST(..) )
-import GHC.Prim ( ByteArray#, unsafeFreezeByteArray#, (+#) )
-import GHC.Base ( Int(..) )
-
 import Prelude hiding ( length, null,
                         replicate, (++),
                         head, last,

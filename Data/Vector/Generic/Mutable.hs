@@ -26,7 +26,6 @@ import           Data.Vector.Fusion.Stream      ( Stream, MStream )
 import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
 
-import Control.Monad.ST ( ST )
 import Control.Exception ( assert )
 
 import GHC.Float (

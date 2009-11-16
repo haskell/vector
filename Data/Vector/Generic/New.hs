@@ -13,8 +13,6 @@ import           Data.Vector.Generic.Mutable ( MVector, MVectorPure )
 import           Data.Vector.Fusion.Stream ( Stream, MStream )
 import qualified Data.Vector.Fusion.Stream as Stream
 
-import qualified Data.Vector.Fusion.Stream.Monadic as MStream
-
 import Control.Monad  ( liftM )
 import Prelude hiding ( init, tail, take, drop, reverse, map, filter )
 

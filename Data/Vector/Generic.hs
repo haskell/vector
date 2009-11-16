@@ -75,7 +75,6 @@ module Data.Vector.Generic (
   new
 ) where
 
-import qualified Data.Vector.Generic.Mutable as Mut
 import           Data.Vector.Generic.Mutable ( MVector )
 
 import qualified Data.Vector.Generic.New as New
