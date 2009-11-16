@@ -17,7 +17,7 @@ where
 
 import           Data.Vector.MVector ( MVector(..), MVectorPure(..) )
 import qualified Data.Vector.Primitive.Mutable.ST as STV
-import           Data.Vector.Primitive.Prim ( Prim )
+import           Data.Primitive ( Prim )
 
 import GHC.Base   ( RealWorld )
 import GHC.ST     ( ST(..) )

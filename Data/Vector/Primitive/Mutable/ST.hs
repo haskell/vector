@@ -17,10 +17,8 @@ where
 
 import qualified Data.Vector.MVector as MVector
 import           Data.Vector.MVector ( MVector, MVectorPure )
-import           Data.Vector.Primitive.Prim
-
-import GHC.Prim ( MutableByteArray#,
-                  newByteArray#, sameMutableByteArray#, (+#) )
+import           Data.Primitive.ByteArray
+import           Data.Primitive ( Prim, sizeOf )
 
 import GHC.ST   ( ST(..) )
 
@@ -29,15 +27,15 @@ import GHC.Base ( Int(..) )
 -- | Mutable unboxed vectors. They live in the 'ST' monad.
 data Vector s a = Vector {-# UNPACK #-} !Int
                          {-# UNPACK #-} !Int
-                                        (MutableByteArray# s)
+                         {-# UNPACK #-} !(MutableByteArray s)
 
 instance Prim a => MVectorPure (Vector s) a where
   length (Vector _ n _) = n
-  unsafeSlice (Vector i _ arr#) j m = Vector (i+j) m arr#
+  unsafeSlice (Vector i _ arr) j m = Vector (i+j) m arr
 
   {-# INLINE overlaps #-}
-  overlaps (Vector i m arr1#) (Vector j n arr2#)
-    = sameMutableByteArray# arr1# arr2#
+  overlaps (Vector i m arr1) (Vector j n arr2)
+    = sameMutableByteArray arr1 arr2
       && (between i j (j+n) || between j i (i+m))
     where
       between x y z = x >= y && x < z
@@ -45,18 +43,15 @@ instance Prim a => MVectorPure (Vector s) a where
 
 instance Prim a => MVector (Vector s) (ST s) a where
   {-# INLINE unsafeNew #-}
-  unsafeNew (I# n#) = ST (\s# ->
-      case newByteArray# (size# (undefined :: a) n#) s# of
-        (# s2#, arr# #) -> (# s2#, Vector 0 (I# n#) arr# #)
-    )
+  unsafeNew n = do
+                  arr <- newByteArray (n * sizeOf (undefined :: a))
+                  return (Vector 0 n arr)
 
   {-# INLINE unsafeRead #-}
-  unsafeRead (Vector (I# i#) _ arr#) (I# j#) = ST (read# arr# (i# +# j#))
+  unsafeRead (Vector i _ arr) j = readByteArray arr (i+j)
 
   {-# INLINE unsafeWrite #-}
-  unsafeWrite (Vector (I# i#) _ arr#) (I# j#) x = ST (\s# ->
-      case write# arr# (i# +# j#) x s# of s2# -> (# s2#, () #)
-    )
+  unsafeWrite (Vector i _ arr) j x = writeByteArray arr (i+j) x
 
   {-# INLINE clear #-}
   clear _ = return ()

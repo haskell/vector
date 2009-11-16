@@ -66,7 +66,8 @@ module Data.Vector.Primitive (
 import           Data.Vector.IVector ( IVector(..) )
 import qualified Data.Vector.IVector            as IV
 import qualified Data.Vector.Primitive.Mutable.ST as Mut
-import           Data.Vector.Primitive.Prim
+import           Data.Primitive.ByteArray
+import           Data.Primitive ( Prim )
 
 import Control.Monad.ST ( runST )
 
@@ -92,7 +93,7 @@ import qualified Prelude
 -- | Unboxed vectors of primitive types
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
-                                      ByteArray#
+                       {-# UNPACK #-} !ByteArray
 
 instance (Show a, Prim a) => Show (Vector a) where
     show = (Prelude.++ " :: Data.Vector.Primitive.Vector") . ("fromList " Prelude.++) . show . toList
@@ -100,18 +101,18 @@ instance (Show a, Prim a) => Show (Vector a) where
 instance Prim a => IVector Vector a where
   {-# INLINE vnew #-}
   vnew init = runST (do
-                       Mut.Vector i n marr# <- init
-                       ST (\s# -> case unsafeFreezeByteArray# marr# s# of
-                            (# s2#, arr# #) -> (# s2#, Vector i n arr# #)))
+                       Mut.Vector i n marr <- init
+                       arr <- unsafeFreezeByteArray marr
+                       return (Vector i n arr))
 
   {-# INLINE vlength #-}
   vlength (Vector _ n _) = n
 
   {-# INLINE unsafeSlice #-}
-  unsafeSlice (Vector i _ arr#) j n = Vector (i+j) n arr#
+  unsafeSlice (Vector i _ arr) j n = Vector (i+j) n arr
 
   {-# INLINE unsafeIndexM #-}
-  unsafeIndexM (Vector (I# i#) _ arr#) (I# j#) = return (at# arr# (i# +# j#))
+  unsafeIndexM (Vector i _ arr) j = return (indexByteArray arr (i+j))
 
 instance (Prim a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
