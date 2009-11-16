@@ -66,7 +66,8 @@ Library
 -- of e.g. Stream.Monadic.++ to the monad dictionary at the use site in Stream.++ causes
 -- it to be fruitlessly inlined. This in turn leads to a huge RHS for Stream.++, so it
 -- doesn't get inlined at the final call site and fusion fails to occur.
-  Ghc-Options: -finline-if-enough-args
+  if impl(ghc<6.13)
+    Ghc-Options: -finline-if-enough-args
   
 -- It's probably a good idea to compile the library with -O2 as well. However, it's probably
 -- not as essential as you think because most of the optimisation occurs when the library
