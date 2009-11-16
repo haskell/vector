@@ -51,8 +51,7 @@ Library
         Data.Vector.Storable.Mutable
         Data.Vector.Storable
 
-        Data.Vector.Mutable.ST
-        Data.Vector.Mutable.IO
+        Data.Vector.Mutable
         Data.Vector
   Include-Dirs:
         include

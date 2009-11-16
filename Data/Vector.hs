@@ -65,13 +65,10 @@ module Data.Vector (
 
 import           Data.Vector.IVector ( IVector(..) )
 import qualified Data.Vector.IVector    as IV
-import qualified Data.Vector.Mutable.ST as Mut
+import qualified Data.Vector.Mutable    as Mut
+import           Data.Primitive.Array
 
 import Control.Monad.ST ( runST )
-
-import GHC.ST   ( ST(..) )
-import GHC.Prim ( Array#, unsafeFreezeArray#, indexArray#, (+#) )
-import GHC.Base ( Int(..) )
 
 import Prelude hiding ( length, null,
                         replicate, (++),
@@ -90,7 +87,7 @@ import qualified Prelude
 
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
-                                      (Array# a)
+                       {-# UNPACK #-} !(Array a)
 
 instance Show a => Show (Vector a) where
     show = (Prelude.++ " :: Data.Vector.Vector") . ("fromList " Prelude.++) . show . toList
@@ -98,19 +95,18 @@ instance Show a => Show (Vector a) where
 instance IVector Vector a where
   {-# INLINE vnew #-}
   vnew init = runST (do
-                       Mut.Vector i n marr# <- init
-                       ST (\s# -> case unsafeFreezeArray# marr# s# of
-                               (# s2#, arr# #) -> (# s2#, Vector i n arr# #)))
+                       Mut.Vector i n marr <- init
+                       arr <- unsafeFreezeArray marr
+                       return (Vector i n arr))
 
   {-# INLINE vlength #-}
   vlength (Vector _ n _) = n
 
   {-# INLINE unsafeSlice #-}
-  unsafeSlice (Vector i _ arr#) j n = Vector (i+j) n arr#
+  unsafeSlice (Vector i _ arr) j n = Vector (i+j) n arr
 
   {-# INLINE unsafeIndexM #-}
-  unsafeIndexM (Vector (I# i#) _ arr#) (I# j#)
-    = case indexArray# arr# (i# +# j#) of (# x #) -> return x
+  unsafeIndexM (Vector i _ arr) j = indexArrayM arr (i+j)
 
 instance Eq a => Eq (Vector a) where
   {-# INLINE (==) #-}
