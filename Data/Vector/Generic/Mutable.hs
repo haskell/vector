@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE MultiParamTypeClasses, BangPatterns #-}
 -- |
 -- Module      : Data.Vector.Generic.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2008
@@ -205,7 +205,7 @@ unstreamMax s n
   = do
       v  <- new n
       let put i x = do { write v i x; return (i+1) }
-      n' <- Stream.foldM put 0 s
+      n' <- Stream.foldM' put 0 s
       return $ slice v 0 n'
 
 unstreamUnknown :: MVector v m a => Stream a -> m (v a)
@@ -231,7 +231,7 @@ unstreamUnknown s
 
 accum :: MVector v m a => (a -> b -> a) -> v a -> Stream (Int, b) -> m ()
 {-# INLINE accum #-}
-accum f v s = Stream.mapM_ upd s
+accum f !v s = Stream.mapM_ upd s
   where
     {-# INLINE upd #-}
     upd (i,b) = do
@@ -244,7 +244,7 @@ update = accum (const id)
 
 reverse :: MVector v m a => v a -> m ()
 {-# INLINE reverse #-}
-reverse v = reverse_loop 0 (length v - 1)
+reverse !v = reverse_loop 0 (length v - 1)
   where
     reverse_loop i j | i < j = do
                                  x <- unsafeRead v i
