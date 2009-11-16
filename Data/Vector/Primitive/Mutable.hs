@@ -17,11 +17,15 @@ import           Data.Vector.MVector ( MVector, MVectorPure )
 import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim, sizeOf )
 import           Control.Monad.Primitive
+import           Control.Monad.ST ( ST )
 
 -- | Mutable unboxed vectors. They live in the 'ST' monad.
 data Vector m a = Vector {-# UNPACK #-} !Int
                          {-# UNPACK #-} !Int
                          {-# UNPACK #-} !(MutableByteArray m)
+
+type IOVector = Vector IO
+type STVector s = Vector (ST s)
 
 instance Prim a => MVectorPure (Vector m) a where
   length (Vector _ n _) = n
