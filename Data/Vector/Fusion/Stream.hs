@@ -99,11 +99,6 @@ inplace :: (forall m. Monad m => M.Stream m a -> M.Stream m a)
 {-# INLINE_STREAM inplace #-}
 inplace f s = f s
 
-inplace' :: (forall m. Monad m => M.Stream m a -> M.Stream m b)
-         -> Stream a -> Stream b
-{-# INLINE_STREAM inplace' #-}
-inplace' f s = f s
-
 {-# RULES
 
 "inplace/inplace [Vector]"
@@ -111,6 +106,23 @@ inplace' f s = f s
          (g :: forall m. Monad m => MStream m a -> MStream m a)
          s.
   inplace f (inplace g s) = inplace (f . g) s
+
+  #-}
+
+inplace' :: (forall m. Monad m => M.Stream m a -> M.Stream m b)
+         -> Stream a -> Stream b
+{-# INLINE_STREAM inplace' #-}
+inplace' f s = f s
+
+-- FIXME: We'd like to have this
+{- RULES
+
+"inplace' [Vector]" inplace' = inplace
+-}
+-- but it's only available in 6.13
+-- (see http://hackage.haskell.org/trac/ghc/ticket/3670)
+
+{-# RULES
 
 "inplace' [Vector]"
   forall (f :: forall m. Monad m => MStream m a -> MStream m a).
