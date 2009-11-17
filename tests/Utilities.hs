@@ -3,9 +3,8 @@ module Utilities where
 import Test.QuickCheck
 
 import qualified Data.Vector as DV
-import qualified Data.Vector.IVector as DVI
-import qualified Data.Vector.Unboxed as DVU
-import qualified Data.Vector.Unboxed.Unbox as DVUU
+import qualified Data.Vector.Generic as DVG
+import qualified Data.Vector.Primitive as DVP
 import qualified Data.Vector.Fusion.Stream as S
 
 
@@ -17,9 +16,9 @@ instance Arbitrary a => Arbitrary (DV.Vector a) where
     arbitrary = fmap DV.fromList arbitrary
     coarbitrary = coarbitrary . DV.toList
 
-instance (Arbitrary a, DVUU.Unbox a) => Arbitrary (DVU.Vector a) where
-    arbitrary = fmap DVU.fromList arbitrary
-    coarbitrary = coarbitrary . DVU.toList
+instance (Arbitrary a, DVP.Prim a) => Arbitrary (DVP.Vector a) where
+    arbitrary = fmap DVP.fromList arbitrary
+    coarbitrary = coarbitrary . DVP.toList
 
 instance Arbitrary a => Arbitrary (S.Stream a) where
     arbitrary = fmap S.fromList arbitrary
@@ -31,8 +30,8 @@ class Model a b | a -> b where
   model :: a -> b
 
 -- The meat of the models
-instance                 Model (DV.Vector a)  [a] where model = DV.toList
-instance DVUU.Unbox a => Model (DVU.Vector a) [a] where model = DVU.toList
+instance               Model (DV.Vector a)  [a] where model = DV.toList
+instance DVP.Prim a => Model (DVP.Vector a) [a] where model = DVP.toList
 
 -- Identity models
 instance Model Bool     Bool     where model = id
@@ -55,7 +54,7 @@ eq2 f g = \a b     -> model (f a b)     == g (model a) (model b)
 eq3 f g = \a b c   -> model (f a b c)   == g (model a) (model b) (model c)
 eq4 f g = \a b c d -> model (f a b c d) == g (model a) (model b) (model c) (model d)
 
-eqNotNull1 f g = \a       -> (not (DVI.null a)) ==> eq1 f g a
-eqNotNull2 f g = \a b     -> (not (DVI.null b)) ==> eq2 f g a b
-eqNotNull3 f g = \a b c   -> (not (DVI.null c)) ==> eq3 f g a b c
-eqNotNull4 f g = \a b c d -> (not (DVI.null d)) ==> eq4 f g a b c d
+eqNotNull1 f g = \a       -> (not (DVG.null a)) ==> eq1 f g a
+eqNotNull2 f g = \a b     -> (not (DVG.null b)) ==> eq2 f g a b
+eqNotNull3 f g = \a b c   -> (not (DVG.null c)) ==> eq3 f g a b c
+eqNotNull4 f g = \a b c d -> (not (DVG.null d)) ==> eq4 f g a b c d

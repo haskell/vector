@@ -3,9 +3,9 @@ module Properties (tests) where
 import Boilerplater
 import Utilities
 
-import qualified Data.Vector.IVector as V
+import qualified Data.Vector.Generic as V
 import qualified Data.Vector
-import qualified Data.Vector.Unboxed
+import qualified Data.Vector.Primitive
 import qualified Data.Vector.Fusion.Stream as S
 
 import Test.QuickCheck
@@ -23,7 +23,7 @@ import Data.List           (foldl', foldl1', unfoldr, find, findIndex)
   Eq a,     Show a,     Arbitrary a,     Model a a
 
 #define VECTOR_CONTEXT(a, v) \
-  Eq (v a), Show (v a), Arbitrary (v a), Model (v a) [a], V.IVector v a
+  Eq (v a), Show (v a), Arbitrary (v a), Model (v a) [a], V.Vector v a
 
 
 -- TODO: implement Vector equivalents of list functions for some of the commented out properties
@@ -215,21 +215,20 @@ testGeneralBoxedVector dummy = concatMap ($ dummy) [
 testBoolBoxedVector dummy = testGeneralBoxedVector dummy ++ testBoolFunctions dummy
 testNumericBoxedVector dummy = testGeneralBoxedVector dummy ++ testNumFunctions dummy
 
-testGeneralUnboxedVector dummy = concatMap ($ dummy) [
+testGeneralPrimitiveVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
         testOrdFunctions,
         testEnumFunctions
     ]
 
-testBoolUnboxedVector dummy = testGeneralUnboxedVector dummy ++ testBoolFunctions dummy
-testNumericUnboxedVector dummy = testGeneralUnboxedVector dummy ++ testNumFunctions dummy
+testBoolPrimitiveVector dummy = testGeneralPrimitiveVector dummy ++ testBoolFunctions dummy
+testNumericPrimitiveVector dummy = testGeneralPrimitiveVector dummy ++ testNumFunctions dummy
 
 tests = [
         testGroup "Data.Vector.Vector (Bool)"           (testBoolBoxedVector      (undefined :: Data.Vector.Vector Bool)),
         testGroup "Data.Vector.Vector (Int)"            (testNumericBoxedVector   (undefined :: Data.Vector.Vector Int)),
-        testGroup "Data.Vector.Unboxed.Vector (Bool)"   (testBoolUnboxedVector    (undefined :: Data.Vector.Unboxed.Vector Bool)),
-        testGroup "Data.Vector.Unboxed.Vector (Int)"    (testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Int)),
-        testGroup "Data.Vector.Unboxed.Vector (Float)"  (testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Float)),
-        testGroup "Data.Vector.Unboxed.Vector (Double)" (testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Double))
+        testGroup "Data.Vector.Primitive.Vector (Int)"    (testNumericPrimitiveVector (undefined :: Data.Vector.Primitive.Vector Int)),
+        testGroup "Data.Vector.Primitive.Vector (Float)"  (testNumericPrimitiveVector (undefined :: Data.Vector.Primitive.Vector Float)),
+        testGroup "Data.Vector.Primitive.Vector (Double)" (testNumericPrimitiveVector (undefined :: Data.Vector.Primitive.Vector Double))
     ]
