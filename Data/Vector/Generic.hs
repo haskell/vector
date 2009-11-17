@@ -308,7 +308,8 @@ lastM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_STREAM lastM #-}
 lastM v = indexM v (length v - 1)
 
-{-# RULES
+-- FIXME: the rhs of these rules are lazy in the stream which is WRONG
+{- RULES
 
 "indexM/unstream [Vector]" forall v i s.
   indexM (new' v (New.unstream s)) i = return (s Stream.!! i)
@@ -319,7 +320,7 @@ lastM v = indexM v (length v - 1)
 "lastM/unstream [Vector]" forall v s.
   lastM (new' v (New.unstream s)) = return (Stream.last s)
 
- #-}
+ -}
 
 -- Subarrays
 -- ---------
