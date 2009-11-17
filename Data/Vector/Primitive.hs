@@ -46,7 +46,7 @@ module Data.Vector.Primitive (
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
 
   -- * Specialised folds
-  {-and, or,-} sum, product, maximum, minimum,
+  sum, product, maximum, minimum,
 
   -- * Unfolding
   unfoldr,
@@ -79,7 +79,7 @@ import Prelude hiding ( length, null,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
-                        and, or, sum, product, minimum, maximum,
+                        sum, product, minimum, maximum,
                         scanl, scanl1,
                         enumFromTo, enumFromThenTo )
 
@@ -342,16 +342,6 @@ foldr1 = G.foldr1
 
 -- Specialised folds
 -- -----------------
-
-{-
-and :: Vector Bool -> Bool
-{-# INLINE and #-}
-and = G.and
-
-or :: Vector Bool -> Bool
-{-# INLINE or #-}
-or = G.or
--}
 
 sum :: (Prim a, Num a) => Vector a -> a
 {-# INLINE sum #-}
