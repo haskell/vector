@@ -1,5 +1,17 @@
 {-# LANGUAGE Rank2Types #-}
 
+-- |
+-- Module      : Data.Vector.Generic.New
+-- Copyright   : (c) Roman Leshchinskiy 2008-2009
+-- License     : BSD-style
+--
+-- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
+-- Stability   : experimental
+-- Portability : non-portable
+-- 
+-- Purely functional interface to initialisation of mutable vectors
+--
+
 #include "phases.h"
 
 module Data.Vector.Generic.New (

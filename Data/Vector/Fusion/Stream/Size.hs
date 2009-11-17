@@ -1,6 +1,6 @@
 -- |
 -- Module      : Data.Vector.Fusion.Stream.Size
--- Copyright   : (c) Roman Leshchinskiy 2008
+-- Copyright   : (c) Roman Leshchinskiy 2008-2009
 -- License     : BSD-style
 --
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
