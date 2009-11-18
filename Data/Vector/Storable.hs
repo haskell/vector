@@ -13,7 +13,7 @@
 --
 
 module Data.Vector.Storable (
-  Vector,
+  Vector, Storable,
 
   -- * Length information
   length, null,
