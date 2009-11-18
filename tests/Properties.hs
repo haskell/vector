@@ -71,7 +71,7 @@ testSanity _ = [
     prop_unstream_stream (v :: v a)        = (V.unstream . V.stream)                        v == v
     prop_stream_unstream (s :: S.Stream a) = ((V.stream :: v a -> S.Stream a) . V.unstream) s == s
 
-testPolymorphicFunctions :: forall a v. (COMMON_CONTEXT(a, v)) => v a -> [Test]
+testPolymorphicFunctions :: forall a v. (COMMON_CONTEXT(a, v), VECTOR_CONTEXT(Int, v)) => v a -> [Test]
 testPolymorphicFunctions _ = $(testProperties [
         'prop_eq,
 
@@ -84,8 +84,7 @@ testPolymorphicFunctions _ = $(testProperties [
 
         'prop_slice, 'prop_init, 'prop_tail, 'prop_take, 'prop_drop,
 
-        'prop_accum, 'prop_write, -- 'prop_backpermute,
-        'prop_reverse,
+        'prop_accum, 'prop_write, 'prop_backpermute, 'prop_reverse,
 
         'prop_map, 'prop_zipWith, 'prop_zipWith3,
         'prop_filter, 'prop_takeWhile, 'prop_dropWhile,
@@ -142,10 +141,10 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_write        = forAll arbitrary                         $ \xs ->
                         forAll (index_value_pairs (V.length xs)) $ \ps ->
                         (((V.//) :: v a -> [(Int,a)] -> v a) `eq2` (//)) xs ps
-    -- prop_backpermute  = forAll arbitrary                         $ \xs ->
-    --                     forAll (indices (V.length xs))           $ \is ->
-    --                     ((V.backpermute :: v a -> v Int -> v a) `eq2` backpermute)
-    --                             xs is
+    prop_backpermute  = forAll arbitrary                         $ \xs ->
+                        forAll (indices (V.length xs))           $ \is ->
+                        ((V.backpermute :: v a -> v Int -> v a) `eq2` backpermute)
+                                xs (V.fromList is)
     prop_reverse      = (V.reverse :: v a -> v a)                     `eq1` reverse
 
     prop_map          = (V.map :: (a -> a) -> v a -> v a)             `eq2` map
