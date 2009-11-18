@@ -20,6 +20,17 @@ import System.Random       (Random)
 #define VANILLA_CONTEXT(a) \
   Eq a,     Show a,     Arbitrary a,     CoArbitrary a,     TestData a,     Model a ~ a,        EqTest a ~ Property
 
+testSanity :: forall a. (COMMON_CONTEXT(a)) => S.Stream a -> [Test]
+testSanity _ = [
+        testProperty "fromList.toList == id" prop_fromList_toList,
+        testProperty "toList.fromList == id" prop_toList_fromList
+    ]
+  where
+    prop_fromList_toList :: P (S.Stream a -> S.Stream a)
+        = (S.fromList . S.toList) `eq` id
+    prop_toList_fromList :: P ([a] -> [a])
+        = (S.toList . (S.fromList :: [a] -> S.Stream a)) `eq` id
+
 testPolymorphicFunctions :: forall a. (COMMON_CONTEXT(a)) => S.Stream a -> [Test]
 testPolymorphicFunctions _ = $(testProperties [
         'prop_eq,
@@ -144,7 +155,8 @@ testBoolFunctions = $(testProperties ['prop_and, 'prop_or])
     prop_and :: P (S.Stream Bool -> Bool) = S.and `eq` and
     prop_or  :: P (S.Stream Bool -> Bool) = S.or `eq` or
 
-testStreamFunctions = testPolymorphicFunctions (undefined :: S.Stream Int)
+testStreamFunctions = testSanity (undefined :: S.Stream Int)
+                      ++ testPolymorphicFunctions (undefined :: S.Stream Int)
                       ++ testBoolFunctions
 
 tests = [ testGroup "Data.Vector.Fusion.Stream" testStreamFunctions ]
