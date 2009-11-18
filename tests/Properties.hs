@@ -21,10 +21,10 @@ import System.Random       (Random)
  VANILLA_CONTEXT(a, v), VECTOR_CONTEXT(a, v)
 
 #define VANILLA_CONTEXT(a, v) \
-  Eq a,     Show a,     Arbitrary a,     CoArbitrary a,     TestData a,     Model a ~ a,        Pty a ~ Property
+  Eq a,     Show a,     Arbitrary a,     CoArbitrary a,     TestData a,     Model a ~ a,        EqTest a ~ Property
 
 #define VECTOR_CONTEXT(a, v) \
-  Eq (v a), Show (v a), Arbitrary (v a), CoArbitrary (v a), TestData (v a), Model (v a) ~ [a],  Pty (v a) ~ Property, V.Vector v a
+  Eq (v a), Show (v a), Arbitrary (v a), CoArbitrary (v a), TestData (v a), Model (v a) ~ [a],  EqTest (v a) ~ Property, V.Vector v a
 
 -- TODO: implement Vector equivalents of list functions for some of the commented out properties
 
