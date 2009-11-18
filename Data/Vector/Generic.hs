@@ -625,21 +625,11 @@ scanl1' f = unstream . inplace (MStream.scanl1' f) . stream
 
 enumFromTo :: (Vector v a, Enum a) => a -> a -> v a
 {-# INLINE enumFromTo #-}
-enumFromTo from to = from `seq` to `seq` unfoldr enumFromTo_go (fromEnum from)
-  where
-    to_i = fromEnum to
-    enumFromTo_go i | i <= to_i = Just (toEnum i, i + 1)
-                    | otherwise = Nothing
+enumFromTo from to = fromList [from .. to]
 
 enumFromThenTo :: (Vector v a, Enum a) => a -> a -> a -> v a
 {-# INLINE enumFromThenTo #-}
-enumFromThenTo from next to = from `seq` next `seq` to `seq` unfoldr enumFromThenTo_go from_i
-  where
-    from_i = fromEnum from
-    to_i = fromEnum to
-    step_i = fromEnum next - from_i
-    enumFromThenTo_go i | i <= to_i = Just (toEnum i, i + step_i)
-                        | otherwise = Nothing
+enumFromThenTo from next to = fromList [from, next .. to]
 
 -- | Convert a vector to a list
 toList :: Vector v a => v a -> [a]
