@@ -6,6 +6,7 @@ import Utilities
 import qualified Data.Vector.Generic as V
 import qualified Data.Vector
 import qualified Data.Vector.Primitive
+import qualified Data.Vector.Storable
 import qualified Data.Vector.Fusion.Stream as S
 
 import Test.QuickCheck
@@ -316,13 +317,26 @@ testGeneralPrimitiveVector dummy = concatMap ($ dummy) [
         testOrdFunctions
     ]
 
+testGeneralStorableVector dummy = concatMap ($ dummy) [
+        testSanity,
+        testPolymorphicFunctions,
+        testOrdFunctions
+    ]
+
 testBoolPrimitiveVector dummy = testGeneralPrimitiveVector dummy ++ testBoolFunctions dummy
 testNumericPrimitiveVector dummy = testGeneralPrimitiveVector dummy ++ testNumFunctions dummy ++ testEnumFunctions dummy
+testNumericStorableVector dummy = testGeneralStorableVector dummy ++ testNumFunctions dummy ++ testEnumFunctions dummy
 
 tests = [
         testGroup "Data.Vector.Vector (Bool)"           (testBoolBoxedVector      (undefined :: Data.Vector.Vector Bool)),
         testGroup "Data.Vector.Vector (Int)"            (testNumericBoxedVector   (undefined :: Data.Vector.Vector Int)),
+
         testGroup "Data.Vector.Primitive.Vector (Int)"    (testNumericPrimitiveVector (undefined :: Data.Vector.Primitive.Vector Int)),
         testGroup "Data.Vector.Primitive.Vector (Float)"  (testNumericPrimitiveVector (undefined :: Data.Vector.Primitive.Vector Float)),
-        testGroup "Data.Vector.Primitive.Vector (Double)" (testNumericPrimitiveVector (undefined :: Data.Vector.Primitive.Vector Double))
+        testGroup "Data.Vector.Primitive.Vector (Double)" (testNumericPrimitiveVector (undefined :: Data.Vector.Primitive.Vector Double)),
+
+        testGroup "Data.Vector.Storable.Vector (Int)"    (testNumericStorableVector (undefined :: Data.Vector.Storable.Vector Int)),
+        testGroup "Data.Vector.Storable.Vector (Float)"  (testNumericStorableVector (undefined :: Data.Vector.Storable.Vector Float)),
+        testGroup "Data.Vector.Storable.Vector (Double)" (testNumericStorableVector (undefined :: Data.Vector.Storable.Vector Double))
     ]
+

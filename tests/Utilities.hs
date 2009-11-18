@@ -6,6 +6,7 @@ import Test.QuickCheck
 import qualified Data.Vector as DV
 import qualified Data.Vector.Generic as DVG
 import qualified Data.Vector.Primitive as DVP
+import qualified Data.Vector.Storable as DVS
 import qualified Data.Vector.Fusion.Stream as S
 
 import Data.List ( sortBy )
@@ -26,6 +27,12 @@ instance (Arbitrary a, DVP.Prim a) => Arbitrary (DVP.Vector a) where
 
 instance (CoArbitrary a, DVP.Prim a) => CoArbitrary (DVP.Vector a) where
     coarbitrary = coarbitrary . DVP.toList
+
+instance (Arbitrary a, DVS.Storable a) => Arbitrary (DVS.Vector a) where
+    arbitrary = fmap DVS.fromList arbitrary
+
+instance (CoArbitrary a, DVS.Storable a) => CoArbitrary (DVS.Vector a) where
+    coarbitrary = coarbitrary . DVS.toList
 
 instance Arbitrary a => Arbitrary (S.Stream a) where
     arbitrary = fmap S.fromList arbitrary
@@ -63,6 +70,14 @@ instance (Eq a, DVP.Prim a) => TestData (DVP.Vector a) where
   unmodel = DVP.fromList
 
   type EqTest (DVP.Vector a) = Property
+  equal x y = property (x == y)
+
+instance (Eq a, DVS.Storable a) => TestData (DVS.Vector a) where
+  type Model (DVS.Vector a) = [a]
+  model = DVS.toList
+  unmodel = DVS.fromList
+
+  type EqTest (DVS.Vector a) = Property
   equal x y = property (x == y)
 
 #define id_TestData(ty) \
