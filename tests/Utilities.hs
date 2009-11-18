@@ -41,6 +41,14 @@ class (Testable (EqTest a), Conclusion (EqTest a)) => TestData a where
   type EqTest a
   equal :: a -> a -> EqTest a
 
+instance Eq a => TestData (S.Stream a) where
+  type Model (S.Stream a) = [a]
+  model = S.toList
+  unmodel = S.fromList
+
+  type EqTest (S.Stream a) = Property
+  equal x y = property (x == y)
+
 instance Eq a => TestData (DV.Vector a) where
   type Model (DV.Vector a) = [a]
   model = DV.toList
@@ -143,6 +151,7 @@ infixr 0 ===>
 p ===> P a = P (predicate p a)
 
 notNull2 _ xs = not $ DVG.null xs
+notNullS2 _ s = not $ S.null s
 
 -- Generators
 index_value_pairs :: Arbitrary a => Int -> Gen [(Int,a)]
