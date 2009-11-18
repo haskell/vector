@@ -117,21 +117,6 @@ unP (P p) = p
 instance Testable (P a) where
   property (P a) = property a
 
-{-
-class TestData a => EqTestable a p where
-  equal :: a -> a -> p
-
-instance (Eq a, TestData a) => EqTestable a Property where
-  equal x y = property (x==y)
-
-instance (Arbitrary a, Show a, TestData a, EqTestable b p) => EqTestable (a -> b) (a -> p) where
-  equal f g = \x -> equal (f x) (g x)
-
-infix 4 `eq`
-eq :: EqTestable a (Pty a) => a -> Model a -> P a
-eq x y = P (equal x (unmodel y))
--}
-
 infix 4 `eq`
 eq :: TestData a => a -> Model a -> P a
 eq x y = P (equal x (unmodel y))
