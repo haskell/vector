@@ -34,31 +34,37 @@ instance CoArbitrary a => CoArbitrary (S.Stream a) where
     coarbitrary = coarbitrary . S.toList
 
 class (Testable (EqTest a), Conclusion (EqTest a)) => TestData a where
-  type EqTest a
   type Model a
   model :: a -> Model a
   unmodel :: Model a -> a
 
+  type EqTest a
   equal :: a -> a -> EqTest a
 
 instance Eq a => TestData (DV.Vector a) where
-  type EqTest (DV.Vector a) = Property
   type Model (DV.Vector a) = [a]
   model = DV.toList
   unmodel = DV.fromList
 
+  type EqTest (DV.Vector a) = Property
   equal x y = property (x == y)
 
 instance (Eq a, DVP.Prim a) => TestData (DVP.Vector a) where
-  type EqTest (DVP.Vector a) = Property
   type Model (DVP.Vector a) = [a]
   model = DVP.toList
   unmodel = DVP.fromList
 
+  type EqTest (DVP.Vector a) = Property
   equal x y = property (x == y)
 
 #define id_TestData(ty) \
-instance TestData ty where { type EqTest ty = Property; type Model ty = ty; model = id; unmodel = id; equal x y = property (x == y) }
+instance TestData ty where { \
+  type Model ty = ty;        \
+  model = id;                \
+  unmodel = id;              \
+                             \
+  type EqTest ty = Property; \
+  equal x y = property (x == y) }
 
 id_TestData(Bool)
 id_TestData(Int)
@@ -69,43 +75,43 @@ id_TestData(Ordering)
 -- Functorish models
 -- All of these need UndecidableInstances although they are actually well founded. Oh well.
 instance (Eq a, TestData a) => TestData (Maybe a) where
-  type EqTest (Maybe a) = Property
   type Model (Maybe a) = Maybe (Model a)
   model = fmap model
   unmodel = fmap unmodel
 
+  type EqTest (Maybe a) = Property
   equal x y = property (x == y)
 
 instance (Eq a, TestData a) => TestData [a] where
-  type EqTest [a] = Property
   type Model [a] = [Model a]
   model = fmap model
   unmodel = fmap unmodel
 
+  type EqTest [a] = Property
   equal x y = property (x == y)
 
 instance (Eq a, Eq b, TestData a, TestData b) => TestData (a,b) where
-  type EqTest (a,b) = Property
   type Model (a,b) = (Model a, Model b)
   model (a,b) = (model a, model b)
   unmodel (a,b) = (unmodel a, unmodel b)
 
+  type EqTest (a,b) = Property
   equal x y = property (x == y)
 
 instance (Eq a, Eq b, Eq c, TestData a, TestData b, TestData c) => TestData (a,b,c) where
-  type EqTest (a,b,c) = Property
   type Model (a,b,c) = (Model a, Model b, Model c)
   model (a,b,c) = (model a, model b, model c)
   unmodel (a,b,c) = (unmodel a, unmodel b, unmodel c)
 
+  type EqTest (a,b,c) = Property
   equal x y = property (x == y)
 
 instance (Arbitrary a, Show a, TestData a, TestData b) => TestData (a -> b) where
-  type EqTest (a -> b) = a -> EqTest b
   type Model (a -> b) = Model a -> Model b
   model f = model . f . unmodel
   unmodel f = unmodel . f . model
 
+  type EqTest (a -> b) = a -> EqTest b
   equal f g x = equal (f x) (g x)
 
 newtype P a = P { unP :: EqTest a }
