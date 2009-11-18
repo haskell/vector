@@ -623,6 +623,10 @@ scanl1' f = unstream . inplace (MStream.scanl1' f) . stream
 -- Enumeration
 -- -----------
 
+-- FIXME: The Enum class is irreparably broken, there just doesn't seem to be a
+-- way to implement this generically. Either specialise this or define a new
+-- Enum-like class with a proper interface.
+
 enumFromTo :: (Vector v a, Enum a) => a -> a -> v a
 {-# INLINE enumFromTo #-}
 enumFromTo from to = fromList [from .. to]
