@@ -33,123 +33,106 @@ instance Arbitrary a => Arbitrary (S.Stream a) where
 instance CoArbitrary a => CoArbitrary (S.Stream a) where
     coarbitrary = coarbitrary . S.toList
 
-class Modelled a where
+class (Testable (Pty a), Conclusion (Pty a)) => TestData a where
+  type Pty a
   type Model a
-  -- | Convert a concrete value into an abstract model
   model :: a -> Model a
   unmodel :: Model a -> a
 
--- The meat of the models
-instance Modelled (DV.Vector a) where
+instance TestData (DV.Vector a) where
+  type Pty (DV.Vector a) = Property
   type Model (DV.Vector a) = [a]
   model = DV.toList
   unmodel = DV.fromList
 
-instance DVP.Prim a => Modelled (DVP.Vector a) where
+instance DVP.Prim a => TestData (DVP.Vector a) where
+  type Pty (DVP.Vector a) = Property
   type Model (DVP.Vector a) = [a]
   model = DVP.toList
   unmodel = DVP.fromList
 
 -- Identity models
 
-#define id_Modelled(ty) \
-instance Modelled ty where { type Model ty = ty; model = id; unmodel = id }
+#define id_TestData(ty) \
+instance TestData ty where { type Pty ty = Property; type Model ty = ty; model = id; unmodel = id }
 
-id_Modelled(Bool)
-id_Modelled(Int)
-id_Modelled(Float)
-id_Modelled(Double)
-id_Modelled(Ordering)
+id_TestData(Bool)
+id_TestData(Int)
+id_TestData(Float)
+id_TestData(Double)
+id_TestData(Ordering)
 
 -- Functorish models
 -- All of these need UndecidableInstances although they are actually well founded. Oh well.
-instance Modelled a => Modelled (Maybe a) where
+instance TestData a => TestData (Maybe a) where
+  type Pty (Maybe a) = Property
   type Model (Maybe a) = Maybe (Model a)
   model = fmap model
   unmodel = fmap unmodel
 
-instance Modelled a => Modelled [a] where
+instance TestData a => TestData [a] where
+  type Pty [a] = Property
   type Model [a] = [Model a]
   model = fmap model
   unmodel = fmap unmodel
 
-instance (Modelled a, Modelled b) => Modelled (a,b) where
+instance (TestData a, TestData b) => TestData (a,b) where
+  type Pty (a,b) = Property
   type Model (a,b) = (Model a, Model b)
   model (a,b) = (model a, model b)
   unmodel (a,b) = (unmodel a, unmodel b)
 
-instance (Modelled a, Modelled b, Modelled c) => Modelled (a,b,c) where
+instance (TestData a, TestData b, TestData c) => TestData (a,b,c) where
+  type Pty (a,b,c) = Property
   type Model (a,b,c) = (Model a, Model b, Model c)
   model (a,b,c) = (model a, model b, model c)
   unmodel (a,b,c) = (unmodel a, unmodel b, unmodel c)
 
-instance (Modelled a, Modelled b) => Modelled (a -> b) where
+instance (Arbitrary a, Show a, TestData a, TestData b) => TestData (a -> b) where
+  type Pty (a -> b) = a -> Pty b
   type Model (a -> b) = Model a -> Model b
   model f = model . f . unmodel
   unmodel f = unmodel . f . model
 
-class (Testable (Pty a), Predicate (Pty a)) => PropLike a where
-  type Pty a
-
-instance (Arbitrary a, Show a, PropLike b) => PropLike (a -> b) where
-  type Pty (a -> b) = a -> Pty b
-
-#define PropLike0(ty) \
-instance PropLike (ty) where { type Pty (ty) = Property }
-
-PropLike0(Int)
-PropLike0(Bool)
-PropLike0(Float)
-PropLike0(Double)
-PropLike0(Ordering)
-PropLike0([a])
-PropLike0(Maybe a)
-PropLike0((a,b))
-PropLike0((a,b,c))
-PropLike0(DV.Vector a)
-PropLike0(DVP.Vector a)
-PropLike0(S.Stream a)
-
 data P a where
-  P :: PropLike a => Pty a -> P a
+  P :: TestData a => Pty a -> P a
 
 unP :: P a -> Pty a
 unP (P p) = p
 
-
 instance Testable (P a) where
   property (P a) = property a
 
-class PropLike a => EqTestable a p where
+class TestData a => EqTestable a p where
   equal :: a -> a -> p
 
-instance (Eq a, PropLike a) => EqTestable a Property where
+instance (Eq a, TestData a) => EqTestable a Property where
   equal x y = property (x==y)
 
-instance (Arbitrary a, Show a, EqTestable b p) => EqTestable (a -> b) (a -> p) where
+instance (Arbitrary a, Show a, TestData a, EqTestable b p) => EqTestable (a -> b) (a -> p) where
   equal f g = \x -> equal (f x) (g x)
 
 infix 4 `eq`
-eq :: (Modelled a, EqTestable a (Pty a)) => a -> Model a -> P a
+eq :: EqTestable a (Pty a) => a -> Model a -> P a
 eq x y = P (equal x (unmodel y))
 
-class Predicate p where
-  type Pred p
+class Conclusion p where
+  type Predicate p
 
-  predicate :: Pred p -> p -> p
+  predicate :: Predicate p -> p -> p
 
-instance Predicate Property where
-  type Pred Property = Bool
+instance Conclusion Property where
+  type Predicate Property = Bool
 
   predicate = (==>)
 
-instance Predicate p => Predicate (a -> p) where
-  type Pred (a -> p) = a -> Pred p
+instance Conclusion p => Conclusion (a -> p) where
+  type Predicate (a -> p) = a -> Predicate p
 
   predicate f p = \x -> predicate (f x) (p x)
 
 infixr 0 ===>
-(===>) :: Pred (Pty a) -> P a -> P a
+(===>) :: Predicate (Pty a) -> P a -> P a
 p ===> P a = P (predicate p a)
 
 notNull2 _ xs = not $ DVG.null xs
