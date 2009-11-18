@@ -39,22 +39,26 @@ class (Testable (Pty a), Conclusion (Pty a)) => TestData a where
   model :: a -> Model a
   unmodel :: Model a -> a
 
-instance TestData (DV.Vector a) where
+  equal :: a -> a -> Pty a
+
+instance Eq a => TestData (DV.Vector a) where
   type Pty (DV.Vector a) = Property
   type Model (DV.Vector a) = [a]
   model = DV.toList
   unmodel = DV.fromList
 
-instance DVP.Prim a => TestData (DVP.Vector a) where
+  equal x y = property (x == y)
+
+instance (Eq a, DVP.Prim a) => TestData (DVP.Vector a) where
   type Pty (DVP.Vector a) = Property
   type Model (DVP.Vector a) = [a]
   model = DVP.toList
   unmodel = DVP.fromList
 
--- Identity models
+  equal x y = property (x == y)
 
 #define id_TestData(ty) \
-instance TestData ty where { type Pty ty = Property; type Model ty = ty; model = id; unmodel = id }
+instance TestData ty where { type Pty ty = Property; type Model ty = ty; model = id; unmodel = id; equal x y = property (x == y) }
 
 id_TestData(Bool)
 id_TestData(Int)
@@ -64,35 +68,45 @@ id_TestData(Ordering)
 
 -- Functorish models
 -- All of these need UndecidableInstances although they are actually well founded. Oh well.
-instance TestData a => TestData (Maybe a) where
+instance (Eq a, TestData a) => TestData (Maybe a) where
   type Pty (Maybe a) = Property
   type Model (Maybe a) = Maybe (Model a)
   model = fmap model
   unmodel = fmap unmodel
 
-instance TestData a => TestData [a] where
+  equal x y = property (x == y)
+
+instance (Eq a, TestData a) => TestData [a] where
   type Pty [a] = Property
   type Model [a] = [Model a]
   model = fmap model
   unmodel = fmap unmodel
 
-instance (TestData a, TestData b) => TestData (a,b) where
+  equal x y = property (x == y)
+
+instance (Eq a, Eq b, TestData a, TestData b) => TestData (a,b) where
   type Pty (a,b) = Property
   type Model (a,b) = (Model a, Model b)
   model (a,b) = (model a, model b)
   unmodel (a,b) = (unmodel a, unmodel b)
 
-instance (TestData a, TestData b, TestData c) => TestData (a,b,c) where
+  equal x y = property (x == y)
+
+instance (Eq a, Eq b, Eq c, TestData a, TestData b, TestData c) => TestData (a,b,c) where
   type Pty (a,b,c) = Property
   type Model (a,b,c) = (Model a, Model b, Model c)
   model (a,b,c) = (model a, model b, model c)
   unmodel (a,b,c) = (unmodel a, unmodel b, unmodel c)
+
+  equal x y = property (x == y)
 
 instance (Arbitrary a, Show a, TestData a, TestData b) => TestData (a -> b) where
   type Pty (a -> b) = a -> Pty b
   type Model (a -> b) = Model a -> Model b
   model f = model . f . unmodel
   unmodel f = unmodel . f . model
+
+  equal f g x = equal (f x) (g x)
 
 data P a where
   P :: TestData a => Pty a -> P a
@@ -103,6 +117,7 @@ unP (P p) = p
 instance Testable (P a) where
   property (P a) = property a
 
+{-
 class TestData a => EqTestable a p where
   equal :: a -> a -> p
 
@@ -114,6 +129,11 @@ instance (Arbitrary a, Show a, TestData a, EqTestable b p) => EqTestable (a -> b
 
 infix 4 `eq`
 eq :: EqTestable a (Pty a) => a -> Model a -> P a
+eq x y = P (equal x (unmodel y))
+-}
+
+infix 4 `eq`
+eq :: TestData a => a -> Model a -> P a
 eq x y = P (equal x (unmodel y))
 
 class Conclusion p where
