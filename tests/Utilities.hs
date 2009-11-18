@@ -108,13 +108,9 @@ instance (Arbitrary a, Show a, TestData a, TestData b) => TestData (a -> b) wher
 
   equal f g x = equal (f x) (g x)
 
-data P a where
-  P :: TestData a => Pty a -> P a
+newtype P a = P { unP :: Pty a }
 
-unP :: P a -> Pty a
-unP (P p) = p
-
-instance Testable (P a) where
+instance TestData a => Testable (P a) where
   property (P a) = property a
 
 infix 4 `eq`
@@ -137,7 +133,7 @@ instance Conclusion p => Conclusion (a -> p) where
   predicate f p = \x -> predicate (f x) (p x)
 
 infixr 0 ===>
-(===>) :: Predicate (Pty a) -> P a -> P a
+(===>) :: TestData a => Predicate (Pty a) -> P a -> P a
 p ===> P a = P (predicate p a)
 
 notNull2 _ xs = not $ DVG.null xs
