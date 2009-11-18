@@ -23,9 +23,8 @@ Executable "vector-tests"
               MultiParamTypeClasses,
               FlexibleContexts,
               Rank2Types,
-              FunctionalDependencies,
               TypeSynonymInstances,
-              UndecidableInstances,
+              TypeFamilies,
               TemplateHaskell
 
   Build-Depends: base, template-haskell, vector,

@@ -20,10 +20,10 @@ import Data.List           (foldl', foldl1', unfoldr, find, findIndex)
  VANILLA_CONTEXT(a, v), VECTOR_CONTEXT(a, v)
 
 #define VANILLA_CONTEXT(a, v) \
-  Eq a,     Show a,     Arbitrary a,     Model a a
+  Eq a,     Show a,     Arbitrary a,     Modelled a,     Model a ~ a,       EqTestable a,     EqTest a ~ Bool
 
 #define VECTOR_CONTEXT(a, v) \
-  Eq (v a), Show (v a), Arbitrary (v a), Model (v a) [a], V.Vector v a
+  Eq (v a), Show (v a), Arbitrary (v a), Modelled (v a), Model (v a) ~ [a], EqTestable (v a), EqTest (v a) ~ Bool, V.Vector v a
 
 -- TODO: implement Vector equivalents of list functions for some of the commented out properties
 
@@ -104,79 +104,88 @@ testPolymorphicFunctions _ = $(testProperties [
     ])
   where
     -- Prelude
-    prop_eq           = ((==) :: v a -> v a -> Bool)                  `eq2` (==)
+    prop_eq           = ((==) :: v a -> v a -> Bool)                  `eq` (==)
 
-    prop_length       = (V.length :: v a -> Int)                      `eq1` length
-    prop_null         = (V.null :: v a -> Bool)                       `eq1` null
+    prop_length       = (V.length :: v a -> Int)                      `eq` length
+    prop_null         = (V.null :: v a -> Bool)                       `eq` null
 
-    prop_empty        = (V.empty :: v a)                              `eq0` []
-    prop_singleton     = (V.singleton :: a -> v a)                    `eq1` singleton
-    prop_replicate    = (V.replicate :: Int -> a -> v a)              `eq2` replicate
-    prop_cons         = (V.cons :: a -> v a -> v a)                   `eq2` (:)
-    prop_snoc         = (V.snoc :: v a -> a -> v a)                   `eq2` snoc
-    prop_append       = ((V.++) :: v a -> v a -> v a)                 `eq2` (++)
-    prop_copy         = (V.copy :: v a -> v a)                        `eq1` id
+    prop_empty        = (V.empty :: v a)                              `eq` []
+    prop_singleton    = (V.singleton :: a -> v a)                     `eq` singleton
+    prop_replicate    = (V.replicate :: Int -> a -> v a)              `eq` replicate
+    prop_cons         = (V.cons :: a -> v a -> v a)                   `eq` (:)
+    prop_snoc         = (V.snoc :: v a -> a -> v a)                   `eq` snoc
+    prop_append       = ((V.++) :: v a -> v a -> v a)                 `eq` (++)
+    prop_copy         = (V.copy :: v a -> v a)                        `eq` id
 
-    prop_head         = (V.head :: v a -> a)                          `eqNotNull1` head
-    prop_last         = (V.last :: v a -> a)                          `eqNotNull1` last
-    prop_index        = \xs i -> (i >= 0 && i < V.length xs)
-                          ==> (((V.!) :: v a -> Int -> a) `eq2` (!!)) xs i
+    prop_head         = not . V.null ===>
+                        (V.head :: v a -> a)                          `eq` head
+    prop_last         = not . V.null ===>
+                        (V.last :: v a -> a)                          `eq` last
+    prop_index        = (\xs i -> i >= 0 && i < V.length xs)
+                        ===> ((V.!) :: v a -> Int -> a) `eq` (!!)
 
 
     prop_slice        = forAll arbitrary                     $ \xs ->
                         forAll (choose (0, V.length xs))     $ \i ->
                         forAll (choose (0, V.length xs - i)) $ \n ->
-                        ((V.slice :: v a -> Int -> Int -> v a) `eq3` slice)
+                        ((V.slice :: v a -> Int -> Int -> v a) `eq` slice)
                           xs i n
-    prop_tail         = (V.tail :: v a -> v a)                        `eqNotNull1` tail
-    prop_init         = (V.init :: v a -> v a)                        `eqNotNull1` init
-    prop_take         = (V.take :: Int -> v a -> v a)                 `eq2` take
-    prop_drop         = (V.drop :: Int -> v a -> v a)                 `eq2` drop
+    prop_tail         = not . V.null ===>
+                        (V.tail :: v a -> v a)                        `eq` tail
+    prop_init         = not . V.null ===>
+                        (V.init :: v a -> v a)                        `eq` init
+    prop_take         = (V.take :: Int -> v a -> v a)                 `eq` take
+    prop_drop         = (V.drop :: Int -> v a -> v a)                 `eq` drop
 
     prop_accum        = forAll arbitrary                         $ \f ->
                         forAll arbitrary                         $ \xs ->
                         forAll (index_value_pairs (V.length xs)) $ \ps ->
                         ((V.accum :: (a -> a -> a) -> v a -> [(Int,a)] -> v a)
-                         `eq3` accum) f xs ps
+                         `eq` accum) f xs ps
     prop_write        = forAll arbitrary                         $ \xs ->
                         forAll (index_value_pairs (V.length xs)) $ \ps ->
-                        (((V.//) :: v a -> [(Int,a)] -> v a) `eq2` (//)) xs ps
+                        (((V.//) :: v a -> [(Int,a)] -> v a) `eq` (//)) xs ps
     prop_backpermute  = forAll arbitrary                         $ \xs ->
                         forAll (indices (V.length xs))           $ \is ->
-                        ((V.backpermute :: v a -> v Int -> v a) `eq2` backpermute)
+                        ((V.backpermute :: v a -> v Int -> v a) `eq` backpermute)
                                 xs (V.fromList is)
-    prop_reverse      = (V.reverse :: v a -> v a)                     `eq1` reverse
+    prop_reverse      = (V.reverse :: v a -> v a)                     `eq` reverse
 
-    prop_map          = (V.map :: (a -> a) -> v a -> v a)             `eq2` map
-    prop_zipWith      = (V.zipWith :: (a -> a -> a) -> v a -> v a -> v a) `eq3` zipWith
-    prop_zipWith3     = (V.zipWith3 :: (a -> a -> a -> a) -> v a -> v a -> v a -> v a) `eq4` zipWith3
+    prop_map          = (V.map :: (a -> a) -> v a -> v a)             `eq` map
+    prop_zipWith      = (V.zipWith :: (a -> a -> a) -> v a -> v a -> v a) `eq` zipWith
+    prop_zipWith3     = (V.zipWith3 :: (a -> a -> a -> a) -> v a -> v a -> v a -> v a) `eq` zipWith3
 
-    prop_filter       = (V.filter :: (a -> Bool) -> v a -> v a)       `eq2` filter
-    prop_takeWhile    = (V.takeWhile :: (a -> Bool) -> v a -> v a)    `eq2` takeWhile
-    prop_dropWhile    = (V.dropWhile :: (a -> Bool) -> v a -> v a)    `eq2` dropWhile
+    prop_filter       = (V.filter :: (a -> Bool) -> v a -> v a)       `eq` filter
+    prop_takeWhile    = (V.takeWhile :: (a -> Bool) -> v a -> v a)    `eq` takeWhile
+    prop_dropWhile    = (V.dropWhile :: (a -> Bool) -> v a -> v a)    `eq` dropWhile
 
-    prop_elem         = (V.elem :: a -> v a -> Bool)                  `eq2` elem
-    prop_notElem      = (V.notElem :: a -> v a -> Bool)               `eq2` notElem
-    prop_find         = (V.find :: (a -> Bool) -> v a -> Maybe a)        `eq2` find
-    prop_findIndex    = (V.findIndex :: (a -> Bool) -> v a -> Maybe Int) `eq2` findIndex
+    prop_elem         = (V.elem :: a -> v a -> Bool)                  `eq` elem
+    prop_notElem      = (V.notElem :: a -> v a -> Bool)               `eq` notElem
+    prop_find         = (V.find :: (a -> Bool) -> v a -> Maybe a)        `eq` find
+    prop_findIndex    = (V.findIndex :: (a -> Bool) -> v a -> Maybe Int) `eq` findIndex
 
-    prop_foldl        = (V.foldl :: (a -> a -> a) -> a -> v a -> a)   `eq3` foldl
-    prop_foldl1       = (V.foldl1 :: (a -> a -> a) -> v a -> a)       `eqNotNull2` foldl1
-    prop_foldl'       = (V.foldl' :: (a -> a -> a) -> a -> v a -> a)     `eq3` foldl'
-    prop_foldl1'      = (V.foldl1' :: (a -> a -> a) -> v a -> a)         `eqNotNull2` foldl1'
-    prop_foldr        = (V.foldr :: (a -> a -> a) -> a -> v a -> a)   `eq3` foldr
-    prop_foldr1       = (V.foldr1 :: (a -> a -> a) -> v a -> a)       `eqNotNull2` foldr1
+    prop_foldl        = (V.foldl :: (a -> a -> a) -> a -> v a -> a)   `eq` foldl
+    prop_foldl1       = notNull2 ===>
+                        (V.foldl1 :: (a -> a -> a) -> v a -> a)       `eq` foldl1
+    prop_foldl'       = (V.foldl' :: (a -> a -> a) -> a -> v a -> a)  `eq` foldl'
+    prop_foldl1'      = notNull2 ===>
+                        (V.foldl1' :: (a -> a -> a) -> v a -> a)      `eq` foldl1'
+    prop_foldr        = (V.foldr :: (a -> a -> a) -> a -> v a -> a)   `eq` foldr
+    prop_foldr1       = notNull2 ===>
+                        (V.foldr1 :: (a -> a -> a) -> v a -> a)       `eq` foldr1
 
-    prop_prescanl     = (V.prescanl :: (a -> a -> a) -> a -> v a -> v a) `eq3` prescanl
-    prop_prescanl'    = (V.prescanl' :: (a -> a -> a) -> a -> v a -> v a) `eq3` prescanl
-    prop_postscanl    = (V.postscanl :: (a -> a -> a) -> a -> v a -> v a) `eq3` postscanl
-    prop_postscanl'   = (V.postscanl' :: (a -> a -> a) -> a -> v a -> v a) `eq3` postscanl
-    prop_scanl        = (V.scanl :: (a -> a -> a) -> a -> v a -> v a) `eq3` scanl
-    prop_scanl'       = (V.scanl' :: (a -> a -> a) -> a -> v a -> v a) `eq3` scanl
-    prop_scanl1       = (V.scanl1 :: (a -> a -> a) -> v a -> v a)     `eqNotNull2` scanl1
-    prop_scanl1'      = (V.scanl1' :: (a -> a -> a) -> v a -> v a)    `eqNotNull2` scanl1
+    prop_prescanl     = (V.prescanl :: (a -> a -> a) -> a -> v a -> v a) `eq` prescanl
+    prop_prescanl'    = (V.prescanl' :: (a -> a -> a) -> a -> v a -> v a) `eq` prescanl
+    prop_postscanl    = (V.postscanl :: (a -> a -> a) -> a -> v a -> v a) `eq` postscanl
+    prop_postscanl'   = (V.postscanl' :: (a -> a -> a) -> a -> v a -> v a) `eq` postscanl
+    prop_scanl        = (V.scanl :: (a -> a -> a) -> a -> v a -> v a) `eq` scanl
+    prop_scanl'       = (V.scanl' :: (a -> a -> a) -> a -> v a -> v a) `eq` scanl
+    prop_scanl1       = notNull2 ===>
+                        (V.scanl1 :: (a -> a -> a) -> v a -> v a)     `eq` scanl1
+    prop_scanl1'      = notNull2 ===>
+                        (V.scanl1' :: (a -> a -> a) -> v a -> v a)    `eq` scanl1
  
-    prop_concatMap    = (V.concatMap :: (a -> v a) -> v a -> v a)     `eq2` concatMap
+    prop_concatMap    = (V.concatMap :: (a -> v a) -> v a -> v a)     `eq` concatMap
 
     --prop_span         = (V.span :: (a -> Bool) -> v a -> (v a, v a))  `eq2` span
     --prop_break        = (V.break :: (a -> Bool) -> v a -> (v a, v a)) `eq2` break
@@ -204,41 +213,43 @@ testPolymorphicFunctions _ = $(testProperties [
                                   , Just (out, theirs') <- f theirs = Just (out, (theirs', ours - 1))
                                   | otherwise                       = Nothing
     prop_unfoldr      = ((\n f a -> V.unfoldr (limitUnfolds f) (a, n)) :: Int -> ((Int, Int) -> Maybe (a, (Int, Int))) -> (Int, Int) -> v a)
-                        `eq3` (\n f a -> unfoldr (limitUnfolds f) (a, n))
+                        `eq` (\n f a -> unfoldr (limitUnfolds f) (a, n))
 
 
 testTuplyFunctions:: forall a v. (COMMON_CONTEXT(a, v), VECTOR_CONTEXT((a, a), v), VECTOR_CONTEXT((a, a, a), v)) => v a -> [Test]
 testTuplyFunctions _ = $(testProperties ['prop_zip, 'prop_zip3, 'prop_unzip, 'prop_unzip3])
   where
-    prop_zip          = (V.zip :: v a -> v a -> v (a, a))             `eq2` zip
-    prop_zip3         = (V.zip3 :: v a -> v a -> v a -> v (a, a, a))  `eq3` zip3
-    prop_unzip        = (V.unzip :: v (a, a) -> (v a, v a))           `eq1` unzip
-    prop_unzip3       = (V.unzip3 :: v (a, a, a) -> (v a, v a, v a))  `eq1` unzip3
+    prop_zip          = (V.zip :: v a -> v a -> v (a, a))             `eq` zip
+    prop_zip3         = (V.zip3 :: v a -> v a -> v a -> v (a, a, a))  `eq` zip3
+    prop_unzip        = (V.unzip :: v (a, a) -> (v a, v a))           `eq` unzip
+    prop_unzip3       = (V.unzip3 :: v (a, a, a) -> (v a, v a, v a))  `eq` unzip3
 
 testOrdFunctions :: forall a v. (COMMON_CONTEXT(a, v), Ord a, Ord (v a)) => v a -> [Test]
 testOrdFunctions _ = $(testProperties ['prop_compare, 'prop_maximum, 'prop_minimum])
   where
-    prop_compare      = (compare :: v a -> v a -> Ordering) `eq2` compare
-    prop_maximum      = (V.maximum :: v a -> a)             `eqNotNull1` maximum
-    prop_minimum      = (V.minimum :: v a -> a)             `eqNotNull1` minimum
+    prop_compare      = (compare :: v a -> v a -> Ordering) `eq` compare
+    prop_maximum      = not . V.null ===>
+                        (V.maximum :: v a -> a)             `eq` maximum
+    prop_minimum      = not . V.null ===>
+                        (V.minimum :: v a -> a)             `eq` minimum
 
 testEnumFunctions :: forall a v. (COMMON_CONTEXT(a, v), Enum a) => v a -> [Test]
 testEnumFunctions _ = $(testProperties ['prop_enumFromTo, 'prop_enumFromThenTo])
   where
-    prop_enumFromTo     =                                        (V.enumFromTo :: a -> a -> v a)          `eq2` enumFromTo
-    prop_enumFromThenTo = \i j n -> fromEnum i < fromEnum j ==> ((V.enumFromThenTo :: a -> a -> a -> v a) `eq3` enumFromThenTo) i j n
+    prop_enumFromTo     =                                        (V.enumFromTo :: a -> a -> v a)          `eq` enumFromTo
+    prop_enumFromThenTo = \i j n -> fromEnum i < fromEnum j ==> ((V.enumFromThenTo :: a -> a -> a -> v a) `eq` enumFromThenTo) i j n
 
 testBoolFunctions :: forall v. (COMMON_CONTEXT(Bool, v)) => v Bool -> [Test]
 testBoolFunctions _ = $(testProperties ['prop_and, 'prop_or])
   where
-    prop_and          = (V.and :: v Bool -> Bool) `eq1` and
-    prop_or           = (V.or :: v Bool -> Bool)  `eq1` or
+    prop_and          = (V.and :: v Bool -> Bool) `eq` and
+    prop_or           = (V.or :: v Bool -> Bool)  `eq` or
 
 testNumFunctions :: forall a v. (COMMON_CONTEXT(a, v), Num a) => v a -> [Test]
 testNumFunctions _ = $(testProperties ['prop_sum, 'prop_product])
   where
-    prop_sum          = (V.sum :: v a -> a)     `eq1` sum
-    prop_product      = (V.product :: v a -> a) `eq1` product
+    prop_sum          = (V.sum :: v a -> a)     `eq` sum
+    prop_product      = (V.product :: v a -> a) `eq` product
 
 testNestedVectorFunctions :: forall a v. (COMMON_CONTEXT(a, v)) => v a -> [Test]
 testNestedVectorFunctions _ = $(testProperties [])

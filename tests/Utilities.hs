@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 module Utilities where
 
 import Test.QuickCheck
@@ -27,40 +28,124 @@ instance Arbitrary a => Arbitrary (S.Stream a) where
     coarbitrary = coarbitrary . S.toList
 
 
-class Model a b | a -> b where
+class Modelled a where
+  type Model a
   -- | Convert a concrete value into an abstract model
-  model :: a -> b
+  model :: a -> Model a
+  unmodel :: Model a -> a
 
 -- The meat of the models
-instance               Model (DV.Vector a)  [a] where model = DV.toList
-instance DVP.Prim a => Model (DVP.Vector a) [a] where model = DVP.toList
+instance Modelled (DV.Vector a) where
+  type Model (DV.Vector a) = [a]
+  model = DV.toList
+  unmodel = DV.fromList
+
+instance DVP.Prim a => Modelled (DVP.Vector a) where
+  type Model (DVP.Vector a) = [a]
+  model = DVP.toList
+  unmodel = DVP.fromList
 
 -- Identity models
-instance Model Bool     Bool     where model = id
-instance Model Int      Int      where model = id
-instance Model Float    Float    where model = id
-instance Model Double   Double   where model = id
-instance Model Ordering Ordering where model = id
+
+#define id_Modelled(ty) \
+instance Modelled ty where { type Model ty = ty; model = id; unmodel = id }
+
+id_Modelled(Bool)
+id_Modelled(Int)
+id_Modelled(Float)
+id_Modelled(Double)
+id_Modelled(Ordering)
 
 -- Functorish models
 -- All of these need UndecidableInstances although they are actually well founded. Oh well.
-instance Model a b                            => Model (Maybe a) (Maybe b)    where model           = fmap model
-instance Model a b                            => Model [a] [b]                where model           = fmap model
-instance (Model a a', Model b b')             => Model (a, b) (a', b')        where model (a, b)    = (model a, model b)
-instance (Model a a', Model b b', Model c c') => Model (a, b, c) (a', b', c') where model (a, b, c) = (model a, model b, model c)
-instance (Model c a, Model b d)               => Model (a -> b) (c -> d)      where model f         = model . f . model
+instance Modelled a => Modelled (Maybe a) where
+  type Model (Maybe a) = Maybe (Model a)
+  model = fmap model
+  unmodel = fmap unmodel
 
+instance Modelled a => Modelled [a] where
+  type Model [a] = [Model a]
+  model = fmap model
+  unmodel = fmap unmodel
 
-eq0 f g =             model f           == g
-eq1 f g = \a       -> model (f a)       == g (model a)
-eq2 f g = \a b     -> model (f a b)     == g (model a) (model b)
-eq3 f g = \a b c   -> model (f a b c)   == g (model a) (model b) (model c)
-eq4 f g = \a b c d -> model (f a b c d) == g (model a) (model b) (model c) (model d)
+instance (Modelled a, Modelled b) => Modelled (a,b) where
+  type Model (a,b) = (Model a, Model b)
+  model (a,b) = (model a, model b)
+  unmodel (a,b) = (unmodel a, unmodel b)
 
-eqNotNull1 f g = \a       -> (not (DVG.null a)) ==> eq1 f g a
-eqNotNull2 f g = \a b     -> (not (DVG.null b)) ==> eq2 f g a b
-eqNotNull3 f g = \a b c   -> (not (DVG.null c)) ==> eq3 f g a b c
-eqNotNull4 f g = \a b c d -> (not (DVG.null d)) ==> eq4 f g a b c d
+instance (Modelled a, Modelled b, Modelled c) => Modelled (a,b,c) where
+  type Model (a,b,c) = (Model a, Model b, Model c)
+  model (a,b,c) = (model a, model b, model c)
+  unmodel (a,b,c) = (unmodel a, unmodel b, unmodel c)
+
+instance (Modelled a, Modelled b) => Modelled (a -> b) where
+  type Model (a -> b) = Model a -> Model b
+  model f = model . f . unmodel
+  unmodel f = unmodel . f . model
+
+class (Predicate (EqTest a), Testable (EqTest a)) => EqTestable a where
+  type EqTest a
+
+  equal :: a -> a -> EqTest a
+
+#define EqTestable0(ty) \
+instance EqTestable (ty) where { type EqTest (ty) = Bool; equal = (==) }
+
+EqTestable0(Bool)
+EqTestable0(Int)
+EqTestable0(Float)
+EqTestable0(Double)
+EqTestable0(Ordering)
+
+#define EqTestable1(ty) \
+instance Eq a => EqTestable (ty a) where { type EqTest (ty a) = Bool; equal = (==) }
+
+EqTestable1(Maybe)
+EqTestable1([])
+EqTestable1(DV.Vector)
+EqTestable1(S.Stream)
+
+instance (Eq a, DVP.Prim a) => EqTestable (DVP.Vector a) where
+  type EqTest (DVP.Vector a) = Bool
+  equal = (==)
+
+instance (Eq a, Eq b) => EqTestable (a,b) where
+  type EqTest (a,b) = Bool
+  equal = (==)
+
+instance (Eq a, Eq b, Eq c) => EqTestable (a,b,c) where
+  type EqTest (a,b,c) = Bool
+  equal = (==)
+
+instance (Arbitrary a, Show a, EqTestable b) => EqTestable (a -> b) where
+  type EqTest (a -> b) = a -> EqTest b
+
+  equal f g x = f x `equal` g x
+
+infix 4 `eq`
+eq :: (Modelled a, EqTestable a) => a -> Model a -> EqTest a
+x `eq` y = x `equal` unmodel y
+
+class Testable (Prop f) => Predicate f where
+  type Pred f
+  type Prop f
+
+  infixr 0 ===>
+  (===>) :: Pred f -> f -> Prop f
+
+instance Predicate Bool where
+  type Pred Bool = Bool
+  type Prop Bool = Property
+
+  (===>) = (==>)
+
+instance (Arbitrary a, Show a, Predicate f) => Predicate (a -> f) where
+  type Pred (a -> f) = a -> Pred f
+  type Prop (a -> f) = a -> Prop f
+
+  p ===> f = \x -> p x ===> f x
+
+notNull2 _ xs = not $ DVG.null xs
 
 -- Generators
 index_value_pairs :: Arbitrary a => Int -> Gen [(Int,a)]
