@@ -1,4 +1,4 @@
-module Properties (tests) where
+module Tests.Vector (tests) where
 
 import Boilerplater
 import Utilities
