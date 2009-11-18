@@ -28,7 +28,7 @@ Executable "vector-tests"
               TemplateHaskell
 
   Build-Depends: base, template-haskell, vector,
-                 QuickCheck, test-framework, test-framework-quickcheck
+                 QuickCheck >= 2, test-framework, test-framework-quickcheck2
 
   -- Don't let fusion occur or GHC will make our tests less informative in some cases :-)
   Ghc-Options: -O0

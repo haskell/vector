@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, GADTs #-}
 module Utilities where
 
 import Test.QuickCheck
@@ -17,14 +17,20 @@ instance Show a => Show (S.Stream a) where
 
 instance Arbitrary a => Arbitrary (DV.Vector a) where
     arbitrary = fmap DV.fromList arbitrary
+
+instance CoArbitrary a => CoArbitrary (DV.Vector a) where
     coarbitrary = coarbitrary . DV.toList
 
 instance (Arbitrary a, DVP.Prim a) => Arbitrary (DVP.Vector a) where
     arbitrary = fmap DVP.fromList arbitrary
+
+instance (CoArbitrary a, DVP.Prim a) => CoArbitrary (DVP.Vector a) where
     coarbitrary = coarbitrary . DVP.toList
 
 instance Arbitrary a => Arbitrary (S.Stream a) where
     arbitrary = fmap S.fromList arbitrary
+
+instance CoArbitrary a => CoArbitrary (S.Stream a) where
     coarbitrary = coarbitrary . S.toList
 
 
@@ -83,6 +89,111 @@ instance (Modelled a, Modelled b) => Modelled (a -> b) where
   model f = model . f . unmodel
   unmodel f = unmodel . f . model
 
+class (Testable (Pty a), Predicate (Pty a)) => PropLike a where
+  type Pty a
+
+instance (Arbitrary a, Show a, PropLike b) => PropLike (a -> b) where
+  type Pty (a -> b) = a -> Pty b
+
+#define PropLike0(ty) \
+instance PropLike (ty) where { type Pty (ty) = Property }
+
+PropLike0(Int)
+PropLike0(Bool)
+PropLike0(Float)
+PropLike0(Double)
+PropLike0(Ordering)
+PropLike0([a])
+PropLike0(Maybe a)
+PropLike0((a,b))
+PropLike0((a,b,c))
+PropLike0(DV.Vector a)
+PropLike0(DVP.Vector a)
+PropLike0(S.Stream a)
+
+data P a where
+  P :: PropLike a => Pty a -> P a
+
+unP :: P a -> Pty a
+unP (P p) = p
+
+
+instance Testable (P a) where
+  property (P a) = property a
+
+class PropLike a => EqTestable a p where
+  equal :: a -> a -> p
+
+instance (Eq a, PropLike a) => EqTestable a Property where
+  equal x y = property (x==y)
+
+instance (Arbitrary a, Show a, EqTestable b p) => EqTestable (a -> b) (a -> p) where
+  equal f g = \x -> equal (f x) (g x)
+
+infix 4 `eq`
+eq :: (Modelled a, EqTestable a (Pty a)) => a -> Model a -> P a
+eq x y = P (equal x (unmodel y))
+
+class Predicate p where
+  type Pred p
+
+  predicate :: Pred p -> p -> p
+
+instance Predicate Property where
+  type Pred Property = Bool
+
+  predicate = (==>)
+
+instance Predicate p => Predicate (a -> p) where
+  type Pred (a -> p) = a -> Pred p
+
+  predicate f p = \x -> predicate (f x) (p x)
+
+infixr 0 ===>
+(===>) :: Pred (Pty a) -> P a -> P a
+p ===> P a = P (predicate p a)
+
+notNull2 _ xs = not $ DVG.null xs
+
+{-
+class EqTestable a where
+  equal :: a -> a -> P a
+
+#define EqTestable0(ty) \
+instance EqTestable (ty) where { equal x y = P (property (x == y)) }
+
+EqTestable0(Bool)
+EqTestable0(Int)
+EqTestable0(Float)
+EqTestable0(Double)
+EqTestable0(Ordering)
+
+#define EqTestable1(ty) \
+instance Eq a => EqTestable (ty a) where { equal x y = P (property (x == y)) }
+
+EqTestable1(Maybe)
+EqTestable1([])
+EqTestable1(DV.Vector)
+EqTestable1(S.Stream)
+
+instance (Eq a, DVP.Prim a) => EqTestable (DVP.Vector a) where
+  equal x y = P (property (x == y))
+
+instance (Eq a, Eq b) => EqTestable (a,b) where
+  equal x y = P (property (x == y))
+
+instance (Eq a, Eq b, Eq c) => EqTestable (a,b,c) where
+  equal x y = P (property (x == y))
+
+instance (Arbitrary a, Show a, EqTestable b) => EqTestable (a -> b) where
+  equal f g = P (\x -> unP (f x `equal` g x))
+
+infix 4 `eq`
+eq :: (Modelled a, EqTestable a) => a -> Model a -> P a
+x `eq` y = x `equal` unmodel y
+-}
+
+{-
 class (Predicate (EqTest a), Testable (EqTest a)) => EqTestable a where
   type EqTest a
 
@@ -122,30 +233,37 @@ instance (Arbitrary a, Show a, EqTestable b) => EqTestable (a -> b) where
 
   equal f g x = f x `equal` g x
 
-infix 4 `eq`
-eq :: (Modelled a, EqTestable a) => a -> Model a -> EqTest a
-x `eq` y = x `equal` unmodel y
+newtype P a = P (EqTest a)
 
-class Testable (Prop f) => Predicate f where
+instance EqTestable a => Testable (P a) where
+  property (P t) = property t
+
+
+infix 4 `eq`
+eq :: (Modelled a, EqTestable a) => a -> Model a -> P a
+x `eq` y = P (x `equal` unmodel y)
+
+class Testable (Pty f) => Predicate f where
   type Pred f
-  type Prop f
+  type Pty f
 
   infixr 0 ===>
-  (===>) :: Pred f -> f -> Prop f
+  (===>) :: Pred f -> f -> Pty f
 
 instance Predicate Bool where
   type Pred Bool = Bool
-  type Prop Bool = Property
+  type Pty Bool = Property
 
   (===>) = (==>)
 
 instance (Arbitrary a, Show a, Predicate f) => Predicate (a -> f) where
   type Pred (a -> f) = a -> Pred f
-  type Prop (a -> f) = a -> Prop f
+  type Pty (a -> f) = a -> Pty f
 
   p ===> f = \x -> p x ===> f x
 
 notNull2 _ xs = not $ DVG.null xs
+-}
 
 -- Generators
 index_value_pairs :: Arbitrary a => Int -> Gen [(Int,a)]

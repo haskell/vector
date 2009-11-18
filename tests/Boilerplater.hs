@@ -1,6 +1,6 @@
 module Boilerplater where
 
-import Test.Framework.Providers.QuickCheck
+import Test.Framework.Providers.QuickCheck2
 
 import Language.Haskell.TH
 
