@@ -27,7 +27,7 @@ Executable "vector-tests"
               TypeFamilies,
               TemplateHaskell
 
-  Build-Depends: base, template-haskell, vector,
+  Build-Depends: base, template-haskell, vector, random,
                  QuickCheck >= 2, test-framework, test-framework-quickcheck2
 
   -- Don't let fusion occur or GHC will make our tests less informative in some cases :-)
