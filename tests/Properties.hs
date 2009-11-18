@@ -25,7 +25,6 @@ import Data.List           (foldl', foldl1', unfoldr, find, findIndex)
 #define VECTOR_CONTEXT(a, v) \
   Eq (v a), Show (v a), Arbitrary (v a), Model (v a) [a], V.Vector v a
 
-
 -- TODO: implement Vector equivalents of list functions for some of the commented out properties
 
 -- TODO: test and implement some of these other Prelude functions:
@@ -74,61 +73,119 @@ testSanity _ = [
 
 testPolymorphicFunctions :: forall a v. (COMMON_CONTEXT(a, v)) => v a -> [Test]
 testPolymorphicFunctions _ = $(testProperties [
-        'prop_eq, 'prop_length, 'prop_null, 'prop_reverse,
-        'prop_append, 'prop_concatMap,
-        'prop_empty, 'prop_cons,
-        'prop_head, 'prop_tail, 'prop_init, 'prop_last,
-        'prop_drop, 'prop_dropWhile, 'prop_take, 'prop_takeWhile,
-        'prop_filter, 'prop_map, 'prop_replicate,
-        'prop_zipWith, 'prop_zipWith3,
+        'prop_eq,
+
+        'prop_length, 'prop_null,
+
+        'prop_empty, 'prop_singleton, 'prop_replicate,
+        'prop_cons, 'prop_snoc, 'prop_append, 'prop_copy,
+
+        'prop_head, 'prop_last, 'prop_index,
+
+        'prop_slice, 'prop_init, 'prop_tail, 'prop_take, 'prop_drop,
+
+        'prop_accum, 'prop_write, -- 'prop_backpermute,
+        'prop_reverse,
+
+        'prop_map, 'prop_zipWith, 'prop_zipWith3,
+        'prop_filter, 'prop_takeWhile, 'prop_dropWhile,
+
         'prop_elem, 'prop_notElem,
-        'prop_foldr, 'prop_foldl, 'prop_foldr1, 'prop_foldl1,
-        'prop_foldl', 'prop_foldl1',
         'prop_find, 'prop_findIndex,
-        'prop_unfoldr,
-        'prop_singleton, 'prop_snoc
+
+        'prop_foldl, 'prop_foldl1, 'prop_foldl', 'prop_foldl1',
+        'prop_foldr, 'prop_foldr1,
+
+        'prop_prescanl, 'prop_prescanl',
+        'prop_postscanl, 'prop_postscanl',
+        'prop_scanl, 'prop_scanl', 'prop_scanl1, 'prop_scanl1',
+
+        'prop_concatMap,
+        'prop_unfoldr
     ])
   where
     -- Prelude
     prop_eq           = ((==) :: v a -> v a -> Bool)                  `eq2` (==)
+
     prop_length       = (V.length :: v a -> Int)                      `eq1` length
     prop_null         = (V.null :: v a -> Bool)                       `eq1` null
-    prop_reverse      = (V.reverse :: v a -> v a)                     `eq1` reverse
-    prop_append       = ((V.++) :: v a -> v a -> v a)                 `eq2` (++)
-    prop_concatMap    = (V.concatMap :: (a -> v a) -> v a -> v a)     `eq2` concatMap
+
     prop_empty        = (V.empty :: v a)                              `eq0` []
+    prop_singleton     = (V.singleton :: a -> v a)                    `eq1` singleton
+    prop_replicate    = (V.replicate :: Int -> a -> v a)              `eq2` replicate
     prop_cons         = (V.cons :: a -> v a -> v a)                   `eq2` (:)
-    --prop_index        = compare (V.!) to (!!)
+    prop_snoc         = (V.snoc :: v a -> a -> v a)                   `eq2` snoc
+    prop_append       = ((V.++) :: v a -> v a -> v a)                 `eq2` (++)
+    prop_copy         = (V.copy :: v a -> v a)                        `eq1` id
+
     prop_head         = (V.head :: v a -> a)                          `eqNotNull1` head
+    prop_last         = (V.last :: v a -> a)                          `eqNotNull1` last
+    prop_index        = \xs i -> (i >= 0 && i < V.length xs)
+                          ==> (((V.!) :: v a -> Int -> a) `eq2` (!!)) xs i
+
+
+    prop_slice        = forAll arbitrary                     $ \xs ->
+                        forAll (choose (0, V.length xs))     $ \i ->
+                        forAll (choose (0, V.length xs - i)) $ \n ->
+                        ((V.slice :: v a -> Int -> Int -> v a) `eq3` slice)
+                          xs i n
     prop_tail         = (V.tail :: v a -> v a)                        `eqNotNull1` tail
     prop_init         = (V.init :: v a -> v a)                        `eqNotNull1` init
-    prop_last         = (V.last :: v a -> a)                          `eqNotNull1` last
-    prop_drop         = (V.drop :: Int -> v a -> v a)                 `eq2` drop
-    prop_dropWhile    = (V.dropWhile :: (a -> Bool) -> v a -> v a)    `eq2` dropWhile
     prop_take         = (V.take :: Int -> v a -> v a)                 `eq2` take
-    prop_takeWhile    = (V.takeWhile :: (a -> Bool) -> v a -> v a)    `eq2` takeWhile
-    prop_filter       = (V.filter :: (a -> Bool) -> v a -> v a)       `eq2` filter
+    prop_drop         = (V.drop :: Int -> v a -> v a)                 `eq2` drop
+
+    prop_accum        = forAll arbitrary                         $ \f ->
+                        forAll arbitrary                         $ \xs ->
+                        forAll (index_value_pairs (V.length xs)) $ \ps ->
+                        ((V.accum :: (a -> a -> a) -> v a -> [(Int,a)] -> v a)
+                         `eq3` accum) f xs ps
+    prop_write        = forAll arbitrary                         $ \xs ->
+                        forAll (index_value_pairs (V.length xs)) $ \ps ->
+                        (((V.//) :: v a -> [(Int,a)] -> v a) `eq2` (//)) xs ps
+    -- prop_backpermute  = forAll arbitrary                         $ \xs ->
+    --                     forAll (indices (V.length xs))           $ \is ->
+    --                     ((V.backpermute :: v a -> v Int -> v a) `eq2` backpermute)
+    --                             xs is
+    prop_reverse      = (V.reverse :: v a -> v a)                     `eq1` reverse
+
     prop_map          = (V.map :: (a -> a) -> v a -> v a)             `eq2` map
-    prop_replicate    = (V.replicate :: Int -> a -> v a)              `eq2` replicate
     prop_zipWith      = (V.zipWith :: (a -> a -> a) -> v a -> v a -> v a) `eq3` zipWith
     prop_zipWith3     = (V.zipWith3 :: (a -> a -> a -> a) -> v a -> v a -> v a -> v a) `eq4` zipWith3
+
+    prop_filter       = (V.filter :: (a -> Bool) -> v a -> v a)       `eq2` filter
+    prop_takeWhile    = (V.takeWhile :: (a -> Bool) -> v a -> v a)    `eq2` takeWhile
+    prop_dropWhile    = (V.dropWhile :: (a -> Bool) -> v a -> v a)    `eq2` dropWhile
+
+    prop_elem         = (V.elem :: a -> v a -> Bool)                  `eq2` elem
+    prop_notElem      = (V.notElem :: a -> v a -> Bool)               `eq2` notElem
+    prop_find         = (V.find :: (a -> Bool) -> v a -> Maybe a)        `eq2` find
+    prop_findIndex    = (V.findIndex :: (a -> Bool) -> v a -> Maybe Int) `eq2` findIndex
+
+    prop_foldl        = (V.foldl :: (a -> a -> a) -> a -> v a -> a)   `eq3` foldl
+    prop_foldl1       = (V.foldl1 :: (a -> a -> a) -> v a -> a)       `eqNotNull2` foldl1
+    prop_foldl'       = (V.foldl' :: (a -> a -> a) -> a -> v a -> a)     `eq3` foldl'
+    prop_foldl1'      = (V.foldl1' :: (a -> a -> a) -> v a -> a)         `eqNotNull2` foldl1'
+    prop_foldr        = (V.foldr :: (a -> a -> a) -> a -> v a -> a)   `eq3` foldr
+    prop_foldr1       = (V.foldr1 :: (a -> a -> a) -> v a -> a)       `eqNotNull2` foldr1
+
+    prop_prescanl     = (V.prescanl :: (a -> a -> a) -> a -> v a -> v a) `eq3` prescanl
+    prop_prescanl'    = (V.prescanl' :: (a -> a -> a) -> a -> v a -> v a) `eq3` prescanl
+    prop_postscanl    = (V.postscanl :: (a -> a -> a) -> a -> v a -> v a) `eq3` postscanl
+    prop_postscanl'   = (V.postscanl' :: (a -> a -> a) -> a -> v a -> v a) `eq3` postscanl
+    prop_scanl        = (V.scanl :: (a -> a -> a) -> a -> v a -> v a) `eq3` scanl
+    prop_scanl'       = (V.scanl' :: (a -> a -> a) -> a -> v a -> v a) `eq3` scanl
+    prop_scanl1       = (V.scanl1 :: (a -> a -> a) -> v a -> v a)     `eqNotNull2` scanl1
+    prop_scanl1'      = (V.scanl1' :: (a -> a -> a) -> v a -> v a)    `eqNotNull2` scanl1
+ 
+    prop_concatMap    = (V.concatMap :: (a -> v a) -> v a -> v a)     `eq2` concatMap
+
     --prop_span         = (V.span :: (a -> Bool) -> v a -> (v a, v a))  `eq2` span
     --prop_break        = (V.break :: (a -> Bool) -> v a -> (v a, v a)) `eq2` break
     --prop_splitAt      = (V.splitAt :: Int -> v a -> (v a, v a))       `eq2` splitAt
-    prop_elem         = (V.elem :: a -> v a -> Bool)                  `eq2` elem
-    prop_notElem      = (V.notElem :: a -> v a -> Bool)               `eq2` notElem
-    prop_foldr        = (V.foldr :: (a -> a -> a) -> a -> v a -> a)   `eq3` foldr
-    prop_foldl        = (V.foldl :: (a -> a -> a) -> a -> v a -> a)   `eq3` foldl
-    prop_foldr1       = (V.foldr1 :: (a -> a -> a) -> v a -> a)       `eqNotNull2` foldr1
-    prop_foldl1       = (V.foldl1 :: (a -> a -> a) -> v a -> a)       `eqNotNull2` foldl1
     --prop_all          = (V.all :: (a -> Bool) -> v a -> Bool)         `eq2` all
     --prop_any          = (V.any :: (a -> Bool) -> v a -> Bool)         `eq2` any
 
     -- Data.List
-    prop_foldl'       = (V.foldl' :: (a -> a -> a) -> a -> v a -> a)     `eq3` foldl'
-    prop_foldl1'      = (V.foldl1' :: (a -> a -> a) -> v a -> a)         `eqNotNull2` foldl1'
-    prop_find         = (V.find :: (a -> Bool) -> v a -> Maybe a)        `eq2` find
-    prop_findIndex    = (V.findIndex :: (a -> Bool) -> v a -> Maybe Int) `eq2` findIndex
     --prop_findIndices  = V.findIndices `eq2` (findIndices :: (a -> Bool) -> v a -> v Int)
     --prop_isPrefixOf   = V.isPrefixOf  `eq2` (isPrefixOf  :: v a -> v a -> Bool)
     --prop_elemIndex    = V.elemIndex   `eq2` (elemIndex   :: a -> v a -> Maybe Int)
@@ -150,12 +207,6 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_unfoldr      = ((\n f a -> V.unfoldr (limitUnfolds f) (a, n)) :: Int -> ((Int, Int) -> Maybe (a, (Int, Int))) -> (Int, Int) -> v a)
                         `eq3` (\n f a -> unfoldr (limitUnfolds f) (a, n))
 
-    -- Extras
-    singleton x = [x]
-    prop_singleton = (V.singleton :: a -> v a) `eq1` singleton
-    
-    snoc xs x = xs ++ [x]
-    prop_snoc = (V.snoc :: v a -> a -> v a) `eq2` snoc
 
 testTuplyFunctions:: forall a v. (COMMON_CONTEXT(a, v), VECTOR_CONTEXT((a, a), v), VECTOR_CONTEXT((a, a, a), v)) => v a -> [Test]
 testTuplyFunctions _ = $(testProperties ['prop_zip, 'prop_zip3, 'prop_unzip, 'prop_unzip3])
