@@ -13,7 +13,7 @@
 --
 
 module Data.Vector.Primitive (
-  Vector,
+  Vector, Prim,
 
   -- * Length information
   length, null,
