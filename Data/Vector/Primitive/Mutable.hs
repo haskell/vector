@@ -12,46 +12,46 @@
 -- Mutable primitive vectors.
 --
 
-module Data.Vector.Primitive.Mutable ( Vector(..), IOVector, STVector )
+module Data.Vector.Primitive.Mutable ( MVector(..), IOVector, STVector )
 where
 
-import           Data.Vector.Generic.Mutable ( MVector(..), MVectorPure(..) )
+import qualified Data.Vector.Generic.Mutable as G
 import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim, sizeOf )
 import           Control.Monad.Primitive
 import           Control.Monad.ST ( ST )
 
 -- | Mutable unboxed vectors. They live in the 'ST' monad.
-data Vector m a = Vector {-# UNPACK #-} !Int
+data MVector m a = MVector {-# UNPACK #-} !Int
                          {-# UNPACK #-} !Int
                          {-# UNPACK #-} !(MutableByteArray m)
 
-type IOVector = Vector IO
-type STVector s = Vector (ST s)
+type IOVector = MVector IO
+type STVector s = MVector (ST s)
 
-instance Prim a => MVectorPure (Vector m) a where
-  length (Vector _ n _) = n
-  unsafeSlice (Vector i _ arr) j m = Vector (i+j) m arr
+instance Prim a => G.MVectorPure (MVector m) a where
+  length (MVector _ n _) = n
+  unsafeSlice (MVector i _ arr) j m = MVector (i+j) m arr
 
   {-# INLINE overlaps #-}
-  overlaps (Vector i m arr1) (Vector j n arr2)
+  overlaps (MVector i m arr1) (MVector j n arr2)
     = sameMutableByteArray arr1 arr2
       && (between i j (j+n) || between j i (i+m))
     where
       between x y z = x >= y && x < z
 
 
-instance (Prim a, PrimMonad m) => MVector (Vector m) m a where
+instance (Prim a, PrimMonad m) => G.MVector (MVector m) m a where
   {-# INLINE unsafeNew #-}
   unsafeNew n = do
                   arr <- newByteArray (n * sizeOf (undefined :: a))
-                  return (Vector 0 n arr)
+                  return (MVector 0 n arr)
 
   {-# INLINE unsafeRead #-}
-  unsafeRead (Vector i _ arr) j = readByteArray arr (i+j)
+  unsafeRead (MVector i _ arr) j = readByteArray arr (i+j)
 
   {-# INLINE unsafeWrite #-}
-  unsafeWrite (Vector i _ arr) j x = writeByteArray arr (i+j) x
+  unsafeWrite (MVector i _ arr) j x = writeByteArray arr (i+j) x
 
   {-# INLINE clear #-}
   clear _ = return ()

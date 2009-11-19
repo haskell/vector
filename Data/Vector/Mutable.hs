@@ -12,51 +12,50 @@
 -- Mutable boxed vectors.
 --
 
-module Data.Vector.Mutable ( Vector(..), IOVector, STVector )
+module Data.Vector.Mutable ( MVector(..), IOVector, STVector )
 where
 
 import qualified Data.Vector.Generic.Mutable as G
-import           Data.Vector.Generic.Mutable ( MVector(..), MVectorPure(..) )
 import           Data.Primitive.Array
 import           Control.Monad.Primitive ( PrimMonad )
 import           Control.Monad.ST ( ST )
 
 -- | Mutable boxed vectors keyed on the monad they live in ('IO' or @'ST' s@).
-data Vector m a = Vector {-# UNPACK #-} !Int
-                         {-# UNPACK #-} !Int
-                         {-# UNPACK #-} !(MutableArray m a)
+data MVector m a = MVector {-# UNPACK #-} !Int
+                           {-# UNPACK #-} !Int
+                           {-# UNPACK #-} !(MutableArray m a)
 
-type IOVector = Vector IO
-type STVector s = Vector (ST s)
+type IOVector = MVector IO
+type STVector s = MVector (ST s)
 
-instance MVectorPure (Vector m) a where
-  length (Vector _ n _) = n
-  unsafeSlice (Vector i _ arr) j m = Vector (i+j) m arr
+instance G.MVectorPure (MVector m) a where
+  length (MVector _ n _) = n
+  unsafeSlice (MVector i _ arr) j m = MVector (i+j) m arr
 
   {-# INLINE overlaps #-}
-  overlaps (Vector i m arr1) (Vector j n arr2)
+  overlaps (MVector i m arr1) (MVector j n arr2)
     = sameMutableArray arr1 arr2
       && (between i j (j+n) || between j i (i+m))
     where
       between x y z = x >= y && x < z
 
 
-instance PrimMonad m => MVector (Vector m) m a where
+instance PrimMonad m => G.MVector (MVector m) m a where
   {-# INLINE unsafeNew #-}
   unsafeNew n = do
                   arr <- newArray n uninitialised
-                  return (Vector 0 n arr)
+                  return (MVector 0 n arr)
 
   {-# INLINE unsafeNewWith #-}
   unsafeNewWith n x = do
                         arr <- newArray n x
-                        return (Vector 0 n arr)
+                        return (MVector 0 n arr)
 
   {-# INLINE unsafeRead #-}
-  unsafeRead (Vector i _ arr) j = readArray arr (i+j)
+  unsafeRead (MVector i _ arr) j = readArray arr (i+j)
 
   {-# INLINE unsafeWrite #-}
-  unsafeWrite (Vector i _ arr) j x = writeArray arr (i+j) x
+  unsafeWrite (MVector i _ arr) j x = writeArray arr (i+j) x
 
   {-# INLINE clear #-}
   clear v = G.set v uninitialised

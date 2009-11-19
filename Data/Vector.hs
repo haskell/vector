@@ -13,7 +13,7 @@
 --
 
 module Data.Vector (
-  Vector,
+  Vector, MVector,
 
   -- * Length information
   length, null,
@@ -64,7 +64,7 @@ module Data.Vector (
 ) where
 
 import qualified Data.Vector.Generic as G
-import qualified Data.Vector.Mutable as Mut
+import           Data.Vector.Mutable  ( MVector(..) )
 import           Data.Primitive.Array
 
 import Control.Monad.ST ( runST )
@@ -94,7 +94,7 @@ instance Show a => Show (Vector a) where
 instance G.Vector Vector a where
   {-# INLINE vnew #-}
   vnew init = runST (do
-                       Mut.Vector i n marr <- init
+                       MVector i n marr <- init
                        arr <- unsafeFreezeArray marr
                        return (Vector i n arr))
 

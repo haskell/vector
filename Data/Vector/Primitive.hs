@@ -13,7 +13,7 @@
 --
 
 module Data.Vector.Primitive (
-  Vector, Prim,
+  Vector, MVector(..), Prim,
 
   -- * Length information
   length, null,
@@ -64,7 +64,7 @@ module Data.Vector.Primitive (
 ) where
 
 import qualified Data.Vector.Generic           as G
-import qualified Data.Vector.Primitive.Mutable as Mut
+import           Data.Vector.Primitive.Mutable ( MVector(..) )
 import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim )
 
@@ -96,7 +96,7 @@ instance (Show a, Prim a) => Show (Vector a) where
 instance Prim a => G.Vector Vector a where
   {-# INLINE vnew #-}
   vnew init = runST (do
-                       Mut.Vector i n marr <- init
+                       MVector i n marr <- init
                        arr <- unsafeFreezeByteArray marr
                        return (Vector i n arr))
 

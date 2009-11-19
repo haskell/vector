@@ -13,7 +13,7 @@
 --
 
 module Data.Vector.Storable (
-  Vector, Storable,
+  Vector, MVector(..), Storable,
 
   -- * Length information
   length, null,
@@ -64,7 +64,7 @@ module Data.Vector.Storable (
 ) where
 
 import qualified Data.Vector.Generic          as G
-import qualified Data.Vector.Storable.Mutable as Mut
+import           Data.Vector.Storable.Mutable ( MVector(..) )
 import Data.Vector.Storable.Internal
 
 import Foreign.Storable
@@ -101,7 +101,7 @@ instance (Show a, Storable a) => Show (Vector a) where
 instance Storable a => G.Vector Vector a where
   {-# INLINE vnew #-}
   vnew init = unsafePerformIO (do
-                                 Mut.Vector i n p <- init
+                                 MVector i n p <- init
                                  return (Vector i n p))
 
   {-# INLINE vlength #-}
