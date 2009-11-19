@@ -13,6 +13,17 @@ Description:
         An efficient but highly experimental implementation of Int-indexed
         arrays with a powerful loop fusion framework.
         .
+        It is structured as follows:
+        .
+        [@Data.Vector@] boxed vectors of arbitrary types
+        .
+        [@Data.Vector.Primitive@] unboxed vectors of primitive types as
+                defined by the @primitive@ package
+        .
+        [@Data.Vector.Storable@] unboxed vectors of 'Storable' types
+        .
+        [@Data.Vector.Generic@] generic interface to the vector types
+        .
 
 Cabal-Version:  >= 1.2
 Build-Type:     Simple
