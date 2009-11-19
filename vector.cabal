@@ -34,8 +34,9 @@ Extra-Source-Files:
       tests/Setup.hs
       tests/Main.hs
       tests/Boilerplater.hs
-      tests/Properties.hs
       tests/Utilities.hs
+      tests/Tests/Stream.hs
+      tests/Tests/Vector.hs
 
 Flag EnableAssertions
   Description: Enable assertions that check parameters to functions are reasonable.
