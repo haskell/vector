@@ -6,7 +6,7 @@ Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
 Maintainer:     Roman Leshchinskiy <rl@cse.unsw.edu.au>
 Copyright:      (c) Roman Leshchinskiy 2008-2009
 Homepage:       http://darcs.haskell.org/vector
-Category:       Data Structures
+Category:       Data, Data Structures
 Synopsis:       Efficient Arrays
 Description:
         .
