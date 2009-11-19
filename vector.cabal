@@ -10,8 +10,8 @@ Category:       Data, Data Structures
 Synopsis:       Efficient Arrays
 Description:
         .
-        An efficient but highly experimental implementation of Int-indexed
-        arrays with a powerful loop fusion framework.
+        An efficient implementation of Int-indexed arrays with a powerful loop
+        fusion framework.
         .
         It is structured as follows:
         .
