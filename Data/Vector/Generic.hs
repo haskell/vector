@@ -159,9 +159,11 @@ stream v = v `seq` (Stream.unfoldr get 0 `Stream.sized` Exact n)
   where
     n = length v
 
+    -- NOTE: the False case comes first in Core so making it the recursive one
+    -- makes the code easier to read
     {-# INLINE get #-}
-    get i | i < n     = case unsafeIndexM v i of Box x -> Just (x, i+1)
-          | otherwise = Nothing
+    get i | i >= n    = Nothing
+          | otherwise = case unsafeIndexM v i of Box x -> Just (x, i+1)
 
 -- | Create a vector from a 'Stream'
 unstream :: Vector v a => Stream a -> v a
