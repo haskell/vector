@@ -42,7 +42,7 @@ Flag EnableAssertions
   Description: Enable assertions that check parameters to functions are reasonable.
                These will impose a moderate performance cost on users of the library,
                with the benefit that you get reasonable errors rather than segmentation faults!
-  Default:     False
+  Default:     True
 
 Library
   Extensions: CPP
