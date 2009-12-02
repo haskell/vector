@@ -86,6 +86,9 @@ import Prelude hiding ( length, null,
                         enumFromTo, enumFromThenTo )
 import qualified Prelude
 
+import Data.Int  ( Int8, Int16, Int32, Int64 )
+import Data.Word ( Word8, Word16, Word32, Word, Word64 )
+
 -- | Result of taking a single step in a stream
 data Step s a = Yield a s  -- ^ a new element and a new seed
               | Skip    s  -- ^ just a new seed
@@ -950,11 +953,11 @@ enumFromTo :: (Enum a, Monad m) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo #-}
 enumFromTo x y = fromList [x .. y]
 
-enumFromTo_IntLike :: (Enum a, Ord a, Monad m) => a -> a -> Stream m a
-{-# INLINE_STREAM enumFromTo_IntLike #-}
-enumFromTo_IntLike x y = Stream step x (Exact n)
+enumFromTo_small :: (Enum a, Ord a, Monad m) => a -> a -> Stream m a
+{-# INLINE_STREAM enumFromTo_small #-}
+enumFromTo_small x y = Stream step x (Exact n)
   where
-    n = max (fromEnum y - fromEnum x) 0
+    n = max (fromEnum y - fromEnum x + 1) 0
 
     {-# INLINE_INNER step #-}
     step x | x <= y    = return $ Yield x (succ x)
@@ -963,9 +966,57 @@ enumFromTo_IntLike x y = Stream step x (Exact n)
 {-# RULES
 
 "enumFromTo<Int> [Stream]"
-  enumFromTo = enumFromTo_IntLike :: Monad m => Int -> Int -> Stream m Int
+  enumFromTo = enumFromTo_small :: Monad m => Int -> Int -> Stream m Int
+
+"enumFromTo<Char> [Stream]"
+  enumFromTo = enumFromTo_small :: Monad m => Char -> Char -> Stream m Char
+
+"enumFromTo<Int8> [Stream]"
+  enumFromTo = enumFromTo_small :: Monad m => Int8 -> Int8 -> Stream m Int8
+
+"enumFromTo<Int16> [Stream]"
+  enumFromTo = enumFromTo_small :: Monad m => Int16 -> Int16 -> Stream m Int16
+
+"enumFromTo<Int32> [Stream]"
+  enumFromTo = enumFromTo_small :: Monad m => Int32 -> Int32 -> Stream m Int32
+
+"enumFromTo<Word8> [Stream]"
+  enumFromTo = enumFromTo_small :: Monad m => Word8 -> Word8 -> Stream m Word8
+
+"enumFromTo<Word16> [Stream]"
+  enumFromTo = enumFromTo_small :: Monad m => Word16 -> Word16 -> Stream m Word16
 
   #-}
+
+enumFromTo_big :: (Enum a, Integral a, Monad m) => a -> a -> Stream m a
+{-# INLINE_STREAM enumFromTo_big #-}
+enumFromTo_big x y = Stream step x (Exact n)
+  where
+    n | x > y = 0
+      | y - x < fromIntegral (maxBound :: Int) = fromIntegral (y-x+1)
+      | otherwise = error $ "vector.enumFromTo_big: Array too large"
+
+    {-# INLINE_INNER step #-}
+    step x | x <= y    = return $ Yield x (succ x)
+           | otherwise = return $ Done
+
+{-# RULES
+
+
+"enumFromTo<Int64> [Stream]"
+  enumFromTo = enumFromTo_big :: Monad m => Int64 -> Int64 -> Stream m Int64
+
+"enumFromTo<Word32> [Stream]"
+  enumFromTo = enumFromTo_big :: Monad m => Word32 -> Word32 -> Stream m Word32
+
+"enumFromTo<Word64> [Stream]"
+  enumFromTo = enumFromTo_big :: Monad m => Word64 -> Word64 -> Stream m Word64
+
+"enumFromTo<Integer> [Stream]"
+  enumFromTo = enumFromTo_big :: Monad m => Integer -> Integer -> Stream m Integer
+
+  #-}
+
 
 
 -- Conversions
