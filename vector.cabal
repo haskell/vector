@@ -56,12 +56,12 @@ Flag InternalChecks
 Library
   Extensions: CPP
   Exposed-Modules:
+        Data.Vector.Internal.Check
+
         Data.Vector.Fusion.Util
         Data.Vector.Fusion.Stream.Size
         Data.Vector.Fusion.Stream.Monadic
         Data.Vector.Fusion.Stream
-
-        Data.Vector.Internal.Check
 
         Data.Vector.Generic.Mutable
         Data.Vector.Generic.New
