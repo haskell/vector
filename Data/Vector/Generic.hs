@@ -268,7 +268,8 @@ v ! i = BOUNDS_CHECK(checkIndex) "(!)" i (length v)
 -- | Unsafe indexing without bounds checking
 unsafeIndex :: Vector v a => v a -> Int -> a
 {-# INLINE_STREAM unsafeIndex #-}
-unsafeIndex v i = unId (basicUnsafeIndexM v i)
+unsafeIndex v i = UNSAFE_CHECK(checkIndex) "unsafeIndex" i (length v)
+                $ unId (basicUnsafeIndexM v i)
 
 -- | First element
 head :: Vector v a => v a -> a
@@ -306,7 +307,8 @@ indexM v i = BOUNDS_CHECK(checkIndex) "indexM" i (length v)
 -- | Unsafe monadic indexing without bounds checks
 unsafeIndexM :: (Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_STREAM unsafeIndexM #-}
-unsafeIndexM v i = basicUnsafeIndexM v i
+unsafeIndexM v i = UNSAFE_CHECK(checkIndex) "unsafeIndexM" i (length v)
+                 $ basicUnsafeIndexM v i
 
 headM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_STREAM headM #-}
@@ -349,7 +351,8 @@ unsafeSlice :: Vector v a => v a -> Int   -- ^ starting index
                                  -> Int   -- ^ length
                                  -> v a
 {-# INLINE_STREAM unsafeSlice #-}
-unsafeSlice v i n = basicUnsafeSlice v i n
+unsafeSlice v i n = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
+                  $ basicUnsafeSlice v i n
 
 -- | Yield all but the last element without copying.
 init :: Vector v a => v a -> v a
