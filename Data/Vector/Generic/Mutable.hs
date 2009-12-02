@@ -11,8 +11,6 @@
 -- Generic interface to mutable vectors
 --
 
-#include "vector.h"
-
 module Data.Vector.Generic.Mutable (
   MVectorPure(..), MVector(..),
 
@@ -33,6 +31,8 @@ import GHC.Float (
   )
 
 import Prelude hiding ( length, reverse, map, read )
+
+#include "vector.h"
 
 gROWTH_FACTOR :: Double
 gROWTH_FACTOR = 1.5

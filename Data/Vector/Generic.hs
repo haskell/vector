@@ -12,8 +12,6 @@
 -- Generic interface to pure vectors
 --
 
-#include "vector.h"
-
 module Data.Vector.Generic (
   -- * Immutable vectors
   Vector(..),
@@ -102,6 +100,8 @@ import Prelude hiding ( length, null,
                         and, or, sum, product, maximum, minimum,
                         scanl, scanl1,
                         enumFromTo, enumFromThenTo )
+
+#include "vector.h"
 
 -- | Class of immutable vectors.
 --

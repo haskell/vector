@@ -12,8 +12,6 @@
 -- Purely functional interface to initialisation of mutable vectors
 --
 
-#include "vector.h"
-
 module Data.Vector.Generic.New (
   New(..), run, unstream, transform, accum, update, reverse,
   slice, init, tail, take, drop,
@@ -28,6 +26,8 @@ import qualified Data.Vector.Fusion.Stream as Stream
 
 import Control.Monad  ( liftM )
 import Prelude hiding ( init, tail, take, drop, reverse, map, filter )
+
+#include "vector.h"
 
 newtype New a = New (forall m mv. MVector mv m a => m (mv a))
 

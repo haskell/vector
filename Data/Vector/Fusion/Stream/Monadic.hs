@@ -12,8 +12,6 @@
 -- Monadic streams
 --
 
-#include "vector.h"
-
 module Data.Vector.Fusion.Stream.Monadic (
   Stream(..), Step(..),
 
@@ -88,6 +86,8 @@ import qualified Prelude
 
 import Data.Int  ( Int8, Int16, Int32, Int64 )
 import Data.Word ( Word8, Word16, Word32, Word, Word64 )
+
+#include "vector.h"
 
 -- | Result of taking a single step in a stream
 data Step s a = Yield a s  -- ^ a new element and a new seed

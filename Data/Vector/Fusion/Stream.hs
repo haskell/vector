@@ -12,8 +12,6 @@
 -- Streams for stream fusion
 --
 
-#include "vector.h"
-
 module Data.Vector.Fusion.Stream (
   -- * Types
   Step(..), Stream, MStream,
@@ -91,6 +89,8 @@ import Prelude hiding ( length, null,
                         scanl, scanl1,
                         enumFromTo, enumFromThenTo,
                         mapM_ )
+
+#include "vector.h"
 
 -- | The type of pure streams 
 type Stream = M.Stream Id
