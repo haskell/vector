@@ -399,6 +399,14 @@ zipWithM f (Stream stepa sa na) (Stream stepb sb nb)
                                  Skip    sb' -> return $ Skip (sa, sb', Just x)
                                  Done        -> return $ Done
 
+-- FIXME: This might expose an opportunity for inplace execution.
+{-# RULES
+
+"zipWithM xs xs [Vector.Stream]" forall f xs.
+  zipWithM f xs xs = mapM (\x -> f x x) xs
+
+  #-}
+
 -- | Zip three 'Stream's with the given function
 zipWith3 :: Monad m => (a -> b -> c -> d) -> Stream m a -> Stream m b -> Stream m c -> Stream m d
 {-# INLINE zipWith3 #-}
