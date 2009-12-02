@@ -63,6 +63,9 @@ module Data.Vector.Fusion.Stream (
   scanl, scanl',
   scanl1, scanl1',
 
+  -- * Enumerations
+  enumFromTo,
+
   -- * Conversions
   toList, fromList, liftStream,
 
@@ -86,6 +89,7 @@ import Prelude hiding ( length, null,
                         foldl, foldl1, foldr, foldr1,
                         and, or,
                         scanl, scanl1,
+                        enumFromTo, enumFromThenTo,
                         mapM_ )
 
 -- | The type of pure streams 
@@ -482,6 +486,12 @@ fold1M' :: Monad m => (a -> a -> m a) -> Stream a -> m a
 {-# INLINE fold1M' #-}
 fold1M' m = M.fold1M' m . liftStream
 
+-- Enumerations
+-- ------------
+
+enumFromTo :: Enum a => a -> a -> Stream a
+{-# INLINE enumFromTo #-}
+enumFromTo = M.enumFromTo
 
 -- Conversions
 -- -----------

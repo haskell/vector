@@ -61,6 +61,9 @@ module Data.Vector.Fusion.Stream.Monadic (
   scanl, scanlM, scanl', scanlM',
   scanl1, scanl1M, scanl1', scanl1M',
 
+  -- * Enumerations
+  enumFromTo,
+
   -- * Conversions
   toList, fromList
 ) where
@@ -79,7 +82,8 @@ import Prelude hiding ( length, null,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         and, or,
-                        scanl, scanl1 )
+                        scanl, scanl1,
+                        enumFromTo, enumFromThenTo )
 import qualified Prelude
 
 -- | Result of taking a single step in a stream
@@ -937,6 +941,32 @@ scanl1M' f (Stream step s sz) = Stream step' (s, Nothing) sz
                                             z `seq` return (Yield z (s', Just z))
                             Skip    s' -> return $ Skip (s', Just x)
                             Done       -> return Done
+
+-- Enumerations
+-- ------------
+
+-- | Enumerate values from @x@ to @y@
+enumFromTo :: (Enum a, Monad m) => a -> a -> Stream m a
+{-# INLINE_STREAM enumFromTo #-}
+enumFromTo x y = fromList [x .. y]
+
+enumFromTo_IntLike :: (Enum a, Ord a, Monad m) => a -> a -> Stream m a
+{-# INLINE_STREAM enumFromTo_IntLike #-}
+enumFromTo_IntLike x y = Stream step x (Exact n)
+  where
+    n = max (fromEnum y - fromEnum x) 0
+
+    {-# INLINE_INNER step #-}
+    step x | x <= y    = return $ Yield x (succ x)
+           | otherwise = return $ Done
+
+{-# RULES
+
+"enumFromTo<Int> [Stream]"
+  enumFromTo = enumFromTo_IntLike :: Monad m => Int -> Int -> Stream m Int
+
+  #-}
+
 
 -- Conversions
 -- -----------

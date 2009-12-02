@@ -630,7 +630,7 @@ scanl1' f = unstream . inplace (MStream.scanl1' f) . stream
 
 enumFromTo :: (Vector v a, Enum a) => a -> a -> v a
 {-# INLINE enumFromTo #-}
-enumFromTo from to = fromList [from .. to]
+enumFromTo x y = unstream (Stream.enumFromTo x y)
 
 enumFromThenTo :: (Vector v a, Enum a) => a -> a -> a -> v a
 {-# INLINE enumFromThenTo #-}
