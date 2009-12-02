@@ -115,11 +115,6 @@ class (Monad m, MVectorPure v a) => MVector v m a where
     where
       n = length v
 
--- | Test whether the index is valid for the vector
-inBounds :: MVectorPure v a => v a -> Int -> Bool
-{-# INLINE inBounds #-}
-inBounds v i = i >= 0 && i < length v
-
 -- | Yield a part of the mutable vector without copying it. Safer version of
 -- 'unsafeSlice'.
 slice :: MVectorPure v a => v a -> Int -> Int -> v a
