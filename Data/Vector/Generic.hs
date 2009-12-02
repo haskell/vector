@@ -111,7 +111,7 @@ class Vector v a where
   basicLength      :: v a -> Int
 
   -- | Yield a part of the vector without copying it. No range checks!
-  unsafeSlice  :: v a -> Int -> Int -> v a
+  basicUnsafeSlice  :: v a -> Int -> Int -> v a
 
   -- | Yield the element at the given position in a monad. The monad allows us
   -- to be strict in the vector if we want. Suppose we had
@@ -126,15 +126,15 @@ class Vector v a where
   -- would retain a reference to the original vector in each element we write.
   -- This is not what we want!
   --
-  -- With 'unsafeIndexM', we can do
+  -- With 'basicUnsafeIndexM', we can do
   --
-  -- > copy mv v ... = ... case unsafeIndexM v i of
+  -- > copy mv v ... = ... case basicUnsafeIndexM v i of
   -- >                       Box x -> unsafeWrite mv i x ...
   --
   -- which does not have this problem because indexing (but not the returned
   -- element!) is evaluated immediately.
   --
-  unsafeIndexM  :: Monad m => v a -> Int -> m a
+  basicUnsafeIndexM  :: Monad m => v a -> Int -> m a
 
 -- Fusion
 -- ------
@@ -163,7 +163,7 @@ stream v = v `seq` (Stream.unfoldr get 0 `Stream.sized` Exact n)
     -- makes the code easier to read
     {-# INLINE get #-}
     get i | i >= n    = Nothing
-          | otherwise = case unsafeIndexM v i of Box x -> Just (x, i+1)
+          | otherwise = case basicUnsafeIndexM v i of Box x -> Just (x, i+1)
 
 -- | Create a vector from a 'Stream'
 unstream :: Vector v a => Stream a -> v a
@@ -263,7 +263,7 @@ copy = unstream . stream
 (!) :: Vector v a => v a -> Int -> a
 {-# INLINE_STREAM (!) #-}
 v ! i = assert (i >= 0 && i < length v)
-      $ unId (unsafeIndexM v i)
+      $ unId (basicUnsafeIndexM v i)
 
 -- | First element
 head :: Vector v a => v a -> a
@@ -293,7 +293,7 @@ last v = v ! (length v - 1)
 indexM :: (Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_STREAM indexM #-}
 indexM v i = assert (i >= 0 && i < length v)
-           $ unsafeIndexM v i
+           $ basicUnsafeIndexM v i
 
 headM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_STREAM headM #-}
@@ -323,13 +323,13 @@ lastM v = indexM v (length v - 1)
 -- FIXME: slicing doesn't work with the inplace stuff at the moment
 
 -- | Yield a part of the vector without copying it. Safer version of
--- 'unsafeSlice'.
+-- 'basicUnsafeSlice'.
 slice :: Vector v a => v a -> Int   -- ^ starting index
                             -> Int   -- ^ length
                             -> v a
 {-# INLINE_STREAM slice #-}
 slice v i n = assert (i >= 0 && n >= 0  && i+n <= length v)
-            $ unsafeSlice v i n
+            $ basicUnsafeSlice v i n
 
 -- | Yield all but the last element without copying.
 init :: Vector v a => v a -> v a

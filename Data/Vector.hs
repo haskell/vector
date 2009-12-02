@@ -101,11 +101,11 @@ instance G.Vector Vector a where
   {-# INLINE basicLength #-}
   basicLength (Vector _ n _) = n
 
-  {-# INLINE unsafeSlice #-}
-  unsafeSlice (Vector i _ arr) j n = Vector (i+j) n arr
+  {-# INLINE basicUnsafeSlice #-}
+  basicUnsafeSlice (Vector i _ arr) j n = Vector (i+j) n arr
 
-  {-# INLINE unsafeIndexM #-}
-  unsafeIndexM (Vector i _ arr) j = indexArrayM arr (i+j)
+  {-# INLINE basicUnsafeIndexM #-}
+  basicUnsafeIndexM (Vector i _ arr) j = indexArrayM arr (i+j)
 
 instance Eq a => Eq (Vector a) where
   {-# INLINE (==) #-}
@@ -201,7 +201,7 @@ lastM = G.lastM
 -- ---------
 
 -- | Yield a part of the vector without copying it. Safer version of
--- 'unsafeSlice'.
+-- 'basicUnsafeSlice'.
 slice :: Vector a -> Int   -- ^ starting index
                   -> Int   -- ^ length
                   -> Vector a

@@ -103,11 +103,11 @@ instance Prim a => G.Vector Vector a where
   {-# INLINE basicLength #-}
   basicLength (Vector _ n _) = n
 
-  {-# INLINE unsafeSlice #-}
-  unsafeSlice (Vector i _ arr) j n = Vector (i+j) n arr
+  {-# INLINE basicUnsafeSlice #-}
+  basicUnsafeSlice (Vector i _ arr) j n = Vector (i+j) n arr
 
-  {-# INLINE unsafeIndexM #-}
-  unsafeIndexM (Vector i _ arr) j = return (indexByteArray arr (i+j))
+  {-# INLINE basicUnsafeIndexM #-}
+  basicUnsafeIndexM (Vector i _ arr) j = return (indexByteArray arr (i+j))
 
 instance (Prim a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
@@ -189,7 +189,7 @@ last = G.last
 -- ---------
 
 -- | Yield a part of the vector without copying it. Safer version of
--- 'unsafeSlice'.
+-- 'basicUnsafeSlice'.
 slice :: Prim a => Vector a -> Int   -- ^ starting index
                              -> Int   -- ^ length
                              -> Vector a

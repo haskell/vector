@@ -107,13 +107,13 @@ instance Storable a => G.Vector Vector a where
   {-# INLINE basicLength #-}
   basicLength (Vector _ n _) = n
 
-  {-# INLINE unsafeSlice #-}
-  unsafeSlice (Vector i _ p) j n = Vector (i+j) n p
+  {-# INLINE basicUnsafeSlice #-}
+  basicUnsafeSlice (Vector i _ p) j n = Vector (i+j) n p
 
-  {-# INLINE unsafeIndexM #-}
-  unsafeIndexM (Vector i _ p) j = return
-                                . inlinePerformIO
-                                $ withForeignPtr p (`peekElemOff` (i+j))
+  {-# INLINE basicUnsafeIndexM #-}
+  basicUnsafeIndexM (Vector i _ p) j = return
+                                     . inlinePerformIO
+                                     $ withForeignPtr p (`peekElemOff` (i+j))
 
 instance (Storable a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
@@ -195,10 +195,10 @@ last = G.last
 -- ---------
 
 -- | Yield a part of the vector without copying it. Safer version of
--- 'unsafeSlice'.
+-- 'basicUnsafeSlice'.
 slice :: Storable a => Vector a -> Int   -- ^ starting index
-                             -> Int   -- ^ length
-                             -> Vector a
+                                -> Int   -- ^ length
+                                -> Vector a
 {-# INLINE slice #-}
 slice = G.slice
 
