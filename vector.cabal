@@ -48,6 +48,11 @@ Flag BoundsChecks
   Description: Enables bounds checking
   Default: True
 
+Flag UnsafeChecks
+  Description: Enables bounds checking in unsafe operations at the cost of a
+               significant performance penalty
+  Description: False
+
 Flag InternalChecks
   Description: Enables internal consistency checks at the cost of a
                significant performance penalty
@@ -106,6 +111,9 @@ Library
 
   if flag(BoundsChecks)
     cpp-options: -DVECTOR_BOUNDS_CHECKS
+
+  if flag(UnsafeChecks)
+    cpp-options: -DVECTOR_UNSAFE_CHECKS
 
   if flag(InternalChecks)
     cpp-options: -DVECTOR_INTERNAL_CHECKS

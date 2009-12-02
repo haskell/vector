@@ -1,5 +1,5 @@
 module Data.Vector.Internal.Check (
-  Checks(..), doBoundsChecks, doInternalChecks, doChecks,
+  Checks(..), doChecks,
 
   error, check, assert, checkIndex, checkLength, checkSlice
 ) where
@@ -7,14 +7,7 @@ module Data.Vector.Internal.Check (
 import Prelude hiding( error )
 import qualified Prelude as P
 
-data Checks = Bounds | Internal deriving( Eq )
-
-doInternalChecks :: Bool
-#ifdef VECTOR_INTERNAL_CHECKS
-doInternalChecks = True
-#else
-doInternalChecks = False
-#endif
+data Checks = Bounds | Unsafe | Internal deriving( Eq )
 
 doBoundsChecks :: Bool
 #ifdef VECTOR_BOUNDS_CHECKS
@@ -23,9 +16,25 @@ doBoundsChecks = True
 doBoundsChecks = False
 #endif
 
+doUnsafeChecks :: Bool
+#ifdef VECTOR_UNSAFE_CHECKS
+doUnsafeChecks = True
+#else
+doUnsafeChecks = False
+#endif
+
+doInternalChecks :: Bool
+#ifdef VECTOR_INTERNAL_CHECKS
+doInternalChecks = True
+#else
+doInternalChecks = False
+#endif
+
+
 doChecks :: Checks -> Bool
 {-# INLINE doChecks #-}
 doChecks Bounds   = doBoundsChecks
+doChecks Unsafe   = doUnsafeChecks
 doChecks Internal = doInternalChecks
 
 error :: String -> Int -> Checks -> String -> String -> a

@@ -22,6 +22,11 @@ this_module = __FILE__
 #define BOUNDS_ENSURE (ENSURE Ck.Bounds)
 #define BOUNDS_CHECK(f) (CHECK(f) Ck.Bounds)
 
+#define UNSAFE_ERROR  (ERROR Ck.Unsafe)
+#define UNSAFE_ASSERT (ASSERT Ck.Unsafe)
+#define UNSAFE_ENSURE (ENSURE Ck.Unsafe)
+#define UNSAFE_CHECK(f) (CHECK(f) Ck.Unsafe)
+
 #define INTERNAL_ERROR  (ERROR Ck.Internal)
 #define INTERNAL_ASSERT (ASSERT Ck.Internal)
 #define INTERNAL_ENSURE (ENSURE Ck.Internal)
