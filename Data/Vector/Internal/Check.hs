@@ -1,7 +1,8 @@
 module Data.Vector.Internal.Check (
   Checks(..), doChecks,
 
-  error, check, assert, checkIndex, checkLength, checkSlice
+  error, emptyStream,
+  check, assert, checkIndex, checkLength, checkSlice
 ) where
 
 import Prelude hiding( error )
@@ -45,6 +46,11 @@ error file line kind loc msg
                ,"*** Please submit a bug report"]++)
          else id) $
       [ file ++ ":" ++ show line ++ " (" ++ loc ++ "): " ++ msg ]
+
+emptyStream :: String -> Int -> Checks -> String -> a
+{-# NOINLINE emptyStream #-}
+emptyStream file line kind loc
+  = error file line kind loc "empty stream"
 
 check :: String -> Int -> Checks -> String -> String -> Bool -> a -> a
 {-# INLINE check #-}

@@ -190,7 +190,7 @@ head (Stream step s _) = head_loop s
                     case r of
                       Yield x _  -> return x
                       Skip    s' -> head_loop s'
-                      Done       -> errorEmptyStream "head"
+                      Done       -> BOUNDS_ERROR(emptyStream) "head"
 
 -- | Last element of the 'Stream' or error if empty
 last :: Monad m => Stream m a -> m a
@@ -202,7 +202,7 @@ last (Stream step s _) = last_loop0 s
                      case r of
                        Yield x s' -> last_loop1 x s'
                        Skip    s' -> last_loop0   s'
-                       Done       -> errorEmptyStream "last"
+                       Done       -> BOUNDS_ERROR(emptyStream) "last"
 
     last_loop1 x s = do
                        r <- step s
@@ -214,7 +214,7 @@ last (Stream step s _) = last_loop0 s
 -- | Element at the given position
 (!!) :: Monad m => Stream m a -> Int -> m a
 {-# INLINE (!!) #-}
-Stream step s _ !! i | i < 0     = errorNegativeIndex "!!"
+Stream step s _ !! i | i < 0     = BOUNDS_ERROR(error) "!!" "negative index"
                      | otherwise = loop s i
   where
     loop s i = i `seq`
@@ -224,7 +224,7 @@ Stream step s _ !! i | i < 0     = errorNegativeIndex "!!"
                    Yield x s' | i == 0    -> return x
                               | otherwise -> loop s' (i-1)
                    Skip    s'             -> loop s' i
-                   Done                   -> errorIndexOutOfRange "!!"
+                   Done                   -> BOUNDS_ERROR(emptyStream) "!!"
 
 -- Substreams
 -- ----------
@@ -246,7 +246,7 @@ init (Stream step s sz) = Stream step' (Nothing, s) (sz - 1)
                            case r of
                              Yield x s' -> Skip (Just x,  s')
                              Skip    s' -> Skip (Nothing, s')
-                             Done       -> errorEmptyStream "init"
+                             Done       -> BOUNDS_ERROR(emptyStream) "init"
                          ) (step s)
 
     step' (Just x,  s) = liftM (\r -> 
@@ -266,7 +266,7 @@ tail (Stream step s sz) = Stream step' (Left s) (sz - 1)
                         case r of
                           Yield x s' -> Skip (Right s')
                           Skip    s' -> Skip (Left  s')
-                          Done       -> errorEmptyStream "tail"
+                          Done       -> BOUNDS_ERROR(emptyStream) "tail"
                       ) (step s)
 
     step' (Right s) = liftM (\r ->
@@ -620,7 +620,7 @@ foldl1M f (Stream step s sz) = foldl1M_go s
                      case r of
                        Yield x s' -> foldlM f x (Stream step s' (sz - 1))
                        Skip    s' -> foldl1M_go s'
-                       Done       -> errorEmptyStream "foldl1M"
+                       Done       -> BOUNDS_ERROR(emptyStream) "foldl1M"
 
 -- | Same as 'foldl1M'
 fold1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
@@ -666,7 +666,7 @@ foldl1M' f (Stream step s sz) = foldl1M'_go s
                       case r of
                         Yield x s' -> foldlM' f x (Stream step s' (sz - 1))
                         Skip    s' -> foldl1M'_go s'
-                        Done       -> errorEmptyStream "foldl1M'"
+                        Done       -> BOUNDS_ERROR(emptyStream) "foldl1M'"
 
 -- | Same as 'foldl1M''
 fold1M' :: Monad m => (a -> a -> m a) -> Stream m a -> m a
@@ -705,7 +705,7 @@ foldr1M f (Stream step s _) = foldr1M_go0 s
                       case r of
                         Yield x s' -> foldr1M_go1 x s'
                         Skip    s' -> foldr1M_go0   s'
-                        Done       -> errorEmptyStream "foldr1M"
+                        Done       -> BOUNDS_ERROR(emptyStream) "foldr1M"
 
     foldr1M_go1 x s = do
                         r <- step s
@@ -905,7 +905,7 @@ scanl1M f (Stream step s sz) = Stream step' (s, Nothing) sz
                            case r of
                              Yield x s' -> return $ Yield x (s', Just x)
                              Skip    s' -> return $ Skip (s', Nothing)
-                             Done       -> errorEmptyStream "scanl1M"
+                             Done       -> BOUNDS_ERROR(emptyStream) "scanl1M"
 
     step' (s, Just x) = do
                           r <- step s
@@ -933,7 +933,7 @@ scanl1M' f (Stream step s sz) = Stream step' (s, Nothing) sz
                            case r of
                              Yield x s' -> x `seq` return (Yield x (s', Just x))
                              Skip    s' -> return $ Skip (s', Nothing)
-                             Done       -> errorEmptyStream "scanl1M"
+                             Done       -> BOUNDS_ERROR(emptyStream) "scanl1M"
 
     step' (s, Just x) = x `seq`
                         do
@@ -1034,18 +1034,4 @@ fromList xs = Stream step xs Unknown
   where
     step (x:xs) = return (Yield x xs)
     step []     = return Done
-
-
-streamError :: String -> String -> a
-streamError fn msg = error $ "Data.Vector.Fusion.Stream.Monadic."
-                             Prelude.++ fn Prelude.++ ": " Prelude.++ msg
-
-errorEmptyStream :: String -> a
-errorEmptyStream fn = streamError fn "empty stream"
-
-errorNegativeIndex :: String -> a
-errorNegativeIndex fn = streamError fn "negative index"
-
-errorIndexOutOfRange :: String -> a
-errorIndexOutOfRange fn = streamError fn "index out of range"
 
