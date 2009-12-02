@@ -948,6 +948,11 @@ scanl1M' f (Stream step s sz) = Stream step' (s, Nothing) sz
 -- Enumerations
 -- ------------
 
+-- FIXME: The Enum class is broken for this, there just doesn't seem to be a
+-- way to implement this generically. We have to either specialise (which
+-- doesn't help in polymorphic loops) or define a new Enum-like class with a
+-- proper interface.
+
 -- | Enumerate values from @x@ to @y@
 enumFromTo :: (Enum a, Monad m) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo #-}
