@@ -177,18 +177,21 @@ mstream v = v `seq` (MStream.unfoldrM get 0 `MStream.sized` Exact n)
                            return $ Just (x, i+1)
           | otherwise = return $ Nothing
 
-munstream :: MVector v m a => v a -> MStream m a -> m (v a)
-{-# INLINE munstream #-}
-munstream v s = v `seq` do
-                          n' <- MStream.foldM put 0 s
-                          return $ slice v 0 n'
+internal_munstream :: MVector v m a => v a -> MStream m a -> m (v a)
+{-# INLINE internal_munstream #-}
+internal_munstream v s = v `seq` do
+                                   n' <- MStream.foldM put 0 s
+                                   return $ slice v 0 n'
   where
     {-# INLINE_INNER put #-}
-    put i x = do { write v i x; return (i+1) }
+    put i x = do
+                INTERNAL_CHECK(checkIndex) "internal_munstream" i (length v)
+                  $ unsafeWrite v i x
+                return (i+1)
 
 transform :: MVector v m a => (MStream m a -> MStream m a) -> v a -> m (v a)
 {-# INLINE_STREAM transform #-}
-transform f v = munstream v (f (mstream v))
+transform f v = internal_munstream v (f (mstream v))
 
 -- | Create a new mutable vector and fill it with elements from the 'Stream'.
 -- The vector will grow logarithmically if the 'Size' hint of the 'Stream' is
@@ -204,9 +207,12 @@ unstreamMax :: MVector v m a => Stream a -> Int -> m (v a)
 unstreamMax s n
   = do
       v  <- new n
-      let put i x = do { write v i x; return (i+1) }
+      let put i x = do
+                       INTERNAL_CHECK(checkIndex) "unstreamMax" i n
+                         $ unsafeWrite v i x
+                       return (i+1)
       n' <- Stream.foldM' put 0 s
-      return $ slice v 0 n'
+      return $ INTERNAL_CHECK(checkSlice) "unstreamMax" 0 n' n $ slice v 0 n'
 
 unstreamUnknown :: MVector v m a => Stream a -> m (v a)
 {-# INLINE unstreamUnknown #-}
@@ -221,13 +227,15 @@ unstreamUnknown s
     -- is inlined. This is bad because with the join point, v isn't getting
     -- unboxed.
     {-# INLINE_INNER put #-}
-    put (v, i) x | i < length v = do
-                                    unsafeWrite v i x
-                                    return (v, i+1)
-                 | otherwise    = do
-                                    v' <- enlarge v
-                                    unsafeWrite v' i x
-                                    return (v', i+1)
+    put (v, i) x
+      | i < length v = do
+                         unsafeWrite v i x
+                         return (v, i+1)
+      | otherwise    = do
+                         v' <- enlarge v
+                         INTERNAL_CHECK(checkIndex) "unstreamMax" i (length v')
+                           $ unsafeWrite v' i x
+                         return (v', i+1)
 
     {-# INLINE_INNER enlarge #-}
     enlarge v = unsafeGrow v
