@@ -84,11 +84,14 @@ tail m = apply (\v -> MVector.slice v 1 (MVector.length v - 1)) m
 
 take :: Int -> New a -> New a
 {-# INLINE_STREAM take #-}
-take n m = apply (\v -> MVector.slice v 0 (min n (MVector.length v))) m
+take n m = apply (\v -> MVector.unsafeSlice v 0
+                                (min (max 0 n) (MVector.length v))) m
 
 drop :: Int -> New a -> New a
 {-# INLINE_STREAM drop #-}
-drop n m = apply (\v -> MVector.slice v n (max 0 (MVector.length v - n))) m
+drop n m = apply (\v -> MVector.unsafeSlice v
+                                (min (max 0 n) (MVector.length v))
+                                (max 0 (MVector.length v - n))) m
 
 {-# RULES
 
