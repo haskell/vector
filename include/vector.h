@@ -4,18 +4,14 @@
 #define INLINE_STREAM INLINE PHASE_STREAM
 #define INLINE_INNER  INLINE PHASE_INNER
 
-
 #ifndef NOT_VECTOR_MODULE
 import qualified Data.Vector.Internal.Check as Ck
-
-this_module :: String
-this_module = __FILE__
 #endif
 
-#define ERROR(f)  (Ck.f this_module __LINE__)
-#define ASSERT (Ck.assert this_module __LINE__)
-#define ENSURE (Ck.f this_module __LINE__)
-#define CHECK(f) (Ck.f this_module __LINE__)
+#define ERROR(f)  (Ck.f __FILE__ __LINE__)
+#define ASSERT (Ck.assert __FILE__ __LINE__)
+#define ENSURE (Ck.f __FILE__ __LINE__)
+#define CHECK(f) (Ck.f __FILE__ __LINE__)
 
 #define BOUNDS_ERROR(f) (ERROR(f) Ck.Bounds)
 #define BOUNDS_ASSERT (ASSERT Ck.Bounds)
