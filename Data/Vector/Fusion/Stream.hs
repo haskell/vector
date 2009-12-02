@@ -12,7 +12,7 @@
 -- Streams for stream fusion
 --
 
-#include "phases.h"
+#include "vector.h"
 
 module Data.Vector.Fusion.Stream (
   -- * Types

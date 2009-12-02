@@ -12,7 +12,7 @@
 -- Monadic streams
 --
 
-#include "phases.h"
+#include "vector.h"
 
 module Data.Vector.Fusion.Stream.Monadic (
   Stream(..), Step(..),

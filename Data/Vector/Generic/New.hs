@@ -12,7 +12,7 @@
 -- Purely functional interface to initialisation of mutable vectors
 --
 
-#include "phases.h"
+#include "vector.h"
 
 module Data.Vector.Generic.New (
   New(..), run, unstream, transform, accum, update, reverse,

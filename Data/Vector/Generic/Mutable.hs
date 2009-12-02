@@ -11,7 +11,7 @@
 -- Generic interface to mutable vectors
 --
 
-#include "phases.h"
+#include "vector.h"
 
 module Data.Vector.Generic.Mutable (
   MVectorPure(..), MVector(..),

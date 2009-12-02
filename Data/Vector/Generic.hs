@@ -12,7 +12,7 @@
 -- Generic interface to pure vectors
 --
 
-#include "phases.h"
+#include "vector.h"
 
 module Data.Vector.Generic (
   -- * Immutable vectors

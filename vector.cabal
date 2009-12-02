@@ -69,7 +69,7 @@ Library
         include
 
   Install-Includes:
-        phases.h
+        vector.h
 
   Build-Depends: base >= 2 && < 5, ghc >= 6.9, primitive
 
