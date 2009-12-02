@@ -16,7 +16,8 @@
 
 module Data.Vector.Generic.New (
   New(..), run, unstream, transform, accum, update, reverse,
-  slice, init, tail, take, drop
+  slice, init, tail, take, drop,
+  unsafeSlice
 ) where
 
 import qualified Data.Vector.Generic.Mutable as MVector
@@ -69,6 +70,10 @@ slice :: New a -> Int -> Int -> New a
 {-# INLINE_STREAM slice #-}
 slice m i n = apply (\v -> MVector.slice v i n) m
 
+unsafeSlice :: New a -> Int -> Int -> New a
+{-# INLINE_STREAM unsafeSlice #-}
+unsafeSlice m i n = apply (\v -> MVector.unsafeSlice v i n) m
+
 init :: New a -> New a
 {-# INLINE_STREAM init #-}
 init m = apply (\v -> MVector.slice v 0 (MVector.length v - 1)) m
@@ -89,6 +94,9 @@ drop n m = apply (\v -> MVector.slice v n (max 0 (MVector.length v - n))) m
 
 "slice/unstream [New]" forall s i n.
   slice (unstream s) i n = unstream (Stream.extract s i n)
+
+"unsafeSlice/unstream [New]" forall s i n.
+  unsafeSlice (unstream s) i n = unstream (Stream.extract s i n)
 
 "init/unstream [New]" forall s.
   init (unstream s) = unstream (Stream.init s)

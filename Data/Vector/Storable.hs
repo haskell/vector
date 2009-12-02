@@ -23,9 +23,11 @@ module Data.Vector.Storable (
 
   -- * Accessing individual elements
   (!), head, last,
+  unsafeIndex,
 
   -- * Subvectors
   slice, init, tail, take, drop,
+  unsafeSlice,
 
   -- * Permutations
   accum, (//), backpermute, reverse,
@@ -181,6 +183,11 @@ copy = G.copy
 {-# INLINE (!) #-}
 (!) = (G.!)
 
+-- | Unsafe indexing without bounds checks
+unsafeIndex :: Storable a => Vector a -> Int -> a
+{-# INLINE unsafeIndex #-}
+unsafeIndex = G.unsafeIndex
+
 -- | First element
 head :: Storable a => Vector a -> a
 {-# INLINE head #-}
@@ -201,6 +208,14 @@ slice :: Storable a => Vector a -> Int   -- ^ starting index
                                 -> Vector a
 {-# INLINE slice #-}
 slice = G.slice
+
+-- | Unsafely yield a part of the vector without copying it and without
+-- performing bounds checks.
+unsafeSlice :: Storable a => Vector a -> Int   -- ^ starting index
+                                      -> Int   -- ^ length
+                                      -> Vector a
+{-# INLINE unsafeSlice #-}
+unsafeSlice = G.unsafeSlice
 
 -- | Yield all but the last element without copying.
 init :: Storable a => Vector a -> Vector a

@@ -26,9 +26,11 @@ module Data.Vector.Generic (
 
   -- * Accessing individual elements
   (!), head, last, indexM, headM, lastM,
+  unsafeIndex, unsafeIndexM,
 
   -- * Subvectors
   slice, init, tail, take, drop,
+  unsafeSlice,
 
   -- * Permutations
   accum, (//), update, backpermute, reverse,
@@ -265,6 +267,11 @@ copy = unstream . stream
 v ! i = assert (i >= 0 && i < length v)
       $ unId (basicUnsafeIndexM v i)
 
+-- | Unsafe indexing without bounds checking
+unsafeIndex :: Vector v a => v a -> Int -> a
+{-# INLINE_STREAM unsafeIndex #-}
+unsafeIndex v i = unId (basicUnsafeIndexM v i)
+
 -- | First element
 head :: Vector v a => v a -> a
 {-# INLINE_STREAM head #-}
@@ -280,6 +287,9 @@ last v = v ! (length v - 1)
 "(!)/unstream [Vector]" forall v i s.
   new' v (New.unstream s) ! i = s Stream.!! i
 
+"unsafeIndex/unstream [Vector]" forall v i s.
+  unsafeIndex (new' v (New.unstream s)) i = s Stream.!! i
+
 "head/unstream [Vector]" forall v s.
   head (new' v (New.unstream s)) = Stream.head s
 
@@ -294,6 +304,11 @@ indexM :: (Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_STREAM indexM #-}
 indexM v i = assert (i >= 0 && i < length v)
            $ basicUnsafeIndexM v i
+
+-- | Unsafe monadic indexing without bounds checks
+unsafeIndexM :: (Vector v a, Monad m) => v a -> Int -> m a
+{-# INLINE_STREAM unsafeIndexM #-}
+unsafeIndexM v i = basicUnsafeIndexM v i
 
 headM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_STREAM headM #-}
@@ -322,14 +337,21 @@ lastM v = indexM v (length v - 1)
 
 -- FIXME: slicing doesn't work with the inplace stuff at the moment
 
--- | Yield a part of the vector without copying it. Safer version of
--- 'basicUnsafeSlice'.
+-- | Yield a part of the vector without copying it.
 slice :: Vector v a => v a -> Int   -- ^ starting index
-                            -> Int   -- ^ length
-                            -> v a
+                           -> Int   -- ^ length
+                           -> v a
 {-# INLINE_STREAM slice #-}
 slice v i n = assert (i >= 0 && n >= 0  && i+n <= length v)
             $ basicUnsafeSlice v i n
+
+-- | Unsafely yield a part of the vector without copying it and without
+-- performing bounds checks.
+unsafeSlice :: Vector v a => v a -> Int   -- ^ starting index
+                                 -> Int   -- ^ length
+                                 -> v a
+{-# INLINE_STREAM unsafeSlice #-}
+unsafeSlice v i n = basicUnsafeSlice v i n
 
 -- | Yield all but the last element without copying.
 init :: Vector v a => v a -> v a
@@ -358,6 +380,9 @@ drop n v = slice v (min n' len) (max 0 (len - n'))
 
 "slice/new [Vector]" forall v p i n.
   slice (new' v p) i n = new' v (New.slice p i n)
+
+"unsafeSlice/new [Vector]" forall v p i n.
+  unsafeSlice (new' v p) i n = new' v (New.unsafeSlice p i n)
 
 "init/new [Vector]" forall v p.
   init (new' v p) = new' v (New.init p)

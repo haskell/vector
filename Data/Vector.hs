@@ -23,9 +23,11 @@ module Data.Vector (
 
   -- * Accessing individual elements
   (!), head, last, indexM, headM, lastM,
+  unsafeIndex, unsafeIndexM,
 
   -- * Subvectors
   slice, init, tail, take, drop,
+  unsafeSlice,
 
   -- * Permutations
   accum, (//), update, backpermute, reverse,
@@ -173,6 +175,11 @@ copy = G.copy
 {-# INLINE (!) #-}
 (!) = (G.!)
 
+-- | Unsafe indexing without bounds checks
+unsafeIndex :: Vector a -> Int -> a
+{-# INLINE unsafeIndex #-}
+unsafeIndex = G.unsafeIndex
+
 -- | First element
 head :: Vector a -> a
 {-# INLINE head #-}
@@ -188,6 +195,11 @@ last = G.last
 indexM :: Monad m => Vector a -> Int -> m a
 {-# INLINE indexM #-}
 indexM = G.indexM
+
+-- | Unsafe monadic indexing without bounds checks
+unsafeIndexM :: Monad m => Vector a -> Int -> m a
+{-# INLINE unsafeIndexM #-}
+unsafeIndexM = G.unsafeIndexM
 
 headM :: Monad m => Vector a -> m a
 {-# INLINE headM #-}
@@ -207,6 +219,14 @@ slice :: Vector a -> Int   -- ^ starting index
                   -> Vector a
 {-# INLINE slice #-}
 slice = G.slice
+
+-- | Unsafely yield a part of the vector without copying it and without
+-- performing bounds checks.
+unsafeSlice :: Vector a -> Int   -- ^ starting index
+                        -> Int   -- ^ length
+                        -> Vector a
+{-# INLINE unsafeSlice #-}
+unsafeSlice = G.unsafeSlice
 
 -- | Yield all but the last element without copying.
 init :: Vector a -> Vector a

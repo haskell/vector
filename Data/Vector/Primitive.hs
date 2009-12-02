@@ -23,9 +23,11 @@ module Data.Vector.Primitive (
 
   -- * Accessing individual elements
   (!), head, last,
+  unsafeIndex,
 
   -- * Subvectors
   slice, init, tail, take, drop,
+  unsafeSlice,
 
   -- * Permutations
   accum, (//), backpermute, reverse,
@@ -175,6 +177,11 @@ copy = G.copy
 {-# INLINE (!) #-}
 (!) = (G.!)
 
+-- | Unsafe indexing without bounds checks
+unsafeIndex :: Prim a => Vector a -> Int -> a
+{-# INLINE unsafeIndex #-}
+unsafeIndex = G.unsafeIndex
+
 -- | First element
 head :: Prim a => Vector a -> a
 {-# INLINE head #-}
@@ -191,10 +198,18 @@ last = G.last
 -- | Yield a part of the vector without copying it. Safer version of
 -- 'basicUnsafeSlice'.
 slice :: Prim a => Vector a -> Int   -- ^ starting index
-                             -> Int   -- ^ length
-                             -> Vector a
+                            -> Int   -- ^ length
+                            -> Vector a
 {-# INLINE slice #-}
 slice = G.slice
+
+-- | Unsafely yield a part of the vector without copying it and without
+-- performing bounds checks.
+unsafeSlice :: Prim a => Vector a -> Int   -- ^ starting index
+                                  -> Int   -- ^ length
+                                  -> Vector a
+{-# INLINE unsafeSlice #-}
+unsafeSlice = G.unsafeSlice
 
 -- | Yield all but the last element without copying.
 init :: Prim a => Vector a -> Vector a
