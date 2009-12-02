@@ -99,10 +99,10 @@ instance (Show a, Storable a) => Show (Vector a) where
        . toList
 
 instance Storable a => G.Vector Vector a where
-  {-# INLINE vnew #-}
-  vnew init = unsafePerformIO (do
-                                 MVector i n p <- init
-                                 return (Vector i n p))
+  {-# INLINE basicNew #-}
+  basicNew init = unsafePerformIO (do
+                                     MVector i n p <- init
+                                     return (Vector i n p))
 
   {-# INLINE vlength #-}
   vlength (Vector _ n _) = n

@@ -94,11 +94,11 @@ instance (Show a, Prim a) => Show (Vector a) where
     show = (Prelude.++ " :: Data.Vector.Primitive.Vector") . ("fromList " Prelude.++) . show . toList
 
 instance Prim a => G.Vector Vector a where
-  {-# INLINE vnew #-}
-  vnew init = runST (do
-                       MVector i n marr <- init
-                       arr <- unsafeFreezeByteArray marr
-                       return (Vector i n arr))
+  {-# INLINE basicNew #-}
+  basicNew init = runST (do
+                           MVector i n marr <- init
+                           arr <- unsafeFreezeByteArray marr
+                           return (Vector i n arr))
 
   {-# INLINE vlength #-}
   vlength (Vector _ n _) = n

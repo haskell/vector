@@ -105,7 +105,7 @@ import Prelude hiding ( length, null,
 --
 class Vector v a where
   -- | Construct a pure vector from a monadic initialiser (not fusible!)
-  vnew         :: (forall mv m. MVector mv m a => m (mv a)) -> v a
+  basicNew     :: (forall mv m. MVector mv m a => m (mv a)) -> v a
 
   -- | Length of the vector (not fusible!)
   vlength      :: v a -> Int
@@ -150,7 +150,7 @@ new m = new' undefined m
 -- See http://hackage.haskell.org/trac/ghc/ticket/2600
 new' :: Vector v a => v a -> New a -> v a
 {-# INLINE_STREAM new' #-}
-new' _ m = vnew (New.run m)
+new' _ m = basicNew (New.run m)
 
 -- | Convert a vector to a 'Stream'
 stream :: Vector v a => v a -> Stream a
