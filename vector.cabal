@@ -45,7 +45,7 @@ Flag BoundsChecks
 Flag UnsafeChecks
   Description: Enable bounds checking in unsafe operations at the cost of a
                significant performance penalty
-  Description: False
+  Default: False
 
 Flag InternalChecks
   Description: Enable internal consistency checks at the cost of a
