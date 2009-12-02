@@ -216,18 +216,24 @@ unstreamUnknown s
       (v', n) <- Stream.foldM put (v, 0) s
       return $ slice v' 0 n
   where
+    -- NOTE: The case distinction has to be on the outside because
+    -- GHC creates a join point for the unsafeWrite even when everything
+    -- is inlined. This is bad because with the join point, v isn't getting
+    -- unboxed.
     {-# INLINE_INNER put #-}
-    put (v, i) x = do
-                     v' <- enlarge v i
-                     unsafeWrite v' i x
-                     return (v', i+1)
+    put (v, i) x | i < length v = do
+                                    unsafeWrite v i x
+                                    return (v, i+1)
+                 | otherwise    = do
+                                    v' <- enlarge v
+                                    unsafeWrite v' i x
+                                    return (v', i+1)
 
     {-# INLINE_INNER enlarge #-}
-    enlarge v i | i < length v = return v
-                | otherwise    = unsafeGrow v
-                                 . max 1
-                                 . double2Int
-                                 $ int2Double (length v) * gROWTH_FACTOR
+    enlarge v = unsafeGrow v
+              $ max 1
+              $ double2Int
+              $ int2Double (length v) * gROWTH_FACTOR
 
 accum :: MVector v m a => (a -> b -> a) -> v a -> Stream (Int, b) -> m ()
 {-# INLINE accum #-}
