@@ -98,8 +98,8 @@ instance G.Vector Vector a where
                            arr <- unsafeFreezeArray marr
                            return (Vector i n arr))
 
-  {-# INLINE vlength #-}
-  vlength (Vector _ n _) = n
+  {-# INLINE basicLength #-}
+  basicLength (Vector _ n _) = n
 
   {-# INLINE unsafeSlice #-}
   unsafeSlice (Vector i _ arr) j n = Vector (i+j) n arr

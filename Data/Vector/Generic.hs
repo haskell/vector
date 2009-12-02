@@ -108,7 +108,7 @@ class Vector v a where
   basicNew     :: (forall mv m. MVector mv m a => m (mv a)) -> v a
 
   -- | Length of the vector (not fusible!)
-  vlength      :: v a -> Int
+  basicLength      :: v a -> Int
 
   -- | Yield a part of the vector without copying it. No range checks!
   unsafeSlice  :: v a -> Int -> Int -> v a
@@ -197,7 +197,7 @@ unstream s = new (New.unstream s)
 
 length :: Vector v a => v a -> Int
 {-# INLINE_STREAM length #-}
-length v = vlength v
+length v = basicLength v
 
 {-# RULES
 
@@ -208,7 +208,7 @@ length v = vlength v
 
 null :: Vector v a => v a -> Bool
 {-# INLINE_STREAM null #-}
-null v = vlength v == 0
+null v = basicLength v == 0
 
 {-# RULES
 

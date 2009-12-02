@@ -104,8 +104,8 @@ instance Storable a => G.Vector Vector a where
                                      MVector i n p <- init
                                      return (Vector i n p))
 
-  {-# INLINE vlength #-}
-  vlength (Vector _ n _) = n
+  {-# INLINE basicLength #-}
+  basicLength (Vector _ n _) = n
 
   {-# INLINE unsafeSlice #-}
   unsafeSlice (Vector i _ p) j n = Vector (i+j) n p
