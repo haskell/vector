@@ -62,7 +62,7 @@ module Data.Vector.Fusion.Stream (
   scanl1, scanl1',
 
   -- * Enumerations
-  enumFromTo,
+  enumFromTo, enumFromThenTo,
 
   -- * Conversions
   toList, fromList, liftStream,
@@ -492,6 +492,10 @@ fold1M' m = M.fold1M' m . liftStream
 enumFromTo :: Enum a => a -> a -> Stream a
 {-# INLINE enumFromTo #-}
 enumFromTo = M.enumFromTo
+
+enumFromThenTo :: Enum a => a -> a -> a -> Stream a
+{-# INLINE enumFromThenTo #-}
+enumFromThenTo = M.enumFromThenTo
 
 -- Conversions
 -- -----------

@@ -653,7 +653,7 @@ enumFromTo x y = unstream (Stream.enumFromTo x y)
 
 enumFromThenTo :: (Vector v a, Enum a) => a -> a -> a -> v a
 {-# INLINE enumFromThenTo #-}
-enumFromThenTo from next to = fromList [from, next .. to]
+enumFromThenTo x y z = unstream (Stream.enumFromThenTo x y z)
 
 -- | Convert a vector to a list
 toList :: Vector v a => v a -> [a]
