@@ -38,12 +38,6 @@ Extra-Source-Files:
       tests/Tests/Stream.hs
       tests/Tests/Vector.hs
 
-Flag EnableAssertions
-  Description: Enable assertions that check parameters to functions are reasonable.
-               These will impose a moderate performance cost on users of the library,
-               with the benefit that you get reasonable errors rather than segmentation faults!
-  Default:     True
-
 Flag BoundsChecks
   Description: Enables bounds checking
   Default: True
@@ -101,13 +95,7 @@ Library
 -- not as essential as you think because most of the optimisation occurs when the library
 -- functions from here are inlined into the user programs (which SHOULD be compiled with -O2!).
 --
--- We have to fiddle with the assertion stuff at this point too because -O2 implies -fno-ignore-asserts,
--- meaning that their relative ordering is CRUCIAL. Setting them together guarantees it.
-  if flag(enableassertions)
-    -- Asserts are ignored by default at -O1 or higher
-    Ghc-Options: -O2 -fno-ignore-asserts
-  else
-    Ghc-Options: -O2
+  Ghc-Options: -O2
 
   if flag(BoundsChecks)
     cpp-options: -DVECTOR_BOUNDS_CHECKS
