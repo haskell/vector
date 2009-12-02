@@ -24,8 +24,6 @@ import           Data.Vector.Fusion.Stream      ( Stream, MStream )
 import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
 
-import Control.Exception ( assert )
-
 import GHC.Float (
     double2Int, int2Double
   )
@@ -126,44 +124,51 @@ inBounds v i = i >= 0 && i < length v
 -- 'unsafeSlice'.
 slice :: MVectorPure v a => v a -> Int -> Int -> v a
 {-# INLINE slice #-}
-slice v i n = assert (i >=0 && n >= 0 && i+n <= length v)
+slice v i n = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
             $ unsafeSlice v i n
 
 -- | Create a mutable vector of the given length. Safer version of
 -- 'unsafeNew'.
 new :: MVector v m a => Int -> m (v a)
 {-# INLINE new #-}
-new n = assert (n >= 0) $ unsafeNew n
+new n = BOUNDS_CHECK(checkLength) "new" n
+      $ unsafeNew n
 
 -- | Create a mutable vector of the given length and fill it with an
 -- initial value. Safer version of 'unsafeNewWith'.
 newWith :: MVector v m a => Int -> a -> m (v a)
 {-# INLINE newWith #-}
-newWith n x = assert (n >= 0) $ unsafeNewWith n x
+newWith n x = BOUNDS_CHECK(checkLength) "newWith" n
+            $ unsafeNewWith n x
 
 -- | Yield the element at the given position. Safer version of 'unsafeRead'.
 read :: MVector v m a => v a -> Int -> m a
 {-# INLINE read #-}
-read v i = assert (inBounds v i) $ unsafeRead v i
+read v i = BOUNDS_CHECK(checkIndex) "read" i (length v)
+         $ unsafeRead v i
 
 -- | Replace the element at the given position. Safer version of
 -- 'unsafeWrite'.
 write :: MVector v m a => v a -> Int -> a -> m ()
 {-# INLINE write #-}
-write v i x = assert (inBounds v i) $ unsafeWrite v i x
+write v i x = BOUNDS_CHECK(checkIndex) "write" i (length v)
+            $ unsafeWrite v i x
 
 -- | Copy a vector. The two vectors may not overlap. Safer version of
 -- 'unsafeCopy'.
 copy :: MVector v m a => v a -> v a -> m ()
 {-# INLINE copy #-}
-copy dst src = assert (not (dst `overlaps` src) && length dst == length src)
+copy dst src = BOUNDS_CHECK(check) "copy" "overlapping vectors"
+                                          (not (dst `overlaps` src))
+             $ BOUNDS_CHECK(check) "copy" "length mismatch"
+                                          (length dst == length src)
              $ unsafeCopy dst src
 
 -- | Grow a vector by the given number of elements. Safer version of
 -- 'unsafeGrow'.
 grow :: MVector v m a => v a -> Int -> m (v a)
 {-# INLINE grow #-}
-grow v by = assert (by >= 0)
+grow v by = BOUNDS_CHECK(checkLength) "grow" by
           $ unsafeGrow v by
 
 mstream :: MVector v m a => v a -> MStream m a
