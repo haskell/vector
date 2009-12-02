@@ -44,6 +44,16 @@ Flag EnableAssertions
                with the benefit that you get reasonable errors rather than segmentation faults!
   Default:     True
 
+Flag BoundsChecks
+  Description: Enables bounds checking
+  Default: True
+
+Flag InternalChecks
+  Description: Enables internal consistency checks at the cost of a
+               significant performance penalty
+  Default: False
+
+
 Library
   Extensions: CPP
   Exposed-Modules:
@@ -93,3 +103,10 @@ Library
     Ghc-Options: -O2 -fno-ignore-asserts
   else
     Ghc-Options: -O2
+
+  if flag(BoundsChecks)
+    cpp-options: -DVECTOR_BOUNDS_CHECKS
+
+  if flag(InternalChecks)
+    cpp-options: -DVECTOR_INTERNAL_CHECKS
+
