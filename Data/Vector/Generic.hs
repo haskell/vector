@@ -31,7 +31,9 @@ module Data.Vector.Generic (
   unsafeSlice,
 
   -- * Permutations
-  accum, (//), update, backpermute, reverse,
+  accum, accumulate, accumulate_,
+  (//), update, update_,
+  backpermute, reverse,
 
   -- * Mapping
   map, concatMap,
@@ -402,19 +404,41 @@ drop n v = slice v (min n' len) (max 0 (len - n'))
 -- Permutations
 -- ------------
 
+accum_stream :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
+{-# INLINE accum_stream #-}
+accum_stream f v s = new (New.accum f (New.unstream (stream v)) s)
+
 accum :: Vector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
 {-# INLINE accum #-}
-accum f v us = new (New.accum f (New.unstream (stream v))
-                                (Stream.fromList us))
+accum f v us = accum_stream f v (Stream.fromList us)
+
+accumulate :: (Vector v a, Vector v (Int, b))
+                => (a -> b -> a) -> v a -> v (Int,b) -> v a
+{-# INLINE accumulate #-}
+accumulate f v us = accum_stream f v (stream us)
+
+accumulate_ :: (Vector v a, Vector v Int, Vector v b)
+                => (a -> b -> a) -> v a -> v Int -> v b -> v a
+{-# INLINE accumulate_ #-}
+accumulate_ f v is xs = accum_stream f v (Stream.zipWith (,) (stream is)
+                                                             (stream xs))
+                                        
+
+update_stream :: Vector v a => v a -> Stream (Int,a) -> v a
+{-# INLINE update_stream #-}
+update_stream v s = new (New.update (New.unstream (stream v)) s)
 
 (//) :: Vector v a => v a -> [(Int, a)] -> v a
 {-# INLINE (//) #-}
-v // us = new (New.update (New.unstream (stream v))
-                          (Stream.fromList us))
+v // us = update_stream v (Stream.fromList us)
 
 update :: (Vector v a, Vector v (Int, a)) => v a -> v (Int, a) -> v a
 {-# INLINE update #-}
-update v w = new (New.update (New.unstream (stream v)) (stream w))
+update v w = update_stream v (stream w)
+
+update_ :: (Vector v a, Vector v Int) => v a -> v Int -> v a -> v a
+{-# INLINE update_ #-}
+update_ v is w = update_stream v (Stream.zipWith (,) (stream is) (stream w))
 
 -- This somewhat non-intuitive definition ensures that the resulting vector
 -- does not retain references to the original one even if it is lazy in its

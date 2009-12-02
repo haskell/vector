@@ -30,7 +30,7 @@ module Data.Vector.Storable (
   unsafeSlice,
 
   -- * Permutations
-  accum, (//), backpermute, reverse,
+  accum, accumulate_, (//), update_, backpermute, reverse,
 
   -- * Mapping
   map, concatMap,
@@ -244,9 +244,18 @@ accum :: Storable a => (a -> b -> a) -> Vector a -> [(Int,b)] -> Vector a
 {-# INLINE accum #-}
 accum = G.accum
 
+accumulate_ :: (Storable a, Storable b) =>
+               (a -> b -> a) -> Vector a -> Vector Int -> Vector b -> Vector a
+{-# INLINE accumulate_ #-}
+accumulate_ = G.accumulate_
+
 (//) :: Storable a => Vector a -> [(Int, a)] -> Vector a
 {-# INLINE (//) #-}
 (//) = (G.//)
+
+update_ :: Storable a => Vector a -> Vector Int -> Vector a -> Vector a
+{-# INLINE update_ #-}
+update_ = G.update_
 
 backpermute :: Storable a => Vector a -> Vector Int -> Vector a
 {-# INLINE backpermute #-}

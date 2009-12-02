@@ -30,7 +30,7 @@ module Data.Vector.Primitive (
   unsafeSlice,
 
   -- * Permutations
-  accum, (//), backpermute, reverse,
+  accum, accumulate_, (//), update_, backpermute, reverse,
 
   -- * Mapping
   map, concatMap,
@@ -238,9 +238,18 @@ accum :: Prim a => (a -> b -> a) -> Vector a -> [(Int,b)] -> Vector a
 {-# INLINE accum #-}
 accum = G.accum
 
+accumulate_ :: (Prim a, Prim b) =>
+               (a -> b -> a) -> Vector a -> Vector Int -> Vector b -> Vector a
+{-# INLINE accumulate_ #-}
+accumulate_ = G.accumulate_
+
 (//) :: Prim a => Vector a -> [(Int, a)] -> Vector a
 {-# INLINE (//) #-}
 (//) = (G.//)
+
+update_ :: Prim a => Vector a -> Vector Int -> Vector a -> Vector a
+{-# INLINE update_ #-}
+update_ = G.update_
 
 backpermute :: Prim a => Vector a -> Vector Int -> Vector a
 {-# INLINE backpermute #-}

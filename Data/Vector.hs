@@ -30,7 +30,9 @@ module Data.Vector (
   unsafeSlice,
 
   -- * Permutations
-  accum, (//), update, backpermute, reverse,
+  accum, accumulate, accumulate_,
+  (//), update, update_,
+  backpermute, reverse,
 
   -- * Mapping
   map, concatMap,
@@ -255,6 +257,14 @@ accum :: (a -> b -> a) -> Vector a -> [(Int,b)] -> Vector a
 {-# INLINE accum #-}
 accum = G.accum
 
+accumulate :: (a -> b -> a) -> Vector a -> Vector (Int,b) -> Vector a
+{-# INLINE accumulate #-}
+accumulate = G.accumulate
+
+accumulate_ :: (a -> b -> a) -> Vector a -> Vector Int -> Vector b -> Vector a
+{-# INLINE accumulate_ #-}
+accumulate_ = G.accumulate_
+
 (//) :: Vector a -> [(Int, a)] -> Vector a
 {-# INLINE (//) #-}
 (//) = (G.//)
@@ -262,6 +272,10 @@ accum = G.accum
 update :: Vector a -> Vector (Int, a) -> Vector a
 {-# INLINE update #-}
 update = G.update
+
+update_ :: Vector a -> Vector Int -> Vector a -> Vector a
+{-# INLINE update_ #-}
+update_ = G.update_
 
 backpermute :: Vector a -> Vector Int -> Vector a
 {-# INLINE backpermute #-}
