@@ -86,8 +86,6 @@ import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
 import           Data.Vector.Fusion.Util
 
-import Control.Exception ( assert )
-
 import Prelude hiding ( length, null,
                         replicate, (++),
                         head, last,
@@ -264,7 +262,7 @@ copy = unstream . stream
 -- | Indexing
 (!) :: Vector v a => v a -> Int -> a
 {-# INLINE_STREAM (!) #-}
-v ! i = assert (i >= 0 && i < length v)
+v ! i = BOUNDS_CHECK(checkIndex) "(!)" i (length v)
       $ unId (basicUnsafeIndexM v i)
 
 -- | Unsafe indexing without bounds checking
@@ -302,7 +300,7 @@ last v = v ! (length v - 1)
 -- the element.
 indexM :: (Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_STREAM indexM #-}
-indexM v i = assert (i >= 0 && i < length v)
+indexM v i = BOUNDS_CHECK(checkIndex) "indexM" i (length v)
            $ basicUnsafeIndexM v i
 
 -- | Unsafe monadic indexing without bounds checks
@@ -342,7 +340,7 @@ slice :: Vector v a => v a -> Int   -- ^ starting index
                            -> Int   -- ^ length
                            -> v a
 {-# INLINE_STREAM slice #-}
-slice v i n = assert (i >= 0 && n >= 0  && i+n <= length v)
+slice v i n = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
             $ basicUnsafeSlice v i n
 
 -- | Unsafely yield a part of the vector without copying it and without
