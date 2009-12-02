@@ -39,16 +39,16 @@ Extra-Source-Files:
       tests/Tests/Vector.hs
 
 Flag BoundsChecks
-  Description: Enables bounds checking
+  Description: Enable bounds checking
   Default: True
 
 Flag UnsafeChecks
-  Description: Enables bounds checking in unsafe operations at the cost of a
+  Description: Enable bounds checking in unsafe operations at the cost of a
                significant performance penalty
   Description: False
 
 Flag InternalChecks
-  Description: Enables internal consistency checks at the cost of a
+  Description: Enable internal consistency checks at the cost of a
                significant performance penalty
   Default: False
 
