@@ -81,7 +81,8 @@ class (Monad m, MVectorPure v a) => MVector v m a where
   unsafeGrow       :: v a -> Int -> m (v a)
 
   {-# INLINE unsafeNewWith #-}
-  unsafeNewWith n x = do
+  unsafeNewWith n x = UNSAFE_CHECK(checkLength) "unsafeNewWith" n
+                    $ do
                         v <- unsafeNew n
                         set v x
                         return v
@@ -97,7 +98,12 @@ class (Monad m, MVectorPure v a) => MVector v m a where
                 | otherwise = return ()
 
   {-# INLINE unsafeCopy #-}
-  unsafeCopy dst src = do_copy 0
+  unsafeCopy dst src
+    = UNSAFE_CHECK(check) "unsafeCopy" "overlapping vectors"
+                                          (not (dst `overlaps` src))
+    $ UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
+                                          (length dst == length src)
+    $ do_copy 0
     where
       n = length src
 
@@ -108,7 +114,8 @@ class (Monad m, MVectorPure v a) => MVector v m a where
                 | otherwise = return ()
 
   {-# INLINE unsafeGrow #-}
-  unsafeGrow v by = do
+  unsafeGrow v by = UNSAFE_CHECK(checkLength) "unsafeGrow" by
+                  $ do
                       v' <- unsafeNew (n+by)
                       unsafeCopy (unsafeSlice v' 0 n) v
                       return v'
