@@ -37,7 +37,7 @@ module Data.Vector.Fusion.Stream (
   extract, init, tail, take, drop,
 
   -- * Mapping
-  map, concatMap,
+  map, concatMap, unbox,
   
   -- * Zipping
   zipWith, zipWith3,
@@ -247,6 +247,10 @@ drop = M.drop
 map :: (a -> b) -> Stream a -> Stream b
 {-# INLINE map #-}
 map = M.map
+
+unbox :: Stream (Box a) -> Stream a
+{-# INLINE unbox #-}
+unbox = M.unbox
 
 concatMap :: (a -> Stream b) -> Stream a -> Stream b
 {-# INLINE concatMap #-}

@@ -406,9 +406,8 @@ backpermute :: (Vector v a, Vector v Int) => v a -> v Int -> v a
 {-# INLINE backpermute #-}
 backpermute v is = seq v
                  $ unstream
-                 $ MStream.trans (Id . unBox)
-                 $ MStream.mapM (indexM v)
-                 $ MStream.trans (Box . unId)
+                 $ Stream.unbox
+                 $ Stream.map (indexM v)
                  $ stream is
 
 reverse :: (Vector v a) => v a -> v a

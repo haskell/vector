@@ -33,7 +33,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   extract, init, tail, take, drop,
 
   -- * Mapping
-  map, mapM, mapM_, trans, concatMap,
+  map, mapM, mapM_, trans, unbox, concatMap,
   
   -- * Zipping
   zipWith, zipWithM, zipWith3, zipWith3M,
@@ -66,6 +66,7 @@ module Data.Vector.Fusion.Stream.Monadic (
 ) where
 
 import Data.Vector.Fusion.Stream.Size
+import Data.Vector.Fusion.Util ( Box(..) )
 
 import Control.Monad  ( liftM )
 import Prelude hiding ( length, null,
@@ -346,6 +347,18 @@ trans :: (Monad m, Monad m') => (forall a. m a -> m' a)
                              -> Stream m a -> Stream m' a
 {-# INLINE_STREAM trans #-}
 trans f (Stream step s n) = Stream (f . step) s n
+
+unbox :: Monad m => Stream m (Box a) -> Stream m a
+{-# INLINE_STREAM unbox #-}
+unbox (Stream step s n) = Stream step' s n
+  where
+    {-# INLINE_INNER step' #-}
+    step' s = do
+                r <- step s
+                case r of
+                  Yield (Box x) s' -> return $ Yield x s'
+                  Skip          s' -> return $ Skip    s'
+                  Done             -> return $ Done
 
 -- Zipping
 -- -------
