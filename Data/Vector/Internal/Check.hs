@@ -93,5 +93,5 @@ checkSlice :: String -> Int -> Checks -> String -> Int -> Int -> Int -> a -> a
 {-# INLINE checkSlice #-}
 checkSlice file line kind loc i m n x
   = check file line kind loc (checkSlice_msg i m n)
-                             (i >= 0 && m >= 0 && i+n <= m) x
+                             (i >= 0 && m >= 0 && i+m <= n) x
 
