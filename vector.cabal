@@ -84,17 +84,9 @@ Library
 
   Build-Depends: base >= 2 && < 5, ghc >= 6.9, primitive
 
--- -finline-if-enough-args is ESSENTIAL. If we don't have this the partial application
--- of e.g. Stream.Monadic.++ to the monad dictionary at the use site in Stream.++ causes
--- it to be fruitlessly inlined. This in turn leads to a huge RHS for Stream.++, so it
--- doesn't get inlined at the final call site and fusion fails to occur.
   if impl(ghc<6.13)
     Ghc-Options: -finline-if-enough-args
   
--- It's probably a good idea to compile the library with -O2 as well. However, it's probably
--- not as essential as you think because most of the optimisation occurs when the library
--- functions from here are inlined into the user programs (which SHOULD be compiled with -O2!).
---
   Ghc-Options: -O2
 
   if flag(BoundsChecks)
