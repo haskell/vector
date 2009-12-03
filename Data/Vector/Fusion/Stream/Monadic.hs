@@ -87,7 +87,17 @@ import qualified Prelude
 import Data.Int  ( Int8, Int16, Int32, Int64 )
 import Data.Word ( Word8, Word16, Word32, Word, Word64 )
 
+#if __GLASGOW_HASKELL__ >= 613
+import SpecConstr ( SpecConstrAnnotation(..) )
+#endif
+
 #include "vector.h"
+
+data SPEC = SPEC | SPEC2
+#if __GLASGOW_HASKELL__ >= 613
+{-# ANN type SPEC ForceSpecConstr #-}
+#endif
+
 
 -- | Result of taking a single step in a stream
 data Step s a = Yield a s  -- ^ a new element and a new seed
@@ -183,51 +193,53 @@ Stream stepa sa na ++ Stream stepb sb nb = Stream step (Left sa) (na + nb)
 -- | First element of the 'Stream' or error if empty
 head :: Monad m => Stream m a -> m a
 {-# INLINE_STREAM head #-}
-head (Stream step s _) = head_loop s
+head (Stream step s _) = head_loop SPEC s
   where
-    head_loop s
+    head_loop SPEC s
       = do
           r <- step s
           case r of
             Yield x _  -> return x
-            Skip    s' -> head_loop s'
+            Skip    s' -> head_loop SPEC s'
             Done       -> BOUNDS_ERROR(emptyStream) "head"
+
+
 
 -- | Last element of the 'Stream' or error if empty
 last :: Monad m => Stream m a -> m a
 {-# INLINE_STREAM last #-}
-last (Stream step s _) = last_loop0 s
+last (Stream step s _) = last_loop0 SPEC s
   where
-    last_loop0 s
+    last_loop0 SPEC s
       = do
           r <- step s
           case r of
-            Yield x s' -> last_loop1 x s'
-            Skip    s' -> last_loop0   s'
+            Yield x s' -> last_loop1 SPEC x s'
+            Skip    s' -> last_loop0 SPEC   s'
             Done       -> BOUNDS_ERROR(emptyStream) "last"
 
-    last_loop1 x s
+    last_loop1 SPEC x s
       = do
           r <- step s
           case r of
-            Yield y s' -> last_loop1 y s'
-            Skip    s' -> last_loop1 x s'
+            Yield y s' -> last_loop1 SPEC y s'
+            Skip    s' -> last_loop1 SPEC x s'
             Done       -> return x
 
 -- | Element at the given position
 (!!) :: Monad m => Stream m a -> Int -> m a
 {-# INLINE (!!) #-}
 Stream step s _ !! i | i < 0     = BOUNDS_ERROR(error) "!!" "negative index"
-                     | otherwise = index_loop s i
+                     | otherwise = index_loop SPEC s i
   where
-    index_loop s i
+    index_loop SPEC s i
       = i `seq`
         do
           r <- step s
           case r of
             Yield x s' | i == 0    -> return x
-                       | otherwise -> index_loop s' (i-1)
-            Skip    s'             -> index_loop s' i
+                       | otherwise -> index_loop SPEC s' (i-1)
+            Skip    s'             -> index_loop SPEC s' i
             Done                   -> BOUNDS_ERROR(emptyStream) "!!"
 
 -- Substreams
@@ -344,14 +356,14 @@ mapM f (Stream step s n) = Stream step' s n
 -- | Execute a monadic action for each element of the 'Stream'
 mapM_ :: Monad m => (a -> m b) -> Stream m a -> m ()
 {-# INLINE_STREAM mapM_ #-}
-mapM_ m (Stream step s _) = mapM_loop s
+mapM_ m (Stream step s _) = mapM_loop SPEC s
   where
-    mapM_loop s
+    mapM_loop SPEC s
       = do
           r <- step s
           case r of
-            Yield x s' -> do { m x; mapM_loop s' }
-            Skip    s' -> mapM_loop s'
+            Yield x s' -> do { m x; mapM_loop SPEC s' }
+            Skip    s' -> mapM_loop SPEC s'
             Done       -> return ()
 
 -- | Transform a 'Stream' to use a different monad
@@ -533,15 +545,15 @@ infix 4 `elem`
 -- | Check whether the 'Stream' contains an element
 elem :: (Monad m, Eq a) => a -> Stream m a -> m Bool
 {-# INLINE_STREAM elem #-}
-elem x (Stream step s _) = elem_loop s
+elem x (Stream step s _) = elem_loop SPEC s
   where
-    elem_loop s
+    elem_loop SPEC s
       = do
           r <- step s
           case r of
             Yield y s' | x == y    -> return True
-                       | otherwise -> elem_loop s'
-            Skip    s'             -> elem_loop s'
+                       | otherwise -> elem_loop SPEC s'
+            Skip    s'             -> elem_loop SPEC s'
             Done                   -> return False
 
 infix 4 `notElem`
@@ -560,17 +572,17 @@ find f = findM (return . f)
 -- 'Nothing' if no such element exists.
 findM :: Monad m => (a -> m Bool) -> Stream m a -> m (Maybe a)
 {-# INLINE_STREAM findM #-}
-findM f (Stream step s _) = find_loop s
+findM f (Stream step s _) = find_loop SPEC s
   where
-    find_loop s
+    find_loop SPEC s
       = do
           r <- step s
           case r of
             Yield x s' -> do
                             b <- f x
                             if b then return $ Just x
-                                 else find_loop s'
-            Skip    s' -> find_loop s'
+                                 else find_loop SPEC s'
+            Skip    s' -> find_loop SPEC s'
             Done       -> return Nothing
 
 -- | Yield 'Just' the index of the first element that satisfies the predicate
@@ -583,17 +595,17 @@ findIndex f = findIndexM (return . f)
 -- predicate or 'Nothing' if no such element exists.
 findIndexM :: Monad m => (a -> m Bool) -> Stream m a -> m (Maybe Int)
 {-# INLINE_STREAM findIndexM #-}
-findIndexM f (Stream step s _) = findIndex_loop s 0
+findIndexM f (Stream step s _) = findIndex_loop SPEC s 0
   where
-    findIndex_loop s i
+    findIndex_loop SPEC s i
       = do
           r <- step s
           case r of
             Yield x s' -> do
                             b <- f x
                             if b then return $ Just i
-                                 else findIndex_loop s' (i+1)
-            Skip    s' -> findIndex_loop s' i
+                                 else findIndex_loop SPEC s' (i+1)
+            Skip    s' -> findIndex_loop SPEC s' i
             Done       -> return Nothing
 
 -- Folding
@@ -607,14 +619,14 @@ foldl f = foldlM (\a b -> return (f a b))
 -- | Left fold with a monadic operator
 foldlM :: Monad m => (a -> b -> m a) -> a -> Stream m b -> m a
 {-# INLINE_STREAM foldlM #-}
-foldlM m z (Stream step s _) = foldlM_loop z s
+foldlM m z (Stream step s _) = foldlM_loop SPEC z s
   where
-    foldlM_loop z s
+    foldlM_loop SPEC z s
       = do
           r <- step s
           case r of
-            Yield x s' -> do { z' <- m z x; foldlM_loop z' s' }
-            Skip    s' -> foldlM_loop z s'
+            Yield x s' -> do { z' <- m z x; foldlM_loop SPEC z' s' }
+            Skip    s' -> foldlM_loop SPEC z s'
             Done       -> return z
 
 -- | Same as 'foldlM'
@@ -630,14 +642,14 @@ foldl1 f = foldl1M (\a b -> return (f a b))
 -- | Left fold over a non-empty 'Stream' with a monadic operator
 foldl1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_STREAM foldl1M #-}
-foldl1M f (Stream step s sz) = foldl1M_loop s
+foldl1M f (Stream step s sz) = foldl1M_loop SPEC s
   where
-    foldl1M_loop s
+    foldl1M_loop SPEC s
       = do
           r <- step s
           case r of
             Yield x s' -> foldlM f x (Stream step s' (sz - 1))
-            Skip    s' -> foldl1M_loop s'
+            Skip    s' -> foldl1M_loop SPEC s'
             Done       -> BOUNDS_ERROR(emptyStream) "foldl1M"
 
 -- | Same as 'foldl1M'
@@ -653,15 +665,15 @@ foldl' f = foldlM' (\a b -> return (f a b))
 -- | Left fold with a strict accumulator and a monadic operator
 foldlM' :: Monad m => (a -> b -> m a) -> a -> Stream m b -> m a
 {-# INLINE_STREAM foldlM' #-}
-foldlM' m z (Stream step s _) = foldlM'_loop z s
+foldlM' m z (Stream step s _) = foldlM'_loop SPEC z s
   where
-    foldlM'_loop z s
+    foldlM'_loop SPEC z s
       = z `seq`
         do
           r <- step s
           case r of
-            Yield x s' -> do { z' <- m z x; foldlM'_loop z' s' }
-            Skip    s' -> foldlM'_loop z s'
+            Yield x s' -> do { z' <- m z x; foldlM'_loop SPEC z' s' }
+            Skip    s' -> foldlM'_loop SPEC z s'
             Done       -> return z
 
 -- | Same as 'foldlM''
@@ -678,14 +690,14 @@ foldl1' f = foldl1M' (\a b -> return (f a b))
 -- monadic operator
 foldl1M' :: Monad m => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_STREAM foldl1M' #-}
-foldl1M' f (Stream step s sz) = foldl1M'_loop s
+foldl1M' f (Stream step s sz) = foldl1M'_loop SPEC s
   where
-    foldl1M'_loop s
+    foldl1M'_loop SPEC s
       = do
           r <- step s
           case r of
             Yield x s' -> foldlM' f x (Stream step s' (sz - 1))
-            Skip    s' -> foldl1M'_loop s'
+            Skip    s' -> foldl1M'_loop SPEC s'
             Done       -> BOUNDS_ERROR(emptyStream) "foldl1M'"
 
 -- | Same as 'foldl1M''
@@ -701,14 +713,14 @@ foldr f = foldrM (\a b -> return (f a b))
 -- | Right fold with a monadic operator
 foldrM :: Monad m => (a -> b -> m b) -> b -> Stream m a -> m b
 {-# INLINE_STREAM foldrM #-}
-foldrM f z (Stream step s _) = foldrM_loop s
+foldrM f z (Stream step s _) = foldrM_loop SPEC s
   where
-    foldrM_loop s
+    foldrM_loop SPEC s
       = do
           r <- step s
           case r of
-            Yield x s' -> f x =<< foldrM_loop s'
-            Skip    s' -> foldrM_loop s'
+            Yield x s' -> f x =<< foldrM_loop SPEC s'
+            Skip    s' -> foldrM_loop SPEC s'
             Done       -> return z
 
 -- | Right fold over a non-empty stream
@@ -719,22 +731,22 @@ foldr1 f = foldr1M (\a b -> return (f a b))
 -- | Right fold over a non-empty stream with a monadic operator
 foldr1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_STREAM foldr1M #-}
-foldr1M f (Stream step s _) = foldr1M_loop0 s
+foldr1M f (Stream step s _) = foldr1M_loop0 SPEC s
   where
-    foldr1M_loop0 s
+    foldr1M_loop0 SPEC s
       = do
           r <- step s
           case r of
-            Yield x s' -> foldr1M_loop1 x s'
-            Skip    s' -> foldr1M_loop0   s'
+            Yield x s' -> foldr1M_loop1 SPEC x s'
+            Skip    s' -> foldr1M_loop0 SPEC   s'
             Done       -> BOUNDS_ERROR(emptyStream) "foldr1M"
 
-    foldr1M_loop1 x s
+    foldr1M_loop1 SPEC x s
       = do
           r <- step s
           case r of
-            Yield y s' -> f x =<< foldr1M_loop1 y s'
-            Skip    s' -> foldr1M_loop1 x s'
+            Yield y s' -> f x =<< foldr1M_loop1 SPEC y s'
+            Skip    s' -> foldr1M_loop1 SPEC x s'
             Done       -> return x
 
 -- Specialised folds
@@ -742,28 +754,28 @@ foldr1M f (Stream step s _) = foldr1M_loop0 s
 
 and :: Monad m => Stream m Bool -> m Bool
 {-# INLINE_STREAM and #-}
-and (Stream step s _) = and_loop s
+and (Stream step s _) = and_loop SPEC s
   where
-    and_loop s
+    and_loop SPEC s
       = do
           r <- step s
           case r of
             Yield False _  -> return False
-            Yield True  s' -> and_loop s'
-            Skip        s' -> and_loop s'
+            Yield True  s' -> and_loop SPEC s'
+            Skip        s' -> and_loop SPEC s'
             Done           -> return True
 
 or :: Monad m => Stream m Bool -> m Bool
 {-# INLINE_STREAM or #-}
-or (Stream step s _) = or_loop s
+or (Stream step s _) = or_loop SPEC s
   where
-    or_loop s
+    or_loop SPEC s
       = do
           r <- step s
           case r of
-            Yield False s' -> or_loop s'
+            Yield False s' -> or_loop SPEC s'
             Yield True  _  -> return True
-            Skip        s' -> or_loop s'
+            Skip        s' -> or_loop SPEC s'
             Done           -> return False
 
 concatMap :: Monad m => (a -> Stream m b) -> Stream m a -> Stream m b
