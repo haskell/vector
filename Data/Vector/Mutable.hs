@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TypeFamilies #-}
 
 -- |
 -- Module      : Data.Vector.Mutable
@@ -17,20 +17,20 @@ where
 
 import qualified Data.Vector.Generic.Mutable as G
 import           Data.Primitive.Array
-import           Control.Monad.Primitive ( PrimMonad )
+import           Control.Monad.Primitive
 import           Control.Monad.ST ( ST )
 
 #include "vector.h"
 
 -- | Mutable boxed vectors keyed on the monad they live in ('IO' or @'ST' s@).
-data MVector m a = MVector {-# UNPACK #-} !Int
+data MVector s a = MVector {-# UNPACK #-} !Int
                            {-# UNPACK #-} !Int
-                           {-# UNPACK #-} !(MutableArray m a)
+                           {-# UNPACK #-} !(MutableArray s a)
 
-type IOVector = MVector IO
-type STVector s = MVector (ST s)
+type IOVector = MVector RealWorld
+type STVector s = MVector s
 
-instance G.MVectorPure (MVector m) a where
+instance G.MVectorPure (MVector s) a where
   length (MVector _ n _) = n
   unsafeSlice (MVector i n arr) j m
     = UNSAFE_CHECK(checkSlice) "unsafeSlice" j m n
@@ -44,7 +44,7 @@ instance G.MVectorPure (MVector m) a where
       between x y z = x >= y && x < z
 
 
-instance PrimMonad m => G.MVector (MVector m) m a where
+instance (PrimMonad m, PrimState m ~ s) => G.MVector (MVector s) m a where
   {-# INLINE unsafeNew #-}
   unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n
               $ do

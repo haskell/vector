@@ -1,4 +1,5 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables,
+             TypeFamilies #-}
 
 -- |
 -- Module      : Data.Vector.Primitive.Mutable
@@ -24,14 +25,14 @@ import           Control.Monad.ST ( ST )
 #include "vector.h"
 
 -- | Mutable unboxed vectors. They live in the 'ST' monad.
-data MVector m a = MVector {-# UNPACK #-} !Int
+data MVector s a = MVector {-# UNPACK #-} !Int
                            {-# UNPACK #-} !Int
-                           {-# UNPACK #-} !(MutableByteArray m)
+                           {-# UNPACK #-} !(MutableByteArray s)
 
-type IOVector = MVector IO
-type STVector s = MVector (ST s)
+type IOVector = MVector RealWorld
+type STVector s = MVector s
 
-instance Prim a => G.MVectorPure (MVector m) a where
+instance Prim a => G.MVectorPure (MVector s) a where
   length (MVector _ n _) = n
   unsafeSlice (MVector i n arr) j m
     = UNSAFE_CHECK(checkSlice) "unsafeSlice" j m n
@@ -45,7 +46,8 @@ instance Prim a => G.MVectorPure (MVector m) a where
       between x y z = x >= y && x < z
 
 
-instance (Prim a, PrimMonad m) => G.MVector (MVector m) m a where
+instance (Prim a, PrimMonad m, PrimState m ~ s)
+           => G.MVector (MVector s) m a where
   {-# INLINE unsafeNew #-}
   unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n
               $ do
