@@ -185,31 +185,34 @@ head :: Monad m => Stream m a -> m a
 {-# INLINE_STREAM head #-}
 head (Stream step s _) = head_loop s
   where
-    head_loop s = do
-                    r <- step s
-                    case r of
-                      Yield x _  -> return x
-                      Skip    s' -> head_loop s'
-                      Done       -> BOUNDS_ERROR(emptyStream) "head"
+    head_loop s
+      = do
+          r <- step s
+          case r of
+            Yield x _  -> return x
+            Skip    s' -> head_loop s'
+            Done       -> BOUNDS_ERROR(emptyStream) "head"
 
 -- | Last element of the 'Stream' or error if empty
 last :: Monad m => Stream m a -> m a
 {-# INLINE_STREAM last #-}
 last (Stream step s _) = last_loop0 s
   where
-    last_loop0 s = do
-                     r <- step s
-                     case r of
-                       Yield x s' -> last_loop1 x s'
-                       Skip    s' -> last_loop0   s'
-                       Done       -> BOUNDS_ERROR(emptyStream) "last"
+    last_loop0 s
+      = do
+          r <- step s
+          case r of
+            Yield x s' -> last_loop1 x s'
+            Skip    s' -> last_loop0   s'
+            Done       -> BOUNDS_ERROR(emptyStream) "last"
 
-    last_loop1 x s = do
-                       r <- step s
-                       case r of
-                         Yield y s' -> last_loop1 y s'
-                         Skip    s' -> last_loop1 x s'
-                         Done       -> return x
+    last_loop1 x s
+      = do
+          r <- step s
+          case r of
+            Yield y s' -> last_loop1 y s'
+            Skip    s' -> last_loop1 x s'
+            Done       -> return x
 
 -- | Element at the given position
 (!!) :: Monad m => Stream m a -> Int -> m a
@@ -217,14 +220,15 @@ last (Stream step s _) = last_loop0 s
 Stream step s _ !! i | i < 0     = BOUNDS_ERROR(error) "!!" "negative index"
                      | otherwise = loop s i
   where
-    loop s i = i `seq`
-               do
-                 r <- step s
-                 case r of
-                   Yield x s' | i == 0    -> return x
-                              | otherwise -> loop s' (i-1)
-                   Skip    s'             -> loop s' i
-                   Done                   -> BOUNDS_ERROR(emptyStream) "!!"
+    loop s i
+      = i `seq`
+        do
+          r <- step s
+          case r of
+            Yield x s' | i == 0    -> return x
+                       | otherwise -> loop s' (i-1)
+            Skip    s'             -> loop s' i
+            Done                   -> BOUNDS_ERROR(emptyStream) "!!"
 
 -- Substreams
 -- ----------
@@ -342,12 +346,13 @@ mapM_ :: Monad m => (a -> m b) -> Stream m a -> m ()
 {-# INLINE_STREAM mapM_ #-}
 mapM_ m (Stream step s _) = mapM_go s
   where
-    mapM_go s = do
-                  r <- step s
-                  case r of
-                    Yield x s' -> do { m x; mapM_go s' }
-                    Skip    s' -> mapM_go s'
-                    Done       -> return ()
+    mapM_go s
+      = do
+          r <- step s
+          case r of
+            Yield x s' -> do { m x; mapM_go s' }
+            Skip    s' -> mapM_go s'
+            Done       -> return ()
 
 -- | Transform a 'Stream' to use a different monad
 trans :: (Monad m, Monad m') => (forall a. m a -> m' a)
@@ -530,13 +535,14 @@ elem :: (Monad m, Eq a) => a -> Stream m a -> m Bool
 {-# INLINE_STREAM elem #-}
 elem x (Stream step s _) = elem_loop s
   where
-    elem_loop s = do
-                    r <- step s
-                    case r of
-                      Yield y s' | x == y    -> return True
-                                 | otherwise -> elem_loop s'
-                      Skip    s'             -> elem_loop s'
-                      Done                   -> return False
+    elem_loop s
+      = do
+          r <- step s
+          case r of
+            Yield y s' | x == y    -> return True
+                       | otherwise -> elem_loop s'
+            Skip    s'             -> elem_loop s'
+            Done                   -> return False
 
 infix 4 `notElem`
 -- | Inverse of `elem`
@@ -556,15 +562,16 @@ findM :: Monad m => (a -> m Bool) -> Stream m a -> m (Maybe a)
 {-# INLINE_STREAM findM #-}
 findM f (Stream step s _) = find_loop s
   where
-    find_loop s = do
-                    r <- step s
-                    case r of
-                      Yield x s' -> do
-                                      b <- f x
-                                      if b then return $ Just x
-                                           else find_loop s'
-                      Skip    s' -> find_loop s'
-                      Done       -> return Nothing
+    find_loop s
+      = do
+          r <- step s
+          case r of
+            Yield x s' -> do
+                            b <- f x
+                            if b then return $ Just x
+                                 else find_loop s'
+            Skip    s' -> find_loop s'
+            Done       -> return Nothing
 
 -- | Yield 'Just' the index of the first element that satisfies the predicate
 -- or 'Nothing' if no such element exists.
@@ -578,15 +585,16 @@ findIndexM :: Monad m => (a -> m Bool) -> Stream m a -> m (Maybe Int)
 {-# INLINE_STREAM findIndexM #-}
 findIndexM f (Stream step s _) = findIndex_loop s 0
   where
-    findIndex_loop s i = do
-                           r <- step s
-                           case r of
-                             Yield x s' -> do
-                                             b <- f x
-                                             if b then return $ Just i
-                                                  else findIndex_loop s' (i+1)
-                             Skip    s' -> findIndex_loop s' i
-                             Done       -> return Nothing
+    findIndex_loop s i
+      = do
+          r <- step s
+          case r of
+            Yield x s' -> do
+                            b <- f x
+                            if b then return $ Just i
+                                 else findIndex_loop s' (i+1)
+            Skip    s' -> findIndex_loop s' i
+            Done       -> return Nothing
 
 -- Folding
 -- -------
@@ -601,12 +609,13 @@ foldlM :: Monad m => (a -> b -> m a) -> a -> Stream m b -> m a
 {-# INLINE_STREAM foldlM #-}
 foldlM m z (Stream step s _) = foldlM_go z s
   where
-    foldlM_go z s = do
-                      r <- step s
-                      case r of
-                        Yield x s' -> do { z' <- m z x; foldlM_go z' s' }
-                        Skip    s' -> foldlM_go z s'
-                        Done       -> return z
+    foldlM_go z s
+      = do
+          r <- step s
+          case r of
+            Yield x s' -> do { z' <- m z x; foldlM_go z' s' }
+            Skip    s' -> foldlM_go z s'
+            Done       -> return z
 
 -- | Same as 'foldlM'
 foldM :: Monad m => (a -> b -> m a) -> a -> Stream m b -> m a
@@ -623,12 +632,13 @@ foldl1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_STREAM foldl1M #-}
 foldl1M f (Stream step s sz) = foldl1M_go s
   where
-    foldl1M_go s = do
-                     r <- step s
-                     case r of
-                       Yield x s' -> foldlM f x (Stream step s' (sz - 1))
-                       Skip    s' -> foldl1M_go s'
-                       Done       -> BOUNDS_ERROR(emptyStream) "foldl1M"
+    foldl1M_go s
+      = do
+          r <- step s
+          case r of
+            Yield x s' -> foldlM f x (Stream step s' (sz - 1))
+            Skip    s' -> foldl1M_go s'
+            Done       -> BOUNDS_ERROR(emptyStream) "foldl1M"
 
 -- | Same as 'foldl1M'
 fold1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
@@ -645,13 +655,14 @@ foldlM' :: Monad m => (a -> b -> m a) -> a -> Stream m b -> m a
 {-# INLINE_STREAM foldlM' #-}
 foldlM' m z (Stream step s _) = foldlM'_go z s
   where
-    foldlM'_go z s = z `seq`
-                     do
-                       r <- step s
-                       case r of
-                         Yield x s' -> do { z' <- m z x; foldlM'_go z' s' }
-                         Skip    s' -> foldlM'_go z s'
-                         Done       -> return z
+    foldlM'_go z s
+      = z `seq`
+        do
+          r <- step s
+          case r of
+            Yield x s' -> do { z' <- m z x; foldlM'_go z' s' }
+            Skip    s' -> foldlM'_go z s'
+            Done       -> return z
 
 -- | Same as 'foldlM''
 foldM' :: Monad m => (a -> b -> m a) -> a -> Stream m b -> m a
@@ -669,12 +680,13 @@ foldl1M' :: Monad m => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_STREAM foldl1M' #-}
 foldl1M' f (Stream step s sz) = foldl1M'_go s
   where
-    foldl1M'_go s = do
-                      r <- step s
-                      case r of
-                        Yield x s' -> foldlM' f x (Stream step s' (sz - 1))
-                        Skip    s' -> foldl1M'_go s'
-                        Done       -> BOUNDS_ERROR(emptyStream) "foldl1M'"
+    foldl1M'_go s
+      = do
+          r <- step s
+          case r of
+            Yield x s' -> foldlM' f x (Stream step s' (sz - 1))
+            Skip    s' -> foldl1M'_go s'
+            Done       -> BOUNDS_ERROR(emptyStream) "foldl1M'"
 
 -- | Same as 'foldl1M''
 fold1M' :: Monad m => (a -> a -> m a) -> Stream m a -> m a
@@ -691,12 +703,13 @@ foldrM :: Monad m => (a -> b -> m b) -> b -> Stream m a -> m b
 {-# INLINE_STREAM foldrM #-}
 foldrM f z (Stream step s _) = foldrM_go s
   where
-    foldrM_go s = do
-                    r <- step s
-                    case r of
-                      Yield x s' -> f x =<< foldrM_go s'
-                      Skip    s' -> foldrM_go s'
-                      Done       -> return z
+    foldrM_go s
+      = do
+          r <- step s
+          case r of
+            Yield x s' -> f x =<< foldrM_go s'
+            Skip    s' -> foldrM_go s'
+            Done       -> return z
 
 -- | Right fold over a non-empty stream
 foldr1 :: Monad m => (a -> a -> a) -> Stream m a -> m a
@@ -708,19 +721,21 @@ foldr1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_STREAM foldr1M #-}
 foldr1M f (Stream step s _) = foldr1M_go0 s
   where
-    foldr1M_go0 s = do
-                      r <- step s
-                      case r of
-                        Yield x s' -> foldr1M_go1 x s'
-                        Skip    s' -> foldr1M_go0   s'
-                        Done       -> BOUNDS_ERROR(emptyStream) "foldr1M"
+    foldr1M_go0 s
+      = do
+          r <- step s
+          case r of
+            Yield x s' -> foldr1M_go1 x s'
+            Skip    s' -> foldr1M_go0   s'
+            Done       -> BOUNDS_ERROR(emptyStream) "foldr1M"
 
-    foldr1M_go1 x s = do
-                        r <- step s
-                        case r of
-                          Yield y s' -> f x =<< foldr1M_go1 y s'
-                          Skip    s' -> foldr1M_go1 x s'
-                          Done       -> return x
+    foldr1M_go1 x s
+      = do
+          r <- step s
+          case r of
+            Yield y s' -> f x =<< foldr1M_go1 y s'
+            Skip    s' -> foldr1M_go1 x s'
+            Done       -> return x
 
 -- Specialised folds
 -- -----------------
@@ -729,25 +744,27 @@ and :: Monad m => Stream m Bool -> m Bool
 {-# INLINE_STREAM and #-}
 and (Stream step s _) = and_go s
   where
-    and_go s = do
-                 r <- step s
-                 case r of
-                   Yield False _  -> return False
-                   Yield True  s' -> and_go s'
-                   Skip        s' -> and_go s'
-                   Done           -> return True
+    and_go s
+      = do
+          r <- step s
+          case r of
+            Yield False _  -> return False
+            Yield True  s' -> and_go s'
+            Skip        s' -> and_go s'
+            Done           -> return True
 
 or :: Monad m => Stream m Bool -> m Bool
 {-# INLINE_STREAM or #-}
 or (Stream step s _) = or_go s
   where
-    or_go s = do
-                r <- step s
-                case r of
-                  Yield False s' -> or_go s'
-                  Yield True  _  -> return True
-                  Skip        s' -> or_go s'
-                  Done           -> return False
+    or_go s
+      = do
+          r <- step s
+          case r of
+            Yield False s' -> or_go s'
+            Yield True  _  -> return True
+            Skip        s' -> or_go s'
+            Done           -> return False
 
 concatMap :: Monad m => (a -> Stream m b) -> Stream m a -> Stream m b
 {-# INLINE concatMap #-}
