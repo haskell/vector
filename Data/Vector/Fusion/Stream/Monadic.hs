@@ -344,14 +344,14 @@ mapM f (Stream step s n) = Stream step' s n
 -- | Execute a monadic action for each element of the 'Stream'
 mapM_ :: Monad m => (a -> m b) -> Stream m a -> m ()
 {-# INLINE_STREAM mapM_ #-}
-mapM_ m (Stream step s _) = mapM_go s
+mapM_ m (Stream step s _) = mapM_loop s
   where
-    mapM_go s
+    mapM_loop s
       = do
           r <- step s
           case r of
-            Yield x s' -> do { m x; mapM_go s' }
-            Skip    s' -> mapM_go s'
+            Yield x s' -> do { m x; mapM_loop s' }
+            Skip    s' -> mapM_loop s'
             Done       -> return ()
 
 -- | Transform a 'Stream' to use a different monad
@@ -607,14 +607,14 @@ foldl f = foldlM (\a b -> return (f a b))
 -- | Left fold with a monadic operator
 foldlM :: Monad m => (a -> b -> m a) -> a -> Stream m b -> m a
 {-# INLINE_STREAM foldlM #-}
-foldlM m z (Stream step s _) = foldlM_go z s
+foldlM m z (Stream step s _) = foldlM_loop z s
   where
-    foldlM_go z s
+    foldlM_loop z s
       = do
           r <- step s
           case r of
-            Yield x s' -> do { z' <- m z x; foldlM_go z' s' }
-            Skip    s' -> foldlM_go z s'
+            Yield x s' -> do { z' <- m z x; foldlM_loop z' s' }
+            Skip    s' -> foldlM_loop z s'
             Done       -> return z
 
 -- | Same as 'foldlM'
@@ -630,14 +630,14 @@ foldl1 f = foldl1M (\a b -> return (f a b))
 -- | Left fold over a non-empty 'Stream' with a monadic operator
 foldl1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_STREAM foldl1M #-}
-foldl1M f (Stream step s sz) = foldl1M_go s
+foldl1M f (Stream step s sz) = foldl1M_loop s
   where
-    foldl1M_go s
+    foldl1M_loop s
       = do
           r <- step s
           case r of
             Yield x s' -> foldlM f x (Stream step s' (sz - 1))
-            Skip    s' -> foldl1M_go s'
+            Skip    s' -> foldl1M_loop s'
             Done       -> BOUNDS_ERROR(emptyStream) "foldl1M"
 
 -- | Same as 'foldl1M'
@@ -653,15 +653,15 @@ foldl' f = foldlM' (\a b -> return (f a b))
 -- | Left fold with a strict accumulator and a monadic operator
 foldlM' :: Monad m => (a -> b -> m a) -> a -> Stream m b -> m a
 {-# INLINE_STREAM foldlM' #-}
-foldlM' m z (Stream step s _) = foldlM'_go z s
+foldlM' m z (Stream step s _) = foldlM'_loop z s
   where
-    foldlM'_go z s
+    foldlM'_loop z s
       = z `seq`
         do
           r <- step s
           case r of
-            Yield x s' -> do { z' <- m z x; foldlM'_go z' s' }
-            Skip    s' -> foldlM'_go z s'
+            Yield x s' -> do { z' <- m z x; foldlM'_loop z' s' }
+            Skip    s' -> foldlM'_loop z s'
             Done       -> return z
 
 -- | Same as 'foldlM''
@@ -678,14 +678,14 @@ foldl1' f = foldl1M' (\a b -> return (f a b))
 -- monadic operator
 foldl1M' :: Monad m => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_STREAM foldl1M' #-}
-foldl1M' f (Stream step s sz) = foldl1M'_go s
+foldl1M' f (Stream step s sz) = foldl1M'_loop s
   where
-    foldl1M'_go s
+    foldl1M'_loop s
       = do
           r <- step s
           case r of
             Yield x s' -> foldlM' f x (Stream step s' (sz - 1))
-            Skip    s' -> foldl1M'_go s'
+            Skip    s' -> foldl1M'_loop s'
             Done       -> BOUNDS_ERROR(emptyStream) "foldl1M'"
 
 -- | Same as 'foldl1M''
@@ -701,14 +701,14 @@ foldr f = foldrM (\a b -> return (f a b))
 -- | Right fold with a monadic operator
 foldrM :: Monad m => (a -> b -> m b) -> b -> Stream m a -> m b
 {-# INLINE_STREAM foldrM #-}
-foldrM f z (Stream step s _) = foldrM_go s
+foldrM f z (Stream step s _) = foldrM_loop s
   where
-    foldrM_go s
+    foldrM_loop s
       = do
           r <- step s
           case r of
-            Yield x s' -> f x =<< foldrM_go s'
-            Skip    s' -> foldrM_go s'
+            Yield x s' -> f x =<< foldrM_loop s'
+            Skip    s' -> foldrM_loop s'
             Done       -> return z
 
 -- | Right fold over a non-empty stream
@@ -719,22 +719,22 @@ foldr1 f = foldr1M (\a b -> return (f a b))
 -- | Right fold over a non-empty stream with a monadic operator
 foldr1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_STREAM foldr1M #-}
-foldr1M f (Stream step s _) = foldr1M_go0 s
+foldr1M f (Stream step s _) = foldr1M_loop0 s
   where
-    foldr1M_go0 s
+    foldr1M_loop0 s
       = do
           r <- step s
           case r of
-            Yield x s' -> foldr1M_go1 x s'
-            Skip    s' -> foldr1M_go0   s'
+            Yield x s' -> foldr1M_loop1 x s'
+            Skip    s' -> foldr1M_loop0   s'
             Done       -> BOUNDS_ERROR(emptyStream) "foldr1M"
 
-    foldr1M_go1 x s
+    foldr1M_loop1 x s
       = do
           r <- step s
           case r of
-            Yield y s' -> f x =<< foldr1M_go1 y s'
-            Skip    s' -> foldr1M_go1 x s'
+            Yield y s' -> f x =<< foldr1M_loop1 y s'
+            Skip    s' -> foldr1M_loop1 x s'
             Done       -> return x
 
 -- Specialised folds
@@ -742,28 +742,28 @@ foldr1M f (Stream step s _) = foldr1M_go0 s
 
 and :: Monad m => Stream m Bool -> m Bool
 {-# INLINE_STREAM and #-}
-and (Stream step s _) = and_go s
+and (Stream step s _) = and_loop s
   where
-    and_go s
+    and_loop s
       = do
           r <- step s
           case r of
             Yield False _  -> return False
-            Yield True  s' -> and_go s'
-            Skip        s' -> and_go s'
+            Yield True  s' -> and_loop s'
+            Skip        s' -> and_loop s'
             Done           -> return True
 
 or :: Monad m => Stream m Bool -> m Bool
 {-# INLINE_STREAM or #-}
-or (Stream step s _) = or_go s
+or (Stream step s _) = or_loop s
   where
-    or_go s
+    or_loop s
       = do
           r <- step s
           case r of
-            Yield False s' -> or_go s'
+            Yield False s' -> or_loop s'
             Yield True  _  -> return True
-            Skip        s' -> or_go s'
+            Skip        s' -> or_loop s'
             Done           -> return False
 
 concatMap :: Monad m => (a -> Stream m b) -> Stream m a -> Stream m b
