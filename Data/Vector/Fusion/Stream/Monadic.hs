@@ -218,16 +218,16 @@ last (Stream step s _) = last_loop0 s
 (!!) :: Monad m => Stream m a -> Int -> m a
 {-# INLINE (!!) #-}
 Stream step s _ !! i | i < 0     = BOUNDS_ERROR(error) "!!" "negative index"
-                     | otherwise = loop s i
+                     | otherwise = index_loop s i
   where
-    loop s i
+    index_loop s i
       = i `seq`
         do
           r <- step s
           case r of
             Yield x s' | i == 0    -> return x
-                       | otherwise -> loop s' (i-1)
-            Skip    s'             -> loop s' i
+                       | otherwise -> index_loop s' (i-1)
+            Skip    s'             -> index_loop s' i
             Done                   -> BOUNDS_ERROR(emptyStream) "!!"
 
 -- Substreams
