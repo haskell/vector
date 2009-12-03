@@ -83,7 +83,7 @@ Library
   Install-Includes:
         vector.h
 
-  Build-Depends: base >= 2 && < 5, ghc >= 6.9, primitive
+  Build-Depends: base >= 2 && < 5, ghc >= 6.9, primitive >= 0.1 && < 0.2
 
   if impl(ghc<6.13)
     Ghc-Options: -finline-if-enough-args
