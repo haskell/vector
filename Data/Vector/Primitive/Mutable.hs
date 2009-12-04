@@ -1,5 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables,
-             TypeFamilies #-}
+             FlexibleContexts #-}
 
 -- |
 -- Module      : Data.Vector.Primitive.Mutable
@@ -46,13 +46,9 @@ instance Prim a => G.MVectorPure (MVector s) a where
       between x y z = x >= y && x < z
 
 
-instance (Prim a, PrimMonad m, PrimState m ~ s)
-           => G.MVector (MVector s) m a where
+instance Prim a => G.MVector (MVector s) (ST s) a where
   {-# INLINE unsafeNew #-}
-  unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n
-              $ do
-                  arr <- newByteArray (n * sizeOf (undefined :: a))
-                  return (MVector 0 n arr)
+  unsafeNew = unsafeNew_generic
 
   {-# INLINE unsafeRead #-}
   unsafeRead (MVector i n arr) j = UNSAFE_CHECK(checkIndex) "unsafeRead" j n
@@ -64,4 +60,28 @@ instance (Prim a, PrimMonad m, PrimState m ~ s)
 
   {-# INLINE clear #-}
   clear _ = return ()
+
+instance Prim a => G.MVector (MVector RealWorld) IO a where
+  {-# INLINE unsafeNew #-}
+  unsafeNew  = unsafeNew_generic
+
+  {-# INLINE unsafeRead #-}
+  unsafeRead (MVector i n arr) j = UNSAFE_CHECK(checkIndex) "unsafeRead" j n
+                                 $ readByteArray arr (i+j)
+
+  {-# INLINE unsafeWrite #-}
+  unsafeWrite (MVector i n arr) j x = UNSAFE_CHECK(checkIndex) "unsafeWrite" j n
+                                    $ writeByteArray arr (i+j) x
+
+  {-# INLINE clear #-}
+  clear _ = return ()
+
+unsafeNew_generic
+  :: forall m a. (PrimMonad m, Prim a, G.MVector (MVector (PrimState m)) m a)
+                        => Int -> m (MVector (PrimState m) a)
+{-# INLINE unsafeNew_generic #-}
+unsafeNew_generic n = UNSAFE_CHECK(checkLength) "unsafeNew" n $
+  do
+    arr <- newByteArray (n * sizeOf (undefined :: a))
+    return (MVector 0 n arr)
 

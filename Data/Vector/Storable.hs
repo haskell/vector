@@ -72,7 +72,7 @@ import Data.Vector.Storable.Internal
 import Foreign.Storable
 import Foreign.ForeignPtr
 
-import System.IO.Unsafe ( unsafePerformIO )
+import Control.Monad.ST ( ST, runST )
 
 import Prelude hiding ( length, null,
                         replicate, (++),
@@ -102,9 +102,9 @@ instance (Show a, Storable a) => Show (Vector a) where
 
 instance Storable a => G.Vector Vector a where
   {-# INLINE basicNew #-}
-  basicNew init = unsafePerformIO (do
-                                     MVector i n p <- init
-                                     return (Vector i n p))
+  basicNew init = runST (do
+                           MVector i n p <- (id :: ST s (MVector s a) -> ST s (MVector s a)) init
+                           return (Vector i n p))
 
   {-# INLINE basicLength #-}
   basicLength (Vector _ n _) = n

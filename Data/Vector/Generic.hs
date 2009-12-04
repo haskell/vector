@@ -88,6 +88,7 @@ import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
 import           Data.Vector.Fusion.Util
 
+import Control.Monad.ST ( ST )
 import Prelude hiding ( length, null,
                         replicate, (++),
                         head, last,
@@ -107,7 +108,7 @@ import Prelude hiding ( length, null,
 --
 class Vector v a where
   -- | Construct a pure vector from a monadic initialiser (not fusible!)
-  basicNew     :: (forall mv m. MVector mv m a => m (mv a)) -> v a
+  basicNew     :: (forall mv s. MVector mv (ST s) a => ST s (mv a)) -> v a
 
   -- | Length of the vector (not fusible!)
   basicLength      :: v a -> Int
