@@ -88,7 +88,8 @@ import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
 import           Data.Vector.Fusion.Util
 
-import Control.Monad.ST ( ST )
+import Control.Monad.ST ( runST )
+import Control.Monad.Primitive
 import Prelude hiding ( length, null,
                         replicate, (++),
                         head, last,
@@ -109,8 +110,10 @@ type family Mutable (v :: * -> *) :: * -> * -> *
 -- | Class of immutable vectors.
 --
 class MVector (Mutable v) a => Vector v a where
-  -- | Construct a pure vector from a monadic initialiser (not fusible!)
-  basicNew     :: (forall s. ST s (Mutable v s a)) -> v a
+  -- | Unsafely convert a mutable vector to its immutable version
+  -- without copying. The mutable vector may not be used after
+  -- this operation.
+  unsafeFreeze :: PrimMonad m => Mutable v (PrimState m) a -> m (v a)
 
   -- | Length of the vector (not fusible!)
   basicLength      :: v a -> Int
@@ -155,7 +158,9 @@ new m = new' undefined m
 -- See http://hackage.haskell.org/trac/ghc/ticket/2600
 new' :: Vector v a => v a -> New a -> v a
 {-# INLINE_STREAM new' #-}
-new' _ m = basicNew (New.run m)
+new' _ m = runST (do
+                    mv <- New.run m
+                    unsafeFreeze mv)
 
 -- | Convert a vector to a 'Stream'
 stream :: Vector v a => v a -> Stream a

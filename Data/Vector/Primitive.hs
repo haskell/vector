@@ -70,7 +70,7 @@ import           Data.Vector.Primitive.Mutable ( MVector(..) )
 import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim )
 
-import Control.Monad.ST ( runST )
+import Control.Monad ( liftM )
 
 import Prelude hiding ( length, null,
                         replicate, (++),
@@ -98,11 +98,9 @@ instance (Show a, Prim a) => Show (Vector a) where
 type instance G.Mutable Vector = MVector
 
 instance Prim a => G.Vector Vector a where
-  {-# INLINE basicNew #-}
-  basicNew init = runST (do
-                           MVector i n marr <- init
-                           arr <- unsafeFreezeByteArray marr
-                           return (Vector i n arr))
+  {-# INLINE unsafeFreeze #-}
+  unsafeFreeze (MVector i n marr)
+    = Vector i n `liftM` unsafeFreezeByteArray marr
 
   {-# INLINE basicLength #-}
   basicLength (Vector _ n _) = n

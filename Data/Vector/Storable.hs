@@ -103,10 +103,8 @@ instance (Show a, Storable a) => Show (Vector a) where
 type instance G.Mutable Vector = MVector
 
 instance Storable a => G.Vector Vector a where
-  {-# INLINE basicNew #-}
-  basicNew init = runST (do
-                           MVector i n p <- (id :: ST s (MVector s a) -> ST s (MVector s a)) init
-                           return (Vector i n p))
+  {-# INLINE unsafeFreeze #-}
+  unsafeFreeze (MVector i n p) = return $ Vector i n p
 
   {-# INLINE basicLength #-}
   basicLength (Vector _ n _) = n
