@@ -1063,7 +1063,7 @@ enumFromTo_big x y = Stream step x (Exact n)
 -- | Enumerate values from @x@ to @y@
 enumFromThenTo :: (Enum a, Monad m) => a -> a -> a -> Stream m a
 {-# INLINE_STREAM enumFromThenTo #-}
-enumFromThenTo x y z = fromList [x, y .. y]
+enumFromThenTo x y z = fromList [x, y .. z]
 
 -- Conversions
 -- -----------
