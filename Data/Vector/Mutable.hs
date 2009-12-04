@@ -30,7 +30,7 @@ data MVector s a = MVector {-# UNPACK #-} !Int
 type IOVector = MVector RealWorld
 type STVector s = MVector s
 
-instance G.MVectorPure (MVector s) a where
+instance G.MVector MVector a where
   length (MVector _ n _) = n
   unsafeSlice (MVector i n arr) j m
     = UNSAFE_CHECK(checkSlice) "unsafeSlice" j m n
@@ -43,8 +43,6 @@ instance G.MVectorPure (MVector s) a where
     where
       between x y z = x >= y && x < z
 
-
-instance (PrimMonad m, PrimState m ~ s) => G.MVector (MVector s) m a where
   {-# INLINE unsafeNew #-}
   unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n
               $ do

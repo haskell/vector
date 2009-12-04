@@ -12,7 +12,7 @@
 --
 
 module Data.Vector.Generic.Mutable (
-  MVectorPure(..), MVector(..),
+  MVector(..),
 
   slice, new, newWith, read, write, copy, grow,
   unstream, transform,
@@ -23,6 +23,8 @@ import qualified Data.Vector.Fusion.Stream      as Stream
 import           Data.Vector.Fusion.Stream      ( Stream, MStream )
 import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
+
+import Control.Monad.Primitive ( PrimMonad, PrimState )
 
 import GHC.Float (
     double2Int, int2Double
@@ -35,50 +37,47 @@ import Prelude hiding ( length, reverse, map, read )
 gROWTH_FACTOR :: Double
 gROWTH_FACTOR = 1.5
 
--- | Basic pure functions on mutable vectors
-class MVectorPure v a where
+-- | Class of mutable vectors parametrised with a primitive state token.
+--
+class MVector v a where
   -- | Length of the mutable vector
-  length           :: v a -> Int
+  length           :: v s a -> Int
 
   -- | Yield a part of the mutable vector without copying it. No range checks!
-  unsafeSlice      :: v a -> Int  -- ^ starting index
-                          -> Int  -- ^ length of the slice
-                          -> v a
+  unsafeSlice      :: v s a -> Int  -- ^ starting index
+                            -> Int  -- ^ length of the slice
+                            -> v s a
 
   -- Check whether two vectors overlap.
-  overlaps         :: v a -> v a -> Bool
+  overlaps         :: v s a -> v s a -> Bool
 
--- | Class of mutable vectors. The type @m@ is the monad in which the mutable
--- vector can be transformed and @a@ is the type of elements.
---
-class (Monad m, MVectorPure v a) => MVector v m a where
   -- | Create a mutable vector of the given length. Length is not checked!
-  unsafeNew        :: Int -> m (v a)
+  unsafeNew        :: PrimMonad m => Int -> m (v (PrimState m) a)
 
   -- | Create a mutable vector of the given length and fill it with an
   -- initial value. Length is not checked!
-  unsafeNewWith    :: Int -> a -> m (v a)
+  unsafeNewWith    :: PrimMonad m => Int -> a -> m (v (PrimState m) a)
 
   -- | Yield the element at the given position. Index is not checked!
-  unsafeRead       :: v a -> Int -> m a
+  unsafeRead       :: PrimMonad m => v (PrimState m) a -> Int -> m a
 
   -- | Replace the element at the given position. Index is not checked!
-  unsafeWrite      :: v a -> Int -> a -> m ()
+  unsafeWrite      :: PrimMonad m => v (PrimState m) a -> Int -> a -> m ()
 
   -- | Clear all references to external objects
-  clear            :: v a -> m ()
+  clear            :: PrimMonad m => v (PrimState m) a -> m ()
 
   -- | Write the value at each position.
-  set              :: v a -> a -> m ()
+  set              :: PrimMonad m => v (PrimState m) a -> a -> m ()
 
   -- | Copy a vector. The two vectors may not overlap. This is not checked!
-  unsafeCopy       :: v a   -- ^ target
-                   -> v a   -- ^ source
-                   -> m ()
+  unsafeCopy       :: PrimMonad m => v (PrimState m) a   -- ^ target
+                                  -> v (PrimState m) a   -- ^ source
+                                  -> m ()
 
   -- | Grow a vector by the given number of elements. The length is not
   -- checked!
-  unsafeGrow       :: v a -> Int -> m (v a)
+  unsafeGrow :: PrimMonad m => v (PrimState m) a -> Int -> m (v (PrimState m) a)
 
   {-# INLINE unsafeNewWith #-}
   unsafeNewWith n x = UNSAFE_CHECK(checkLength) "unsafeNewWith" n
@@ -124,41 +123,42 @@ class (Monad m, MVectorPure v a) => MVector v m a where
 
 -- | Yield a part of the mutable vector without copying it. Safer version of
 -- 'unsafeSlice'.
-slice :: MVectorPure v a => v a -> Int -> Int -> v a
+slice :: MVector v a => v s a -> Int -> Int -> v s a
 {-# INLINE slice #-}
 slice v i n = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
             $ unsafeSlice v i n
 
 -- | Create a mutable vector of the given length. Safer version of
 -- 'unsafeNew'.
-new :: MVector v m a => Int -> m (v a)
+new :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
 {-# INLINE new #-}
 new n = BOUNDS_CHECK(checkLength) "new" n
       $ unsafeNew n
 
 -- | Create a mutable vector of the given length and fill it with an
 -- initial value. Safer version of 'unsafeNewWith'.
-newWith :: MVector v m a => Int -> a -> m (v a)
+newWith :: (PrimMonad m, MVector v a) => Int -> a -> m (v (PrimState m) a)
 {-# INLINE newWith #-}
 newWith n x = BOUNDS_CHECK(checkLength) "newWith" n
             $ unsafeNewWith n x
 
 -- | Yield the element at the given position. Safer version of 'unsafeRead'.
-read :: MVector v m a => v a -> Int -> m a
+read :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
 {-# INLINE read #-}
 read v i = BOUNDS_CHECK(checkIndex) "read" i (length v)
          $ unsafeRead v i
 
 -- | Replace the element at the given position. Safer version of
 -- 'unsafeWrite'.
-write :: MVector v m a => v a -> Int -> a -> m ()
+write :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m ()
 {-# INLINE write #-}
 write v i x = BOUNDS_CHECK(checkIndex) "write" i (length v)
             $ unsafeWrite v i x
 
 -- | Copy a vector. The two vectors may not overlap. Safer version of
 -- 'unsafeCopy'.
-copy :: MVector v m a => v a -> v a -> m ()
+copy :: (PrimMonad m, MVector v a)
+                => v (PrimState m) a -> v (PrimState m) a -> m ()
 {-# INLINE copy #-}
 copy dst src = BOUNDS_CHECK(check) "copy" "overlapping vectors"
                                           (not (dst `overlaps` src))
@@ -168,12 +168,13 @@ copy dst src = BOUNDS_CHECK(check) "copy" "overlapping vectors"
 
 -- | Grow a vector by the given number of elements. Safer version of
 -- 'unsafeGrow'.
-grow :: MVector v m a => v a -> Int -> m (v a)
+grow :: (PrimMonad m, MVector v a)
+                => v (PrimState m) a -> Int -> m (v (PrimState m) a)
 {-# INLINE grow #-}
 grow v by = BOUNDS_CHECK(checkLength) "grow" by
           $ unsafeGrow v by
 
-mstream :: MVector v m a => v a -> MStream m a
+mstream :: (PrimMonad m, MVector v a) => v (PrimState m) a -> MStream m a
 {-# INLINE mstream #-}
 mstream v = v `seq` (MStream.unfoldrM get 0 `MStream.sized` Exact n)
   where
@@ -184,7 +185,8 @@ mstream v = v `seq` (MStream.unfoldrM get 0 `MStream.sized` Exact n)
                            return $ Just (x, i+1)
           | otherwise = return $ Nothing
 
-internal_munstream :: MVector v m a => v a -> MStream m a -> m (v a)
+internal_munstream :: (PrimMonad m, MVector v a)
+        => v (PrimState m) a -> MStream m a -> m (v (PrimState m) a)
 {-# INLINE internal_munstream #-}
 internal_munstream v s = v `seq` do
                                    n' <- MStream.foldM put 0 s
@@ -196,20 +198,22 @@ internal_munstream v s = v `seq` do
                   $ unsafeWrite v i x
                 return (i+1)
 
-transform :: MVector v m a => (MStream m a -> MStream m a) -> v a -> m (v a)
+transform :: (PrimMonad m, MVector v a)
+  => (MStream m a -> MStream m a) -> v (PrimState m) a -> m (v (PrimState m) a)
 {-# INLINE_STREAM transform #-}
 transform f v = internal_munstream v (f (mstream v))
 
 -- | Create a new mutable vector and fill it with elements from the 'Stream'.
 -- The vector will grow logarithmically if the 'Size' hint of the 'Stream' is
 -- inexact.
-unstream :: MVector v m a => Stream a -> m (v a)
+unstream :: (PrimMonad m, MVector v a) => Stream a -> m (v (PrimState m) a)
 {-# INLINE_STREAM unstream #-}
 unstream s = case upperBound (Stream.size s) of
                Just n  -> unstreamMax     s n
                Nothing -> unstreamUnknown s
 
-unstreamMax :: MVector v m a => Stream a -> Int -> m (v a)
+unstreamMax
+  :: (PrimMonad m, MVector v a) => Stream a -> Int -> m (v (PrimState m) a)
 {-# INLINE unstreamMax #-}
 unstreamMax s n
   = do
@@ -221,7 +225,8 @@ unstreamMax s n
       n' <- Stream.foldM' put 0 s
       return $ INTERNAL_CHECK(checkSlice) "unstreamMax" 0 n' n $ slice v 0 n'
 
-unstreamUnknown :: MVector v m a => Stream a -> m (v a)
+unstreamUnknown
+  :: (PrimMonad m, MVector v a) => Stream a -> m (v (PrimState m) a)
 {-# INLINE unstreamUnknown #-}
 unstreamUnknown s
   = do
@@ -250,7 +255,8 @@ unstreamUnknown s
               $ double2Int
               $ int2Double (length v) * gROWTH_FACTOR
 
-accum :: MVector v m a => (a -> b -> a) -> v a -> Stream (Int, b) -> m ()
+accum :: (PrimMonad m, MVector v a)
+        => (a -> b -> a) -> v (PrimState m) a -> Stream (Int, b) -> m ()
 {-# INLINE accum #-}
 accum f !v s = Stream.mapM_ upd s
   where
@@ -259,11 +265,12 @@ accum f !v s = Stream.mapM_ upd s
                   a <- read v i
                   write v i (f a b)
 
-update :: MVector v m a => v a -> Stream (Int, a) -> m ()
+update :: (PrimMonad m, MVector v a)
+                        => v (PrimState m) a -> Stream (Int, a) -> m ()
 {-# INLINE update #-}
 update = accum (const id)
 
-reverse :: MVector v m a => v a -> m ()
+reverse :: (PrimMonad m, MVector v a) => v (PrimState m) a -> m ()
 {-# INLINE reverse #-}
 reverse !v = reverse_loop 0 (length v - 1)
   where

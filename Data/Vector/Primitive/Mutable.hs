@@ -32,7 +32,7 @@ data MVector s a = MVector {-# UNPACK #-} !Int
 type IOVector = MVector RealWorld
 type STVector s = MVector s
 
-instance Prim a => G.MVectorPure (MVector s) a where
+instance Prim a => G.MVector MVector a where
   length (MVector _ n _) = n
   unsafeSlice (MVector i n arr) j m
     = UNSAFE_CHECK(checkSlice) "unsafeSlice" j m n
@@ -45,10 +45,10 @@ instance Prim a => G.MVectorPure (MVector s) a where
     where
       between x y z = x >= y && x < z
 
-
-instance Prim a => G.MVector (MVector s) (ST s) a where
   {-# INLINE unsafeNew #-}
-  unsafeNew = unsafeNew_generic
+  unsafeNew n = do
+                  arr <- newByteArray (n * sizeOf (undefined :: a))
+                  return (MVector 0 n arr)
 
   {-# INLINE unsafeRead #-}
   unsafeRead (MVector i n arr) j = UNSAFE_CHECK(checkIndex) "unsafeRead" j n
@@ -60,28 +60,4 @@ instance Prim a => G.MVector (MVector s) (ST s) a where
 
   {-# INLINE clear #-}
   clear _ = return ()
-
-instance Prim a => G.MVector (MVector RealWorld) IO a where
-  {-# INLINE unsafeNew #-}
-  unsafeNew  = unsafeNew_generic
-
-  {-# INLINE unsafeRead #-}
-  unsafeRead (MVector i n arr) j = UNSAFE_CHECK(checkIndex) "unsafeRead" j n
-                                 $ readByteArray arr (i+j)
-
-  {-# INLINE unsafeWrite #-}
-  unsafeWrite (MVector i n arr) j x = UNSAFE_CHECK(checkIndex) "unsafeWrite" j n
-                                    $ writeByteArray arr (i+j) x
-
-  {-# INLINE clear #-}
-  clear _ = return ()
-
-unsafeNew_generic
-  :: forall m a. (PrimMonad m, Prim a, G.MVector (MVector (PrimState m)) m a)
-                        => Int -> m (MVector (PrimState m) a)
-{-# INLINE unsafeNew_generic #-}
-unsafeNew_generic n = UNSAFE_CHECK(checkLength) "unsafeNew" n $
-  do
-    arr <- newByteArray (n * sizeOf (undefined :: a))
-    return (MVector 0 n arr)
 
