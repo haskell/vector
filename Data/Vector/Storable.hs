@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TypeFamilies #-}
 
 -- |
 -- Module      : Data.Vector.Storable
@@ -99,6 +99,8 @@ instance (Show a, Storable a) => Show (Vector a) where
        . ("fromList " Prelude.++)
        . show
        . toList
+
+type instance G.Mutable Vector = MVector
 
 instance Storable a => G.Vector Vector a where
   {-# INLINE basicNew #-}

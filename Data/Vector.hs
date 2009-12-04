@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, TypeFamilies #-}
 
 -- |
 -- Module      : Data.Vector
@@ -94,6 +94,8 @@ data Vector a = Vector {-# UNPACK #-} !Int
 
 instance Show a => Show (Vector a) where
     show = (Prelude.++ " :: Data.Vector.Vector") . ("fromList " Prelude.++) . show . toList
+
+type instance G.Mutable Vector = MVector
 
 instance G.Vector Vector a where
   {-# INLINE basicNew #-}

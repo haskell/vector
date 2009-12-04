@@ -1,5 +1,5 @@
 {-# LANGUAGE Rank2Types, MultiParamTypeClasses, FlexibleContexts,
-             ScopedTypeVariables #-}
+             TypeFamilies, ScopedTypeVariables #-}
 -- |
 -- Module      : Data.Vector.Generic
 -- Copyright   : (c) Roman Leshchinskiy 2008-2009
@@ -14,7 +14,7 @@
 
 module Data.Vector.Generic (
   -- * Immutable vectors
-  Vector(..),
+  Vector(..), Mutable,
 
   -- * Length information
   length, null,
@@ -104,11 +104,13 @@ import Prelude hiding ( length, null,
 
 #include "vector.h"
 
+type family Mutable (v :: * -> *) :: * -> * -> *
+
 -- | Class of immutable vectors.
 --
-class Vector v a where
+class MVector (Mutable v) a => Vector v a where
   -- | Construct a pure vector from a monadic initialiser (not fusible!)
-  basicNew     :: (forall mv s. MVector mv a => ST s (mv s a)) -> v a
+  basicNew     :: (forall s. ST s (Mutable v s a)) -> v a
 
   -- | Length of the vector (not fusible!)
   basicLength      :: v a -> Int
