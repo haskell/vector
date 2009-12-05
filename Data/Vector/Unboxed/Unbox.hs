@@ -11,6 +11,9 @@ import qualified Data.Vector.Primitive as P
 import Control.Monad.ST ( runST )
 import Control.Monad
 
+import Data.Word ( Word, Word8, Word16, Word32, Word64 )
+import Data.Int  ( Int8, Int16, Int32, Int64 )
+
 #include "vector.h"
 
 data family MVector s a
@@ -27,35 +30,41 @@ class (G.Vector Vector a, M.MVector MVector a) => Unbox a
 newtype instance MVector s () = MV_Unit Int
 newtype instance Vector    () = V_Unit Int
 
+instance Unbox ()
+
 instance M.MVector MVector () where
+  {-# INLINE length #-}
+  {-# INLINE unsafeSlice #-}
+  {-# INLINE overlaps #-}
+  {-# INLINE unsafeNew #-}
+  {-# INLINE unsafeRead #-}
+  {-# INLINE unsafeWrite #-}
+  {-# INLINE clear #-}
+  {-# INLINE set #-}
+  {-# INLINE unsafeCopy #-}
+  {-# INLINE unsafeGrow #-}
+
   length (MV_Unit n) = n
 
   unsafeSlice (MV_Unit n) i m
     = UNSAFE_CHECK(checkSlice) "unsafeSlice" i m n
     $ MV_Unit m
 
-  {-# INLINE overlaps #-}
   overlaps _ _ = False
 
-  {-# INLINE unsafeNew #-}
   unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n
               $ return (MV_Unit n)
 
-  {-# INLINE unsafeRead #-}
   unsafeRead (MV_Unit n) i = UNSAFE_CHECK(checkIndex) "unsafeRead" i n
                            $ return ()
 
-  {-# INLINE unsafeWrite #-}
   unsafeWrite (MV_Unit n) i () = UNSAFE_CHECK(checkIndex) "unsafeWrite" i n
                                $ return ()
 
-  {-# INLINE clear #-}
   clear _ = return ()
 
-  {-# INLINE set #-}
   set (MV_Unit _) () = return ()
 
-  {-# INLINE unsafeCopy #-}
   unsafeCopy (MV_Unit _) (MV_Unit _) = return ()
 
   unsafeGrow (MV_Unit n) k = return $ MV_Unit (n+k)
@@ -72,8 +81,6 @@ instance G.Vector Vector () where
 
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (V_Unit _) i = return ()
-
-instance Unbox ()
 
 
 -- ---------------
@@ -118,13 +125,84 @@ instance G.Vector Vector ty where {                                     \
 
 newtype instance MVector s Int = MV_Int (P.MVector s Int)
 newtype instance Vector    Int = V_Int  (P.Vector    Int)
+instance Unbox Int
+primMVector(Int, MV_Int)
+primVector(Int, V_Int, MV_Int)
+
+newtype instance MVector s Int8 = MV_Int8 (P.MVector s Int8)
+newtype instance Vector    Int8 = V_Int8  (P.Vector    Int8)
+instance Unbox Int8
+primMVector(Int8, MV_Int8)
+primVector(Int8, V_Int8, MV_Int8)
+
+newtype instance MVector s Int16 = MV_Int16 (P.MVector s Int16)
+newtype instance Vector    Int16 = V_Int16  (P.Vector    Int16)
+instance Unbox Int16
+primMVector(Int16, MV_Int16)
+primVector(Int16, V_Int16, MV_Int16)
+
+newtype instance MVector s Int32 = MV_Int32 (P.MVector s Int32)
+newtype instance Vector    Int32 = V_Int32  (P.Vector    Int32)
+instance Unbox Int32
+primMVector(Int32, MV_Int32)
+primVector(Int32, V_Int32, MV_Int32)
+
+newtype instance MVector s Int64 = MV_Int64 (P.MVector s Int64)
+newtype instance Vector    Int64 = V_Int64  (P.Vector    Int64)
+instance Unbox Int64
+primMVector(Int64, MV_Int64)
+primVector(Int64, V_Int64, MV_Int64)
+
+
+newtype instance MVector s Word = MV_Word (P.MVector s Word)
+newtype instance Vector    Word = V_Word  (P.Vector    Word)
+instance Unbox Word
+primMVector(Word, MV_Word)
+primVector(Word, V_Word, MV_Word)
+
+newtype instance MVector s Word8 = MV_Word8 (P.MVector s Word8)
+newtype instance Vector    Word8 = V_Word8  (P.Vector    Word8)
+instance Unbox Word8
+primMVector(Word8, MV_Word8)
+primVector(Word8, V_Word8, MV_Word8)
+
+newtype instance MVector s Word16 = MV_Word16 (P.MVector s Word16)
+newtype instance Vector    Word16 = V_Word16  (P.Vector    Word16)
+instance Unbox Word16
+primMVector(Word16, MV_Word16)
+primVector(Word16, V_Word16, MV_Word16)
+
+newtype instance MVector s Word32 = MV_Word32 (P.MVector s Word32)
+newtype instance Vector    Word32 = V_Word32  (P.Vector    Word32)
+instance Unbox Word32
+primMVector(Word32, MV_Word32)
+primVector(Word32, V_Word32, MV_Word32)
+
+newtype instance MVector s Word64 = MV_Word64 (P.MVector s Word64)
+newtype instance Vector    Word64 = V_Word64  (P.Vector    Word64)
+instance Unbox Word64
+primMVector(Word64, MV_Word64)
+primVector(Word64, V_Word64, MV_Word64)
+
+
 newtype instance MVector s Float = MV_Float (P.MVector s Float)
 newtype instance Vector    Float = V_Float  (P.Vector    Float)
-
-primMVector(Int, MV_Int)
+instance Unbox Float
 primMVector(Float, MV_Float)
+primVector(Float, V_Float, MV_Float)
 
-primVector(Int, V_Int, MV_Int)
+newtype instance MVector s Double = MV_Double (P.MVector s Double)
+newtype instance Vector    Double = V_Double  (P.Vector    Double)
+instance Unbox Double
+primMVector(Double, MV_Double)
+primVector(Double, V_Double, MV_Double)
+
+
+newtype instance MVector s Char = MV_Char (P.MVector s Char)
+newtype instance Vector    Char = V_Char  (P.Vector    Char)
+instance Unbox Char
+primMVector(Char, MV_Char)
+primVector(Char, V_Char, MV_Char)
 
 -- ------
 -- Tuples
@@ -136,6 +214,8 @@ data instance MVector s (a,b) = MV_2 {-# UNPACK #-} !Int
 data instance Vector    (a,b) = V_2  {-# UNPACK #-} !Int
                                                     (Vector a)
                                                     (Vector b)
+
+instance (Unbox a, Unbox b) => Unbox (a,b)
 
 instance (Unbox a, Unbox b) => M.MVector MVector (a,b) where
   {-# INLINE length #-}
