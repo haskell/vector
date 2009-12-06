@@ -23,9 +23,8 @@ module Data.Vector.Unboxed (
 
   -- * Zipping and unzipping
   zipWith, zipWith3,
-  zip, zip3, zip4, zip5, zip6, zip7, zip8, zip9, zip10, zip11, zip12,
-  unzip, unzip3, unzip4, unzip5, unzip6, unzip7, unzip8, unzip9, unzip10,
-  unzip11, unzip12,
+  zip, zip3, zip4, zip5, zip6,
+  unzip, unzip3, unzip4, unzip5, unzip6,
 
   -- * Filtering
   filter, takeWhile, dropWhile,
@@ -56,6 +55,7 @@ module Data.Vector.Unboxed (
 
 import Data.Vector.Unboxed.Base
 import qualified Data.Vector.Generic as G
+import qualified Data.Vector.Fusion.Stream as Stream
 
 import Prelude hiding ( length, null,
                         replicate, (++),
@@ -69,6 +69,8 @@ import Prelude hiding ( length, null,
                         sum, product, minimum, maximum,
                         scanl, scanl1,
                         enumFromTo, enumFromThenTo )
+
+#include "vector.h"
 
 -- Length
 -- ------

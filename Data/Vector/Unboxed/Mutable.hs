@@ -19,6 +19,8 @@ import Control.Monad.Primitive
 
 import Prelude hiding ( zip, zip3, unzip, unzip3, length, read )
 
+#include "vector.h"
+
 -- | Yield a part of the mutable vector without copying it. No bounds checks
 -- are performed.
 unsafeSlice :: Unbox a => MVector s a -> Int  -- ^ starting index
