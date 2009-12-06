@@ -4,6 +4,9 @@ module Data.Vector.Unboxed.Mutable (
 
   -- * Operations on mutable vectors
   length, overlaps, slice, new, newWith, read, write, clear, set, copy, grow,
+  zip, zip3, zip4, zip5, zip6, zip7, zip8, zip9, zip10, zip11, zip12,
+  unzip, unzip3, unzip4, unzip5, unzip6, unzip7, unzip8, unzip9, unzip10,
+  unzip11, unzip12,
 
   -- * Unsafe operations
   unsafeSlice, unsafeNew, unsafeNewWith, unsafeRead, unsafeWrite,
@@ -14,7 +17,7 @@ import Data.Vector.Unboxed.Base
 import qualified Data.Vector.Generic.Mutable as G
 import Control.Monad.Primitive
 
-import Prelude hiding ( length, read )
+import Prelude hiding ( zip, zip3, unzip, unzip3, length, read )
 
 -- | Yield a part of the mutable vector without copying it. No bounds checks
 -- are performed.
@@ -124,4 +127,7 @@ grow :: (PrimMonad m, Unbox a)
               => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE grow #-}
 grow = G.grow
+
+#define DEFINE_MUTABLE
+#include "unbox-tuple-instances"
 

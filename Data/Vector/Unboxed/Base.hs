@@ -261,5 +261,6 @@ instance G.Vector Vector Bool where
 -- Tuples
 -- ------
 
+#define DEFINE_INSTANCES
 #include "unbox-tuple-instances"
 
