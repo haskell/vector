@@ -1,3 +1,4 @@
+#ifdef DEFINE_INSTANCES
 data instance MVector s (a, b)
     = MV_2 {-# UNPACK #-} !Int (MVector s a)
                                (MVector s b)
@@ -79,6 +80,29 @@ instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
           a <- G.basicUnsafeIndexM as i_
           b <- G.basicUnsafeIndexM bs i_
           return (a, b)
+#endif
+#ifdef DEFINE_MUTABLE
+zip :: (Unbox a, Unbox b) => MVector s a ->
+                             MVector s b -> MVector s (a, b)
+{-# INLINE zip #-}
+zip as bs = MV_2 len (unsafeSlice as 0 len) (unsafeSlice bs 0 len)
+  where len = length as `min` length bs
+unzip :: (Unbox a, Unbox b) => MVector s (a, b) -> (MVector s a,
+                                                    MVector s b)
+{-# INLINE unzip #-}
+unzip (MV_2 n_ as bs) = (as, bs)
+#endif
+#ifdef DEFINE_IMMUTABLE
+zip :: (Unbox a, Unbox b) => Vector a -> Vector b -> Vector (a, b)
+{-# INLINE zip #-}
+zip as bs = V_2 len (unsafeSlice as 0 len) (unsafeSlice bs 0 len)
+  where len = length as `min` length bs
+unzip :: (Unbox a, Unbox b) => Vector (a, b) -> (Vector a,
+                                                 Vector b)
+{-# INLINE unzip #-}
+unzip (V_2 n_ as bs) = (as, bs)
+#endif
+#ifdef DEFINE_INSTANCES
 data instance MVector s (a, b, c)
     = MV_3 {-# UNPACK #-} !Int (MVector s a)
                                (MVector s b)
@@ -179,6 +203,40 @@ instance (Unbox a,
           b <- G.basicUnsafeIndexM bs i_
           c <- G.basicUnsafeIndexM cs i_
           return (a, b, c)
+#endif
+#ifdef DEFINE_MUTABLE
+zip3 :: (Unbox a, Unbox b, Unbox c) => MVector s a ->
+                                       MVector s b ->
+                                       MVector s c -> MVector s (a, b, c)
+{-# INLINE zip3 #-}
+zip3 as bs cs = MV_3 len (unsafeSlice as 0 len)
+                         (unsafeSlice bs 0 len)
+                         (unsafeSlice cs 0 len)
+  where len = length as `min` length bs `min` length cs
+unzip3 :: (Unbox a,
+           Unbox b,
+           Unbox c) => MVector s (a, b, c) -> (MVector s a,
+                                               MVector s b,
+                                               MVector s c)
+{-# INLINE unzip3 #-}
+unzip3 (MV_3 n_ as bs cs) = (as, bs, cs)
+#endif
+#ifdef DEFINE_IMMUTABLE
+zip3 :: (Unbox a, Unbox b, Unbox c) => Vector a ->
+                                       Vector b ->
+                                       Vector c -> Vector (a, b, c)
+{-# INLINE zip3 #-}
+zip3 as bs cs = V_3 len (unsafeSlice as 0 len)
+                        (unsafeSlice bs 0 len)
+                        (unsafeSlice cs 0 len)
+  where len = length as `min` length bs `min` length cs
+unzip3 :: (Unbox a,
+           Unbox b,
+           Unbox c) => Vector (a, b, c) -> (Vector a, Vector b, Vector c)
+{-# INLINE unzip3 #-}
+unzip3 (V_3 n_ as bs cs) = (as, bs, cs)
+#endif
+#ifdef DEFINE_INSTANCES
 data instance MVector s (a, b, c, d)
     = MV_4 {-# UNPACK #-} !Int (MVector s a)
                                (MVector s b)
@@ -299,6 +357,52 @@ instance (Unbox a,
           c <- G.basicUnsafeIndexM cs i_
           d <- G.basicUnsafeIndexM ds i_
           return (a, b, c, d)
+#endif
+#ifdef DEFINE_MUTABLE
+zip4 :: (Unbox a, Unbox b, Unbox c, Unbox d) => MVector s a ->
+                                                MVector s b ->
+                                                MVector s c ->
+                                                MVector s d -> MVector s (a, b, c, d)
+{-# INLINE zip4 #-}
+zip4 as bs cs ds = MV_4 len (unsafeSlice as 0 len)
+                            (unsafeSlice bs 0 len)
+                            (unsafeSlice cs 0 len)
+                            (unsafeSlice ds 0 len)
+  where
+    len = length as `min` length bs `min` length cs `min` length ds
+unzip4 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d) => MVector s (a, b, c, d) -> (MVector s a,
+                                                  MVector s b,
+                                                  MVector s c,
+                                                  MVector s d)
+{-# INLINE unzip4 #-}
+unzip4 (MV_4 n_ as bs cs ds) = (as, bs, cs, ds)
+#endif
+#ifdef DEFINE_IMMUTABLE
+zip4 :: (Unbox a, Unbox b, Unbox c, Unbox d) => Vector a ->
+                                                Vector b ->
+                                                Vector c ->
+                                                Vector d -> Vector (a, b, c, d)
+{-# INLINE zip4 #-}
+zip4 as bs cs ds = V_4 len (unsafeSlice as 0 len)
+                           (unsafeSlice bs 0 len)
+                           (unsafeSlice cs 0 len)
+                           (unsafeSlice ds 0 len)
+  where
+    len = length as `min` length bs `min` length cs `min` length ds
+unzip4 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d) => Vector (a, b, c, d) -> (Vector a,
+                                               Vector b,
+                                               Vector c,
+                                               Vector d)
+{-# INLINE unzip4 #-}
+unzip4 (V_4 n_ as bs cs ds) = (as, bs, cs, ds)
+#endif
+#ifdef DEFINE_INSTANCES
 data instance MVector s (a, b, c, d, e)
     = MV_5 {-# UNPACK #-} !Int (MVector s a)
                                (MVector s b)
@@ -445,6 +549,76 @@ instance (Unbox a,
           d <- G.basicUnsafeIndexM ds i_
           e <- G.basicUnsafeIndexM es i_
           return (a, b, c, d, e)
+#endif
+#ifdef DEFINE_MUTABLE
+zip5 :: (Unbox a,
+         Unbox b,
+         Unbox c,
+         Unbox d,
+         Unbox e) => MVector s a ->
+                     MVector s b ->
+                     MVector s c ->
+                     MVector s d ->
+                     MVector s e -> MVector s (a, b, c, d, e)
+{-# INLINE zip5 #-}
+zip5 as bs cs ds es = MV_5 len (unsafeSlice as 0 len)
+                               (unsafeSlice bs 0 len)
+                               (unsafeSlice cs 0 len)
+                               (unsafeSlice ds 0 len)
+                               (unsafeSlice es 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es
+unzip5 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d,
+           Unbox e) => MVector s (a, b, c, d, e) -> (MVector s a,
+                                                     MVector s b,
+                                                     MVector s c,
+                                                     MVector s d,
+                                                     MVector s e)
+{-# INLINE unzip5 #-}
+unzip5 (MV_5 n_ as bs cs ds es) = (as, bs, cs, ds, es)
+#endif
+#ifdef DEFINE_IMMUTABLE
+zip5 :: (Unbox a,
+         Unbox b,
+         Unbox c,
+         Unbox d,
+         Unbox e) => Vector a ->
+                     Vector b ->
+                     Vector c ->
+                     Vector d ->
+                     Vector e -> Vector (a, b, c, d, e)
+{-# INLINE zip5 #-}
+zip5 as bs cs ds es = V_5 len (unsafeSlice as 0 len)
+                              (unsafeSlice bs 0 len)
+                              (unsafeSlice cs 0 len)
+                              (unsafeSlice ds 0 len)
+                              (unsafeSlice es 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es
+unzip5 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d,
+           Unbox e) => Vector (a, b, c, d, e) -> (Vector a,
+                                                  Vector b,
+                                                  Vector c,
+                                                  Vector d,
+                                                  Vector e)
+{-# INLINE unzip5 #-}
+unzip5 (V_5 n_ as bs cs ds es) = (as, bs, cs, ds, es)
+#endif
+#ifdef DEFINE_INSTANCES
 data instance MVector s (a, b, c, d, e, f)
     = MV_6 {-# UNPACK #-} !Int (MVector s a)
                                (MVector s b)
@@ -611,6 +785,88 @@ instance (Unbox a,
           e <- G.basicUnsafeIndexM es i_
           f <- G.basicUnsafeIndexM fs i_
           return (a, b, c, d, e, f)
+#endif
+#ifdef DEFINE_MUTABLE
+zip6 :: (Unbox a,
+         Unbox b,
+         Unbox c,
+         Unbox d,
+         Unbox e,
+         Unbox f) => MVector s a ->
+                     MVector s b ->
+                     MVector s c ->
+                     MVector s d ->
+                     MVector s e ->
+                     MVector s f -> MVector s (a, b, c, d, e, f)
+{-# INLINE zip6 #-}
+zip6 as bs cs ds es fs = MV_6 len (unsafeSlice as 0 len)
+                                  (unsafeSlice bs 0 len)
+                                  (unsafeSlice cs 0 len)
+                                  (unsafeSlice ds 0 len)
+                                  (unsafeSlice es 0 len)
+                                  (unsafeSlice fs 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es `min`
+          length fs
+unzip6 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d,
+           Unbox e,
+           Unbox f) => MVector s (a, b, c, d, e, f) -> (MVector s a,
+                                                        MVector s b,
+                                                        MVector s c,
+                                                        MVector s d,
+                                                        MVector s e,
+                                                        MVector s f)
+{-# INLINE unzip6 #-}
+unzip6 (MV_6 n_ as bs cs ds es fs) = (as, bs, cs, ds, es, fs)
+#endif
+#ifdef DEFINE_IMMUTABLE
+zip6 :: (Unbox a,
+         Unbox b,
+         Unbox c,
+         Unbox d,
+         Unbox e,
+         Unbox f) => Vector a ->
+                     Vector b ->
+                     Vector c ->
+                     Vector d ->
+                     Vector e ->
+                     Vector f -> Vector (a, b, c, d, e, f)
+{-# INLINE zip6 #-}
+zip6 as bs cs ds es fs = V_6 len (unsafeSlice as 0 len)
+                                 (unsafeSlice bs 0 len)
+                                 (unsafeSlice cs 0 len)
+                                 (unsafeSlice ds 0 len)
+                                 (unsafeSlice es 0 len)
+                                 (unsafeSlice fs 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es `min`
+          length fs
+unzip6 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d,
+           Unbox e,
+           Unbox f) => Vector (a, b, c, d, e, f) -> (Vector a,
+                                                     Vector b,
+                                                     Vector c,
+                                                     Vector d,
+                                                     Vector e,
+                                                     Vector f)
+{-# INLINE unzip6 #-}
+unzip6 (V_6 n_ as bs cs ds es fs) = (as, bs, cs, ds, es, fs)
+#endif
+#ifdef DEFINE_INSTANCES
 data instance MVector s (a, b, c, d, e, f, g)
     = MV_7 {-# UNPACK #-} !Int (MVector s a)
                                (MVector s b)
@@ -803,6 +1059,106 @@ instance (Unbox a,
           f <- G.basicUnsafeIndexM fs i_
           g <- G.basicUnsafeIndexM gs i_
           return (a, b, c, d, e, f, g)
+#endif
+#ifdef DEFINE_MUTABLE
+zip7 :: (Unbox a,
+         Unbox b,
+         Unbox c,
+         Unbox d,
+         Unbox e,
+         Unbox f,
+         Unbox g) => MVector s a ->
+                     MVector s b ->
+                     MVector s c ->
+                     MVector s d ->
+                     MVector s e ->
+                     MVector s f ->
+                     MVector s g -> MVector s (a, b, c, d, e, f, g)
+{-# INLINE zip7 #-}
+zip7 as bs cs ds es fs gs = MV_7 len (unsafeSlice as 0 len)
+                                     (unsafeSlice bs 0 len)
+                                     (unsafeSlice cs 0 len)
+                                     (unsafeSlice ds 0 len)
+                                     (unsafeSlice es 0 len)
+                                     (unsafeSlice fs 0 len)
+                                     (unsafeSlice gs 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es `min`
+          length fs `min`
+          length gs
+unzip7 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d,
+           Unbox e,
+           Unbox f,
+           Unbox g) => MVector s (a, b, c, d, e, f, g) -> (MVector s a,
+                                                           MVector s b,
+                                                           MVector s c,
+                                                           MVector s d,
+                                                           MVector s e,
+                                                           MVector s f,
+                                                           MVector s g)
+{-# INLINE unzip7 #-}
+unzip7 (MV_7 n_ as bs cs ds es fs gs) = (as,
+                                         bs,
+                                         cs,
+                                         ds,
+                                         es,
+                                         fs,
+                                         gs)
+#endif
+#ifdef DEFINE_IMMUTABLE
+zip7 :: (Unbox a,
+         Unbox b,
+         Unbox c,
+         Unbox d,
+         Unbox e,
+         Unbox f,
+         Unbox g) => Vector a ->
+                     Vector b ->
+                     Vector c ->
+                     Vector d ->
+                     Vector e ->
+                     Vector f ->
+                     Vector g -> Vector (a, b, c, d, e, f, g)
+{-# INLINE zip7 #-}
+zip7 as bs cs ds es fs gs = V_7 len (unsafeSlice as 0 len)
+                                    (unsafeSlice bs 0 len)
+                                    (unsafeSlice cs 0 len)
+                                    (unsafeSlice ds 0 len)
+                                    (unsafeSlice es 0 len)
+                                    (unsafeSlice fs 0 len)
+                                    (unsafeSlice gs 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es `min`
+          length fs `min`
+          length gs
+unzip7 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d,
+           Unbox e,
+           Unbox f,
+           Unbox g) => Vector (a, b, c, d, e, f, g) -> (Vector a,
+                                                        Vector b,
+                                                        Vector c,
+                                                        Vector d,
+                                                        Vector e,
+                                                        Vector f,
+                                                        Vector g)
+{-# INLINE unzip7 #-}
+unzip7 (V_7 n_ as bs cs ds es fs gs) = (as, bs, cs, ds, es, fs, gs)
+#endif
+#ifdef DEFINE_INSTANCES
 data instance MVector s (a, b, c, d, e, f, g, h)
     = MV_8 {-# UNPACK #-} !Int (MVector s a)
                                (MVector s b)
@@ -1016,6 +1372,126 @@ instance (Unbox a,
           g <- G.basicUnsafeIndexM gs i_
           h <- G.basicUnsafeIndexM hs i_
           return (a, b, c, d, e, f, g, h)
+#endif
+#ifdef DEFINE_MUTABLE
+zip8 :: (Unbox a,
+         Unbox b,
+         Unbox c,
+         Unbox d,
+         Unbox e,
+         Unbox f,
+         Unbox g,
+         Unbox h) => MVector s a ->
+                     MVector s b ->
+                     MVector s c ->
+                     MVector s d ->
+                     MVector s e ->
+                     MVector s f ->
+                     MVector s g ->
+                     MVector s h -> MVector s (a, b, c, d, e, f, g, h)
+{-# INLINE zip8 #-}
+zip8 as bs cs ds es fs gs hs = MV_8 len (unsafeSlice as 0 len)
+                                        (unsafeSlice bs 0 len)
+                                        (unsafeSlice cs 0 len)
+                                        (unsafeSlice ds 0 len)
+                                        (unsafeSlice es 0 len)
+                                        (unsafeSlice fs 0 len)
+                                        (unsafeSlice gs 0 len)
+                                        (unsafeSlice hs 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es `min`
+          length fs `min`
+          length gs `min`
+          length hs
+unzip8 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d,
+           Unbox e,
+           Unbox f,
+           Unbox g,
+           Unbox h) => MVector s (a, b, c, d, e, f, g, h) -> (MVector s a,
+                                                              MVector s b,
+                                                              MVector s c,
+                                                              MVector s d,
+                                                              MVector s e,
+                                                              MVector s f,
+                                                              MVector s g,
+                                                              MVector s h)
+{-# INLINE unzip8 #-}
+unzip8 (MV_8 n_ as bs cs ds es fs gs hs) = (as,
+                                            bs,
+                                            cs,
+                                            ds,
+                                            es,
+                                            fs,
+                                            gs,
+                                            hs)
+#endif
+#ifdef DEFINE_IMMUTABLE
+zip8 :: (Unbox a,
+         Unbox b,
+         Unbox c,
+         Unbox d,
+         Unbox e,
+         Unbox f,
+         Unbox g,
+         Unbox h) => Vector a ->
+                     Vector b ->
+                     Vector c ->
+                     Vector d ->
+                     Vector e ->
+                     Vector f ->
+                     Vector g ->
+                     Vector h -> Vector (a, b, c, d, e, f, g, h)
+{-# INLINE zip8 #-}
+zip8 as bs cs ds es fs gs hs = V_8 len (unsafeSlice as 0 len)
+                                       (unsafeSlice bs 0 len)
+                                       (unsafeSlice cs 0 len)
+                                       (unsafeSlice ds 0 len)
+                                       (unsafeSlice es 0 len)
+                                       (unsafeSlice fs 0 len)
+                                       (unsafeSlice gs 0 len)
+                                       (unsafeSlice hs 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es `min`
+          length fs `min`
+          length gs `min`
+          length hs
+unzip8 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d,
+           Unbox e,
+           Unbox f,
+           Unbox g,
+           Unbox h) => Vector (a, b, c, d, e, f, g, h) -> (Vector a,
+                                                           Vector b,
+                                                           Vector c,
+                                                           Vector d,
+                                                           Vector e,
+                                                           Vector f,
+                                                           Vector g,
+                                                           Vector h)
+{-# INLINE unzip8 #-}
+unzip8 (V_8 n_ as bs cs ds es fs gs hs) = (as,
+                                           bs,
+                                           cs,
+                                           ds,
+                                           es,
+                                           fs,
+                                           gs,
+                                           hs)
+#endif
+#ifdef DEFINE_INSTANCES
 data instance MVector s (a, b, c, d, e, f, g, h, i)
     = MV_9 {-# UNPACK #-} !Int (MVector s a)
                                (MVector s b)
@@ -1258,6 +1734,140 @@ instance (Unbox a,
           h <- G.basicUnsafeIndexM hs i_
           i <- G.basicUnsafeIndexM is i_
           return (a, b, c, d, e, f, g, h, i)
+#endif
+#ifdef DEFINE_MUTABLE
+zip9 :: (Unbox a,
+         Unbox b,
+         Unbox c,
+         Unbox d,
+         Unbox e,
+         Unbox f,
+         Unbox g,
+         Unbox h,
+         Unbox i) => MVector s a ->
+                     MVector s b ->
+                     MVector s c ->
+                     MVector s d ->
+                     MVector s e ->
+                     MVector s f ->
+                     MVector s g ->
+                     MVector s h ->
+                     MVector s i -> MVector s (a, b, c, d, e, f, g, h, i)
+{-# INLINE zip9 #-}
+zip9 as bs cs ds es fs gs hs is = MV_9 len (unsafeSlice as 0 len)
+                                           (unsafeSlice bs 0 len)
+                                           (unsafeSlice cs 0 len)
+                                           (unsafeSlice ds 0 len)
+                                           (unsafeSlice es 0 len)
+                                           (unsafeSlice fs 0 len)
+                                           (unsafeSlice gs 0 len)
+                                           (unsafeSlice hs 0 len)
+                                           (unsafeSlice is 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es `min`
+          length fs `min`
+          length gs `min`
+          length hs `min`
+          length is
+unzip9 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d,
+           Unbox e,
+           Unbox f,
+           Unbox g,
+           Unbox h,
+           Unbox i) => MVector s (a, b, c, d, e, f, g, h, i) -> (MVector s a,
+                                                                 MVector s b,
+                                                                 MVector s c,
+                                                                 MVector s d,
+                                                                 MVector s e,
+                                                                 MVector s f,
+                                                                 MVector s g,
+                                                                 MVector s h,
+                                                                 MVector s i)
+{-# INLINE unzip9 #-}
+unzip9 (MV_9 n_ as bs cs ds es fs gs hs is) = (as,
+                                               bs,
+                                               cs,
+                                               ds,
+                                               es,
+                                               fs,
+                                               gs,
+                                               hs,
+                                               is)
+#endif
+#ifdef DEFINE_IMMUTABLE
+zip9 :: (Unbox a,
+         Unbox b,
+         Unbox c,
+         Unbox d,
+         Unbox e,
+         Unbox f,
+         Unbox g,
+         Unbox h,
+         Unbox i) => Vector a ->
+                     Vector b ->
+                     Vector c ->
+                     Vector d ->
+                     Vector e ->
+                     Vector f ->
+                     Vector g ->
+                     Vector h ->
+                     Vector i -> Vector (a, b, c, d, e, f, g, h, i)
+{-# INLINE zip9 #-}
+zip9 as bs cs ds es fs gs hs is = V_9 len (unsafeSlice as 0 len)
+                                          (unsafeSlice bs 0 len)
+                                          (unsafeSlice cs 0 len)
+                                          (unsafeSlice ds 0 len)
+                                          (unsafeSlice es 0 len)
+                                          (unsafeSlice fs 0 len)
+                                          (unsafeSlice gs 0 len)
+                                          (unsafeSlice hs 0 len)
+                                          (unsafeSlice is 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es `min`
+          length fs `min`
+          length gs `min`
+          length hs `min`
+          length is
+unzip9 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d,
+           Unbox e,
+           Unbox f,
+           Unbox g,
+           Unbox h,
+           Unbox i) => Vector (a, b, c, d, e, f, g, h, i) -> (Vector a,
+                                                              Vector b,
+                                                              Vector c,
+                                                              Vector d,
+                                                              Vector e,
+                                                              Vector f,
+                                                              Vector g,
+                                                              Vector h,
+                                                              Vector i)
+{-# INLINE unzip9 #-}
+unzip9 (V_9 n_ as bs cs ds es fs gs hs is) = (as,
+                                              bs,
+                                              cs,
+                                              ds,
+                                              es,
+                                              fs,
+                                              gs,
+                                              hs,
+                                              is)
+#endif
+#ifdef DEFINE_INSTANCES
 data instance MVector s (a, b, c, d, e, f, g, h, i, j)
     = MV_10 {-# UNPACK #-} !Int (MVector s a)
                                 (MVector s b)
@@ -1522,6 +2132,172 @@ instance (Unbox a,
           i <- G.basicUnsafeIndexM is i_
           j <- G.basicUnsafeIndexM js i_
           return (a, b, c, d, e, f, g, h, i, j)
+#endif
+#ifdef DEFINE_MUTABLE
+zip10 :: (Unbox a,
+          Unbox b,
+          Unbox c,
+          Unbox d,
+          Unbox e,
+          Unbox f,
+          Unbox g,
+          Unbox h,
+          Unbox i,
+          Unbox j) => MVector s a ->
+                      MVector s b ->
+                      MVector s c ->
+                      MVector s d ->
+                      MVector s e ->
+                      MVector s f ->
+                      MVector s g ->
+                      MVector s h ->
+                      MVector s i ->
+                      MVector s j -> MVector s (a, b, c, d, e, f, g, h, i, j)
+{-# INLINE zip10 #-}
+zip10 as
+      bs
+      cs
+      ds
+      es
+      fs
+      gs
+      hs
+      is
+      js = MV_10 len (unsafeSlice as 0 len)
+                     (unsafeSlice bs 0 len)
+                     (unsafeSlice cs 0 len)
+                     (unsafeSlice ds 0 len)
+                     (unsafeSlice es 0 len)
+                     (unsafeSlice fs 0 len)
+                     (unsafeSlice gs 0 len)
+                     (unsafeSlice hs 0 len)
+                     (unsafeSlice is 0 len)
+                     (unsafeSlice js 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es `min`
+          length fs `min`
+          length gs `min`
+          length hs `min`
+          length is `min`
+          length js
+unzip10 :: (Unbox a,
+            Unbox b,
+            Unbox c,
+            Unbox d,
+            Unbox e,
+            Unbox f,
+            Unbox g,
+            Unbox h,
+            Unbox i,
+            Unbox j) => MVector s (a, b, c, d, e, f, g, h, i, j) -> (MVector s a,
+                                                                     MVector s b,
+                                                                     MVector s c,
+                                                                     MVector s d,
+                                                                     MVector s e,
+                                                                     MVector s f,
+                                                                     MVector s g,
+                                                                     MVector s h,
+                                                                     MVector s i,
+                                                                     MVector s j)
+{-# INLINE unzip10 #-}
+unzip10 (MV_10 n_ as bs cs ds es fs gs hs is js) = (as,
+                                                    bs,
+                                                    cs,
+                                                    ds,
+                                                    es,
+                                                    fs,
+                                                    gs,
+                                                    hs,
+                                                    is,
+                                                    js)
+#endif
+#ifdef DEFINE_IMMUTABLE
+zip10 :: (Unbox a,
+          Unbox b,
+          Unbox c,
+          Unbox d,
+          Unbox e,
+          Unbox f,
+          Unbox g,
+          Unbox h,
+          Unbox i,
+          Unbox j) => Vector a ->
+                      Vector b ->
+                      Vector c ->
+                      Vector d ->
+                      Vector e ->
+                      Vector f ->
+                      Vector g ->
+                      Vector h ->
+                      Vector i ->
+                      Vector j -> Vector (a, b, c, d, e, f, g, h, i, j)
+{-# INLINE zip10 #-}
+zip10 as
+      bs
+      cs
+      ds
+      es
+      fs
+      gs
+      hs
+      is
+      js = V_10 len (unsafeSlice as 0 len)
+                    (unsafeSlice bs 0 len)
+                    (unsafeSlice cs 0 len)
+                    (unsafeSlice ds 0 len)
+                    (unsafeSlice es 0 len)
+                    (unsafeSlice fs 0 len)
+                    (unsafeSlice gs 0 len)
+                    (unsafeSlice hs 0 len)
+                    (unsafeSlice is 0 len)
+                    (unsafeSlice js 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es `min`
+          length fs `min`
+          length gs `min`
+          length hs `min`
+          length is `min`
+          length js
+unzip10 :: (Unbox a,
+            Unbox b,
+            Unbox c,
+            Unbox d,
+            Unbox e,
+            Unbox f,
+            Unbox g,
+            Unbox h,
+            Unbox i,
+            Unbox j) => Vector (a, b, c, d, e, f, g, h, i, j) -> (Vector a,
+                                                                  Vector b,
+                                                                  Vector c,
+                                                                  Vector d,
+                                                                  Vector e,
+                                                                  Vector f,
+                                                                  Vector g,
+                                                                  Vector h,
+                                                                  Vector i,
+                                                                  Vector j)
+{-# INLINE unzip10 #-}
+unzip10 (V_10 n_ as bs cs ds es fs gs hs is js) = (as,
+                                                   bs,
+                                                   cs,
+                                                   ds,
+                                                   es,
+                                                   fs,
+                                                   gs,
+                                                   hs,
+                                                   is,
+                                                   js)
+#endif
+#ifdef DEFINE_INSTANCES
 data instance MVector s (a, b, c, d, e, f, g, h, i, j, k)
     = MV_11 {-# UNPACK #-} !Int (MVector s a)
                                 (MVector s b)
@@ -1808,6 +2584,188 @@ instance (Unbox a,
           j <- G.basicUnsafeIndexM js i_
           k <- G.basicUnsafeIndexM ks i_
           return (a, b, c, d, e, f, g, h, i, j, k)
+#endif
+#ifdef DEFINE_MUTABLE
+zip11 :: (Unbox a,
+          Unbox b,
+          Unbox c,
+          Unbox d,
+          Unbox e,
+          Unbox f,
+          Unbox g,
+          Unbox h,
+          Unbox i,
+          Unbox j,
+          Unbox k) => MVector s a ->
+                      MVector s b ->
+                      MVector s c ->
+                      MVector s d ->
+                      MVector s e ->
+                      MVector s f ->
+                      MVector s g ->
+                      MVector s h ->
+                      MVector s i ->
+                      MVector s j ->
+                      MVector s k -> MVector s (a, b, c, d, e, f, g, h, i, j, k)
+{-# INLINE zip11 #-}
+zip11 as
+      bs
+      cs
+      ds
+      es
+      fs
+      gs
+      hs
+      is
+      js
+      ks = MV_11 len (unsafeSlice as 0 len)
+                     (unsafeSlice bs 0 len)
+                     (unsafeSlice cs 0 len)
+                     (unsafeSlice ds 0 len)
+                     (unsafeSlice es 0 len)
+                     (unsafeSlice fs 0 len)
+                     (unsafeSlice gs 0 len)
+                     (unsafeSlice hs 0 len)
+                     (unsafeSlice is 0 len)
+                     (unsafeSlice js 0 len)
+                     (unsafeSlice ks 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es `min`
+          length fs `min`
+          length gs `min`
+          length hs `min`
+          length is `min`
+          length js `min`
+          length ks
+unzip11 :: (Unbox a,
+            Unbox b,
+            Unbox c,
+            Unbox d,
+            Unbox e,
+            Unbox f,
+            Unbox g,
+            Unbox h,
+            Unbox i,
+            Unbox j,
+            Unbox k) => MVector s (a, b, c, d, e, f, g, h, i, j, k) -> (MVector s a,
+                                                                        MVector s b,
+                                                                        MVector s c,
+                                                                        MVector s d,
+                                                                        MVector s e,
+                                                                        MVector s f,
+                                                                        MVector s g,
+                                                                        MVector s h,
+                                                                        MVector s i,
+                                                                        MVector s j,
+                                                                        MVector s k)
+{-# INLINE unzip11 #-}
+unzip11 (MV_11 n_ as bs cs ds es fs gs hs is js ks) = (as,
+                                                       bs,
+                                                       cs,
+                                                       ds,
+                                                       es,
+                                                       fs,
+                                                       gs,
+                                                       hs,
+                                                       is,
+                                                       js,
+                                                       ks)
+#endif
+#ifdef DEFINE_IMMUTABLE
+zip11 :: (Unbox a,
+          Unbox b,
+          Unbox c,
+          Unbox d,
+          Unbox e,
+          Unbox f,
+          Unbox g,
+          Unbox h,
+          Unbox i,
+          Unbox j,
+          Unbox k) => Vector a ->
+                      Vector b ->
+                      Vector c ->
+                      Vector d ->
+                      Vector e ->
+                      Vector f ->
+                      Vector g ->
+                      Vector h ->
+                      Vector i ->
+                      Vector j ->
+                      Vector k -> Vector (a, b, c, d, e, f, g, h, i, j, k)
+{-# INLINE zip11 #-}
+zip11 as
+      bs
+      cs
+      ds
+      es
+      fs
+      gs
+      hs
+      is
+      js
+      ks = V_11 len (unsafeSlice as 0 len)
+                    (unsafeSlice bs 0 len)
+                    (unsafeSlice cs 0 len)
+                    (unsafeSlice ds 0 len)
+                    (unsafeSlice es 0 len)
+                    (unsafeSlice fs 0 len)
+                    (unsafeSlice gs 0 len)
+                    (unsafeSlice hs 0 len)
+                    (unsafeSlice is 0 len)
+                    (unsafeSlice js 0 len)
+                    (unsafeSlice ks 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es `min`
+          length fs `min`
+          length gs `min`
+          length hs `min`
+          length is `min`
+          length js `min`
+          length ks
+unzip11 :: (Unbox a,
+            Unbox b,
+            Unbox c,
+            Unbox d,
+            Unbox e,
+            Unbox f,
+            Unbox g,
+            Unbox h,
+            Unbox i,
+            Unbox j,
+            Unbox k) => Vector (a, b, c, d, e, f, g, h, i, j, k) -> (Vector a,
+                                                                     Vector b,
+                                                                     Vector c,
+                                                                     Vector d,
+                                                                     Vector e,
+                                                                     Vector f,
+                                                                     Vector g,
+                                                                     Vector h,
+                                                                     Vector i,
+                                                                     Vector j,
+                                                                     Vector k)
+{-# INLINE unzip11 #-}
+unzip11 (V_11 n_ as bs cs ds es fs gs hs is js ks) = (as,
+                                                      bs,
+                                                      cs,
+                                                      ds,
+                                                      es,
+                                                      fs,
+                                                      gs,
+                                                      hs,
+                                                      is,
+                                                      js,
+                                                      ks)
+#endif
+#ifdef DEFINE_INSTANCES
 data instance MVector s (a, b, c, d, e, f, g, h, i, j, k, l)
     = MV_12 {-# UNPACK #-} !Int (MVector s a)
                                 (MVector s b)
@@ -2138,3 +3096,200 @@ instance (Unbox a,
           k <- G.basicUnsafeIndexM ks i_
           l <- G.basicUnsafeIndexM ls i_
           return (a, b, c, d, e, f, g, h, i, j, k, l)
+#endif
+#ifdef DEFINE_MUTABLE
+zip12 :: (Unbox a,
+          Unbox b,
+          Unbox c,
+          Unbox d,
+          Unbox e,
+          Unbox f,
+          Unbox g,
+          Unbox h,
+          Unbox i,
+          Unbox j,
+          Unbox k,
+          Unbox l) => MVector s a ->
+                      MVector s b ->
+                      MVector s c ->
+                      MVector s d ->
+                      MVector s e ->
+                      MVector s f ->
+                      MVector s g ->
+                      MVector s h ->
+                      MVector s i ->
+                      MVector s j ->
+                      MVector s k ->
+                      MVector s l -> MVector s (a, b, c, d, e, f, g, h, i, j, k, l)
+{-# INLINE zip12 #-}
+zip12 as
+      bs
+      cs
+      ds
+      es
+      fs
+      gs
+      hs
+      is
+      js
+      ks
+      ls = MV_12 len (unsafeSlice as 0 len)
+                     (unsafeSlice bs 0 len)
+                     (unsafeSlice cs 0 len)
+                     (unsafeSlice ds 0 len)
+                     (unsafeSlice es 0 len)
+                     (unsafeSlice fs 0 len)
+                     (unsafeSlice gs 0 len)
+                     (unsafeSlice hs 0 len)
+                     (unsafeSlice is 0 len)
+                     (unsafeSlice js 0 len)
+                     (unsafeSlice ks 0 len)
+                     (unsafeSlice ls 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es `min`
+          length fs `min`
+          length gs `min`
+          length hs `min`
+          length is `min`
+          length js `min`
+          length ks `min`
+          length ls
+unzip12 :: (Unbox a,
+            Unbox b,
+            Unbox c,
+            Unbox d,
+            Unbox e,
+            Unbox f,
+            Unbox g,
+            Unbox h,
+            Unbox i,
+            Unbox j,
+            Unbox k,
+            Unbox l) => MVector s (a, b, c, d, e, f, g, h, i, j, k, l) -> (MVector s a,
+                                                                           MVector s b,
+                                                                           MVector s c,
+                                                                           MVector s d,
+                                                                           MVector s e,
+                                                                           MVector s f,
+                                                                           MVector s g,
+                                                                           MVector s h,
+                                                                           MVector s i,
+                                                                           MVector s j,
+                                                                           MVector s k,
+                                                                           MVector s l)
+{-# INLINE unzip12 #-}
+unzip12 (MV_12 n_ as bs cs ds es fs gs hs is js ks ls) = (as,
+                                                          bs,
+                                                          cs,
+                                                          ds,
+                                                          es,
+                                                          fs,
+                                                          gs,
+                                                          hs,
+                                                          is,
+                                                          js,
+                                                          ks,
+                                                          ls)
+#endif
+#ifdef DEFINE_IMMUTABLE
+zip12 :: (Unbox a,
+          Unbox b,
+          Unbox c,
+          Unbox d,
+          Unbox e,
+          Unbox f,
+          Unbox g,
+          Unbox h,
+          Unbox i,
+          Unbox j,
+          Unbox k,
+          Unbox l) => Vector a ->
+                      Vector b ->
+                      Vector c ->
+                      Vector d ->
+                      Vector e ->
+                      Vector f ->
+                      Vector g ->
+                      Vector h ->
+                      Vector i ->
+                      Vector j ->
+                      Vector k ->
+                      Vector l -> Vector (a, b, c, d, e, f, g, h, i, j, k, l)
+{-# INLINE zip12 #-}
+zip12 as
+      bs
+      cs
+      ds
+      es
+      fs
+      gs
+      hs
+      is
+      js
+      ks
+      ls = V_12 len (unsafeSlice as 0 len)
+                    (unsafeSlice bs 0 len)
+                    (unsafeSlice cs 0 len)
+                    (unsafeSlice ds 0 len)
+                    (unsafeSlice es 0 len)
+                    (unsafeSlice fs 0 len)
+                    (unsafeSlice gs 0 len)
+                    (unsafeSlice hs 0 len)
+                    (unsafeSlice is 0 len)
+                    (unsafeSlice js 0 len)
+                    (unsafeSlice ks 0 len)
+                    (unsafeSlice ls 0 len)
+  where
+    len = length as `min`
+          length bs `min`
+          length cs `min`
+          length ds `min`
+          length es `min`
+          length fs `min`
+          length gs `min`
+          length hs `min`
+          length is `min`
+          length js `min`
+          length ks `min`
+          length ls
+unzip12 :: (Unbox a,
+            Unbox b,
+            Unbox c,
+            Unbox d,
+            Unbox e,
+            Unbox f,
+            Unbox g,
+            Unbox h,
+            Unbox i,
+            Unbox j,
+            Unbox k,
+            Unbox l) => Vector (a, b, c, d, e, f, g, h, i, j, k, l) -> (Vector a,
+                                                                        Vector b,
+                                                                        Vector c,
+                                                                        Vector d,
+                                                                        Vector e,
+                                                                        Vector f,
+                                                                        Vector g,
+                                                                        Vector h,
+                                                                        Vector i,
+                                                                        Vector j,
+                                                                        Vector k,
+                                                                        Vector l)
+{-# INLINE unzip12 #-}
+unzip12 (V_12 n_ as bs cs ds es fs gs hs is js ks ls) = (as,
+                                                         bs,
+                                                         cs,
+                                                         ds,
+                                                         es,
+                                                         fs,
+                                                         gs,
+                                                         hs,
+                                                         is,
+                                                         js,
+                                                         ks,
+                                                         ls)
+#endif

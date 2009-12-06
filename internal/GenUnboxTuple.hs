@@ -12,32 +12,83 @@ main = do
 
 generate :: Int -> Doc
 generate n =
-  vcat [ data_instance "MVector s" "MV"
+  vcat [ text "#ifdef DEFINE_INSTANCES"
+       , data_instance "MVector s" "MV"
        , data_instance "Vector" "V"
        , class_instance "Unbox"
        , class_instance "M.MVector MVector" <+> text "where"
        , nest 2 $ vcat $ map method methods_MVector
        , class_instance "G.Vector Vector" <+> text "where"
        , nest 2 $ vcat $ map method methods_Vector
+       , text "#endif"
+       , text "#ifdef DEFINE_MUTABLE"
+       , define_zip "MVector s" "MV"
+       , define_unzip "MVector s" "MV"
+       , text "#endif"
+       , text "#ifdef DEFINE_IMMUTABLE"
+       , define_zip "Vector" "V"
+       , define_unzip "Vector" "V"
+       , text "#endif"
        ]
 
   where
     vars  = map char $ take n ['a'..]
     varss = map (<> char 's') vars
-    tuple f = parens $ hsep $ punctuate comma $ map f vars
-    vtuple f = parens $ sep $ punctuate comma $ map f vars
+    tuple xs = parens $ hsep $ punctuate comma xs
+    vtuple xs = parens $ sep $ punctuate comma xs
     con s = text s <> char '_' <> int n
     var c = text (c : "_")
 
     data_instance ty c
-      = hang (hsep [text "data instance", text ty, tuple id])
+      = hang (hsep [text "data instance", text ty, tuple vars])
              4
              (hsep [char '=', con c, text "{-# UNPACK #-} !Int"
                    , vcat $ map (\v -> parens (text ty <+> v)) vars])
 
     class_instance cls
-      = text "instance" <+> vtuple (text "Unbox" <+>)
-                        <+> text "=>" <+> text cls <+> tuple id
+      = text "instance" <+> vtuple [text "Unbox" <+> v | v <- vars]
+                        <+> text "=>" <+> text cls <+> tuple vars
+
+
+    define_zip ty c
+      = sep [name <+> text "::"
+                  <+> vtuple [text "Unbox" <+> v | v <- vars]
+                  <+> text "=>"
+                  <+> sep (punctuate (text " ->") [text ty <+> v | v <- vars])
+                  <+> text "->"
+                  <+> text ty <+> tuple vars
+             ,text "{-# INLINE"  <+> name <+> text "#-}"
+             ,name <+> sep varss
+                   <+> text "="
+                   <+> con c
+                   <+> text "len"
+                   <+> sep [parens $ text "unsafeSlice"
+                                     <+> vs
+                                     <+> char '0'
+                                     <+> text "len" | vs <- varss]
+             ,nest 2 $ hang (text "where")
+                            2
+                     $ text "len ="
+                       <+> sep (punctuate (text " `min`")
+                                          [text "length" <+> vs | vs <- varss])
+             ]
+      where
+        name | n == 2    = text "zip"
+             | otherwise = text "zip" <> int n
+
+    define_unzip ty c
+      = sep [name <+> text "::"
+                  <+> vtuple [text "Unbox" <+> v | v <- vars]
+                  <+> text "=>"
+                  <+> text ty <+> tuple vars
+                  <+> text "->" <+> vtuple [text ty <+> v | v <- vars]
+            ,text "{-# INLINE" <+> name <+> text "#-}"
+            ,name <+> pat c <+> text "="
+                  <+> vtuple varss
+            ]
+      where
+        name | n == 2    = text "unzip"
+             | otherwise = text "unzip" <> int n
 
     pat c = parens $ con c <+> var 'n' <+> sep varss
     patn c n = parens $ con c <+> (var 'n' <> int n)
@@ -68,7 +119,7 @@ generate n =
                $ text "return $" <+> con "MV" <+> var 'n' <+> sep varss)
 
     gen_unsafeNewWith rec
-      = (var 'n' <+> tuple id,
+      = (var 'n' <+> tuple vars,
          mk_do [vs <+> text "<-" <+> qM rec <+> var 'n' <+> v
                         | v  <- vars | vs <- varss]
                $ text "return $" <+> con "MV" <+> var 'n' <+> sep varss)
@@ -77,10 +128,10 @@ generate n =
       = (pat "MV" <+> var 'i',
          mk_do [v <+> text "<-" <+> qM rec <+> vs <+> var 'i' | v  <- vars
                                                               | vs <- varss]
-               $ text "return" <+> tuple id)
+               $ text "return" <+> tuple vars)
 
     gen_unsafeWrite rec
-      = (pat "MV" <+> var 'i' <+> tuple id,
+      = (pat "MV" <+> var 'i' <+> tuple vars,
          mk_do [qM rec <+> vs <+> var 'i' <+> v | v  <- vars | vs <- varss]
                empty)
 
@@ -88,7 +139,7 @@ generate n =
       = (pat "MV", mk_do [qM rec <+> vs | vs <- varss] empty)
 
     gen_set rec
-      = (pat "MV" <+> tuple id,
+      = (pat "MV" <+> tuple vars,
          mk_do [qM rec <+> vs <+> v | vs <- varss | v <- vars] empty)
 
     gen_unsafeCopy rec
@@ -113,7 +164,7 @@ generate n =
       = (pat "V" <+> var 'i',
          mk_do [v <+> text "<-" <+> qG rec <+> vs <+> var 'i'
                         | vs <- varss | v <- vars]
-               $ text "return" <+> tuple id)
+               $ text "return" <+> tuple vars)
 
     
          
