@@ -39,7 +39,6 @@ generate n =
       = text "instance" <+> vtuple (text "Unbox" <+>)
                         <+> text "=>" <+> text cls <+> tuple id
 
-
     pat c = parens $ con c <+> var 'n' <+> sep varss
     patn c n = parens $ con c <+> (var 'n' <> int n)
                               <+> sep [v <> int n | v <- varss]
@@ -142,7 +141,7 @@ generate n =
                       ,("basicUnsafeCopy",        gen_unsafeCopy)
                       ,("basicUnsafeGrow",        gen_unsafeGrow)]
 
-    methods_Vector  = [("unsafeFreeze",      gen_unsafeFreeze)
-                      ,("basicLength",       gen_length "V")
+    methods_Vector  = [("unsafeFreeze",           gen_unsafeFreeze)
+                      ,("basicLength",            gen_length "V")
                       ,("basicUnsafeSlice",       gen_unsafeSlice "G" "V")
-                      ,("basicUnsafeIndexM", gen_basicUnsafeIndexM)]
+                      ,("basicUnsafeIndexM",      gen_basicUnsafeIndexM)]
