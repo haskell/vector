@@ -1,6 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses, TypeFamilies, FlexibleContexts #-}
-module Data.Vector.Unboxed.Unbox (
-  MVector(..), Vector(..), Unbox
+module Data.Vector.Unboxed.Base (
+  MVector(..), IOVector, STVector, Vector(..), Unbox
 ) where
 
 import qualified Data.Vector.Generic         as G

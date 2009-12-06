@@ -76,7 +76,9 @@ Library
         Data.Vector.Storable.Mutable
         Data.Vector.Storable
 
-        Data.Vector.Unboxed.Unbox
+        Data.Vector.Unboxed.Base
+        Data.Vector.Unboxed.Mutable
+        Data.Vector.Unboxed
 
         Data.Vector.Mutable
         Data.Vector
