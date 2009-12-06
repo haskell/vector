@@ -4,9 +4,8 @@ module Data.Vector.Unboxed.Mutable (
 
   -- * Operations on mutable vectors
   length, overlaps, slice, new, newWith, read, write, clear, set, copy, grow,
-  zip, zip3, zip4, zip5, zip6, zip7, zip8, zip9, zip10, zip11, zip12,
-  unzip, unzip3, unzip4, unzip5, unzip6, unzip7, unzip8, unzip9, unzip10,
-  unzip11, unzip12,
+  zip, zip3, zip4, zip5, zip6,
+  unzip, unzip3, unzip4, unzip5, unzip6,
 
   -- * Unsafe operations
   unsafeSlice, unsafeNew, unsafeNewWith, unsafeRead, unsafeWrite,

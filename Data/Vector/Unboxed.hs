@@ -22,7 +22,7 @@ module Data.Vector.Unboxed (
   map, concatMap,
 
   -- * Zipping and unzipping
-  zipWith, zipWith3,
+  zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
   zip, zip3, zip4, zip5, zip6,
   unzip, unzip3, unzip4, unzip5, unzip6,
 
@@ -238,6 +238,26 @@ zipWith3 :: (Unbox a, Unbox b, Unbox c, Unbox d)
          => (a -> b -> c -> d) -> Vector a -> Vector b -> Vector c -> Vector d
 {-# INLINE zipWith3 #-}
 zipWith3 = G.zipWith3
+
+zipWith4 :: (Unbox a, Unbox b, Unbox c, Unbox d, Unbox e)
+         => (a -> b -> c -> d -> e)
+         -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+{-# INLINE zipWith4 #-}
+zipWith4 = G.zipWith4
+
+zipWith5 :: (Unbox a, Unbox b, Unbox c, Unbox d, Unbox e, Unbox f)
+         => (a -> b -> c -> d -> e -> f)
+         -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+         -> Vector f
+{-# INLINE zipWith5 #-}
+zipWith5 = G.zipWith5
+
+zipWith6 :: (Unbox a, Unbox b, Unbox c, Unbox d, Unbox e, Unbox f, Unbox g)
+         => (a -> b -> c -> d -> e -> f -> g)
+         -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+         -> Vector f -> Vector g
+{-# INLINE zipWith6 #-}
+zipWith6 = G.zipWith6
 
 -- Filtering
 -- ---------
