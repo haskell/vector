@@ -76,6 +76,10 @@ instance (Unbox a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
   (==) = G.eq
 
+instance (Unbox a, Ord a) => Ord (Vector a) where
+  {-# INLINE compare #-}
+  compare = G.cmp
+
 -- Length
 -- ------
 
