@@ -57,7 +57,7 @@ generate n =
                   <+> sep (punctuate (text " ->") [text ty <+> v | v <- vars])
                   <+> text "->"
                   <+> text ty <+> tuple vars
-             ,text "{-# INLINE"  <+> name <+> text "#-}"
+             ,text "{-# INLINE_STREAM"  <+> name <+> text "#-}"
              ,name <+> sep varss
                    <+> text "="
                    <+> con c
@@ -71,10 +71,21 @@ generate n =
                      $ text "len ="
                        <+> sep (punctuate (text " `min`")
                                           [text "length" <+> vs | vs <- varss])
+             ,hang (text "{-# RULES" <+> text "\"stream/" <> name
+                     <> text "\" forall" <+> sep varss <+> char '.')
+                   2 $
+                   text "G.stream" <+> parens (name <+> sep varss)
+                   <+> char '='
+                   <+> text "Stream." <> zw <+> tuple (replicate n empty)
+                   <+> sep [parens $ text "G.stream" <+> vs | vs <- varss]
+                   $$ text "#-}"
              ]
       where
         name | n == 2    = text "zip"
              | otherwise = text "zip" <> int n
+
+        zw | n == 2    = text "zipWith"
+           | otherwise = text "zipWith" <> int n
 
     define_unzip ty c
       = sep [name <+> text "::"
