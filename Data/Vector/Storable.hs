@@ -71,6 +71,8 @@ import Data.Vector.Storable.Internal
 
 import Foreign.Storable
 import Foreign.ForeignPtr
+-- import Foreign.Ptr
+-- import Foreign.C.Types
 
 import Control.Monad.ST ( ST, runST )
 
@@ -88,6 +90,8 @@ import Prelude hiding ( length, null,
                         enumFromTo, enumFromThenTo )
 
 import qualified Prelude
+
+#include "vector.h"
 
 -- | 'Storable'-based vectors
 data Vector a = Vector {-# UNPACK #-} !Int
@@ -120,6 +124,27 @@ instance Storable a => G.Vector Vector a where
 instance (Storable a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
   (==) = G.eq
+
+{-
+eq_memcmp :: forall a. Storable a => Vector a -> Vector a -> Bool
+{-# INLINE_STREAM eq_memcmp #-}
+eq_memcmp (Vector i m p) (Vector j n q)
+  = m == n && inlinePerformIO
+              (withForeignPtr p $ \p' ->
+               withForeignPtr q $ \q' ->
+               return $
+               memcmp (p' `plusPtr` i) (q' `plusPtr` j)
+                      (fromIntegral $ sizeOf (undefined :: a) * m) == 0)
+
+foreign import ccall unsafe "string.h memcmp" memcmp
+        :: Ptr a -> Ptr a -> CSize -> CInt
+
+{-# RULES
+
+"(==) [Vector.Storable Int]"
+  G.eq = eq_memcmp :: Vector Int -> Vector Int -> Bool
+ #-}
+-}
 
 instance (Storable a, Ord a) => Ord (Vector a) where
   {-# INLINE compare #-}
