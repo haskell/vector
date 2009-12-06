@@ -8,8 +8,9 @@ import qualified Data.Vector.Generic.Mutable as M
 
 import qualified Data.Vector.Primitive as P
 
+import Control.Monad.Primitive
 import Control.Monad.ST ( runST )
-import Control.Monad
+import Control.Monad ( liftM )
 
 import Data.Word ( Word, Word8, Word16, Word32, Word64 )
 import Data.Int  ( Int8, Int16, Int32, Int64 )
@@ -19,9 +20,13 @@ import Data.Int  ( Int8, Int16, Int32, Int64 )
 data family MVector s a
 data family Vector    a
 
+type IOVector = MVector RealWorld
+type STVector s = MVector s
+
 type instance G.Mutable Vector = MVector
 
 class (G.Vector Vector a, M.MVector MVector a) => Unbox a
+
 
 -- ----
 -- Unit
@@ -33,41 +38,36 @@ newtype instance Vector    () = V_Unit Int
 instance Unbox ()
 
 instance M.MVector MVector () where
-  {-# INLINE length #-}
-  {-# INLINE unsafeSlice #-}
-  {-# INLINE overlaps #-}
-  {-# INLINE unsafeNew #-}
-  {-# INLINE unsafeRead #-}
-  {-# INLINE unsafeWrite #-}
-  {-# INLINE clear #-}
-  {-# INLINE set #-}
-  {-# INLINE unsafeCopy #-}
-  {-# INLINE unsafeGrow #-}
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicOverlaps #-}
+  {-# INLINE basicUnsafeNew #-}
+  {-# INLINE basicUnsafeRead #-}
+  {-# INLINE basicUnsafeWrite #-}
+  {-# INLINE basicClear #-}
+  {-# INLINE basicSet #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeGrow #-}
 
-  length (MV_Unit n) = n
+  basicLength (MV_Unit n) = n
 
-  unsafeSlice (MV_Unit n) i m
-    = UNSAFE_CHECK(checkSlice) "unsafeSlice" i m n
-    $ MV_Unit m
+  basicUnsafeSlice (MV_Unit n) i m = MV_Unit m
 
-  overlaps _ _ = False
+  basicOverlaps _ _ = False
 
-  unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n
-              $ return (MV_Unit n)
+  basicUnsafeNew n = return (MV_Unit n)
 
-  unsafeRead (MV_Unit n) i = UNSAFE_CHECK(checkIndex) "unsafeRead" i n
-                           $ return ()
+  basicUnsafeRead (MV_Unit _) _ = return ()
 
-  unsafeWrite (MV_Unit n) i () = UNSAFE_CHECK(checkIndex) "unsafeWrite" i n
-                               $ return ()
+  basicUnsafeWrite (MV_Unit _) _ () = return ()
 
-  clear _ = return ()
+  basicClear _ = return ()
 
-  set (MV_Unit _) () = return ()
+  basicSet (MV_Unit _) () = return ()
 
-  unsafeCopy (MV_Unit _) (MV_Unit _) = return ()
+  basicUnsafeCopy (MV_Unit _) (MV_Unit _) = return ()
 
-  unsafeGrow (MV_Unit n) k = return $ MV_Unit (n+k)
+  basicUnsafeGrow (MV_Unit n) m = return $ MV_Unit (n+m)
 
 instance G.Vector Vector () where
   {-# INLINE unsafeFreeze #-}
@@ -89,28 +89,28 @@ instance G.Vector Vector () where
 
 #define primMVector(ty,con)                                             \
 instance M.MVector MVector ty where {                                   \
-  {-# INLINE length #-}                                                 \
-; {-# INLINE unsafeSlice #-}                                            \
-; {-# INLINE overlaps #-}                                               \
-; {-# INLINE unsafeNew #-}                                              \
-; {-# INLINE unsafeNewWith #-}                                          \
-; {-# INLINE unsafeRead #-}                                             \
-; {-# INLINE unsafeWrite #-}                                            \
-; {-# INLINE clear #-}                                                  \
-; {-# INLINE set #-}                                                    \
-; {-# INLINE unsafeCopy #-}                                             \
-; {-# INLINE unsafeGrow #-}                                             \
-; length (con v) = M.length v                                           \
-; unsafeSlice (con v) i n = con $ M.unsafeSlice v i n                   \
-; overlaps (con v1) (con v2) = M.overlaps v1 v2                         \
-; unsafeNew n = con `liftM` M.unsafeNew n                               \
-; unsafeNewWith n x = con `liftM` M.unsafeNewWith n x                   \
-; unsafeRead (con v) i = M.unsafeRead v i                               \
-; unsafeWrite (con v) i x = M.unsafeWrite v i x                         \
-; clear (con v) = M.clear v                                             \
-; set (con v) x = M.set v x                                             \
-; unsafeCopy (con v1) (con v2) = M.unsafeCopy v1 v2                     \
-; unsafeGrow (con v) n = con `liftM` M.unsafeGrow v n }
+  {-# INLINE basicLength #-}                                            \
+; {-# INLINE basicUnsafeSlice #-}                                       \
+; {-# INLINE basicOverlaps #-}                                          \
+; {-# INLINE basicUnsafeNew #-}                                         \
+; {-# INLINE basicUnsafeNewWith #-}                                     \
+; {-# INLINE basicUnsafeRead #-}                                        \
+; {-# INLINE basicUnsafeWrite #-}                                       \
+; {-# INLINE basicClear #-}                                             \
+; {-# INLINE basicSet #-}                                               \
+; {-# INLINE basicUnsafeCopy #-}                                        \
+; {-# INLINE basicUnsafeGrow #-}                                        \
+; basicLength (con v) = M.basicLength v                                 \
+; basicUnsafeSlice (con v) i n = con $ M.basicUnsafeSlice v i n         \
+; basicOverlaps (con v1) (con v2) = M.basicOverlaps v1 v2               \
+; basicUnsafeNew n = con `liftM` M.basicUnsafeNew n                     \
+; basicUnsafeNewWith n x = con `liftM` M.basicUnsafeNewWith n x         \
+; basicUnsafeRead (con v) i = M.basicUnsafeRead v i                     \
+; basicUnsafeWrite (con v) i x = M.basicUnsafeWrite v i x               \
+; basicClear (con v) = M.basicClear v                                   \
+; basicSet (con v) x = M.basicSet v x                                   \
+; basicUnsafeCopy (con v1) (con v2) = M.basicUnsafeCopy v1 v2           \
+; basicUnsafeGrow (con v) n = con `liftM` M.basicUnsafeGrow v n }
 
 #define primVector(ty,con,mcon)                                         \
 instance G.Vector Vector ty where {                                     \
@@ -224,28 +224,28 @@ newtype instance Vector    Bool = V_Bool  (P.Vector    Word8)
 instance Unbox Bool
 
 instance M.MVector MVector Bool where
-  {-# INLINE length #-}
-  {-# INLINE unsafeSlice #-}
-  {-# INLINE overlaps #-}
-  {-# INLINE unsafeNew #-}
-  {-# INLINE unsafeNewWith #-}
-  {-# INLINE unsafeRead #-}
-  {-# INLINE unsafeWrite #-}
-  {-# INLINE clear #-}
-  {-# INLINE set #-}
-  {-# INLINE unsafeCopy #-}
-  {-# INLINE unsafeGrow #-}
-  length (MV_Bool v) = M.length v
-  unsafeSlice (MV_Bool v) i n = MV_Bool $ M.unsafeSlice v i n
-  overlaps (MV_Bool v1) (MV_Bool v2) = M.overlaps v1 v2
-  unsafeNew n = MV_Bool `liftM` M.unsafeNew n
-  unsafeNewWith n x = MV_Bool `liftM` M.unsafeNewWith n (fromBool x)
-  unsafeRead (MV_Bool v) i = toBool `liftM` M.unsafeRead v i
-  unsafeWrite (MV_Bool v) i x = M.unsafeWrite v i (fromBool x)
-  clear (MV_Bool v) = M.clear v
-  set (MV_Bool v) x = M.set v (fromBool x)
-  unsafeCopy (MV_Bool v1) (MV_Bool v2) = M.unsafeCopy v1 v2
-  unsafeGrow (MV_Bool v) n = MV_Bool `liftM` M.unsafeGrow v n
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicOverlaps #-}
+  {-# INLINE basicUnsafeNew #-}
+  {-# INLINE basicUnsafeNewWith #-}
+  {-# INLINE basicUnsafeRead #-}
+  {-# INLINE basicUnsafeWrite #-}
+  {-# INLINE basicClear #-}
+  {-# INLINE basicSet #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeGrow #-}
+  basicLength (MV_Bool v) = M.basicLength v
+  basicUnsafeSlice (MV_Bool v) i n = MV_Bool $ M.basicUnsafeSlice v i n
+  basicOverlaps (MV_Bool v1) (MV_Bool v2) = M.basicOverlaps v1 v2
+  basicUnsafeNew n = MV_Bool `liftM` M.basicUnsafeNew n
+  basicUnsafeNewWith n x = MV_Bool `liftM` M.basicUnsafeNewWith n (fromBool x)
+  basicUnsafeRead (MV_Bool v) i = toBool `liftM` M.basicUnsafeRead v i
+  basicUnsafeWrite (MV_Bool v) i x = M.basicUnsafeWrite v i (fromBool x)
+  basicClear (MV_Bool v) = M.basicClear v
+  basicSet (MV_Bool v) x = M.basicSet v (fromBool x)
+  basicUnsafeCopy (MV_Bool v1) (MV_Bool v2) = M.basicUnsafeCopy v1 v2
+  basicUnsafeGrow (MV_Bool v) n = MV_Bool `liftM` M.basicUnsafeGrow v n
 
 instance G.Vector Vector Bool where
   {-# INLINE unsafeFreeze #-}

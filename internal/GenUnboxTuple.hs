@@ -44,74 +44,75 @@ generate n =
     patn c n = parens $ con c <+> (var 'n' <> int n)
                               <+> sep [v <> int n | v <- varss]
 
-    gen_length c = (pat c, var 'n')
+    qM s = text "M." <> text s
+    qG s = text "G." <> text s
 
-    gen_unsafeSlice mod c
+    gen_length c _ = (pat c, var 'n')
+
+    gen_unsafeSlice mod c rec
       = (pat c <+> var 'i' <+> var 'm',
          con c <+> var 'm'
-               <+> vcat [parens $ text mod <> char '.' <> text "unsafeSlice"
-                                  <+> vs <+> var 'i' <+> var 'm'
+               <+> vcat [parens
+                         $ text mod <> char '.' <> text rec
+                                    <+> vs <+> var 'i' <+> var 'm'
                                         | vs <- varss])
 
 
-    gen_overlaps = (patn "MV" 1 <+> patn "MV" 2,
-                    vcat $ r : [text "||" <+> r | r <- rs])
+    gen_overlaps rec = (patn "MV" 1 <+> patn "MV" 2,
+                        vcat $ r : [text "||" <+> r | r <- rs])
       where
-        r : rs = [text "M.overlaps" <+> v <> char '1' <+> v <> char '2'
-                        | v <- varss]
+        r : rs = [qM rec <+> v <> char '1' <+> v <> char '2' | v <- varss]
 
-    gen_unsafeNew
+    gen_unsafeNew rec
       = (var 'n',
-         mk_do [v <+> text "<- M.unsafeNew" <+> var 'n' | v <- varss]
+         mk_do [v <+> text "<-" <+> qM rec <+> var 'n' | v <- varss]
                $ text "return $" <+> con "MV" <+> var 'n' <+> sep varss)
 
-    gen_unsafeNewWith
+    gen_unsafeNewWith rec
       = (var 'n' <+> tuple id,
-         mk_do [vs <+> text "<- M.unsafeNewWith" <+> var 'n' <+> v
+         mk_do [vs <+> text "<-" <+> qM rec <+> var 'n' <+> v
                         | v  <- vars | vs <- varss]
                $ text "return $" <+> con "MV" <+> var 'n' <+> sep varss)
 
-    gen_unsafeRead
+    gen_unsafeRead rec
       = (pat "MV" <+> var 'i',
-         mk_do [v <+> text "<- M.unsafeRead" <+> vs <+> var 'i' | v  <- vars
-                                                                | vs <- varss]
+         mk_do [v <+> text "<-" <+> qM rec <+> vs <+> var 'i' | v  <- vars
+                                                              | vs <- varss]
                $ text "return" <+> tuple id)
 
-    gen_unsafeWrite
+    gen_unsafeWrite rec
       = (pat "MV" <+> var 'i' <+> tuple id,
-         mk_do [text "M.unsafeWrite" <+> vs <+> var 'i' <+> v | v  <- vars
-                                                               | vs <- varss]
+         mk_do [qM rec <+> vs <+> var 'i' <+> v | v  <- vars | vs <- varss]
                empty)
 
-    gen_clear
-      = (pat "MV", mk_do [text "M.clear" <+> vs | vs <- varss] empty)
+    gen_clear rec
+      = (pat "MV", mk_do [qM rec <+> vs | vs <- varss] empty)
 
-    gen_set
+    gen_set rec
       = (pat "MV" <+> tuple id,
-         mk_do [text "M.set" <+> vs <+> v | vs <- varss | v <- vars] empty)
+         mk_do [qM rec <+> vs <+> v | vs <- varss | v <- vars] empty)
 
-    gen_unsafeCopy
+    gen_unsafeCopy rec
       = (patn "MV" 1 <+> patn "MV" 2,
-         mk_do [text "M.unsafeCopy" <+> vs <> char '1' <+> vs <> char '2'
-                        | vs <- varss] empty)
+         mk_do [qM rec <+> vs <> char '1' <+> vs <> char '2' | vs <- varss]
+               empty)
 
-    gen_unsafeGrow
+    gen_unsafeGrow rec
       = (pat "MV" <+> var 'm',
-         mk_do [text "M.unsafeGrow" <+> vs <+> var 'm' | vs <- varss]
+         mk_do [qM rec <+> vs <+> var 'm' | vs <- varss]
                $ text "return $" <+> con "MV"
                                  <+> parens (var 'm' <> char '+' <> var 'n')
                                  <+> sep varss)
 
-    gen_unsafeFreeze
+    gen_unsafeFreeze rec
       = (pat "MV",
-         mk_do [vs <> char '\'' <+> text "<- G.unsafeFreeze" <+> vs
-                        | vs <- varss]
+         mk_do [vs <> char '\'' <+> text "<-" <+> qG rec <+> vs | vs <- varss]
                $ text "return $" <+> con "V" <+> var 'n'
                                  <+> sep [vs <> char '\'' | vs <- varss])
 
-    gen_basicUnsafeIndexM
+    gen_basicUnsafeIndexM rec
       = (pat "V" <+> var 'i',
-         mk_do [v <+> text "<- G.basicUnsafeIndexM" <+> vs <+> var 'i'
+         mk_do [v <+> text "<-" <+> qG rec <+> vs <+> var 'i'
                         | vs <- varss | v <- vars]
                $ text "return" <+> tuple id)
 
@@ -122,23 +123,24 @@ generate n =
                           2
                           $ vcat $ cmds ++ [ret]
 
-    method (s, (p,e)) = text "{-# INLINE" <+> text s <+> text " #-}"
-                     $$ hang (text s <+> p)
-                             4
-                             (char '=' <+> e)
+    method (s, f) = case f s of
+                      (p,e) ->  text "{-# INLINE" <+> text s <+> text " #-}"
+                                $$ hang (text s <+> p)
+                                   4
+                                   (char '=' <+> e)
                              
 
-    methods_MVector = [("length",            gen_length "MV")
-                      ,("unsafeSlice",       gen_unsafeSlice "M" "MV")
-                      ,("overlaps",          gen_overlaps)
-                      ,("unsafeNew",         gen_unsafeNew)
-                      ,("unsafeNewWith",     gen_unsafeNewWith)
-                      ,("unsafeRead",        gen_unsafeRead)
-                      ,("unsafeWrite",       gen_unsafeWrite)
-                      ,("clear",             gen_clear)
-                      ,("set",               gen_set)
-                      ,("unsafeCopy",        gen_unsafeCopy)
-                      ,("unsafeGrow",        gen_unsafeGrow)]
+    methods_MVector = [("basicLength",            gen_length "MV")
+                      ,("basicUnsafeSlice",       gen_unsafeSlice "M" "MV")
+                      ,("basicOverlaps",          gen_overlaps)
+                      ,("basicUnsafeNew",         gen_unsafeNew)
+                      ,("basicUnsafeNewWith",     gen_unsafeNewWith)
+                      ,("basicUnsafeRead",        gen_unsafeRead)
+                      ,("basicUnsafeWrite",       gen_unsafeWrite)
+                      ,("basicClear",             gen_clear)
+                      ,("basicSet",               gen_set)
+                      ,("basicUnsafeCopy",        gen_unsafeCopy)
+                      ,("basicUnsafeGrow",        gen_unsafeGrow)]
 
     methods_Vector  = [("unsafeFreeze",      gen_unsafeFreeze)
                       ,("basicLength",       gen_length "V")

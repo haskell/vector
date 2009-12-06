@@ -6,59 +6,59 @@ data instance Vector (a, b)
                               (Vector b)
 instance (Unbox a, Unbox b) => Unbox (a, b)
 instance (Unbox a, Unbox b) => M.MVector MVector (a, b) where
-  {-# INLINE length  #-}
-  length (MV_2 n_ as bs) = n_
-  {-# INLINE unsafeSlice  #-}
-  unsafeSlice (MV_2 n_ as bs) i_ m_
-      = MV_2 m_ (M.unsafeSlice as i_ m_)
-                (M.unsafeSlice bs i_ m_)
-  {-# INLINE overlaps  #-}
-  overlaps (MV_2 n_1 as1 bs1) (MV_2 n_2 as2 bs2)
-      = M.overlaps as1 as2
-        || M.overlaps bs1 bs2
-  {-# INLINE unsafeNew  #-}
-  unsafeNew n_
+  {-# INLINE basicLength  #-}
+  basicLength (MV_2 n_ as bs) = n_
+  {-# INLINE basicUnsafeSlice  #-}
+  basicUnsafeSlice (MV_2 n_ as bs) i_ m_
+      = MV_2 m_ (M.basicUnsafeSlice as i_ m_)
+                (M.basicUnsafeSlice bs i_ m_)
+  {-# INLINE basicOverlaps  #-}
+  basicOverlaps (MV_2 n_1 as1 bs1) (MV_2 n_2 as2 bs2)
+      = M.basicOverlaps as1 as2
+        || M.basicOverlaps bs1 bs2
+  {-# INLINE basicUnsafeNew  #-}
+  basicUnsafeNew n_
       = do
-          as <- M.unsafeNew n_
-          bs <- M.unsafeNew n_
+          as <- M.basicUnsafeNew n_
+          bs <- M.basicUnsafeNew n_
           return $ MV_2 n_ as bs
-  {-# INLINE unsafeNewWith  #-}
-  unsafeNewWith n_ (a, b)
+  {-# INLINE basicUnsafeNewWith  #-}
+  basicUnsafeNewWith n_ (a, b)
       = do
-          as <- M.unsafeNewWith n_ a
-          bs <- M.unsafeNewWith n_ b
+          as <- M.basicUnsafeNewWith n_ a
+          bs <- M.basicUnsafeNewWith n_ b
           return $ MV_2 n_ as bs
-  {-# INLINE unsafeRead  #-}
-  unsafeRead (MV_2 n_ as bs) i_
+  {-# INLINE basicUnsafeRead  #-}
+  basicUnsafeRead (MV_2 n_ as bs) i_
       = do
-          a <- M.unsafeRead as i_
-          b <- M.unsafeRead bs i_
+          a <- M.basicUnsafeRead as i_
+          b <- M.basicUnsafeRead bs i_
           return (a, b)
-  {-# INLINE unsafeWrite  #-}
-  unsafeWrite (MV_2 n_ as bs) i_ (a, b)
+  {-# INLINE basicUnsafeWrite  #-}
+  basicUnsafeWrite (MV_2 n_ as bs) i_ (a, b)
       = do
-          M.unsafeWrite as i_ a
-          M.unsafeWrite bs i_ b
-  {-# INLINE clear  #-}
-  clear (MV_2 n_ as bs)
+          M.basicUnsafeWrite as i_ a
+          M.basicUnsafeWrite bs i_ b
+  {-# INLINE basicClear  #-}
+  basicClear (MV_2 n_ as bs)
       = do
-          M.clear as
-          M.clear bs
-  {-# INLINE set  #-}
-  set (MV_2 n_ as bs) (a, b)
+          M.basicClear as
+          M.basicClear bs
+  {-# INLINE basicSet  #-}
+  basicSet (MV_2 n_ as bs) (a, b)
       = do
-          M.set as a
-          M.set bs b
-  {-# INLINE unsafeCopy  #-}
-  unsafeCopy (MV_2 n_1 as1 bs1) (MV_2 n_2 as2 bs2)
+          M.basicSet as a
+          M.basicSet bs b
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_2 n_1 as1 bs1) (MV_2 n_2 as2 bs2)
       = do
-          M.unsafeCopy as1 as2
-          M.unsafeCopy bs1 bs2
-  {-# INLINE unsafeGrow  #-}
-  unsafeGrow (MV_2 n_ as bs) m_
+          M.basicUnsafeCopy as1 as2
+          M.basicUnsafeCopy bs1 bs2
+  {-# INLINE basicUnsafeGrow  #-}
+  basicUnsafeGrow (MV_2 n_ as bs) m_
       = do
-          M.unsafeGrow as m_
-          M.unsafeGrow bs m_
+          M.basicUnsafeGrow as m_
+          M.basicUnsafeGrow bs m_
           return $ MV_2 (m_+n_) as bs
 instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
   {-# INLINE unsafeFreeze  #-}
@@ -71,8 +71,8 @@ instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
   basicLength (V_2 n_ as bs) = n_
   {-# INLINE basicUnsafeSlice  #-}
   basicUnsafeSlice (V_2 n_ as bs) i_ m_
-      = V_2 m_ (G.unsafeSlice as i_ m_)
-               (G.unsafeSlice bs i_ m_)
+      = V_2 m_ (G.basicUnsafeSlice as i_ m_)
+               (G.basicUnsafeSlice bs i_ m_)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_2 n_ as bs) i_
       = do
@@ -91,69 +91,69 @@ instance (Unbox a, Unbox b, Unbox c) => Unbox (a, b, c)
 instance (Unbox a,
           Unbox b,
           Unbox c) => M.MVector MVector (a, b, c) where
-  {-# INLINE length  #-}
-  length (MV_3 n_ as bs cs) = n_
-  {-# INLINE unsafeSlice  #-}
-  unsafeSlice (MV_3 n_ as bs cs) i_ m_
-      = MV_3 m_ (M.unsafeSlice as i_ m_)
-                (M.unsafeSlice bs i_ m_)
-                (M.unsafeSlice cs i_ m_)
-  {-# INLINE overlaps  #-}
-  overlaps (MV_3 n_1 as1 bs1 cs1) (MV_3 n_2 as2 bs2 cs2)
-      = M.overlaps as1 as2
-        || M.overlaps bs1 bs2
-        || M.overlaps cs1 cs2
-  {-# INLINE unsafeNew  #-}
-  unsafeNew n_
+  {-# INLINE basicLength  #-}
+  basicLength (MV_3 n_ as bs cs) = n_
+  {-# INLINE basicUnsafeSlice  #-}
+  basicUnsafeSlice (MV_3 n_ as bs cs) i_ m_
+      = MV_3 m_ (M.basicUnsafeSlice as i_ m_)
+                (M.basicUnsafeSlice bs i_ m_)
+                (M.basicUnsafeSlice cs i_ m_)
+  {-# INLINE basicOverlaps  #-}
+  basicOverlaps (MV_3 n_1 as1 bs1 cs1) (MV_3 n_2 as2 bs2 cs2)
+      = M.basicOverlaps as1 as2
+        || M.basicOverlaps bs1 bs2
+        || M.basicOverlaps cs1 cs2
+  {-# INLINE basicUnsafeNew  #-}
+  basicUnsafeNew n_
       = do
-          as <- M.unsafeNew n_
-          bs <- M.unsafeNew n_
-          cs <- M.unsafeNew n_
+          as <- M.basicUnsafeNew n_
+          bs <- M.basicUnsafeNew n_
+          cs <- M.basicUnsafeNew n_
           return $ MV_3 n_ as bs cs
-  {-# INLINE unsafeNewWith  #-}
-  unsafeNewWith n_ (a, b, c)
+  {-# INLINE basicUnsafeNewWith  #-}
+  basicUnsafeNewWith n_ (a, b, c)
       = do
-          as <- M.unsafeNewWith n_ a
-          bs <- M.unsafeNewWith n_ b
-          cs <- M.unsafeNewWith n_ c
+          as <- M.basicUnsafeNewWith n_ a
+          bs <- M.basicUnsafeNewWith n_ b
+          cs <- M.basicUnsafeNewWith n_ c
           return $ MV_3 n_ as bs cs
-  {-# INLINE unsafeRead  #-}
-  unsafeRead (MV_3 n_ as bs cs) i_
+  {-# INLINE basicUnsafeRead  #-}
+  basicUnsafeRead (MV_3 n_ as bs cs) i_
       = do
-          a <- M.unsafeRead as i_
-          b <- M.unsafeRead bs i_
-          c <- M.unsafeRead cs i_
+          a <- M.basicUnsafeRead as i_
+          b <- M.basicUnsafeRead bs i_
+          c <- M.basicUnsafeRead cs i_
           return (a, b, c)
-  {-# INLINE unsafeWrite  #-}
-  unsafeWrite (MV_3 n_ as bs cs) i_ (a, b, c)
+  {-# INLINE basicUnsafeWrite  #-}
+  basicUnsafeWrite (MV_3 n_ as bs cs) i_ (a, b, c)
       = do
-          M.unsafeWrite as i_ a
-          M.unsafeWrite bs i_ b
-          M.unsafeWrite cs i_ c
-  {-# INLINE clear  #-}
-  clear (MV_3 n_ as bs cs)
+          M.basicUnsafeWrite as i_ a
+          M.basicUnsafeWrite bs i_ b
+          M.basicUnsafeWrite cs i_ c
+  {-# INLINE basicClear  #-}
+  basicClear (MV_3 n_ as bs cs)
       = do
-          M.clear as
-          M.clear bs
-          M.clear cs
-  {-# INLINE set  #-}
-  set (MV_3 n_ as bs cs) (a, b, c)
+          M.basicClear as
+          M.basicClear bs
+          M.basicClear cs
+  {-# INLINE basicSet  #-}
+  basicSet (MV_3 n_ as bs cs) (a, b, c)
       = do
-          M.set as a
-          M.set bs b
-          M.set cs c
-  {-# INLINE unsafeCopy  #-}
-  unsafeCopy (MV_3 n_1 as1 bs1 cs1) (MV_3 n_2 as2 bs2 cs2)
+          M.basicSet as a
+          M.basicSet bs b
+          M.basicSet cs c
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_3 n_1 as1 bs1 cs1) (MV_3 n_2 as2 bs2 cs2)
       = do
-          M.unsafeCopy as1 as2
-          M.unsafeCopy bs1 bs2
-          M.unsafeCopy cs1 cs2
-  {-# INLINE unsafeGrow  #-}
-  unsafeGrow (MV_3 n_ as bs cs) m_
+          M.basicUnsafeCopy as1 as2
+          M.basicUnsafeCopy bs1 bs2
+          M.basicUnsafeCopy cs1 cs2
+  {-# INLINE basicUnsafeGrow  #-}
+  basicUnsafeGrow (MV_3 n_ as bs cs) m_
       = do
-          M.unsafeGrow as m_
-          M.unsafeGrow bs m_
-          M.unsafeGrow cs m_
+          M.basicUnsafeGrow as m_
+          M.basicUnsafeGrow bs m_
+          M.basicUnsafeGrow cs m_
           return $ MV_3 (m_+n_) as bs cs
 instance (Unbox a,
           Unbox b,
@@ -169,9 +169,9 @@ instance (Unbox a,
   basicLength (V_3 n_ as bs cs) = n_
   {-# INLINE basicUnsafeSlice  #-}
   basicUnsafeSlice (V_3 n_ as bs cs) i_ m_
-      = V_3 m_ (G.unsafeSlice as i_ m_)
-               (G.unsafeSlice bs i_ m_)
-               (G.unsafeSlice cs i_ m_)
+      = V_3 m_ (G.basicUnsafeSlice as i_ m_)
+               (G.basicUnsafeSlice bs i_ m_)
+               (G.basicUnsafeSlice cs i_ m_)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_3 n_ as bs cs) i_
       = do
@@ -194,79 +194,82 @@ instance (Unbox a,
           Unbox b,
           Unbox c,
           Unbox d) => M.MVector MVector (a, b, c, d) where
-  {-# INLINE length  #-}
-  length (MV_4 n_ as bs cs ds) = n_
-  {-# INLINE unsafeSlice  #-}
-  unsafeSlice (MV_4 n_ as bs cs ds) i_ m_
-      = MV_4 m_ (M.unsafeSlice as i_ m_)
-                (M.unsafeSlice bs i_ m_)
-                (M.unsafeSlice cs i_ m_)
-                (M.unsafeSlice ds i_ m_)
-  {-# INLINE overlaps  #-}
-  overlaps (MV_4 n_1 as1 bs1 cs1 ds1) (MV_4 n_2 as2 bs2 cs2 ds2)
-      = M.overlaps as1 as2
-        || M.overlaps bs1 bs2
-        || M.overlaps cs1 cs2
-        || M.overlaps ds1 ds2
-  {-# INLINE unsafeNew  #-}
-  unsafeNew n_
+  {-# INLINE basicLength  #-}
+  basicLength (MV_4 n_ as bs cs ds) = n_
+  {-# INLINE basicUnsafeSlice  #-}
+  basicUnsafeSlice (MV_4 n_ as bs cs ds) i_ m_
+      = MV_4 m_ (M.basicUnsafeSlice as i_ m_)
+                (M.basicUnsafeSlice bs i_ m_)
+                (M.basicUnsafeSlice cs i_ m_)
+                (M.basicUnsafeSlice ds i_ m_)
+  {-# INLINE basicOverlaps  #-}
+  basicOverlaps (MV_4 n_1 as1 bs1 cs1 ds1) (MV_4 n_2 as2 bs2 cs2 ds2)
+      = M.basicOverlaps as1 as2
+        || M.basicOverlaps bs1 bs2
+        || M.basicOverlaps cs1 cs2
+        || M.basicOverlaps ds1 ds2
+  {-# INLINE basicUnsafeNew  #-}
+  basicUnsafeNew n_
       = do
-          as <- M.unsafeNew n_
-          bs <- M.unsafeNew n_
-          cs <- M.unsafeNew n_
-          ds <- M.unsafeNew n_
+          as <- M.basicUnsafeNew n_
+          bs <- M.basicUnsafeNew n_
+          cs <- M.basicUnsafeNew n_
+          ds <- M.basicUnsafeNew n_
           return $ MV_4 n_ as bs cs ds
-  {-# INLINE unsafeNewWith  #-}
-  unsafeNewWith n_ (a, b, c, d)
+  {-# INLINE basicUnsafeNewWith  #-}
+  basicUnsafeNewWith n_ (a, b, c, d)
       = do
-          as <- M.unsafeNewWith n_ a
-          bs <- M.unsafeNewWith n_ b
-          cs <- M.unsafeNewWith n_ c
-          ds <- M.unsafeNewWith n_ d
+          as <- M.basicUnsafeNewWith n_ a
+          bs <- M.basicUnsafeNewWith n_ b
+          cs <- M.basicUnsafeNewWith n_ c
+          ds <- M.basicUnsafeNewWith n_ d
           return $ MV_4 n_ as bs cs ds
-  {-# INLINE unsafeRead  #-}
-  unsafeRead (MV_4 n_ as bs cs ds) i_
+  {-# INLINE basicUnsafeRead  #-}
+  basicUnsafeRead (MV_4 n_ as bs cs ds) i_
       = do
-          a <- M.unsafeRead as i_
-          b <- M.unsafeRead bs i_
-          c <- M.unsafeRead cs i_
-          d <- M.unsafeRead ds i_
+          a <- M.basicUnsafeRead as i_
+          b <- M.basicUnsafeRead bs i_
+          c <- M.basicUnsafeRead cs i_
+          d <- M.basicUnsafeRead ds i_
           return (a, b, c, d)
-  {-# INLINE unsafeWrite  #-}
-  unsafeWrite (MV_4 n_ as bs cs ds) i_ (a, b, c, d)
+  {-# INLINE basicUnsafeWrite  #-}
+  basicUnsafeWrite (MV_4 n_ as bs cs ds) i_ (a, b, c, d)
       = do
-          M.unsafeWrite as i_ a
-          M.unsafeWrite bs i_ b
-          M.unsafeWrite cs i_ c
-          M.unsafeWrite ds i_ d
-  {-# INLINE clear  #-}
-  clear (MV_4 n_ as bs cs ds)
+          M.basicUnsafeWrite as i_ a
+          M.basicUnsafeWrite bs i_ b
+          M.basicUnsafeWrite cs i_ c
+          M.basicUnsafeWrite ds i_ d
+  {-# INLINE basicClear  #-}
+  basicClear (MV_4 n_ as bs cs ds)
       = do
-          M.clear as
-          M.clear bs
-          M.clear cs
-          M.clear ds
-  {-# INLINE set  #-}
-  set (MV_4 n_ as bs cs ds) (a, b, c, d)
+          M.basicClear as
+          M.basicClear bs
+          M.basicClear cs
+          M.basicClear ds
+  {-# INLINE basicSet  #-}
+  basicSet (MV_4 n_ as bs cs ds) (a, b, c, d)
       = do
-          M.set as a
-          M.set bs b
-          M.set cs c
-          M.set ds d
-  {-# INLINE unsafeCopy  #-}
-  unsafeCopy (MV_4 n_1 as1 bs1 cs1 ds1) (MV_4 n_2 as2 bs2 cs2 ds2)
+          M.basicSet as a
+          M.basicSet bs b
+          M.basicSet cs c
+          M.basicSet ds d
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_4 n_1 as1 bs1 cs1 ds1) (MV_4 n_2 as2
+                                                       bs2
+                                                       cs2
+                                                       ds2)
       = do
-          M.unsafeCopy as1 as2
-          M.unsafeCopy bs1 bs2
-          M.unsafeCopy cs1 cs2
-          M.unsafeCopy ds1 ds2
-  {-# INLINE unsafeGrow  #-}
-  unsafeGrow (MV_4 n_ as bs cs ds) m_
+          M.basicUnsafeCopy as1 as2
+          M.basicUnsafeCopy bs1 bs2
+          M.basicUnsafeCopy cs1 cs2
+          M.basicUnsafeCopy ds1 ds2
+  {-# INLINE basicUnsafeGrow  #-}
+  basicUnsafeGrow (MV_4 n_ as bs cs ds) m_
       = do
-          M.unsafeGrow as m_
-          M.unsafeGrow bs m_
-          M.unsafeGrow cs m_
-          M.unsafeGrow ds m_
+          M.basicUnsafeGrow as m_
+          M.basicUnsafeGrow bs m_
+          M.basicUnsafeGrow cs m_
+          M.basicUnsafeGrow ds m_
           return $ MV_4 (m_+n_) as bs cs ds
 instance (Unbox a,
           Unbox b,
@@ -284,10 +287,10 @@ instance (Unbox a,
   basicLength (V_4 n_ as bs cs ds) = n_
   {-# INLINE basicUnsafeSlice  #-}
   basicUnsafeSlice (V_4 n_ as bs cs ds) i_ m_
-      = V_4 m_ (G.unsafeSlice as i_ m_)
-               (G.unsafeSlice bs i_ m_)
-               (G.unsafeSlice cs i_ m_)
-               (G.unsafeSlice ds i_ m_)
+      = V_4 m_ (G.basicUnsafeSlice as i_ m_)
+               (G.basicUnsafeSlice bs i_ m_)
+               (G.basicUnsafeSlice cs i_ m_)
+               (G.basicUnsafeSlice ds i_ m_)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_4 n_ as bs cs ds) i_
       = do
@@ -318,97 +321,97 @@ instance (Unbox a,
           Unbox c,
           Unbox d,
           Unbox e) => M.MVector MVector (a, b, c, d, e) where
-  {-# INLINE length  #-}
-  length (MV_5 n_ as bs cs ds es) = n_
-  {-# INLINE unsafeSlice  #-}
-  unsafeSlice (MV_5 n_ as bs cs ds es) i_ m_
-      = MV_5 m_ (M.unsafeSlice as i_ m_)
-                (M.unsafeSlice bs i_ m_)
-                (M.unsafeSlice cs i_ m_)
-                (M.unsafeSlice ds i_ m_)
-                (M.unsafeSlice es i_ m_)
-  {-# INLINE overlaps  #-}
-  overlaps (MV_5 n_1 as1 bs1 cs1 ds1 es1) (MV_5 n_2 as2
-                                                    bs2
-                                                    cs2
-                                                    ds2
-                                                    es2)
-      = M.overlaps as1 as2
-        || M.overlaps bs1 bs2
-        || M.overlaps cs1 cs2
-        || M.overlaps ds1 ds2
-        || M.overlaps es1 es2
-  {-# INLINE unsafeNew  #-}
-  unsafeNew n_
+  {-# INLINE basicLength  #-}
+  basicLength (MV_5 n_ as bs cs ds es) = n_
+  {-# INLINE basicUnsafeSlice  #-}
+  basicUnsafeSlice (MV_5 n_ as bs cs ds es) i_ m_
+      = MV_5 m_ (M.basicUnsafeSlice as i_ m_)
+                (M.basicUnsafeSlice bs i_ m_)
+                (M.basicUnsafeSlice cs i_ m_)
+                (M.basicUnsafeSlice ds i_ m_)
+                (M.basicUnsafeSlice es i_ m_)
+  {-# INLINE basicOverlaps  #-}
+  basicOverlaps (MV_5 n_1 as1 bs1 cs1 ds1 es1) (MV_5 n_2 as2
+                                                         bs2
+                                                         cs2
+                                                         ds2
+                                                         es2)
+      = M.basicOverlaps as1 as2
+        || M.basicOverlaps bs1 bs2
+        || M.basicOverlaps cs1 cs2
+        || M.basicOverlaps ds1 ds2
+        || M.basicOverlaps es1 es2
+  {-# INLINE basicUnsafeNew  #-}
+  basicUnsafeNew n_
       = do
-          as <- M.unsafeNew n_
-          bs <- M.unsafeNew n_
-          cs <- M.unsafeNew n_
-          ds <- M.unsafeNew n_
-          es <- M.unsafeNew n_
+          as <- M.basicUnsafeNew n_
+          bs <- M.basicUnsafeNew n_
+          cs <- M.basicUnsafeNew n_
+          ds <- M.basicUnsafeNew n_
+          es <- M.basicUnsafeNew n_
           return $ MV_5 n_ as bs cs ds es
-  {-# INLINE unsafeNewWith  #-}
-  unsafeNewWith n_ (a, b, c, d, e)
+  {-# INLINE basicUnsafeNewWith  #-}
+  basicUnsafeNewWith n_ (a, b, c, d, e)
       = do
-          as <- M.unsafeNewWith n_ a
-          bs <- M.unsafeNewWith n_ b
-          cs <- M.unsafeNewWith n_ c
-          ds <- M.unsafeNewWith n_ d
-          es <- M.unsafeNewWith n_ e
+          as <- M.basicUnsafeNewWith n_ a
+          bs <- M.basicUnsafeNewWith n_ b
+          cs <- M.basicUnsafeNewWith n_ c
+          ds <- M.basicUnsafeNewWith n_ d
+          es <- M.basicUnsafeNewWith n_ e
           return $ MV_5 n_ as bs cs ds es
-  {-# INLINE unsafeRead  #-}
-  unsafeRead (MV_5 n_ as bs cs ds es) i_
+  {-# INLINE basicUnsafeRead  #-}
+  basicUnsafeRead (MV_5 n_ as bs cs ds es) i_
       = do
-          a <- M.unsafeRead as i_
-          b <- M.unsafeRead bs i_
-          c <- M.unsafeRead cs i_
-          d <- M.unsafeRead ds i_
-          e <- M.unsafeRead es i_
+          a <- M.basicUnsafeRead as i_
+          b <- M.basicUnsafeRead bs i_
+          c <- M.basicUnsafeRead cs i_
+          d <- M.basicUnsafeRead ds i_
+          e <- M.basicUnsafeRead es i_
           return (a, b, c, d, e)
-  {-# INLINE unsafeWrite  #-}
-  unsafeWrite (MV_5 n_ as bs cs ds es) i_ (a, b, c, d, e)
+  {-# INLINE basicUnsafeWrite  #-}
+  basicUnsafeWrite (MV_5 n_ as bs cs ds es) i_ (a, b, c, d, e)
       = do
-          M.unsafeWrite as i_ a
-          M.unsafeWrite bs i_ b
-          M.unsafeWrite cs i_ c
-          M.unsafeWrite ds i_ d
-          M.unsafeWrite es i_ e
-  {-# INLINE clear  #-}
-  clear (MV_5 n_ as bs cs ds es)
+          M.basicUnsafeWrite as i_ a
+          M.basicUnsafeWrite bs i_ b
+          M.basicUnsafeWrite cs i_ c
+          M.basicUnsafeWrite ds i_ d
+          M.basicUnsafeWrite es i_ e
+  {-# INLINE basicClear  #-}
+  basicClear (MV_5 n_ as bs cs ds es)
       = do
-          M.clear as
-          M.clear bs
-          M.clear cs
-          M.clear ds
-          M.clear es
-  {-# INLINE set  #-}
-  set (MV_5 n_ as bs cs ds es) (a, b, c, d, e)
+          M.basicClear as
+          M.basicClear bs
+          M.basicClear cs
+          M.basicClear ds
+          M.basicClear es
+  {-# INLINE basicSet  #-}
+  basicSet (MV_5 n_ as bs cs ds es) (a, b, c, d, e)
       = do
-          M.set as a
-          M.set bs b
-          M.set cs c
-          M.set ds d
-          M.set es e
-  {-# INLINE unsafeCopy  #-}
-  unsafeCopy (MV_5 n_1 as1 bs1 cs1 ds1 es1) (MV_5 n_2 as2
-                                                      bs2
-                                                      cs2
-                                                      ds2
-                                                      es2)
+          M.basicSet as a
+          M.basicSet bs b
+          M.basicSet cs c
+          M.basicSet ds d
+          M.basicSet es e
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_5 n_1 as1 bs1 cs1 ds1 es1) (MV_5 n_2 as2
+                                                           bs2
+                                                           cs2
+                                                           ds2
+                                                           es2)
       = do
-          M.unsafeCopy as1 as2
-          M.unsafeCopy bs1 bs2
-          M.unsafeCopy cs1 cs2
-          M.unsafeCopy ds1 ds2
-          M.unsafeCopy es1 es2
-  {-# INLINE unsafeGrow  #-}
-  unsafeGrow (MV_5 n_ as bs cs ds es) m_
+          M.basicUnsafeCopy as1 as2
+          M.basicUnsafeCopy bs1 bs2
+          M.basicUnsafeCopy cs1 cs2
+          M.basicUnsafeCopy ds1 ds2
+          M.basicUnsafeCopy es1 es2
+  {-# INLINE basicUnsafeGrow  #-}
+  basicUnsafeGrow (MV_5 n_ as bs cs ds es) m_
       = do
-          M.unsafeGrow as m_
-          M.unsafeGrow bs m_
-          M.unsafeGrow cs m_
-          M.unsafeGrow ds m_
-          M.unsafeGrow es m_
+          M.basicUnsafeGrow as m_
+          M.basicUnsafeGrow bs m_
+          M.basicUnsafeGrow cs m_
+          M.basicUnsafeGrow ds m_
+          M.basicUnsafeGrow es m_
           return $ MV_5 (m_+n_) as bs cs ds es
 instance (Unbox a,
           Unbox b,
@@ -428,11 +431,11 @@ instance (Unbox a,
   basicLength (V_5 n_ as bs cs ds es) = n_
   {-# INLINE basicUnsafeSlice  #-}
   basicUnsafeSlice (V_5 n_ as bs cs ds es) i_ m_
-      = V_5 m_ (G.unsafeSlice as i_ m_)
-               (G.unsafeSlice bs i_ m_)
-               (G.unsafeSlice cs i_ m_)
-               (G.unsafeSlice ds i_ m_)
-               (G.unsafeSlice es i_ m_)
+      = V_5 m_ (G.basicUnsafeSlice as i_ m_)
+               (G.basicUnsafeSlice bs i_ m_)
+               (G.basicUnsafeSlice cs i_ m_)
+               (G.basicUnsafeSlice ds i_ m_)
+               (G.basicUnsafeSlice es i_ m_)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_5 n_ as bs cs ds es) i_
       = do
@@ -468,109 +471,109 @@ instance (Unbox a,
           Unbox d,
           Unbox e,
           Unbox f) => M.MVector MVector (a, b, c, d, e, f) where
-  {-# INLINE length  #-}
-  length (MV_6 n_ as bs cs ds es fs) = n_
-  {-# INLINE unsafeSlice  #-}
-  unsafeSlice (MV_6 n_ as bs cs ds es fs) i_ m_
-      = MV_6 m_ (M.unsafeSlice as i_ m_)
-                (M.unsafeSlice bs i_ m_)
-                (M.unsafeSlice cs i_ m_)
-                (M.unsafeSlice ds i_ m_)
-                (M.unsafeSlice es i_ m_)
-                (M.unsafeSlice fs i_ m_)
-  {-# INLINE overlaps  #-}
-  overlaps (MV_6 n_1 as1 bs1 cs1 ds1 es1 fs1) (MV_6 n_2 as2
-                                                        bs2
-                                                        cs2
-                                                        ds2
-                                                        es2
-                                                        fs2)
-      = M.overlaps as1 as2
-        || M.overlaps bs1 bs2
-        || M.overlaps cs1 cs2
-        || M.overlaps ds1 ds2
-        || M.overlaps es1 es2
-        || M.overlaps fs1 fs2
-  {-# INLINE unsafeNew  #-}
-  unsafeNew n_
+  {-# INLINE basicLength  #-}
+  basicLength (MV_6 n_ as bs cs ds es fs) = n_
+  {-# INLINE basicUnsafeSlice  #-}
+  basicUnsafeSlice (MV_6 n_ as bs cs ds es fs) i_ m_
+      = MV_6 m_ (M.basicUnsafeSlice as i_ m_)
+                (M.basicUnsafeSlice bs i_ m_)
+                (M.basicUnsafeSlice cs i_ m_)
+                (M.basicUnsafeSlice ds i_ m_)
+                (M.basicUnsafeSlice es i_ m_)
+                (M.basicUnsafeSlice fs i_ m_)
+  {-# INLINE basicOverlaps  #-}
+  basicOverlaps (MV_6 n_1 as1 bs1 cs1 ds1 es1 fs1) (MV_6 n_2 as2
+                                                             bs2
+                                                             cs2
+                                                             ds2
+                                                             es2
+                                                             fs2)
+      = M.basicOverlaps as1 as2
+        || M.basicOverlaps bs1 bs2
+        || M.basicOverlaps cs1 cs2
+        || M.basicOverlaps ds1 ds2
+        || M.basicOverlaps es1 es2
+        || M.basicOverlaps fs1 fs2
+  {-# INLINE basicUnsafeNew  #-}
+  basicUnsafeNew n_
       = do
-          as <- M.unsafeNew n_
-          bs <- M.unsafeNew n_
-          cs <- M.unsafeNew n_
-          ds <- M.unsafeNew n_
-          es <- M.unsafeNew n_
-          fs <- M.unsafeNew n_
+          as <- M.basicUnsafeNew n_
+          bs <- M.basicUnsafeNew n_
+          cs <- M.basicUnsafeNew n_
+          ds <- M.basicUnsafeNew n_
+          es <- M.basicUnsafeNew n_
+          fs <- M.basicUnsafeNew n_
           return $ MV_6 n_ as bs cs ds es fs
-  {-# INLINE unsafeNewWith  #-}
-  unsafeNewWith n_ (a, b, c, d, e, f)
+  {-# INLINE basicUnsafeNewWith  #-}
+  basicUnsafeNewWith n_ (a, b, c, d, e, f)
       = do
-          as <- M.unsafeNewWith n_ a
-          bs <- M.unsafeNewWith n_ b
-          cs <- M.unsafeNewWith n_ c
-          ds <- M.unsafeNewWith n_ d
-          es <- M.unsafeNewWith n_ e
-          fs <- M.unsafeNewWith n_ f
+          as <- M.basicUnsafeNewWith n_ a
+          bs <- M.basicUnsafeNewWith n_ b
+          cs <- M.basicUnsafeNewWith n_ c
+          ds <- M.basicUnsafeNewWith n_ d
+          es <- M.basicUnsafeNewWith n_ e
+          fs <- M.basicUnsafeNewWith n_ f
           return $ MV_6 n_ as bs cs ds es fs
-  {-# INLINE unsafeRead  #-}
-  unsafeRead (MV_6 n_ as bs cs ds es fs) i_
+  {-# INLINE basicUnsafeRead  #-}
+  basicUnsafeRead (MV_6 n_ as bs cs ds es fs) i_
       = do
-          a <- M.unsafeRead as i_
-          b <- M.unsafeRead bs i_
-          c <- M.unsafeRead cs i_
-          d <- M.unsafeRead ds i_
-          e <- M.unsafeRead es i_
-          f <- M.unsafeRead fs i_
+          a <- M.basicUnsafeRead as i_
+          b <- M.basicUnsafeRead bs i_
+          c <- M.basicUnsafeRead cs i_
+          d <- M.basicUnsafeRead ds i_
+          e <- M.basicUnsafeRead es i_
+          f <- M.basicUnsafeRead fs i_
           return (a, b, c, d, e, f)
-  {-# INLINE unsafeWrite  #-}
-  unsafeWrite (MV_6 n_ as bs cs ds es fs) i_ (a, b, c, d, e, f)
+  {-# INLINE basicUnsafeWrite  #-}
+  basicUnsafeWrite (MV_6 n_ as bs cs ds es fs) i_ (a, b, c, d, e, f)
       = do
-          M.unsafeWrite as i_ a
-          M.unsafeWrite bs i_ b
-          M.unsafeWrite cs i_ c
-          M.unsafeWrite ds i_ d
-          M.unsafeWrite es i_ e
-          M.unsafeWrite fs i_ f
-  {-# INLINE clear  #-}
-  clear (MV_6 n_ as bs cs ds es fs)
+          M.basicUnsafeWrite as i_ a
+          M.basicUnsafeWrite bs i_ b
+          M.basicUnsafeWrite cs i_ c
+          M.basicUnsafeWrite ds i_ d
+          M.basicUnsafeWrite es i_ e
+          M.basicUnsafeWrite fs i_ f
+  {-# INLINE basicClear  #-}
+  basicClear (MV_6 n_ as bs cs ds es fs)
       = do
-          M.clear as
-          M.clear bs
-          M.clear cs
-          M.clear ds
-          M.clear es
-          M.clear fs
-  {-# INLINE set  #-}
-  set (MV_6 n_ as bs cs ds es fs) (a, b, c, d, e, f)
+          M.basicClear as
+          M.basicClear bs
+          M.basicClear cs
+          M.basicClear ds
+          M.basicClear es
+          M.basicClear fs
+  {-# INLINE basicSet  #-}
+  basicSet (MV_6 n_ as bs cs ds es fs) (a, b, c, d, e, f)
       = do
-          M.set as a
-          M.set bs b
-          M.set cs c
-          M.set ds d
-          M.set es e
-          M.set fs f
-  {-# INLINE unsafeCopy  #-}
-  unsafeCopy (MV_6 n_1 as1 bs1 cs1 ds1 es1 fs1) (MV_6 n_2 as2
-                                                          bs2
-                                                          cs2
-                                                          ds2
-                                                          es2
-                                                          fs2)
+          M.basicSet as a
+          M.basicSet bs b
+          M.basicSet cs c
+          M.basicSet ds d
+          M.basicSet es e
+          M.basicSet fs f
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_6 n_1 as1 bs1 cs1 ds1 es1 fs1) (MV_6 n_2 as2
+                                                               bs2
+                                                               cs2
+                                                               ds2
+                                                               es2
+                                                               fs2)
       = do
-          M.unsafeCopy as1 as2
-          M.unsafeCopy bs1 bs2
-          M.unsafeCopy cs1 cs2
-          M.unsafeCopy ds1 ds2
-          M.unsafeCopy es1 es2
-          M.unsafeCopy fs1 fs2
-  {-# INLINE unsafeGrow  #-}
-  unsafeGrow (MV_6 n_ as bs cs ds es fs) m_
+          M.basicUnsafeCopy as1 as2
+          M.basicUnsafeCopy bs1 bs2
+          M.basicUnsafeCopy cs1 cs2
+          M.basicUnsafeCopy ds1 ds2
+          M.basicUnsafeCopy es1 es2
+          M.basicUnsafeCopy fs1 fs2
+  {-# INLINE basicUnsafeGrow  #-}
+  basicUnsafeGrow (MV_6 n_ as bs cs ds es fs) m_
       = do
-          M.unsafeGrow as m_
-          M.unsafeGrow bs m_
-          M.unsafeGrow cs m_
-          M.unsafeGrow ds m_
-          M.unsafeGrow es m_
-          M.unsafeGrow fs m_
+          M.basicUnsafeGrow as m_
+          M.basicUnsafeGrow bs m_
+          M.basicUnsafeGrow cs m_
+          M.basicUnsafeGrow ds m_
+          M.basicUnsafeGrow es m_
+          M.basicUnsafeGrow fs m_
           return $ MV_6 (m_+n_) as bs cs ds es fs
 instance (Unbox a,
           Unbox b,
@@ -592,12 +595,12 @@ instance (Unbox a,
   basicLength (V_6 n_ as bs cs ds es fs) = n_
   {-# INLINE basicUnsafeSlice  #-}
   basicUnsafeSlice (V_6 n_ as bs cs ds es fs) i_ m_
-      = V_6 m_ (G.unsafeSlice as i_ m_)
-               (G.unsafeSlice bs i_ m_)
-               (G.unsafeSlice cs i_ m_)
-               (G.unsafeSlice ds i_ m_)
-               (G.unsafeSlice es i_ m_)
-               (G.unsafeSlice fs i_ m_)
+      = V_6 m_ (G.basicUnsafeSlice as i_ m_)
+               (G.basicUnsafeSlice bs i_ m_)
+               (G.basicUnsafeSlice cs i_ m_)
+               (G.basicUnsafeSlice ds i_ m_)
+               (G.basicUnsafeSlice es i_ m_)
+               (G.basicUnsafeSlice fs i_ m_)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_6 n_ as bs cs ds es fs) i_
       = do
@@ -638,121 +641,127 @@ instance (Unbox a,
           Unbox e,
           Unbox f,
           Unbox g) => M.MVector MVector (a, b, c, d, e, f, g) where
-  {-# INLINE length  #-}
-  length (MV_7 n_ as bs cs ds es fs gs) = n_
-  {-# INLINE unsafeSlice  #-}
-  unsafeSlice (MV_7 n_ as bs cs ds es fs gs) i_ m_
-      = MV_7 m_ (M.unsafeSlice as i_ m_)
-                (M.unsafeSlice bs i_ m_)
-                (M.unsafeSlice cs i_ m_)
-                (M.unsafeSlice ds i_ m_)
-                (M.unsafeSlice es i_ m_)
-                (M.unsafeSlice fs i_ m_)
-                (M.unsafeSlice gs i_ m_)
-  {-# INLINE overlaps  #-}
-  overlaps (MV_7 n_1 as1 bs1 cs1 ds1 es1 fs1 gs1) (MV_7 n_2 as2
-                                                            bs2
-                                                            cs2
-                                                            ds2
-                                                            es2
-                                                            fs2
-                                                            gs2)
-      = M.overlaps as1 as2
-        || M.overlaps bs1 bs2
-        || M.overlaps cs1 cs2
-        || M.overlaps ds1 ds2
-        || M.overlaps es1 es2
-        || M.overlaps fs1 fs2
-        || M.overlaps gs1 gs2
-  {-# INLINE unsafeNew  #-}
-  unsafeNew n_
+  {-# INLINE basicLength  #-}
+  basicLength (MV_7 n_ as bs cs ds es fs gs) = n_
+  {-# INLINE basicUnsafeSlice  #-}
+  basicUnsafeSlice (MV_7 n_ as bs cs ds es fs gs) i_ m_
+      = MV_7 m_ (M.basicUnsafeSlice as i_ m_)
+                (M.basicUnsafeSlice bs i_ m_)
+                (M.basicUnsafeSlice cs i_ m_)
+                (M.basicUnsafeSlice ds i_ m_)
+                (M.basicUnsafeSlice es i_ m_)
+                (M.basicUnsafeSlice fs i_ m_)
+                (M.basicUnsafeSlice gs i_ m_)
+  {-# INLINE basicOverlaps  #-}
+  basicOverlaps (MV_7 n_1 as1 bs1 cs1 ds1 es1 fs1 gs1) (MV_7 n_2 as2
+                                                                 bs2
+                                                                 cs2
+                                                                 ds2
+                                                                 es2
+                                                                 fs2
+                                                                 gs2)
+      = M.basicOverlaps as1 as2
+        || M.basicOverlaps bs1 bs2
+        || M.basicOverlaps cs1 cs2
+        || M.basicOverlaps ds1 ds2
+        || M.basicOverlaps es1 es2
+        || M.basicOverlaps fs1 fs2
+        || M.basicOverlaps gs1 gs2
+  {-# INLINE basicUnsafeNew  #-}
+  basicUnsafeNew n_
       = do
-          as <- M.unsafeNew n_
-          bs <- M.unsafeNew n_
-          cs <- M.unsafeNew n_
-          ds <- M.unsafeNew n_
-          es <- M.unsafeNew n_
-          fs <- M.unsafeNew n_
-          gs <- M.unsafeNew n_
+          as <- M.basicUnsafeNew n_
+          bs <- M.basicUnsafeNew n_
+          cs <- M.basicUnsafeNew n_
+          ds <- M.basicUnsafeNew n_
+          es <- M.basicUnsafeNew n_
+          fs <- M.basicUnsafeNew n_
+          gs <- M.basicUnsafeNew n_
           return $ MV_7 n_ as bs cs ds es fs gs
-  {-# INLINE unsafeNewWith  #-}
-  unsafeNewWith n_ (a, b, c, d, e, f, g)
+  {-# INLINE basicUnsafeNewWith  #-}
+  basicUnsafeNewWith n_ (a, b, c, d, e, f, g)
       = do
-          as <- M.unsafeNewWith n_ a
-          bs <- M.unsafeNewWith n_ b
-          cs <- M.unsafeNewWith n_ c
-          ds <- M.unsafeNewWith n_ d
-          es <- M.unsafeNewWith n_ e
-          fs <- M.unsafeNewWith n_ f
-          gs <- M.unsafeNewWith n_ g
+          as <- M.basicUnsafeNewWith n_ a
+          bs <- M.basicUnsafeNewWith n_ b
+          cs <- M.basicUnsafeNewWith n_ c
+          ds <- M.basicUnsafeNewWith n_ d
+          es <- M.basicUnsafeNewWith n_ e
+          fs <- M.basicUnsafeNewWith n_ f
+          gs <- M.basicUnsafeNewWith n_ g
           return $ MV_7 n_ as bs cs ds es fs gs
-  {-# INLINE unsafeRead  #-}
-  unsafeRead (MV_7 n_ as bs cs ds es fs gs) i_
+  {-# INLINE basicUnsafeRead  #-}
+  basicUnsafeRead (MV_7 n_ as bs cs ds es fs gs) i_
       = do
-          a <- M.unsafeRead as i_
-          b <- M.unsafeRead bs i_
-          c <- M.unsafeRead cs i_
-          d <- M.unsafeRead ds i_
-          e <- M.unsafeRead es i_
-          f <- M.unsafeRead fs i_
-          g <- M.unsafeRead gs i_
+          a <- M.basicUnsafeRead as i_
+          b <- M.basicUnsafeRead bs i_
+          c <- M.basicUnsafeRead cs i_
+          d <- M.basicUnsafeRead ds i_
+          e <- M.basicUnsafeRead es i_
+          f <- M.basicUnsafeRead fs i_
+          g <- M.basicUnsafeRead gs i_
           return (a, b, c, d, e, f, g)
-  {-# INLINE unsafeWrite  #-}
-  unsafeWrite (MV_7 n_ as bs cs ds es fs gs) i_ (a, b, c, d, e, f, g)
+  {-# INLINE basicUnsafeWrite  #-}
+  basicUnsafeWrite (MV_7 n_ as
+                            bs
+                            cs
+                            ds
+                            es
+                            fs
+                            gs) i_ (a, b, c, d, e, f, g)
       = do
-          M.unsafeWrite as i_ a
-          M.unsafeWrite bs i_ b
-          M.unsafeWrite cs i_ c
-          M.unsafeWrite ds i_ d
-          M.unsafeWrite es i_ e
-          M.unsafeWrite fs i_ f
-          M.unsafeWrite gs i_ g
-  {-# INLINE clear  #-}
-  clear (MV_7 n_ as bs cs ds es fs gs)
+          M.basicUnsafeWrite as i_ a
+          M.basicUnsafeWrite bs i_ b
+          M.basicUnsafeWrite cs i_ c
+          M.basicUnsafeWrite ds i_ d
+          M.basicUnsafeWrite es i_ e
+          M.basicUnsafeWrite fs i_ f
+          M.basicUnsafeWrite gs i_ g
+  {-# INLINE basicClear  #-}
+  basicClear (MV_7 n_ as bs cs ds es fs gs)
       = do
-          M.clear as
-          M.clear bs
-          M.clear cs
-          M.clear ds
-          M.clear es
-          M.clear fs
-          M.clear gs
-  {-# INLINE set  #-}
-  set (MV_7 n_ as bs cs ds es fs gs) (a, b, c, d, e, f, g)
+          M.basicClear as
+          M.basicClear bs
+          M.basicClear cs
+          M.basicClear ds
+          M.basicClear es
+          M.basicClear fs
+          M.basicClear gs
+  {-# INLINE basicSet  #-}
+  basicSet (MV_7 n_ as bs cs ds es fs gs) (a, b, c, d, e, f, g)
       = do
-          M.set as a
-          M.set bs b
-          M.set cs c
-          M.set ds d
-          M.set es e
-          M.set fs f
-          M.set gs g
-  {-# INLINE unsafeCopy  #-}
-  unsafeCopy (MV_7 n_1 as1 bs1 cs1 ds1 es1 fs1 gs1) (MV_7 n_2 as2
-                                                              bs2
-                                                              cs2
-                                                              ds2
-                                                              es2
-                                                              fs2
-                                                              gs2)
+          M.basicSet as a
+          M.basicSet bs b
+          M.basicSet cs c
+          M.basicSet ds d
+          M.basicSet es e
+          M.basicSet fs f
+          M.basicSet gs g
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_7 n_1 as1
+                            bs1
+                            cs1
+                            ds1
+                            es1
+                            fs1
+                            gs1) (MV_7 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2)
       = do
-          M.unsafeCopy as1 as2
-          M.unsafeCopy bs1 bs2
-          M.unsafeCopy cs1 cs2
-          M.unsafeCopy ds1 ds2
-          M.unsafeCopy es1 es2
-          M.unsafeCopy fs1 fs2
-          M.unsafeCopy gs1 gs2
-  {-# INLINE unsafeGrow  #-}
-  unsafeGrow (MV_7 n_ as bs cs ds es fs gs) m_
+          M.basicUnsafeCopy as1 as2
+          M.basicUnsafeCopy bs1 bs2
+          M.basicUnsafeCopy cs1 cs2
+          M.basicUnsafeCopy ds1 ds2
+          M.basicUnsafeCopy es1 es2
+          M.basicUnsafeCopy fs1 fs2
+          M.basicUnsafeCopy gs1 gs2
+  {-# INLINE basicUnsafeGrow  #-}
+  basicUnsafeGrow (MV_7 n_ as bs cs ds es fs gs) m_
       = do
-          M.unsafeGrow as m_
-          M.unsafeGrow bs m_
-          M.unsafeGrow cs m_
-          M.unsafeGrow ds m_
-          M.unsafeGrow es m_
-          M.unsafeGrow fs m_
-          M.unsafeGrow gs m_
+          M.basicUnsafeGrow as m_
+          M.basicUnsafeGrow bs m_
+          M.basicUnsafeGrow cs m_
+          M.basicUnsafeGrow ds m_
+          M.basicUnsafeGrow es m_
+          M.basicUnsafeGrow fs m_
+          M.basicUnsafeGrow gs m_
           return $ MV_7 (m_+n_) as bs cs ds es fs gs
 instance (Unbox a,
           Unbox b,
@@ -776,13 +785,13 @@ instance (Unbox a,
   basicLength (V_7 n_ as bs cs ds es fs gs) = n_
   {-# INLINE basicUnsafeSlice  #-}
   basicUnsafeSlice (V_7 n_ as bs cs ds es fs gs) i_ m_
-      = V_7 m_ (G.unsafeSlice as i_ m_)
-               (G.unsafeSlice bs i_ m_)
-               (G.unsafeSlice cs i_ m_)
-               (G.unsafeSlice ds i_ m_)
-               (G.unsafeSlice es i_ m_)
-               (G.unsafeSlice fs i_ m_)
-               (G.unsafeSlice gs i_ m_)
+      = V_7 m_ (G.basicUnsafeSlice as i_ m_)
+               (G.basicUnsafeSlice bs i_ m_)
+               (G.basicUnsafeSlice cs i_ m_)
+               (G.basicUnsafeSlice ds i_ m_)
+               (G.basicUnsafeSlice es i_ m_)
+               (G.basicUnsafeSlice fs i_ m_)
+               (G.basicUnsafeSlice gs i_ m_)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_7 n_ as bs cs ds es fs gs) i_
       = do
@@ -828,140 +837,140 @@ instance (Unbox a,
           Unbox f,
           Unbox g,
           Unbox h) => M.MVector MVector (a, b, c, d, e, f, g, h) where
-  {-# INLINE length  #-}
-  length (MV_8 n_ as bs cs ds es fs gs hs) = n_
-  {-# INLINE unsafeSlice  #-}
-  unsafeSlice (MV_8 n_ as bs cs ds es fs gs hs) i_ m_
-      = MV_8 m_ (M.unsafeSlice as i_ m_)
-                (M.unsafeSlice bs i_ m_)
-                (M.unsafeSlice cs i_ m_)
-                (M.unsafeSlice ds i_ m_)
-                (M.unsafeSlice es i_ m_)
-                (M.unsafeSlice fs i_ m_)
-                (M.unsafeSlice gs i_ m_)
-                (M.unsafeSlice hs i_ m_)
-  {-# INLINE overlaps  #-}
-  overlaps (MV_8 n_1 as1 bs1 cs1 ds1 es1 fs1 gs1 hs1) (MV_8 n_2 as2
-                                                                bs2
-                                                                cs2
-                                                                ds2
-                                                                es2
-                                                                fs2
-                                                                gs2
-                                                                hs2)
-      = M.overlaps as1 as2
-        || M.overlaps bs1 bs2
-        || M.overlaps cs1 cs2
-        || M.overlaps ds1 ds2
-        || M.overlaps es1 es2
-        || M.overlaps fs1 fs2
-        || M.overlaps gs1 gs2
-        || M.overlaps hs1 hs2
-  {-# INLINE unsafeNew  #-}
-  unsafeNew n_
+  {-# INLINE basicLength  #-}
+  basicLength (MV_8 n_ as bs cs ds es fs gs hs) = n_
+  {-# INLINE basicUnsafeSlice  #-}
+  basicUnsafeSlice (MV_8 n_ as bs cs ds es fs gs hs) i_ m_
+      = MV_8 m_ (M.basicUnsafeSlice as i_ m_)
+                (M.basicUnsafeSlice bs i_ m_)
+                (M.basicUnsafeSlice cs i_ m_)
+                (M.basicUnsafeSlice ds i_ m_)
+                (M.basicUnsafeSlice es i_ m_)
+                (M.basicUnsafeSlice fs i_ m_)
+                (M.basicUnsafeSlice gs i_ m_)
+                (M.basicUnsafeSlice hs i_ m_)
+  {-# INLINE basicOverlaps  #-}
+  basicOverlaps (MV_8 n_1 as1
+                          bs1
+                          cs1
+                          ds1
+                          es1
+                          fs1
+                          gs1
+                          hs1) (MV_8 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2)
+      = M.basicOverlaps as1 as2
+        || M.basicOverlaps bs1 bs2
+        || M.basicOverlaps cs1 cs2
+        || M.basicOverlaps ds1 ds2
+        || M.basicOverlaps es1 es2
+        || M.basicOverlaps fs1 fs2
+        || M.basicOverlaps gs1 gs2
+        || M.basicOverlaps hs1 hs2
+  {-# INLINE basicUnsafeNew  #-}
+  basicUnsafeNew n_
       = do
-          as <- M.unsafeNew n_
-          bs <- M.unsafeNew n_
-          cs <- M.unsafeNew n_
-          ds <- M.unsafeNew n_
-          es <- M.unsafeNew n_
-          fs <- M.unsafeNew n_
-          gs <- M.unsafeNew n_
-          hs <- M.unsafeNew n_
+          as <- M.basicUnsafeNew n_
+          bs <- M.basicUnsafeNew n_
+          cs <- M.basicUnsafeNew n_
+          ds <- M.basicUnsafeNew n_
+          es <- M.basicUnsafeNew n_
+          fs <- M.basicUnsafeNew n_
+          gs <- M.basicUnsafeNew n_
+          hs <- M.basicUnsafeNew n_
           return $ MV_8 n_ as bs cs ds es fs gs hs
-  {-# INLINE unsafeNewWith  #-}
-  unsafeNewWith n_ (a, b, c, d, e, f, g, h)
+  {-# INLINE basicUnsafeNewWith  #-}
+  basicUnsafeNewWith n_ (a, b, c, d, e, f, g, h)
       = do
-          as <- M.unsafeNewWith n_ a
-          bs <- M.unsafeNewWith n_ b
-          cs <- M.unsafeNewWith n_ c
-          ds <- M.unsafeNewWith n_ d
-          es <- M.unsafeNewWith n_ e
-          fs <- M.unsafeNewWith n_ f
-          gs <- M.unsafeNewWith n_ g
-          hs <- M.unsafeNewWith n_ h
+          as <- M.basicUnsafeNewWith n_ a
+          bs <- M.basicUnsafeNewWith n_ b
+          cs <- M.basicUnsafeNewWith n_ c
+          ds <- M.basicUnsafeNewWith n_ d
+          es <- M.basicUnsafeNewWith n_ e
+          fs <- M.basicUnsafeNewWith n_ f
+          gs <- M.basicUnsafeNewWith n_ g
+          hs <- M.basicUnsafeNewWith n_ h
           return $ MV_8 n_ as bs cs ds es fs gs hs
-  {-# INLINE unsafeRead  #-}
-  unsafeRead (MV_8 n_ as bs cs ds es fs gs hs) i_
+  {-# INLINE basicUnsafeRead  #-}
+  basicUnsafeRead (MV_8 n_ as bs cs ds es fs gs hs) i_
       = do
-          a <- M.unsafeRead as i_
-          b <- M.unsafeRead bs i_
-          c <- M.unsafeRead cs i_
-          d <- M.unsafeRead ds i_
-          e <- M.unsafeRead es i_
-          f <- M.unsafeRead fs i_
-          g <- M.unsafeRead gs i_
-          h <- M.unsafeRead hs i_
+          a <- M.basicUnsafeRead as i_
+          b <- M.basicUnsafeRead bs i_
+          c <- M.basicUnsafeRead cs i_
+          d <- M.basicUnsafeRead ds i_
+          e <- M.basicUnsafeRead es i_
+          f <- M.basicUnsafeRead fs i_
+          g <- M.basicUnsafeRead gs i_
+          h <- M.basicUnsafeRead hs i_
           return (a, b, c, d, e, f, g, h)
-  {-# INLINE unsafeWrite  #-}
-  unsafeWrite (MV_8 n_ as
-                       bs
-                       cs
-                       ds
-                       es
-                       fs
-                       gs
-                       hs) i_ (a, b, c, d, e, f, g, h)
+  {-# INLINE basicUnsafeWrite  #-}
+  basicUnsafeWrite (MV_8 n_ as
+                            bs
+                            cs
+                            ds
+                            es
+                            fs
+                            gs
+                            hs) i_ (a, b, c, d, e, f, g, h)
       = do
-          M.unsafeWrite as i_ a
-          M.unsafeWrite bs i_ b
-          M.unsafeWrite cs i_ c
-          M.unsafeWrite ds i_ d
-          M.unsafeWrite es i_ e
-          M.unsafeWrite fs i_ f
-          M.unsafeWrite gs i_ g
-          M.unsafeWrite hs i_ h
-  {-# INLINE clear  #-}
-  clear (MV_8 n_ as bs cs ds es fs gs hs)
+          M.basicUnsafeWrite as i_ a
+          M.basicUnsafeWrite bs i_ b
+          M.basicUnsafeWrite cs i_ c
+          M.basicUnsafeWrite ds i_ d
+          M.basicUnsafeWrite es i_ e
+          M.basicUnsafeWrite fs i_ f
+          M.basicUnsafeWrite gs i_ g
+          M.basicUnsafeWrite hs i_ h
+  {-# INLINE basicClear  #-}
+  basicClear (MV_8 n_ as bs cs ds es fs gs hs)
       = do
-          M.clear as
-          M.clear bs
-          M.clear cs
-          M.clear ds
-          M.clear es
-          M.clear fs
-          M.clear gs
-          M.clear hs
-  {-# INLINE set  #-}
-  set (MV_8 n_ as bs cs ds es fs gs hs) (a, b, c, d, e, f, g, h)
+          M.basicClear as
+          M.basicClear bs
+          M.basicClear cs
+          M.basicClear ds
+          M.basicClear es
+          M.basicClear fs
+          M.basicClear gs
+          M.basicClear hs
+  {-# INLINE basicSet  #-}
+  basicSet (MV_8 n_ as bs cs ds es fs gs hs) (a, b, c, d, e, f, g, h)
       = do
-          M.set as a
-          M.set bs b
-          M.set cs c
-          M.set ds d
-          M.set es e
-          M.set fs f
-          M.set gs g
-          M.set hs h
-  {-# INLINE unsafeCopy  #-}
-  unsafeCopy (MV_8 n_1 as1 bs1 cs1 ds1 es1 fs1 gs1 hs1) (MV_8 n_2 as2
-                                                                  bs2
-                                                                  cs2
-                                                                  ds2
-                                                                  es2
-                                                                  fs2
-                                                                  gs2
-                                                                  hs2)
+          M.basicSet as a
+          M.basicSet bs b
+          M.basicSet cs c
+          M.basicSet ds d
+          M.basicSet es e
+          M.basicSet fs f
+          M.basicSet gs g
+          M.basicSet hs h
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_8 n_1 as1
+                            bs1
+                            cs1
+                            ds1
+                            es1
+                            fs1
+                            gs1
+                            hs1) (MV_8 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2)
       = do
-          M.unsafeCopy as1 as2
-          M.unsafeCopy bs1 bs2
-          M.unsafeCopy cs1 cs2
-          M.unsafeCopy ds1 ds2
-          M.unsafeCopy es1 es2
-          M.unsafeCopy fs1 fs2
-          M.unsafeCopy gs1 gs2
-          M.unsafeCopy hs1 hs2
-  {-# INLINE unsafeGrow  #-}
-  unsafeGrow (MV_8 n_ as bs cs ds es fs gs hs) m_
+          M.basicUnsafeCopy as1 as2
+          M.basicUnsafeCopy bs1 bs2
+          M.basicUnsafeCopy cs1 cs2
+          M.basicUnsafeCopy ds1 ds2
+          M.basicUnsafeCopy es1 es2
+          M.basicUnsafeCopy fs1 fs2
+          M.basicUnsafeCopy gs1 gs2
+          M.basicUnsafeCopy hs1 hs2
+  {-# INLINE basicUnsafeGrow  #-}
+  basicUnsafeGrow (MV_8 n_ as bs cs ds es fs gs hs) m_
       = do
-          M.unsafeGrow as m_
-          M.unsafeGrow bs m_
-          M.unsafeGrow cs m_
-          M.unsafeGrow ds m_
-          M.unsafeGrow es m_
-          M.unsafeGrow fs m_
-          M.unsafeGrow gs m_
-          M.unsafeGrow hs m_
+          M.basicUnsafeGrow as m_
+          M.basicUnsafeGrow bs m_
+          M.basicUnsafeGrow cs m_
+          M.basicUnsafeGrow ds m_
+          M.basicUnsafeGrow es m_
+          M.basicUnsafeGrow fs m_
+          M.basicUnsafeGrow gs m_
+          M.basicUnsafeGrow hs m_
           return $ MV_8 (m_+n_) as bs cs ds es fs gs hs
 instance (Unbox a,
           Unbox b,
@@ -987,14 +996,14 @@ instance (Unbox a,
   basicLength (V_8 n_ as bs cs ds es fs gs hs) = n_
   {-# INLINE basicUnsafeSlice  #-}
   basicUnsafeSlice (V_8 n_ as bs cs ds es fs gs hs) i_ m_
-      = V_8 m_ (G.unsafeSlice as i_ m_)
-               (G.unsafeSlice bs i_ m_)
-               (G.unsafeSlice cs i_ m_)
-               (G.unsafeSlice ds i_ m_)
-               (G.unsafeSlice es i_ m_)
-               (G.unsafeSlice fs i_ m_)
-               (G.unsafeSlice gs i_ m_)
-               (G.unsafeSlice hs i_ m_)
+      = V_8 m_ (G.basicUnsafeSlice as i_ m_)
+               (G.basicUnsafeSlice bs i_ m_)
+               (G.basicUnsafeSlice cs i_ m_)
+               (G.basicUnsafeSlice ds i_ m_)
+               (G.basicUnsafeSlice es i_ m_)
+               (G.basicUnsafeSlice fs i_ m_)
+               (G.basicUnsafeSlice gs i_ m_)
+               (G.basicUnsafeSlice hs i_ m_)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_8 n_ as bs cs ds es fs gs hs) i_
       = do
@@ -1045,161 +1054,161 @@ instance (Unbox a,
           Unbox g,
           Unbox h,
           Unbox i) => M.MVector MVector (a, b, c, d, e, f, g, h, i) where
-  {-# INLINE length  #-}
-  length (MV_9 n_ as bs cs ds es fs gs hs is) = n_
-  {-# INLINE unsafeSlice  #-}
-  unsafeSlice (MV_9 n_ as bs cs ds es fs gs hs is) i_ m_
-      = MV_9 m_ (M.unsafeSlice as i_ m_)
-                (M.unsafeSlice bs i_ m_)
-                (M.unsafeSlice cs i_ m_)
-                (M.unsafeSlice ds i_ m_)
-                (M.unsafeSlice es i_ m_)
-                (M.unsafeSlice fs i_ m_)
-                (M.unsafeSlice gs i_ m_)
-                (M.unsafeSlice hs i_ m_)
-                (M.unsafeSlice is i_ m_)
-  {-# INLINE overlaps  #-}
-  overlaps (MV_9 n_1 as1
-                     bs1
-                     cs1
-                     ds1
-                     es1
-                     fs1
-                     gs1
-                     hs1
-                     is1) (MV_9 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2)
-      = M.overlaps as1 as2
-        || M.overlaps bs1 bs2
-        || M.overlaps cs1 cs2
-        || M.overlaps ds1 ds2
-        || M.overlaps es1 es2
-        || M.overlaps fs1 fs2
-        || M.overlaps gs1 gs2
-        || M.overlaps hs1 hs2
-        || M.overlaps is1 is2
-  {-# INLINE unsafeNew  #-}
-  unsafeNew n_
+  {-# INLINE basicLength  #-}
+  basicLength (MV_9 n_ as bs cs ds es fs gs hs is) = n_
+  {-# INLINE basicUnsafeSlice  #-}
+  basicUnsafeSlice (MV_9 n_ as bs cs ds es fs gs hs is) i_ m_
+      = MV_9 m_ (M.basicUnsafeSlice as i_ m_)
+                (M.basicUnsafeSlice bs i_ m_)
+                (M.basicUnsafeSlice cs i_ m_)
+                (M.basicUnsafeSlice ds i_ m_)
+                (M.basicUnsafeSlice es i_ m_)
+                (M.basicUnsafeSlice fs i_ m_)
+                (M.basicUnsafeSlice gs i_ m_)
+                (M.basicUnsafeSlice hs i_ m_)
+                (M.basicUnsafeSlice is i_ m_)
+  {-# INLINE basicOverlaps  #-}
+  basicOverlaps (MV_9 n_1 as1
+                          bs1
+                          cs1
+                          ds1
+                          es1
+                          fs1
+                          gs1
+                          hs1
+                          is1) (MV_9 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2)
+      = M.basicOverlaps as1 as2
+        || M.basicOverlaps bs1 bs2
+        || M.basicOverlaps cs1 cs2
+        || M.basicOverlaps ds1 ds2
+        || M.basicOverlaps es1 es2
+        || M.basicOverlaps fs1 fs2
+        || M.basicOverlaps gs1 gs2
+        || M.basicOverlaps hs1 hs2
+        || M.basicOverlaps is1 is2
+  {-# INLINE basicUnsafeNew  #-}
+  basicUnsafeNew n_
       = do
-          as <- M.unsafeNew n_
-          bs <- M.unsafeNew n_
-          cs <- M.unsafeNew n_
-          ds <- M.unsafeNew n_
-          es <- M.unsafeNew n_
-          fs <- M.unsafeNew n_
-          gs <- M.unsafeNew n_
-          hs <- M.unsafeNew n_
-          is <- M.unsafeNew n_
+          as <- M.basicUnsafeNew n_
+          bs <- M.basicUnsafeNew n_
+          cs <- M.basicUnsafeNew n_
+          ds <- M.basicUnsafeNew n_
+          es <- M.basicUnsafeNew n_
+          fs <- M.basicUnsafeNew n_
+          gs <- M.basicUnsafeNew n_
+          hs <- M.basicUnsafeNew n_
+          is <- M.basicUnsafeNew n_
           return $ MV_9 n_ as bs cs ds es fs gs hs is
-  {-# INLINE unsafeNewWith  #-}
-  unsafeNewWith n_ (a, b, c, d, e, f, g, h, i)
+  {-# INLINE basicUnsafeNewWith  #-}
+  basicUnsafeNewWith n_ (a, b, c, d, e, f, g, h, i)
       = do
-          as <- M.unsafeNewWith n_ a
-          bs <- M.unsafeNewWith n_ b
-          cs <- M.unsafeNewWith n_ c
-          ds <- M.unsafeNewWith n_ d
-          es <- M.unsafeNewWith n_ e
-          fs <- M.unsafeNewWith n_ f
-          gs <- M.unsafeNewWith n_ g
-          hs <- M.unsafeNewWith n_ h
-          is <- M.unsafeNewWith n_ i
+          as <- M.basicUnsafeNewWith n_ a
+          bs <- M.basicUnsafeNewWith n_ b
+          cs <- M.basicUnsafeNewWith n_ c
+          ds <- M.basicUnsafeNewWith n_ d
+          es <- M.basicUnsafeNewWith n_ e
+          fs <- M.basicUnsafeNewWith n_ f
+          gs <- M.basicUnsafeNewWith n_ g
+          hs <- M.basicUnsafeNewWith n_ h
+          is <- M.basicUnsafeNewWith n_ i
           return $ MV_9 n_ as bs cs ds es fs gs hs is
-  {-# INLINE unsafeRead  #-}
-  unsafeRead (MV_9 n_ as bs cs ds es fs gs hs is) i_
+  {-# INLINE basicUnsafeRead  #-}
+  basicUnsafeRead (MV_9 n_ as bs cs ds es fs gs hs is) i_
       = do
-          a <- M.unsafeRead as i_
-          b <- M.unsafeRead bs i_
-          c <- M.unsafeRead cs i_
-          d <- M.unsafeRead ds i_
-          e <- M.unsafeRead es i_
-          f <- M.unsafeRead fs i_
-          g <- M.unsafeRead gs i_
-          h <- M.unsafeRead hs i_
-          i <- M.unsafeRead is i_
+          a <- M.basicUnsafeRead as i_
+          b <- M.basicUnsafeRead bs i_
+          c <- M.basicUnsafeRead cs i_
+          d <- M.basicUnsafeRead ds i_
+          e <- M.basicUnsafeRead es i_
+          f <- M.basicUnsafeRead fs i_
+          g <- M.basicUnsafeRead gs i_
+          h <- M.basicUnsafeRead hs i_
+          i <- M.basicUnsafeRead is i_
           return (a, b, c, d, e, f, g, h, i)
-  {-# INLINE unsafeWrite  #-}
-  unsafeWrite (MV_9 n_ as
-                       bs
-                       cs
-                       ds
-                       es
-                       fs
-                       gs
-                       hs
-                       is) i_ (a, b, c, d, e, f, g, h, i)
+  {-# INLINE basicUnsafeWrite  #-}
+  basicUnsafeWrite (MV_9 n_ as
+                            bs
+                            cs
+                            ds
+                            es
+                            fs
+                            gs
+                            hs
+                            is) i_ (a, b, c, d, e, f, g, h, i)
       = do
-          M.unsafeWrite as i_ a
-          M.unsafeWrite bs i_ b
-          M.unsafeWrite cs i_ c
-          M.unsafeWrite ds i_ d
-          M.unsafeWrite es i_ e
-          M.unsafeWrite fs i_ f
-          M.unsafeWrite gs i_ g
-          M.unsafeWrite hs i_ h
-          M.unsafeWrite is i_ i
-  {-# INLINE clear  #-}
-  clear (MV_9 n_ as bs cs ds es fs gs hs is)
+          M.basicUnsafeWrite as i_ a
+          M.basicUnsafeWrite bs i_ b
+          M.basicUnsafeWrite cs i_ c
+          M.basicUnsafeWrite ds i_ d
+          M.basicUnsafeWrite es i_ e
+          M.basicUnsafeWrite fs i_ f
+          M.basicUnsafeWrite gs i_ g
+          M.basicUnsafeWrite hs i_ h
+          M.basicUnsafeWrite is i_ i
+  {-# INLINE basicClear  #-}
+  basicClear (MV_9 n_ as bs cs ds es fs gs hs is)
       = do
-          M.clear as
-          M.clear bs
-          M.clear cs
-          M.clear ds
-          M.clear es
-          M.clear fs
-          M.clear gs
-          M.clear hs
-          M.clear is
-  {-# INLINE set  #-}
-  set (MV_9 n_ as
-               bs
-               cs
-               ds
-               es
-               fs
-               gs
-               hs
-               is) (a, b, c, d, e, f, g, h, i)
+          M.basicClear as
+          M.basicClear bs
+          M.basicClear cs
+          M.basicClear ds
+          M.basicClear es
+          M.basicClear fs
+          M.basicClear gs
+          M.basicClear hs
+          M.basicClear is
+  {-# INLINE basicSet  #-}
+  basicSet (MV_9 n_ as
+                    bs
+                    cs
+                    ds
+                    es
+                    fs
+                    gs
+                    hs
+                    is) (a, b, c, d, e, f, g, h, i)
       = do
-          M.set as a
-          M.set bs b
-          M.set cs c
-          M.set ds d
-          M.set es e
-          M.set fs f
-          M.set gs g
-          M.set hs h
-          M.set is i
-  {-# INLINE unsafeCopy  #-}
-  unsafeCopy (MV_9 n_1 as1
-                       bs1
-                       cs1
-                       ds1
-                       es1
-                       fs1
-                       gs1
-                       hs1
-                       is1) (MV_9 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2)
+          M.basicSet as a
+          M.basicSet bs b
+          M.basicSet cs c
+          M.basicSet ds d
+          M.basicSet es e
+          M.basicSet fs f
+          M.basicSet gs g
+          M.basicSet hs h
+          M.basicSet is i
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_9 n_1 as1
+                            bs1
+                            cs1
+                            ds1
+                            es1
+                            fs1
+                            gs1
+                            hs1
+                            is1) (MV_9 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2)
       = do
-          M.unsafeCopy as1 as2
-          M.unsafeCopy bs1 bs2
-          M.unsafeCopy cs1 cs2
-          M.unsafeCopy ds1 ds2
-          M.unsafeCopy es1 es2
-          M.unsafeCopy fs1 fs2
-          M.unsafeCopy gs1 gs2
-          M.unsafeCopy hs1 hs2
-          M.unsafeCopy is1 is2
-  {-# INLINE unsafeGrow  #-}
-  unsafeGrow (MV_9 n_ as bs cs ds es fs gs hs is) m_
+          M.basicUnsafeCopy as1 as2
+          M.basicUnsafeCopy bs1 bs2
+          M.basicUnsafeCopy cs1 cs2
+          M.basicUnsafeCopy ds1 ds2
+          M.basicUnsafeCopy es1 es2
+          M.basicUnsafeCopy fs1 fs2
+          M.basicUnsafeCopy gs1 gs2
+          M.basicUnsafeCopy hs1 hs2
+          M.basicUnsafeCopy is1 is2
+  {-# INLINE basicUnsafeGrow  #-}
+  basicUnsafeGrow (MV_9 n_ as bs cs ds es fs gs hs is) m_
       = do
-          M.unsafeGrow as m_
-          M.unsafeGrow bs m_
-          M.unsafeGrow cs m_
-          M.unsafeGrow ds m_
-          M.unsafeGrow es m_
-          M.unsafeGrow fs m_
-          M.unsafeGrow gs m_
-          M.unsafeGrow hs m_
-          M.unsafeGrow is m_
+          M.basicUnsafeGrow as m_
+          M.basicUnsafeGrow bs m_
+          M.basicUnsafeGrow cs m_
+          M.basicUnsafeGrow ds m_
+          M.basicUnsafeGrow es m_
+          M.basicUnsafeGrow fs m_
+          M.basicUnsafeGrow gs m_
+          M.basicUnsafeGrow hs m_
+          M.basicUnsafeGrow is m_
           return $ MV_9 (m_+n_) as bs cs ds es fs gs hs is
 instance (Unbox a,
           Unbox b,
@@ -1227,15 +1236,15 @@ instance (Unbox a,
   basicLength (V_9 n_ as bs cs ds es fs gs hs is) = n_
   {-# INLINE basicUnsafeSlice  #-}
   basicUnsafeSlice (V_9 n_ as bs cs ds es fs gs hs is) i_ m_
-      = V_9 m_ (G.unsafeSlice as i_ m_)
-               (G.unsafeSlice bs i_ m_)
-               (G.unsafeSlice cs i_ m_)
-               (G.unsafeSlice ds i_ m_)
-               (G.unsafeSlice es i_ m_)
-               (G.unsafeSlice fs i_ m_)
-               (G.unsafeSlice gs i_ m_)
-               (G.unsafeSlice hs i_ m_)
-               (G.unsafeSlice is i_ m_)
+      = V_9 m_ (G.basicUnsafeSlice as i_ m_)
+               (G.basicUnsafeSlice bs i_ m_)
+               (G.basicUnsafeSlice cs i_ m_)
+               (G.basicUnsafeSlice ds i_ m_)
+               (G.basicUnsafeSlice es i_ m_)
+               (G.basicUnsafeSlice fs i_ m_)
+               (G.basicUnsafeSlice gs i_ m_)
+               (G.basicUnsafeSlice hs i_ m_)
+               (G.basicUnsafeSlice is i_ m_)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_9 n_ as bs cs ds es fs gs hs is) i_
       = do
@@ -1291,175 +1300,175 @@ instance (Unbox a,
           Unbox h,
           Unbox i,
           Unbox j) => M.MVector MVector (a, b, c, d, e, f, g, h, i, j) where
-  {-# INLINE length  #-}
-  length (MV_10 n_ as bs cs ds es fs gs hs is js) = n_
-  {-# INLINE unsafeSlice  #-}
-  unsafeSlice (MV_10 n_ as bs cs ds es fs gs hs is js) i_ m_
-      = MV_10 m_ (M.unsafeSlice as i_ m_)
-                 (M.unsafeSlice bs i_ m_)
-                 (M.unsafeSlice cs i_ m_)
-                 (M.unsafeSlice ds i_ m_)
-                 (M.unsafeSlice es i_ m_)
-                 (M.unsafeSlice fs i_ m_)
-                 (M.unsafeSlice gs i_ m_)
-                 (M.unsafeSlice hs i_ m_)
-                 (M.unsafeSlice is i_ m_)
-                 (M.unsafeSlice js i_ m_)
-  {-# INLINE overlaps  #-}
-  overlaps (MV_10 n_1 as1
-                      bs1
-                      cs1
-                      ds1
-                      es1
-                      fs1
-                      gs1
-                      hs1
-                      is1
-                      js1) (MV_10 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2 js2)
-      = M.overlaps as1 as2
-        || M.overlaps bs1 bs2
-        || M.overlaps cs1 cs2
-        || M.overlaps ds1 ds2
-        || M.overlaps es1 es2
-        || M.overlaps fs1 fs2
-        || M.overlaps gs1 gs2
-        || M.overlaps hs1 hs2
-        || M.overlaps is1 is2
-        || M.overlaps js1 js2
-  {-# INLINE unsafeNew  #-}
-  unsafeNew n_
+  {-# INLINE basicLength  #-}
+  basicLength (MV_10 n_ as bs cs ds es fs gs hs is js) = n_
+  {-# INLINE basicUnsafeSlice  #-}
+  basicUnsafeSlice (MV_10 n_ as bs cs ds es fs gs hs is js) i_ m_
+      = MV_10 m_ (M.basicUnsafeSlice as i_ m_)
+                 (M.basicUnsafeSlice bs i_ m_)
+                 (M.basicUnsafeSlice cs i_ m_)
+                 (M.basicUnsafeSlice ds i_ m_)
+                 (M.basicUnsafeSlice es i_ m_)
+                 (M.basicUnsafeSlice fs i_ m_)
+                 (M.basicUnsafeSlice gs i_ m_)
+                 (M.basicUnsafeSlice hs i_ m_)
+                 (M.basicUnsafeSlice is i_ m_)
+                 (M.basicUnsafeSlice js i_ m_)
+  {-# INLINE basicOverlaps  #-}
+  basicOverlaps (MV_10 n_1 as1
+                           bs1
+                           cs1
+                           ds1
+                           es1
+                           fs1
+                           gs1
+                           hs1
+                           is1
+                           js1) (MV_10 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2 js2)
+      = M.basicOverlaps as1 as2
+        || M.basicOverlaps bs1 bs2
+        || M.basicOverlaps cs1 cs2
+        || M.basicOverlaps ds1 ds2
+        || M.basicOverlaps es1 es2
+        || M.basicOverlaps fs1 fs2
+        || M.basicOverlaps gs1 gs2
+        || M.basicOverlaps hs1 hs2
+        || M.basicOverlaps is1 is2
+        || M.basicOverlaps js1 js2
+  {-# INLINE basicUnsafeNew  #-}
+  basicUnsafeNew n_
       = do
-          as <- M.unsafeNew n_
-          bs <- M.unsafeNew n_
-          cs <- M.unsafeNew n_
-          ds <- M.unsafeNew n_
-          es <- M.unsafeNew n_
-          fs <- M.unsafeNew n_
-          gs <- M.unsafeNew n_
-          hs <- M.unsafeNew n_
-          is <- M.unsafeNew n_
-          js <- M.unsafeNew n_
+          as <- M.basicUnsafeNew n_
+          bs <- M.basicUnsafeNew n_
+          cs <- M.basicUnsafeNew n_
+          ds <- M.basicUnsafeNew n_
+          es <- M.basicUnsafeNew n_
+          fs <- M.basicUnsafeNew n_
+          gs <- M.basicUnsafeNew n_
+          hs <- M.basicUnsafeNew n_
+          is <- M.basicUnsafeNew n_
+          js <- M.basicUnsafeNew n_
           return $ MV_10 n_ as bs cs ds es fs gs hs is js
-  {-# INLINE unsafeNewWith  #-}
-  unsafeNewWith n_ (a, b, c, d, e, f, g, h, i, j)
+  {-# INLINE basicUnsafeNewWith  #-}
+  basicUnsafeNewWith n_ (a, b, c, d, e, f, g, h, i, j)
       = do
-          as <- M.unsafeNewWith n_ a
-          bs <- M.unsafeNewWith n_ b
-          cs <- M.unsafeNewWith n_ c
-          ds <- M.unsafeNewWith n_ d
-          es <- M.unsafeNewWith n_ e
-          fs <- M.unsafeNewWith n_ f
-          gs <- M.unsafeNewWith n_ g
-          hs <- M.unsafeNewWith n_ h
-          is <- M.unsafeNewWith n_ i
-          js <- M.unsafeNewWith n_ j
+          as <- M.basicUnsafeNewWith n_ a
+          bs <- M.basicUnsafeNewWith n_ b
+          cs <- M.basicUnsafeNewWith n_ c
+          ds <- M.basicUnsafeNewWith n_ d
+          es <- M.basicUnsafeNewWith n_ e
+          fs <- M.basicUnsafeNewWith n_ f
+          gs <- M.basicUnsafeNewWith n_ g
+          hs <- M.basicUnsafeNewWith n_ h
+          is <- M.basicUnsafeNewWith n_ i
+          js <- M.basicUnsafeNewWith n_ j
           return $ MV_10 n_ as bs cs ds es fs gs hs is js
-  {-# INLINE unsafeRead  #-}
-  unsafeRead (MV_10 n_ as bs cs ds es fs gs hs is js) i_
+  {-# INLINE basicUnsafeRead  #-}
+  basicUnsafeRead (MV_10 n_ as bs cs ds es fs gs hs is js) i_
       = do
-          a <- M.unsafeRead as i_
-          b <- M.unsafeRead bs i_
-          c <- M.unsafeRead cs i_
-          d <- M.unsafeRead ds i_
-          e <- M.unsafeRead es i_
-          f <- M.unsafeRead fs i_
-          g <- M.unsafeRead gs i_
-          h <- M.unsafeRead hs i_
-          i <- M.unsafeRead is i_
-          j <- M.unsafeRead js i_
+          a <- M.basicUnsafeRead as i_
+          b <- M.basicUnsafeRead bs i_
+          c <- M.basicUnsafeRead cs i_
+          d <- M.basicUnsafeRead ds i_
+          e <- M.basicUnsafeRead es i_
+          f <- M.basicUnsafeRead fs i_
+          g <- M.basicUnsafeRead gs i_
+          h <- M.basicUnsafeRead hs i_
+          i <- M.basicUnsafeRead is i_
+          j <- M.basicUnsafeRead js i_
           return (a, b, c, d, e, f, g, h, i, j)
-  {-# INLINE unsafeWrite  #-}
-  unsafeWrite (MV_10 n_ as
-                        bs
-                        cs
-                        ds
-                        es
-                        fs
-                        gs
-                        hs
-                        is
-                        js) i_ (a, b, c, d, e, f, g, h, i, j)
+  {-# INLINE basicUnsafeWrite  #-}
+  basicUnsafeWrite (MV_10 n_ as
+                             bs
+                             cs
+                             ds
+                             es
+                             fs
+                             gs
+                             hs
+                             is
+                             js) i_ (a, b, c, d, e, f, g, h, i, j)
       = do
-          M.unsafeWrite as i_ a
-          M.unsafeWrite bs i_ b
-          M.unsafeWrite cs i_ c
-          M.unsafeWrite ds i_ d
-          M.unsafeWrite es i_ e
-          M.unsafeWrite fs i_ f
-          M.unsafeWrite gs i_ g
-          M.unsafeWrite hs i_ h
-          M.unsafeWrite is i_ i
-          M.unsafeWrite js i_ j
-  {-# INLINE clear  #-}
-  clear (MV_10 n_ as bs cs ds es fs gs hs is js)
+          M.basicUnsafeWrite as i_ a
+          M.basicUnsafeWrite bs i_ b
+          M.basicUnsafeWrite cs i_ c
+          M.basicUnsafeWrite ds i_ d
+          M.basicUnsafeWrite es i_ e
+          M.basicUnsafeWrite fs i_ f
+          M.basicUnsafeWrite gs i_ g
+          M.basicUnsafeWrite hs i_ h
+          M.basicUnsafeWrite is i_ i
+          M.basicUnsafeWrite js i_ j
+  {-# INLINE basicClear  #-}
+  basicClear (MV_10 n_ as bs cs ds es fs gs hs is js)
       = do
-          M.clear as
-          M.clear bs
-          M.clear cs
-          M.clear ds
-          M.clear es
-          M.clear fs
-          M.clear gs
-          M.clear hs
-          M.clear is
-          M.clear js
-  {-# INLINE set  #-}
-  set (MV_10 n_ as
-                bs
-                cs
-                ds
-                es
-                fs
-                gs
-                hs
-                is
-                js) (a, b, c, d, e, f, g, h, i, j)
+          M.basicClear as
+          M.basicClear bs
+          M.basicClear cs
+          M.basicClear ds
+          M.basicClear es
+          M.basicClear fs
+          M.basicClear gs
+          M.basicClear hs
+          M.basicClear is
+          M.basicClear js
+  {-# INLINE basicSet  #-}
+  basicSet (MV_10 n_ as
+                     bs
+                     cs
+                     ds
+                     es
+                     fs
+                     gs
+                     hs
+                     is
+                     js) (a, b, c, d, e, f, g, h, i, j)
       = do
-          M.set as a
-          M.set bs b
-          M.set cs c
-          M.set ds d
-          M.set es e
-          M.set fs f
-          M.set gs g
-          M.set hs h
-          M.set is i
-          M.set js j
-  {-# INLINE unsafeCopy  #-}
-  unsafeCopy (MV_10 n_1 as1
-                        bs1
-                        cs1
-                        ds1
-                        es1
-                        fs1
-                        gs1
-                        hs1
-                        is1
-                        js1) (MV_10 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2 js2)
+          M.basicSet as a
+          M.basicSet bs b
+          M.basicSet cs c
+          M.basicSet ds d
+          M.basicSet es e
+          M.basicSet fs f
+          M.basicSet gs g
+          M.basicSet hs h
+          M.basicSet is i
+          M.basicSet js j
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_10 n_1 as1
+                             bs1
+                             cs1
+                             ds1
+                             es1
+                             fs1
+                             gs1
+                             hs1
+                             is1
+                             js1) (MV_10 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2 js2)
       = do
-          M.unsafeCopy as1 as2
-          M.unsafeCopy bs1 bs2
-          M.unsafeCopy cs1 cs2
-          M.unsafeCopy ds1 ds2
-          M.unsafeCopy es1 es2
-          M.unsafeCopy fs1 fs2
-          M.unsafeCopy gs1 gs2
-          M.unsafeCopy hs1 hs2
-          M.unsafeCopy is1 is2
-          M.unsafeCopy js1 js2
-  {-# INLINE unsafeGrow  #-}
-  unsafeGrow (MV_10 n_ as bs cs ds es fs gs hs is js) m_
+          M.basicUnsafeCopy as1 as2
+          M.basicUnsafeCopy bs1 bs2
+          M.basicUnsafeCopy cs1 cs2
+          M.basicUnsafeCopy ds1 ds2
+          M.basicUnsafeCopy es1 es2
+          M.basicUnsafeCopy fs1 fs2
+          M.basicUnsafeCopy gs1 gs2
+          M.basicUnsafeCopy hs1 hs2
+          M.basicUnsafeCopy is1 is2
+          M.basicUnsafeCopy js1 js2
+  {-# INLINE basicUnsafeGrow  #-}
+  basicUnsafeGrow (MV_10 n_ as bs cs ds es fs gs hs is js) m_
       = do
-          M.unsafeGrow as m_
-          M.unsafeGrow bs m_
-          M.unsafeGrow cs m_
-          M.unsafeGrow ds m_
-          M.unsafeGrow es m_
-          M.unsafeGrow fs m_
-          M.unsafeGrow gs m_
-          M.unsafeGrow hs m_
-          M.unsafeGrow is m_
-          M.unsafeGrow js m_
+          M.basicUnsafeGrow as m_
+          M.basicUnsafeGrow bs m_
+          M.basicUnsafeGrow cs m_
+          M.basicUnsafeGrow ds m_
+          M.basicUnsafeGrow es m_
+          M.basicUnsafeGrow fs m_
+          M.basicUnsafeGrow gs m_
+          M.basicUnsafeGrow hs m_
+          M.basicUnsafeGrow is m_
+          M.basicUnsafeGrow js m_
           return $ MV_10 (m_+n_) as bs cs ds es fs gs hs is js
 instance (Unbox a,
           Unbox b,
@@ -1489,16 +1498,16 @@ instance (Unbox a,
   basicLength (V_10 n_ as bs cs ds es fs gs hs is js) = n_
   {-# INLINE basicUnsafeSlice  #-}
   basicUnsafeSlice (V_10 n_ as bs cs ds es fs gs hs is js) i_ m_
-      = V_10 m_ (G.unsafeSlice as i_ m_)
-                (G.unsafeSlice bs i_ m_)
-                (G.unsafeSlice cs i_ m_)
-                (G.unsafeSlice ds i_ m_)
-                (G.unsafeSlice es i_ m_)
-                (G.unsafeSlice fs i_ m_)
-                (G.unsafeSlice gs i_ m_)
-                (G.unsafeSlice hs i_ m_)
-                (G.unsafeSlice is i_ m_)
-                (G.unsafeSlice js i_ m_)
+      = V_10 m_ (G.basicUnsafeSlice as i_ m_)
+                (G.basicUnsafeSlice bs i_ m_)
+                (G.basicUnsafeSlice cs i_ m_)
+                (G.basicUnsafeSlice ds i_ m_)
+                (G.basicUnsafeSlice es i_ m_)
+                (G.basicUnsafeSlice fs i_ m_)
+                (G.basicUnsafeSlice gs i_ m_)
+                (G.basicUnsafeSlice hs i_ m_)
+                (G.basicUnsafeSlice is i_ m_)
+                (G.basicUnsafeSlice js i_ m_)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_10 n_ as bs cs ds es fs gs hs is js) i_
       = do
@@ -1559,189 +1568,189 @@ instance (Unbox a,
           Unbox i,
           Unbox j,
           Unbox k) => M.MVector MVector (a, b, c, d, e, f, g, h, i, j, k) where
-  {-# INLINE length  #-}
-  length (MV_11 n_ as bs cs ds es fs gs hs is js ks) = n_
-  {-# INLINE unsafeSlice  #-}
-  unsafeSlice (MV_11 n_ as bs cs ds es fs gs hs is js ks) i_ m_
-      = MV_11 m_ (M.unsafeSlice as i_ m_)
-                 (M.unsafeSlice bs i_ m_)
-                 (M.unsafeSlice cs i_ m_)
-                 (M.unsafeSlice ds i_ m_)
-                 (M.unsafeSlice es i_ m_)
-                 (M.unsafeSlice fs i_ m_)
-                 (M.unsafeSlice gs i_ m_)
-                 (M.unsafeSlice hs i_ m_)
-                 (M.unsafeSlice is i_ m_)
-                 (M.unsafeSlice js i_ m_)
-                 (M.unsafeSlice ks i_ m_)
-  {-# INLINE overlaps  #-}
-  overlaps (MV_11 n_1 as1
-                      bs1
-                      cs1
-                      ds1
-                      es1
-                      fs1
-                      gs1
-                      hs1
-                      is1
-                      js1
-                      ks1) (MV_11 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2 js2 ks2)
-      = M.overlaps as1 as2
-        || M.overlaps bs1 bs2
-        || M.overlaps cs1 cs2
-        || M.overlaps ds1 ds2
-        || M.overlaps es1 es2
-        || M.overlaps fs1 fs2
-        || M.overlaps gs1 gs2
-        || M.overlaps hs1 hs2
-        || M.overlaps is1 is2
-        || M.overlaps js1 js2
-        || M.overlaps ks1 ks2
-  {-# INLINE unsafeNew  #-}
-  unsafeNew n_
+  {-# INLINE basicLength  #-}
+  basicLength (MV_11 n_ as bs cs ds es fs gs hs is js ks) = n_
+  {-# INLINE basicUnsafeSlice  #-}
+  basicUnsafeSlice (MV_11 n_ as bs cs ds es fs gs hs is js ks) i_ m_
+      = MV_11 m_ (M.basicUnsafeSlice as i_ m_)
+                 (M.basicUnsafeSlice bs i_ m_)
+                 (M.basicUnsafeSlice cs i_ m_)
+                 (M.basicUnsafeSlice ds i_ m_)
+                 (M.basicUnsafeSlice es i_ m_)
+                 (M.basicUnsafeSlice fs i_ m_)
+                 (M.basicUnsafeSlice gs i_ m_)
+                 (M.basicUnsafeSlice hs i_ m_)
+                 (M.basicUnsafeSlice is i_ m_)
+                 (M.basicUnsafeSlice js i_ m_)
+                 (M.basicUnsafeSlice ks i_ m_)
+  {-# INLINE basicOverlaps  #-}
+  basicOverlaps (MV_11 n_1 as1
+                           bs1
+                           cs1
+                           ds1
+                           es1
+                           fs1
+                           gs1
+                           hs1
+                           is1
+                           js1
+                           ks1) (MV_11 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2 js2 ks2)
+      = M.basicOverlaps as1 as2
+        || M.basicOverlaps bs1 bs2
+        || M.basicOverlaps cs1 cs2
+        || M.basicOverlaps ds1 ds2
+        || M.basicOverlaps es1 es2
+        || M.basicOverlaps fs1 fs2
+        || M.basicOverlaps gs1 gs2
+        || M.basicOverlaps hs1 hs2
+        || M.basicOverlaps is1 is2
+        || M.basicOverlaps js1 js2
+        || M.basicOverlaps ks1 ks2
+  {-# INLINE basicUnsafeNew  #-}
+  basicUnsafeNew n_
       = do
-          as <- M.unsafeNew n_
-          bs <- M.unsafeNew n_
-          cs <- M.unsafeNew n_
-          ds <- M.unsafeNew n_
-          es <- M.unsafeNew n_
-          fs <- M.unsafeNew n_
-          gs <- M.unsafeNew n_
-          hs <- M.unsafeNew n_
-          is <- M.unsafeNew n_
-          js <- M.unsafeNew n_
-          ks <- M.unsafeNew n_
+          as <- M.basicUnsafeNew n_
+          bs <- M.basicUnsafeNew n_
+          cs <- M.basicUnsafeNew n_
+          ds <- M.basicUnsafeNew n_
+          es <- M.basicUnsafeNew n_
+          fs <- M.basicUnsafeNew n_
+          gs <- M.basicUnsafeNew n_
+          hs <- M.basicUnsafeNew n_
+          is <- M.basicUnsafeNew n_
+          js <- M.basicUnsafeNew n_
+          ks <- M.basicUnsafeNew n_
           return $ MV_11 n_ as bs cs ds es fs gs hs is js ks
-  {-# INLINE unsafeNewWith  #-}
-  unsafeNewWith n_ (a, b, c, d, e, f, g, h, i, j, k)
+  {-# INLINE basicUnsafeNewWith  #-}
+  basicUnsafeNewWith n_ (a, b, c, d, e, f, g, h, i, j, k)
       = do
-          as <- M.unsafeNewWith n_ a
-          bs <- M.unsafeNewWith n_ b
-          cs <- M.unsafeNewWith n_ c
-          ds <- M.unsafeNewWith n_ d
-          es <- M.unsafeNewWith n_ e
-          fs <- M.unsafeNewWith n_ f
-          gs <- M.unsafeNewWith n_ g
-          hs <- M.unsafeNewWith n_ h
-          is <- M.unsafeNewWith n_ i
-          js <- M.unsafeNewWith n_ j
-          ks <- M.unsafeNewWith n_ k
+          as <- M.basicUnsafeNewWith n_ a
+          bs <- M.basicUnsafeNewWith n_ b
+          cs <- M.basicUnsafeNewWith n_ c
+          ds <- M.basicUnsafeNewWith n_ d
+          es <- M.basicUnsafeNewWith n_ e
+          fs <- M.basicUnsafeNewWith n_ f
+          gs <- M.basicUnsafeNewWith n_ g
+          hs <- M.basicUnsafeNewWith n_ h
+          is <- M.basicUnsafeNewWith n_ i
+          js <- M.basicUnsafeNewWith n_ j
+          ks <- M.basicUnsafeNewWith n_ k
           return $ MV_11 n_ as bs cs ds es fs gs hs is js ks
-  {-# INLINE unsafeRead  #-}
-  unsafeRead (MV_11 n_ as bs cs ds es fs gs hs is js ks) i_
+  {-# INLINE basicUnsafeRead  #-}
+  basicUnsafeRead (MV_11 n_ as bs cs ds es fs gs hs is js ks) i_
       = do
-          a <- M.unsafeRead as i_
-          b <- M.unsafeRead bs i_
-          c <- M.unsafeRead cs i_
-          d <- M.unsafeRead ds i_
-          e <- M.unsafeRead es i_
-          f <- M.unsafeRead fs i_
-          g <- M.unsafeRead gs i_
-          h <- M.unsafeRead hs i_
-          i <- M.unsafeRead is i_
-          j <- M.unsafeRead js i_
-          k <- M.unsafeRead ks i_
+          a <- M.basicUnsafeRead as i_
+          b <- M.basicUnsafeRead bs i_
+          c <- M.basicUnsafeRead cs i_
+          d <- M.basicUnsafeRead ds i_
+          e <- M.basicUnsafeRead es i_
+          f <- M.basicUnsafeRead fs i_
+          g <- M.basicUnsafeRead gs i_
+          h <- M.basicUnsafeRead hs i_
+          i <- M.basicUnsafeRead is i_
+          j <- M.basicUnsafeRead js i_
+          k <- M.basicUnsafeRead ks i_
           return (a, b, c, d, e, f, g, h, i, j, k)
-  {-# INLINE unsafeWrite  #-}
-  unsafeWrite (MV_11 n_ as
-                        bs
-                        cs
-                        ds
-                        es
-                        fs
-                        gs
-                        hs
-                        is
-                        js
-                        ks) i_ (a, b, c, d, e, f, g, h, i, j, k)
+  {-# INLINE basicUnsafeWrite  #-}
+  basicUnsafeWrite (MV_11 n_ as
+                             bs
+                             cs
+                             ds
+                             es
+                             fs
+                             gs
+                             hs
+                             is
+                             js
+                             ks) i_ (a, b, c, d, e, f, g, h, i, j, k)
       = do
-          M.unsafeWrite as i_ a
-          M.unsafeWrite bs i_ b
-          M.unsafeWrite cs i_ c
-          M.unsafeWrite ds i_ d
-          M.unsafeWrite es i_ e
-          M.unsafeWrite fs i_ f
-          M.unsafeWrite gs i_ g
-          M.unsafeWrite hs i_ h
-          M.unsafeWrite is i_ i
-          M.unsafeWrite js i_ j
-          M.unsafeWrite ks i_ k
-  {-# INLINE clear  #-}
-  clear (MV_11 n_ as bs cs ds es fs gs hs is js ks)
+          M.basicUnsafeWrite as i_ a
+          M.basicUnsafeWrite bs i_ b
+          M.basicUnsafeWrite cs i_ c
+          M.basicUnsafeWrite ds i_ d
+          M.basicUnsafeWrite es i_ e
+          M.basicUnsafeWrite fs i_ f
+          M.basicUnsafeWrite gs i_ g
+          M.basicUnsafeWrite hs i_ h
+          M.basicUnsafeWrite is i_ i
+          M.basicUnsafeWrite js i_ j
+          M.basicUnsafeWrite ks i_ k
+  {-# INLINE basicClear  #-}
+  basicClear (MV_11 n_ as bs cs ds es fs gs hs is js ks)
       = do
-          M.clear as
-          M.clear bs
-          M.clear cs
-          M.clear ds
-          M.clear es
-          M.clear fs
-          M.clear gs
-          M.clear hs
-          M.clear is
-          M.clear js
-          M.clear ks
-  {-# INLINE set  #-}
-  set (MV_11 n_ as
-                bs
-                cs
-                ds
-                es
-                fs
-                gs
-                hs
-                is
-                js
-                ks) (a, b, c, d, e, f, g, h, i, j, k)
+          M.basicClear as
+          M.basicClear bs
+          M.basicClear cs
+          M.basicClear ds
+          M.basicClear es
+          M.basicClear fs
+          M.basicClear gs
+          M.basicClear hs
+          M.basicClear is
+          M.basicClear js
+          M.basicClear ks
+  {-# INLINE basicSet  #-}
+  basicSet (MV_11 n_ as
+                     bs
+                     cs
+                     ds
+                     es
+                     fs
+                     gs
+                     hs
+                     is
+                     js
+                     ks) (a, b, c, d, e, f, g, h, i, j, k)
       = do
-          M.set as a
-          M.set bs b
-          M.set cs c
-          M.set ds d
-          M.set es e
-          M.set fs f
-          M.set gs g
-          M.set hs h
-          M.set is i
-          M.set js j
-          M.set ks k
-  {-# INLINE unsafeCopy  #-}
-  unsafeCopy (MV_11 n_1 as1
-                        bs1
-                        cs1
-                        ds1
-                        es1
-                        fs1
-                        gs1
-                        hs1
-                        is1
-                        js1
-                        ks1) (MV_11 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2 js2 ks2)
+          M.basicSet as a
+          M.basicSet bs b
+          M.basicSet cs c
+          M.basicSet ds d
+          M.basicSet es e
+          M.basicSet fs f
+          M.basicSet gs g
+          M.basicSet hs h
+          M.basicSet is i
+          M.basicSet js j
+          M.basicSet ks k
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_11 n_1 as1
+                             bs1
+                             cs1
+                             ds1
+                             es1
+                             fs1
+                             gs1
+                             hs1
+                             is1
+                             js1
+                             ks1) (MV_11 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2 js2 ks2)
       = do
-          M.unsafeCopy as1 as2
-          M.unsafeCopy bs1 bs2
-          M.unsafeCopy cs1 cs2
-          M.unsafeCopy ds1 ds2
-          M.unsafeCopy es1 es2
-          M.unsafeCopy fs1 fs2
-          M.unsafeCopy gs1 gs2
-          M.unsafeCopy hs1 hs2
-          M.unsafeCopy is1 is2
-          M.unsafeCopy js1 js2
-          M.unsafeCopy ks1 ks2
-  {-# INLINE unsafeGrow  #-}
-  unsafeGrow (MV_11 n_ as bs cs ds es fs gs hs is js ks) m_
+          M.basicUnsafeCopy as1 as2
+          M.basicUnsafeCopy bs1 bs2
+          M.basicUnsafeCopy cs1 cs2
+          M.basicUnsafeCopy ds1 ds2
+          M.basicUnsafeCopy es1 es2
+          M.basicUnsafeCopy fs1 fs2
+          M.basicUnsafeCopy gs1 gs2
+          M.basicUnsafeCopy hs1 hs2
+          M.basicUnsafeCopy is1 is2
+          M.basicUnsafeCopy js1 js2
+          M.basicUnsafeCopy ks1 ks2
+  {-# INLINE basicUnsafeGrow  #-}
+  basicUnsafeGrow (MV_11 n_ as bs cs ds es fs gs hs is js ks) m_
       = do
-          M.unsafeGrow as m_
-          M.unsafeGrow bs m_
-          M.unsafeGrow cs m_
-          M.unsafeGrow ds m_
-          M.unsafeGrow es m_
-          M.unsafeGrow fs m_
-          M.unsafeGrow gs m_
-          M.unsafeGrow hs m_
-          M.unsafeGrow is m_
-          M.unsafeGrow js m_
-          M.unsafeGrow ks m_
+          M.basicUnsafeGrow as m_
+          M.basicUnsafeGrow bs m_
+          M.basicUnsafeGrow cs m_
+          M.basicUnsafeGrow ds m_
+          M.basicUnsafeGrow es m_
+          M.basicUnsafeGrow fs m_
+          M.basicUnsafeGrow gs m_
+          M.basicUnsafeGrow hs m_
+          M.basicUnsafeGrow is m_
+          M.basicUnsafeGrow js m_
+          M.basicUnsafeGrow ks m_
           return $ MV_11 (m_+n_) as bs cs ds es fs gs hs is js ks
 instance (Unbox a,
           Unbox b,
@@ -1773,17 +1782,17 @@ instance (Unbox a,
   basicLength (V_11 n_ as bs cs ds es fs gs hs is js ks) = n_
   {-# INLINE basicUnsafeSlice  #-}
   basicUnsafeSlice (V_11 n_ as bs cs ds es fs gs hs is js ks) i_ m_
-      = V_11 m_ (G.unsafeSlice as i_ m_)
-                (G.unsafeSlice bs i_ m_)
-                (G.unsafeSlice cs i_ m_)
-                (G.unsafeSlice ds i_ m_)
-                (G.unsafeSlice es i_ m_)
-                (G.unsafeSlice fs i_ m_)
-                (G.unsafeSlice gs i_ m_)
-                (G.unsafeSlice hs i_ m_)
-                (G.unsafeSlice is i_ m_)
-                (G.unsafeSlice js i_ m_)
-                (G.unsafeSlice ks i_ m_)
+      = V_11 m_ (G.basicUnsafeSlice as i_ m_)
+                (G.basicUnsafeSlice bs i_ m_)
+                (G.basicUnsafeSlice cs i_ m_)
+                (G.basicUnsafeSlice ds i_ m_)
+                (G.basicUnsafeSlice es i_ m_)
+                (G.basicUnsafeSlice fs i_ m_)
+                (G.basicUnsafeSlice gs i_ m_)
+                (G.basicUnsafeSlice hs i_ m_)
+                (G.basicUnsafeSlice is i_ m_)
+                (G.basicUnsafeSlice js i_ m_)
+                (G.basicUnsafeSlice ks i_ m_)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_11 n_ as bs cs ds es fs gs hs is js ks) i_
       = do
@@ -1849,203 +1858,214 @@ instance (Unbox a,
           Unbox j,
           Unbox k,
           Unbox l) => M.MVector MVector (a, b, c, d, e, f, g, h, i, j, k, l) where
-  {-# INLINE length  #-}
-  length (MV_12 n_ as bs cs ds es fs gs hs is js ks ls) = n_
-  {-# INLINE unsafeSlice  #-}
-  unsafeSlice (MV_12 n_ as bs cs ds es fs gs hs is js ks ls) i_ m_
-      = MV_12 m_ (M.unsafeSlice as i_ m_)
-                 (M.unsafeSlice bs i_ m_)
-                 (M.unsafeSlice cs i_ m_)
-                 (M.unsafeSlice ds i_ m_)
-                 (M.unsafeSlice es i_ m_)
-                 (M.unsafeSlice fs i_ m_)
-                 (M.unsafeSlice gs i_ m_)
-                 (M.unsafeSlice hs i_ m_)
-                 (M.unsafeSlice is i_ m_)
-                 (M.unsafeSlice js i_ m_)
-                 (M.unsafeSlice ks i_ m_)
-                 (M.unsafeSlice ls i_ m_)
-  {-# INLINE overlaps  #-}
-  overlaps (MV_12 n_1 as1
-                      bs1
-                      cs1
-                      ds1
-                      es1
-                      fs1
-                      gs1
-                      hs1
-                      is1
-                      js1
-                      ks1
-                      ls1) (MV_12 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2 js2 ks2 ls2)
-      = M.overlaps as1 as2
-        || M.overlaps bs1 bs2
-        || M.overlaps cs1 cs2
-        || M.overlaps ds1 ds2
-        || M.overlaps es1 es2
-        || M.overlaps fs1 fs2
-        || M.overlaps gs1 gs2
-        || M.overlaps hs1 hs2
-        || M.overlaps is1 is2
-        || M.overlaps js1 js2
-        || M.overlaps ks1 ks2
-        || M.overlaps ls1 ls2
-  {-# INLINE unsafeNew  #-}
-  unsafeNew n_
+  {-# INLINE basicLength  #-}
+  basicLength (MV_12 n_ as bs cs ds es fs gs hs is js ks ls) = n_
+  {-# INLINE basicUnsafeSlice  #-}
+  basicUnsafeSlice (MV_12 n_ as
+                             bs
+                             cs
+                             ds
+                             es
+                             fs
+                             gs
+                             hs
+                             is
+                             js
+                             ks
+                             ls) i_ m_
+      = MV_12 m_ (M.basicUnsafeSlice as i_ m_)
+                 (M.basicUnsafeSlice bs i_ m_)
+                 (M.basicUnsafeSlice cs i_ m_)
+                 (M.basicUnsafeSlice ds i_ m_)
+                 (M.basicUnsafeSlice es i_ m_)
+                 (M.basicUnsafeSlice fs i_ m_)
+                 (M.basicUnsafeSlice gs i_ m_)
+                 (M.basicUnsafeSlice hs i_ m_)
+                 (M.basicUnsafeSlice is i_ m_)
+                 (M.basicUnsafeSlice js i_ m_)
+                 (M.basicUnsafeSlice ks i_ m_)
+                 (M.basicUnsafeSlice ls i_ m_)
+  {-# INLINE basicOverlaps  #-}
+  basicOverlaps (MV_12 n_1 as1
+                           bs1
+                           cs1
+                           ds1
+                           es1
+                           fs1
+                           gs1
+                           hs1
+                           is1
+                           js1
+                           ks1
+                           ls1) (MV_12 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2 js2 ks2 ls2)
+      = M.basicOverlaps as1 as2
+        || M.basicOverlaps bs1 bs2
+        || M.basicOverlaps cs1 cs2
+        || M.basicOverlaps ds1 ds2
+        || M.basicOverlaps es1 es2
+        || M.basicOverlaps fs1 fs2
+        || M.basicOverlaps gs1 gs2
+        || M.basicOverlaps hs1 hs2
+        || M.basicOverlaps is1 is2
+        || M.basicOverlaps js1 js2
+        || M.basicOverlaps ks1 ks2
+        || M.basicOverlaps ls1 ls2
+  {-# INLINE basicUnsafeNew  #-}
+  basicUnsafeNew n_
       = do
-          as <- M.unsafeNew n_
-          bs <- M.unsafeNew n_
-          cs <- M.unsafeNew n_
-          ds <- M.unsafeNew n_
-          es <- M.unsafeNew n_
-          fs <- M.unsafeNew n_
-          gs <- M.unsafeNew n_
-          hs <- M.unsafeNew n_
-          is <- M.unsafeNew n_
-          js <- M.unsafeNew n_
-          ks <- M.unsafeNew n_
-          ls <- M.unsafeNew n_
+          as <- M.basicUnsafeNew n_
+          bs <- M.basicUnsafeNew n_
+          cs <- M.basicUnsafeNew n_
+          ds <- M.basicUnsafeNew n_
+          es <- M.basicUnsafeNew n_
+          fs <- M.basicUnsafeNew n_
+          gs <- M.basicUnsafeNew n_
+          hs <- M.basicUnsafeNew n_
+          is <- M.basicUnsafeNew n_
+          js <- M.basicUnsafeNew n_
+          ks <- M.basicUnsafeNew n_
+          ls <- M.basicUnsafeNew n_
           return $ MV_12 n_ as bs cs ds es fs gs hs is js ks ls
-  {-# INLINE unsafeNewWith  #-}
-  unsafeNewWith n_ (a, b, c, d, e, f, g, h, i, j, k, l)
+  {-# INLINE basicUnsafeNewWith  #-}
+  basicUnsafeNewWith n_ (a, b, c, d, e, f, g, h, i, j, k, l)
       = do
-          as <- M.unsafeNewWith n_ a
-          bs <- M.unsafeNewWith n_ b
-          cs <- M.unsafeNewWith n_ c
-          ds <- M.unsafeNewWith n_ d
-          es <- M.unsafeNewWith n_ e
-          fs <- M.unsafeNewWith n_ f
-          gs <- M.unsafeNewWith n_ g
-          hs <- M.unsafeNewWith n_ h
-          is <- M.unsafeNewWith n_ i
-          js <- M.unsafeNewWith n_ j
-          ks <- M.unsafeNewWith n_ k
-          ls <- M.unsafeNewWith n_ l
+          as <- M.basicUnsafeNewWith n_ a
+          bs <- M.basicUnsafeNewWith n_ b
+          cs <- M.basicUnsafeNewWith n_ c
+          ds <- M.basicUnsafeNewWith n_ d
+          es <- M.basicUnsafeNewWith n_ e
+          fs <- M.basicUnsafeNewWith n_ f
+          gs <- M.basicUnsafeNewWith n_ g
+          hs <- M.basicUnsafeNewWith n_ h
+          is <- M.basicUnsafeNewWith n_ i
+          js <- M.basicUnsafeNewWith n_ j
+          ks <- M.basicUnsafeNewWith n_ k
+          ls <- M.basicUnsafeNewWith n_ l
           return $ MV_12 n_ as bs cs ds es fs gs hs is js ks ls
-  {-# INLINE unsafeRead  #-}
-  unsafeRead (MV_12 n_ as bs cs ds es fs gs hs is js ks ls) i_
+  {-# INLINE basicUnsafeRead  #-}
+  basicUnsafeRead (MV_12 n_ as bs cs ds es fs gs hs is js ks ls) i_
       = do
-          a <- M.unsafeRead as i_
-          b <- M.unsafeRead bs i_
-          c <- M.unsafeRead cs i_
-          d <- M.unsafeRead ds i_
-          e <- M.unsafeRead es i_
-          f <- M.unsafeRead fs i_
-          g <- M.unsafeRead gs i_
-          h <- M.unsafeRead hs i_
-          i <- M.unsafeRead is i_
-          j <- M.unsafeRead js i_
-          k <- M.unsafeRead ks i_
-          l <- M.unsafeRead ls i_
+          a <- M.basicUnsafeRead as i_
+          b <- M.basicUnsafeRead bs i_
+          c <- M.basicUnsafeRead cs i_
+          d <- M.basicUnsafeRead ds i_
+          e <- M.basicUnsafeRead es i_
+          f <- M.basicUnsafeRead fs i_
+          g <- M.basicUnsafeRead gs i_
+          h <- M.basicUnsafeRead hs i_
+          i <- M.basicUnsafeRead is i_
+          j <- M.basicUnsafeRead js i_
+          k <- M.basicUnsafeRead ks i_
+          l <- M.basicUnsafeRead ls i_
           return (a, b, c, d, e, f, g, h, i, j, k, l)
-  {-# INLINE unsafeWrite  #-}
-  unsafeWrite (MV_12 n_ as
-                        bs
-                        cs
-                        ds
-                        es
-                        fs
-                        gs
-                        hs
-                        is
-                        js
-                        ks
-                        ls) i_ (a, b, c, d, e, f, g, h, i, j, k, l)
+  {-# INLINE basicUnsafeWrite  #-}
+  basicUnsafeWrite (MV_12 n_ as
+                             bs
+                             cs
+                             ds
+                             es
+                             fs
+                             gs
+                             hs
+                             is
+                             js
+                             ks
+                             ls) i_ (a, b, c, d, e, f, g, h, i, j, k, l)
       = do
-          M.unsafeWrite as i_ a
-          M.unsafeWrite bs i_ b
-          M.unsafeWrite cs i_ c
-          M.unsafeWrite ds i_ d
-          M.unsafeWrite es i_ e
-          M.unsafeWrite fs i_ f
-          M.unsafeWrite gs i_ g
-          M.unsafeWrite hs i_ h
-          M.unsafeWrite is i_ i
-          M.unsafeWrite js i_ j
-          M.unsafeWrite ks i_ k
-          M.unsafeWrite ls i_ l
-  {-# INLINE clear  #-}
-  clear (MV_12 n_ as bs cs ds es fs gs hs is js ks ls)
+          M.basicUnsafeWrite as i_ a
+          M.basicUnsafeWrite bs i_ b
+          M.basicUnsafeWrite cs i_ c
+          M.basicUnsafeWrite ds i_ d
+          M.basicUnsafeWrite es i_ e
+          M.basicUnsafeWrite fs i_ f
+          M.basicUnsafeWrite gs i_ g
+          M.basicUnsafeWrite hs i_ h
+          M.basicUnsafeWrite is i_ i
+          M.basicUnsafeWrite js i_ j
+          M.basicUnsafeWrite ks i_ k
+          M.basicUnsafeWrite ls i_ l
+  {-# INLINE basicClear  #-}
+  basicClear (MV_12 n_ as bs cs ds es fs gs hs is js ks ls)
       = do
-          M.clear as
-          M.clear bs
-          M.clear cs
-          M.clear ds
-          M.clear es
-          M.clear fs
-          M.clear gs
-          M.clear hs
-          M.clear is
-          M.clear js
-          M.clear ks
-          M.clear ls
-  {-# INLINE set  #-}
-  set (MV_12 n_ as
-                bs
-                cs
-                ds
-                es
-                fs
-                gs
-                hs
-                is
-                js
-                ks
-                ls) (a, b, c, d, e, f, g, h, i, j, k, l)
+          M.basicClear as
+          M.basicClear bs
+          M.basicClear cs
+          M.basicClear ds
+          M.basicClear es
+          M.basicClear fs
+          M.basicClear gs
+          M.basicClear hs
+          M.basicClear is
+          M.basicClear js
+          M.basicClear ks
+          M.basicClear ls
+  {-# INLINE basicSet  #-}
+  basicSet (MV_12 n_ as
+                     bs
+                     cs
+                     ds
+                     es
+                     fs
+                     gs
+                     hs
+                     is
+                     js
+                     ks
+                     ls) (a, b, c, d, e, f, g, h, i, j, k, l)
       = do
-          M.set as a
-          M.set bs b
-          M.set cs c
-          M.set ds d
-          M.set es e
-          M.set fs f
-          M.set gs g
-          M.set hs h
-          M.set is i
-          M.set js j
-          M.set ks k
-          M.set ls l
-  {-# INLINE unsafeCopy  #-}
-  unsafeCopy (MV_12 n_1 as1
-                        bs1
-                        cs1
-                        ds1
-                        es1
-                        fs1
-                        gs1
-                        hs1
-                        is1
-                        js1
-                        ks1
-                        ls1) (MV_12 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2 js2 ks2 ls2)
+          M.basicSet as a
+          M.basicSet bs b
+          M.basicSet cs c
+          M.basicSet ds d
+          M.basicSet es e
+          M.basicSet fs f
+          M.basicSet gs g
+          M.basicSet hs h
+          M.basicSet is i
+          M.basicSet js j
+          M.basicSet ks k
+          M.basicSet ls l
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_12 n_1 as1
+                             bs1
+                             cs1
+                             ds1
+                             es1
+                             fs1
+                             gs1
+                             hs1
+                             is1
+                             js1
+                             ks1
+                             ls1) (MV_12 n_2 as2 bs2 cs2 ds2 es2 fs2 gs2 hs2 is2 js2 ks2 ls2)
       = do
-          M.unsafeCopy as1 as2
-          M.unsafeCopy bs1 bs2
-          M.unsafeCopy cs1 cs2
-          M.unsafeCopy ds1 ds2
-          M.unsafeCopy es1 es2
-          M.unsafeCopy fs1 fs2
-          M.unsafeCopy gs1 gs2
-          M.unsafeCopy hs1 hs2
-          M.unsafeCopy is1 is2
-          M.unsafeCopy js1 js2
-          M.unsafeCopy ks1 ks2
-          M.unsafeCopy ls1 ls2
-  {-# INLINE unsafeGrow  #-}
-  unsafeGrow (MV_12 n_ as bs cs ds es fs gs hs is js ks ls) m_
+          M.basicUnsafeCopy as1 as2
+          M.basicUnsafeCopy bs1 bs2
+          M.basicUnsafeCopy cs1 cs2
+          M.basicUnsafeCopy ds1 ds2
+          M.basicUnsafeCopy es1 es2
+          M.basicUnsafeCopy fs1 fs2
+          M.basicUnsafeCopy gs1 gs2
+          M.basicUnsafeCopy hs1 hs2
+          M.basicUnsafeCopy is1 is2
+          M.basicUnsafeCopy js1 js2
+          M.basicUnsafeCopy ks1 ks2
+          M.basicUnsafeCopy ls1 ls2
+  {-# INLINE basicUnsafeGrow  #-}
+  basicUnsafeGrow (MV_12 n_ as bs cs ds es fs gs hs is js ks ls) m_
       = do
-          M.unsafeGrow as m_
-          M.unsafeGrow bs m_
-          M.unsafeGrow cs m_
-          M.unsafeGrow ds m_
-          M.unsafeGrow es m_
-          M.unsafeGrow fs m_
-          M.unsafeGrow gs m_
-          M.unsafeGrow hs m_
-          M.unsafeGrow is m_
-          M.unsafeGrow js m_
-          M.unsafeGrow ks m_
-          M.unsafeGrow ls m_
+          M.basicUnsafeGrow as m_
+          M.basicUnsafeGrow bs m_
+          M.basicUnsafeGrow cs m_
+          M.basicUnsafeGrow ds m_
+          M.basicUnsafeGrow es m_
+          M.basicUnsafeGrow fs m_
+          M.basicUnsafeGrow gs m_
+          M.basicUnsafeGrow hs m_
+          M.basicUnsafeGrow is m_
+          M.basicUnsafeGrow js m_
+          M.basicUnsafeGrow ks m_
+          M.basicUnsafeGrow ls m_
           return $ MV_12 (m_+n_) as bs cs ds es fs gs hs is js ks ls
 instance (Unbox a,
           Unbox b,
@@ -2090,18 +2110,18 @@ instance (Unbox a,
                             js
                             ks
                             ls) i_ m_
-      = V_12 m_ (G.unsafeSlice as i_ m_)
-                (G.unsafeSlice bs i_ m_)
-                (G.unsafeSlice cs i_ m_)
-                (G.unsafeSlice ds i_ m_)
-                (G.unsafeSlice es i_ m_)
-                (G.unsafeSlice fs i_ m_)
-                (G.unsafeSlice gs i_ m_)
-                (G.unsafeSlice hs i_ m_)
-                (G.unsafeSlice is i_ m_)
-                (G.unsafeSlice js i_ m_)
-                (G.unsafeSlice ks i_ m_)
-                (G.unsafeSlice ls i_ m_)
+      = V_12 m_ (G.basicUnsafeSlice as i_ m_)
+                (G.basicUnsafeSlice bs i_ m_)
+                (G.basicUnsafeSlice cs i_ m_)
+                (G.basicUnsafeSlice ds i_ m_)
+                (G.basicUnsafeSlice es i_ m_)
+                (G.basicUnsafeSlice fs i_ m_)
+                (G.basicUnsafeSlice gs i_ m_)
+                (G.basicUnsafeSlice hs i_ m_)
+                (G.basicUnsafeSlice is i_ m_)
+                (G.basicUnsafeSlice js i_ m_)
+                (G.basicUnsafeSlice ks i_ m_)
+                (G.basicUnsafeSlice ls i_ m_)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_12 n_ as bs cs ds es fs gs hs is js ks ls) i_
       = do
