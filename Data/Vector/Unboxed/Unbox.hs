@@ -204,6 +204,59 @@ instance Unbox Char
 primMVector(Char, MV_Char)
 primVector(Char, V_Char, MV_Char)
 
+-- ----
+-- Bool
+-- ----
+
+fromBool :: Bool -> Word8
+{-# INLINE fromBool #-}
+fromBool True = 1
+fromBool False = 0
+
+toBool :: Word8 -> Bool
+{-# INLINE toBool #-}
+toBool 0 = False
+toBool _ = True
+
+newtype instance MVector s Bool = MV_Bool (P.MVector s Word8)
+newtype instance Vector    Bool = V_Bool  (P.Vector    Word8)
+
+instance Unbox Bool
+
+instance M.MVector MVector Bool where
+  {-# INLINE length #-}
+  {-# INLINE unsafeSlice #-}
+  {-# INLINE overlaps #-}
+  {-# INLINE unsafeNew #-}
+  {-# INLINE unsafeNewWith #-}
+  {-# INLINE unsafeRead #-}
+  {-# INLINE unsafeWrite #-}
+  {-# INLINE clear #-}
+  {-# INLINE set #-}
+  {-# INLINE unsafeCopy #-}
+  {-# INLINE unsafeGrow #-}
+  length (MV_Bool v) = M.length v
+  unsafeSlice (MV_Bool v) i n = MV_Bool $ M.unsafeSlice v i n
+  overlaps (MV_Bool v1) (MV_Bool v2) = M.overlaps v1 v2
+  unsafeNew n = MV_Bool `liftM` M.unsafeNew n
+  unsafeNewWith n x = MV_Bool `liftM` M.unsafeNewWith n (fromBool x)
+  unsafeRead (MV_Bool v) i = toBool `liftM` M.unsafeRead v i
+  unsafeWrite (MV_Bool v) i x = M.unsafeWrite v i (fromBool x)
+  clear (MV_Bool v) = M.clear v
+  set (MV_Bool v) x = M.set v (fromBool x)
+  unsafeCopy (MV_Bool v1) (MV_Bool v2) = M.unsafeCopy v1 v2
+  unsafeGrow (MV_Bool v) n = MV_Bool `liftM` M.unsafeGrow v n
+
+instance G.Vector Vector Bool where
+  {-# INLINE unsafeFreeze #-}
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicUnsafeIndexM #-}
+  unsafeFreeze (MV_Bool v) = V_Bool `liftM` G.unsafeFreeze v
+  basicLength (V_Bool v) = G.basicLength v
+  basicUnsafeSlice (V_Bool v) i n = V_Bool $ G.basicUnsafeSlice v i n
+  basicUnsafeIndexM (V_Bool v) i = toBool `liftM` G.basicUnsafeIndexM v i
+
 -- ------
 -- Tuples
 -- ------
