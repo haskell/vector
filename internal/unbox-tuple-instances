@@ -87,10 +87,6 @@ zip :: (Unbox a, Unbox b) => MVector s a ->
 {-# INLINE_STREAM zip #-}
 zip as bs = MV_2 len (unsafeSlice as 0 len) (unsafeSlice bs 0 len)
   where len = length as `min` length bs
-{-# RULES "stream/zip" forall as bs .
-  G.stream (zip as bs) = Stream.zipWith (,) (G.stream as)
-                                            (G.stream bs)
-  #-}
 unzip :: (Unbox a, Unbox b) => MVector s (a, b) -> (MVector s a,
                                                     MVector s b)
 {-# INLINE unzip #-}
@@ -101,7 +97,7 @@ zip :: (Unbox a, Unbox b) => Vector a -> Vector b -> Vector (a, b)
 {-# INLINE_STREAM zip #-}
 zip as bs = V_2 len (unsafeSlice as 0 len) (unsafeSlice bs 0 len)
   where len = length as `min` length bs
-{-# RULES "stream/zip" forall as bs .
+{-# RULES "stream/zip [Vector.Unboxed]" forall as bs .
   G.stream (zip as bs) = Stream.zipWith (,) (G.stream as)
                                             (G.stream bs)
   #-}
@@ -221,11 +217,6 @@ zip3 as bs cs = MV_3 len (unsafeSlice as 0 len)
                          (unsafeSlice bs 0 len)
                          (unsafeSlice cs 0 len)
   where len = length as `min` length bs `min` length cs
-{-# RULES "stream/zip3" forall as bs cs .
-  G.stream (zip3 as bs cs) = Stream.zipWith3 (, ,) (G.stream as)
-                                                   (G.stream bs)
-                                                   (G.stream cs)
-  #-}
 unzip3 :: (Unbox a,
            Unbox b,
            Unbox c) => MVector s (a, b, c) -> (MVector s a,
@@ -243,7 +234,7 @@ zip3 as bs cs = V_3 len (unsafeSlice as 0 len)
                         (unsafeSlice bs 0 len)
                         (unsafeSlice cs 0 len)
   where len = length as `min` length bs `min` length cs
-{-# RULES "stream/zip3" forall as bs cs .
+{-# RULES "stream/zip3 [Vector.Unboxed]" forall as bs cs .
   G.stream (zip3 as bs cs) = Stream.zipWith3 (, ,) (G.stream as)
                                                    (G.stream bs)
                                                    (G.stream cs)
@@ -388,12 +379,6 @@ zip4 as bs cs ds = MV_4 len (unsafeSlice as 0 len)
                             (unsafeSlice ds 0 len)
   where
     len = length as `min` length bs `min` length cs `min` length ds
-{-# RULES "stream/zip4" forall as bs cs ds .
-  G.stream (zip4 as bs cs ds) = Stream.zipWith4 (, , ,) (G.stream as)
-                                                        (G.stream bs)
-                                                        (G.stream cs)
-                                                        (G.stream ds)
-  #-}
 unzip4 :: (Unbox a,
            Unbox b,
            Unbox c,
@@ -416,7 +401,7 @@ zip4 as bs cs ds = V_4 len (unsafeSlice as 0 len)
                            (unsafeSlice ds 0 len)
   where
     len = length as `min` length bs `min` length cs `min` length ds
-{-# RULES "stream/zip4" forall as bs cs ds .
+{-# RULES "stream/zip4 [Vector.Unboxed]" forall as bs cs ds .
   G.stream (zip4 as bs cs ds) = Stream.zipWith4 (, , ,) (G.stream as)
                                                         (G.stream bs)
                                                         (G.stream cs)
@@ -602,17 +587,6 @@ zip5 as bs cs ds es = MV_5 len (unsafeSlice as 0 len)
           length cs `min`
           length ds `min`
           length es
-{-# RULES "stream/zip5" forall as bs cs ds es .
-  G.stream (zip5 as
-                 bs
-                 cs
-                 ds
-                 es) = Stream.zipWith5 (, , , ,) (G.stream as)
-                                                 (G.stream bs)
-                                                 (G.stream cs)
-                                                 (G.stream ds)
-                                                 (G.stream es)
-  #-}
 unzip5 :: (Unbox a,
            Unbox b,
            Unbox c,
@@ -647,7 +621,7 @@ zip5 as bs cs ds es = V_5 len (unsafeSlice as 0 len)
           length cs `min`
           length ds `min`
           length es
-{-# RULES "stream/zip5" forall as bs cs ds es .
+{-# RULES "stream/zip5 [Vector.Unboxed]" forall as bs cs ds es .
   G.stream (zip5 as
                  bs
                  cs
@@ -864,19 +838,6 @@ zip6 as bs cs ds es fs = MV_6 len (unsafeSlice as 0 len)
           length ds `min`
           length es `min`
           length fs
-{-# RULES "stream/zip6" forall as bs cs ds es fs .
-  G.stream (zip6 as
-                 bs
-                 cs
-                 ds
-                 es
-                 fs) = Stream.zipWith6 (, , , , ,) (G.stream as)
-                                                   (G.stream bs)
-                                                   (G.stream cs)
-                                                   (G.stream ds)
-                                                   (G.stream es)
-                                                   (G.stream fs)
-  #-}
 unzip6 :: (Unbox a,
            Unbox b,
            Unbox c,
@@ -917,7 +878,7 @@ zip6 as bs cs ds es fs = V_6 len (unsafeSlice as 0 len)
           length ds `min`
           length es `min`
           length fs
-{-# RULES "stream/zip6" forall as bs cs ds es fs .
+{-# RULES "stream/zip6 [Vector.Unboxed]" forall as bs cs ds es fs .
   G.stream (zip6 as
                  bs
                  cs

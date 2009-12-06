@@ -27,6 +27,7 @@ generate n =
        , text "#endif"
        , text "#ifdef DEFINE_IMMUTABLE"
        , define_zip "Vector" "V"
+       , define_zip_rule
        , define_unzip "Vector" "V"
        , text "#endif"
        ]
@@ -71,21 +72,24 @@ generate n =
                      $ text "len ="
                        <+> sep (punctuate (text " `min`")
                                           [text "length" <+> vs | vs <- varss])
-             ,hang (text "{-# RULES" <+> text "\"stream/" <> name
-                     <> text "\" forall" <+> sep varss <+> char '.')
-                   2 $
-                   text "G.stream" <+> parens (name <+> sep varss)
-                   <+> char '='
-                   <+> text "Stream." <> zw <+> tuple (replicate n empty)
-                   <+> sep [parens $ text "G.stream" <+> vs | vs <- varss]
-                   $$ text "#-}"
              ]
       where
         name | n == 2    = text "zip"
              | otherwise = text "zip" <> int n
 
-        zw | n == 2    = text "zipWith"
-           | otherwise = text "zipWith" <> int n
+    define_zip_rule
+      = hang (text "{-# RULES" <+> text "\"stream/" <> name "zip"
+              <> text " [Vector.Unboxed]\" forall" <+> sep varss <+> char '.')
+             2 $
+             text "G.stream" <+> parens (name "zip" <+> sep varss)
+             <+> char '='
+             <+> text "Stream." <> name "zipWith" <+> tuple (replicate n empty)
+             <+> sep [parens $ text "G.stream" <+> vs | vs <- varss]
+             $$ text "#-}"
+     where
+       name s | n == 2    = text s
+              | otherwise = text s <> int n
+       
 
     define_unzip ty c
       = sep [name <+> text "::"
