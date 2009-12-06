@@ -71,6 +71,8 @@ module Data.Vector.Fusion.Stream.Monadic (
 import Data.Vector.Fusion.Stream.Size
 import Data.Vector.Fusion.Util ( Box(..) )
 
+import Data.Char      ( ord )
+import GHC.Base       ( unsafeChr )
 import Control.Monad  ( liftM )
 import Prelude hiding ( length, null,
                         replicate, (++),
@@ -1058,23 +1060,23 @@ enumFromTo :: (Enum a, Monad m) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo #-}
 enumFromTo x y = fromList [x .. y]
 
-enumFromTo_small :: (Enum a, Ord a, Monad m) => a -> a -> Stream m a
+-- NOTE: We use (x+1) instead of (succ x) below because the latter checks for
+-- overflow which can't happen here.
+
+enumFromTo_small :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo_small #-}
 enumFromTo_small x y = Stream step x (Exact n)
   where
-    n = max (fromEnum y - fromEnum x + 1) 0
+    n = max (fromIntegral y - fromIntegral x + 1) 0
 
     {-# INLINE_INNER step #-}
-    step x | x <= y    = return $ Yield x (succ x)
+    step x | x <= y    = return $ Yield x (x+1)
            | otherwise = return $ Done
 
 {-# RULES
 
 "enumFromTo<Int> [Stream]"
   enumFromTo = enumFromTo_small :: Monad m => Int -> Int -> Stream m Int
-
-"enumFromTo<Char> [Stream]"
-  enumFromTo = enumFromTo_small :: Monad m => Char -> Char -> Stream m Char
 
 "enumFromTo<Int8> [Stream]"
   enumFromTo = enumFromTo_small :: Monad m => Int8 -> Int8 -> Stream m Int8
@@ -1093,7 +1095,7 @@ enumFromTo_small x y = Stream step x (Exact n)
 
   #-}
 
-enumFromTo_big :: (Enum a, Integral a, Monad m) => a -> a -> Stream m a
+enumFromTo_big :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo_big #-}
 enumFromTo_big x y = Stream step x (Exact n)
   where
@@ -1102,11 +1104,10 @@ enumFromTo_big x y = Stream step x (Exact n)
       | otherwise = error $ "vector.enumFromTo_big: Array too large"
 
     {-# INLINE_INNER step #-}
-    step x | x <= y    = return $ Yield x (succ x)
+    step x | x <= y    = return $ Yield x (x+1)
            | otherwise = return $ Done
 
 {-# RULES
-
 
 "enumFromTo<Int64> [Stream]"
   enumFromTo = enumFromTo_big :: Monad m => Int64 -> Int64 -> Stream m Int64
@@ -1122,6 +1123,26 @@ enumFromTo_big x y = Stream step x (Exact n)
 
   #-}
 
+enumFromTo_char :: Monad m => Char -> Char -> Stream m Char
+{-# INLINE_STREAM enumFromTo_char #-}
+enumFromTo_char x y = Stream step xn (Exact n)
+  where
+    xn = ord x
+    yn = ord y
+
+    n | xn > yn   = 0
+      | otherwise = yn - xn + 1
+
+    {-# INLINE_INNER step #-}
+    step xn | xn <= yn  = return $ Yield (unsafeChr xn) (xn+1)
+            | otherwise = return $ Done
+
+{-# RULES
+
+"enumFromTo<Char> [Stream]"
+  enumFromTo = enumFromTo_char
+
+  #-}
 
 -- | Enumerate values from @x@ to @y@
 enumFromThenTo :: (Enum a, Monad m) => a -> a -> a -> Stream m a
