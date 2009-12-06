@@ -73,6 +73,7 @@ import Prelude hiding ( length, null,
 #include "vector.h"
 
 instance (Unbox a, Eq a) => Eq (Vector a) where
+  {-# INLINE (==) #-}
   (==) = G.eq
 
 -- Length
