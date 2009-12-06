@@ -27,6 +27,7 @@ generate n =
     tuple f = parens $ hsep $ punctuate comma $ map f vars
     vtuple f = parens $ sep $ punctuate comma $ map f vars
     con s = text s <> char '_' <> int n
+    var c = text (c : "_")
 
     data_instance ty c
       = hang (hsep [text "data instance", text ty, tuple id])
@@ -39,17 +40,17 @@ generate n =
                         <+> text "=>" <+> text cls <+> tuple id
 
 
-    pat c = parens $ con c <+> char 'n' <+> sep varss
-    patn c n = parens $ con c <+> (char 'n' <> int n)
+    pat c = parens $ con c <+> var 'n' <+> sep varss
+    patn c n = parens $ con c <+> (var 'n' <> int n)
                               <+> sep [v <> int n | v <- varss]
 
-    gen_length c = (pat c, char 'n')
+    gen_length c = (pat c, var 'n')
 
     gen_unsafeSlice mod c
-      = (pat c <+> char 'i' <+> char 'm',
-         con c <+> char 'm'
+      = (pat c <+> var 'i' <+> var 'm',
+         con c <+> var 'm'
                <+> vcat [parens $ text mod <> char '.' <> text "unsafeSlice"
-                                  <+> vs <+> char 'i' <+> char 'm'
+                                  <+> vs <+> var 'i' <+> var 'm'
                                         | vs <- varss])
 
 
@@ -57,28 +58,28 @@ generate n =
                     vcat $ r : [text "||" <+> r | r <- rs])
       where
         r : rs = [text "M.overlaps" <+> v <> char '1' <+> v <> char '2'
-                        | v <- vars]
+                        | v <- varss]
 
     gen_unsafeNew
-      = (char 'n',
-         mk_do [v <+> text "<- M.unsafeNew n" | v <- varss]
-               $ text "return $" <+> con "MV" <+> sep varss)
+      = (var 'n',
+         mk_do [v <+> text "<- M.unsafeNew" <+> var 'n' | v <- varss]
+               $ text "return $" <+> con "MV" <+> var 'n' <+> sep varss)
 
     gen_unsafeNewWith
-      = (char 'n' <+> tuple id,
-         mk_do [vs <+> text "<- M.unsafeNewWith n" <+> v | v  <- vars
-                                                         | vs <- varss]
-               $ text "return $" <+> con "MV" <+> sep varss)
+      = (var 'n' <+> tuple id,
+         mk_do [vs <+> text "<- M.unsafeNewWith" <+> var 'n' <+> v
+                        | v  <- vars | vs <- varss]
+               $ text "return $" <+> con "MV" <+> var 'n' <+> sep varss)
 
     gen_unsafeRead
-      = (pat "MV" <+> char 'i',
-         mk_do [v <+> text "<- M.unsafeRead" <+> vs <+> char 'i' | v  <- vars
-                                                                 | vs <- varss]
+      = (pat "MV" <+> var 'i',
+         mk_do [v <+> text "<- M.unsafeRead" <+> vs <+> var 'i' | v  <- vars
+                                                                | vs <- varss]
                $ text "return" <+> tuple id)
 
     gen_unsafeWrite
-      = (pat "MV" <+> char 'i' <+> tuple id,
-         mk_do [text "M.unsafeWrite" <+> vs <+> char 'i' <+> v | v  <- vars
+      = (pat "MV" <+> var 'i' <+> tuple id,
+         mk_do [text "M.unsafeWrite" <+> vs <+> var 'i' <+> v | v  <- vars
                                                                | vs <- varss]
                empty)
 
@@ -95,21 +96,22 @@ generate n =
                         | vs <- varss] empty)
 
     gen_unsafeGrow
-      = (pat "MV" <+> char 'm',
-         mk_do [text "M.unsafeGrow" <+> vs <+> char 'm' | vs <- varss]
-               $ text "return $" <+> con "MV" <+> text "(m+n)"
+      = (pat "MV" <+> var 'm',
+         mk_do [text "M.unsafeGrow" <+> vs <+> var 'm' | vs <- varss]
+               $ text "return $" <+> con "MV"
+                                 <+> parens (var 'm' <> char '+' <> var 'n')
                                  <+> sep varss)
 
     gen_unsafeFreeze
       = (pat "MV",
          mk_do [vs <> char '\'' <+> text "<- G.unsafeFreeze" <+> vs
                         | vs <- varss]
-               $ text "return $" <+> con "V" <+> char 'n'
+               $ text "return $" <+> con "V" <+> var 'n'
                                  <+> sep [vs <> char '\'' | vs <- varss])
 
     gen_basicUnsafeIndexM
-      = (pat "V" <+> char 'i',
-         mk_do [v <+> text "<- G.basicUnsafeIndexM" <+> vs <+> char 'i'
+      = (pat "V" <+> var 'i',
+         mk_do [v <+> text "<- G.basicUnsafeIndexM" <+> vs <+> var 'i'
                         | vs <- varss | v <- vars]
                $ text "return" <+> tuple id)
 
@@ -140,5 +142,5 @@ generate n =
 
     methods_Vector  = [("unsafeFreeze",      gen_unsafeFreeze)
                       ,("basicLength",       gen_length "V")
-                      ,("unsafeSlice",       gen_unsafeSlice "G" "V")
+                      ,("basicUnsafeSlice",       gen_unsafeSlice "G" "V")
                       ,("basicUnsafeIndexM", gen_basicUnsafeIndexM)]

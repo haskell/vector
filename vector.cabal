@@ -37,6 +37,8 @@ Extra-Source-Files:
       tests/Utilities.hs
       tests/Tests/Stream.hs
       tests/Tests/Vector.hs
+      internal/GenUnboxTuple.hs
+      internal/unbox-tuple-instances
 
 Flag BoundsChecks
   Description: Enable bounds checking
@@ -80,7 +82,7 @@ Library
         Data.Vector
 
   Include-Dirs:
-        include
+        include, internal
 
   Install-Includes:
         vector.h
