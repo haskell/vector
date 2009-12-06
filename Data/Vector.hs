@@ -38,7 +38,9 @@ module Data.Vector (
   map, concatMap,
 
   -- * Zipping and unzipping
-  zipWith, zipWith3, zip, zip3, unzip, unzip3,
+  zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
+  zip, zip3, zip4, zip5, zip6,
+  unzip, unzip3, unzip4, unzip5, unzip6,
 
   -- * Filtering
   filter, takeWhile, dropWhile,
@@ -310,6 +312,23 @@ zipWith3 :: (a -> b -> c -> d) -> Vector a -> Vector b -> Vector c -> Vector d
 {-# INLINE zipWith3 #-}
 zipWith3 = G.zipWith3
 
+zipWith4 :: (a -> b -> c -> d -> e)
+          -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+{-# INLINE zipWith4 #-}
+zipWith4 = G.zipWith4
+
+zipWith5 :: (a -> b -> c -> d -> e -> f)
+          -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+          -> Vector f
+{-# INLINE zipWith5 #-}
+zipWith5 = G.zipWith5
+
+zipWith6 :: (a -> b -> c -> d -> e -> f -> g)
+          -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+          -> Vector f -> Vector g
+{-# INLINE zipWith6 #-}
+zipWith6 = G.zipWith6
+
 zip :: Vector a -> Vector b -> Vector (a, b)
 {-# INLINE zip #-}
 zip = G.zip
@@ -318,6 +337,21 @@ zip3 :: Vector a -> Vector b -> Vector c -> Vector (a, b, c)
 {-# INLINE zip3 #-}
 zip3 = G.zip3
 
+zip4 :: Vector a -> Vector b -> Vector c -> Vector d
+     -> Vector (a, b, c, d)
+{-# INLINE zip4 #-}
+zip4 = G.zip4
+
+zip5 :: Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+     -> Vector (a, b, c, d, e)
+{-# INLINE zip5 #-}
+zip5 = G.zip5
+
+zip6 :: Vector a -> Vector b -> Vector c -> Vector d -> Vector e -> Vector f
+     -> Vector (a, b, c, d, e, f)
+{-# INLINE zip6 #-}
+zip6 = G.zip6
+
 unzip :: Vector (a, b) -> (Vector a, Vector b)
 {-# INLINE unzip #-}
 unzip = G.unzip
@@ -325,6 +359,20 @@ unzip = G.unzip
 unzip3 :: Vector (a, b, c) -> (Vector a, Vector b, Vector c)
 {-# INLINE unzip3 #-}
 unzip3 = G.unzip3
+
+unzip4 :: Vector (a, b, c, d) -> (Vector a, Vector b, Vector c, Vector d)
+{-# INLINE unzip4 #-}
+unzip4 = G.unzip4
+
+unzip5 :: Vector (a, b, c, d, e)
+       -> (Vector a, Vector b, Vector c, Vector d, Vector e)
+{-# INLINE unzip5 #-}
+unzip5 = G.unzip5
+
+unzip6 :: Vector (a, b, c, d, e, f)
+       -> (Vector a, Vector b, Vector c, Vector d, Vector e, Vector f)
+{-# INLINE unzip6 #-}
+unzip6 = G.unzip6
 
 -- Filtering
 -- ---------
