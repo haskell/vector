@@ -1063,6 +1063,7 @@ enumFromTo x y = fromList [x .. y]
 -- NOTE: We use (x+1) instead of (succ x) below because the latter checks for
 -- overflow which can't happen here.
 
+-- FIXME: add "too large" test for Int
 enumFromTo_small :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo_small #-}
 enumFromTo_small x y = Stream step x (Exact n)
@@ -1095,6 +1096,7 @@ enumFromTo_small x y = Stream step x (Exact n)
 
   #-}
 
+-- FIXME: the "too large" test is totally wrong
 enumFromTo_big :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo_big #-}
 enumFromTo_big x y = Stream step x (Exact n)
