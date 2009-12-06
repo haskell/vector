@@ -38,7 +38,8 @@ module Data.Vector.Fusion.Stream (
   map, concatMap, unbox,
   
   -- * Zipping
-  zipWith, zipWith3,
+  zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
+  zip, zip3, zip4, zip5, zip6,
 
   -- * Filtering
   filter, takeWhile, dropWhile,
@@ -81,7 +82,7 @@ import Prelude hiding ( length, null,
                         head, last, (!!),
                         init, tail, take, drop,
                         map, concatMap,
-                        zipWith, zipWith3,
+                        zipWith, zipWith3, zip, zip3,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
@@ -272,6 +273,47 @@ zipWith = M.zipWith
 zipWith3 :: (a -> b -> c -> d) -> Stream a -> Stream b -> Stream c -> Stream d
 {-# INLINE zipWith3 #-}
 zipWith3 = M.zipWith3
+
+zipWith4 :: (a -> b -> c -> d -> e)
+                    -> Stream a -> Stream b -> Stream c -> Stream d
+                    -> Stream e
+{-# INLINE zipWith4 #-}
+zipWith4 = M.zipWith4
+
+zipWith5 :: (a -> b -> c -> d -> e -> f)
+                    -> Stream a -> Stream b -> Stream c -> Stream d
+                    -> Stream e -> Stream f
+{-# INLINE zipWith5 #-}
+zipWith5 = M.zipWith5
+
+zipWith6 :: (a -> b -> c -> d -> e -> f -> g)
+                    -> Stream a -> Stream b -> Stream c -> Stream d
+                    -> Stream e -> Stream f -> Stream g
+{-# INLINE zipWith6 #-}
+zipWith6 = M.zipWith6
+
+zip :: Stream a -> Stream b -> Stream (a,b)
+{-# INLINE zip #-}
+zip = M.zip
+
+zip3 :: Stream a -> Stream b -> Stream c -> Stream (a,b,c)
+{-# INLINE zip3 #-}
+zip3 = M.zip3
+
+zip4 :: Stream a -> Stream b -> Stream c -> Stream d
+                -> Stream (a,b,c,d)
+{-# INLINE zip4 #-}
+zip4 = M.zip4
+
+zip5 :: Stream a -> Stream b -> Stream c -> Stream d
+                -> Stream e -> Stream (a,b,c,d,e)
+{-# INLINE zip5 #-}
+zip5 = M.zip5
+
+zip6 :: Stream a -> Stream b -> Stream c -> Stream d
+                -> Stream e -> Stream f -> Stream (a,b,c,d,e,f)
+{-# INLINE zip6 #-}
+zip6 = M.zip6
 
 -- Filtering
 -- ---------

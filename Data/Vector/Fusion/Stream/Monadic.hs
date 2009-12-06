@@ -34,7 +34,9 @@ module Data.Vector.Fusion.Stream.Monadic (
   map, mapM, mapM_, trans, unbox, concatMap,
   
   -- * Zipping
-  zipWith, zipWithM, zipWith3, zipWith3M,
+  zipWithM, zipWith3M, zipWith4M, zipWith5M, zipWith6M,
+  zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
+  zip, zip3, zip4, zip5, zip6,
 
   -- * Filtering
   filter, filterM, takeWhile, takeWhileM, dropWhile, dropWhileM,
@@ -75,7 +77,7 @@ import Prelude hiding ( length, null,
                         head, last, (!!),
                         init, tail, take, drop,
                         map, mapM, mapM_, concatMap,
-                        zipWith, zipWith3,
+                        zipWith, zipWith3, zip, zip3,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
@@ -387,11 +389,6 @@ unbox (Stream step s n) = Stream step' s n
 -- Zipping
 -- -------
 
--- | Zip two 'Stream's with the given function
-zipWith :: Monad m => (a -> b -> c) -> Stream m a -> Stream m b -> Stream m c
-{-# INLINE zipWith #-}
-zipWith f = zipWithM (\a b -> return (f a b))
-
 -- | Zip two 'Stream's with the given monadic function
 zipWithM :: Monad m => (a -> b -> m c) -> Stream m a -> Stream m b -> Stream m c
 {-# INLINE_STREAM zipWithM #-}
@@ -424,12 +421,6 @@ zipWithM f (Stream stepa sa na) (Stream stepb sb nb)
 
   #-}
 
--- | Zip three 'Stream's with the given function
-zipWith3 :: Monad m => (a -> b -> c -> d) -> Stream m a -> Stream m b -> Stream m c -> Stream m d
-{-# INLINE zipWith3 #-}
-zipWith3 f = zipWith3M (\a b c -> return (f a b c))
-
--- | Zip three 'Stream's with the given monadic function
 zipWith3M :: Monad m => (a -> b -> c -> m d) -> Stream m a -> Stream m b -> Stream m c -> Stream m d
 {-# INLINE_STREAM zipWith3M #-}
 zipWith3M f (Stream stepa sa na) (Stream stepb sb nb) (Stream stepc sc nc)
@@ -456,6 +447,78 @@ zipWith3M f (Stream stepa sa na) (Stream stepb sb nb) (Stream stepc sc nc)
             Yield z sc' -> f x y z >>= (\res -> return $ Yield res (sa, sb, sc', Nothing))
             Skip    sc' -> return $ Skip (sa, sb, sc', Just (x, Just y))
             Done        -> return $ Done
+
+zipWith4M :: Monad m => (a -> b -> c -> d -> m e)
+                     -> Stream m a -> Stream m b -> Stream m c -> Stream m d
+                     -> Stream m e
+{-# INLINE zipWith4M #-}
+zipWith4M f sa sb sc sd
+  = zipWithM (\(a,b) (c,d) -> f a b c d) (zip sa sb) (zip sc sd)
+
+zipWith5M :: Monad m => (a -> b -> c -> d -> e -> m f)
+                     -> Stream m a -> Stream m b -> Stream m c -> Stream m d
+                     -> Stream m e -> Stream m f
+{-# INLINE zipWith5M #-}
+zipWith5M f sa sb sc sd se
+  = zipWithM (\(a,b,c) (d,e) -> f a b c d e) (zip3 sa sb sc) (zip sd se)
+
+zipWith6M :: Monad m => (a -> b -> c -> d -> e -> f -> m g)
+                     -> Stream m a -> Stream m b -> Stream m c -> Stream m d
+                     -> Stream m e -> Stream m f -> Stream m g
+{-# INLINE zipWith6M #-}
+zipWith6M fn sa sb sc sd se sf
+  = zipWithM (\(a,b,c) (d,e,f) -> fn a b c d e f) (zip3 sa sb sc)
+                                                  (zip3 sd se sf)
+
+zipWith :: Monad m => (a -> b -> c) -> Stream m a -> Stream m b -> Stream m c
+{-# INLINE zipWith #-}
+zipWith f = zipWithM (\a b -> return (f a b))
+
+zipWith3 :: Monad m => (a -> b -> c -> d)
+                    -> Stream m a -> Stream m b -> Stream m c -> Stream m d
+{-# INLINE zipWith3 #-}
+zipWith3 f = zipWith3M (\a b c -> return (f a b c))
+
+zipWith4 :: Monad m => (a -> b -> c -> d -> e)
+                    -> Stream m a -> Stream m b -> Stream m c -> Stream m d
+                    -> Stream m e
+{-# INLINE zipWith4 #-}
+zipWith4 f = zipWith4M (\a b c d -> return (f a b c d))
+
+zipWith5 :: Monad m => (a -> b -> c -> d -> e -> f)
+                    -> Stream m a -> Stream m b -> Stream m c -> Stream m d
+                    -> Stream m e -> Stream m f
+{-# INLINE zipWith5 #-}
+zipWith5 f = zipWith5M (\a b c d e -> return (f a b c d e))
+
+zipWith6 :: Monad m => (a -> b -> c -> d -> e -> f -> g)
+                    -> Stream m a -> Stream m b -> Stream m c -> Stream m d
+                    -> Stream m e -> Stream m f -> Stream m g
+{-# INLINE zipWith6 #-}
+zipWith6 fn = zipWith6M (\a b c d e f -> return (fn a b c d e f))
+
+zip :: Monad m => Stream m a -> Stream m b -> Stream m (a,b)
+{-# INLINE zip #-}
+zip = zipWith (,)
+
+zip3 :: Monad m => Stream m a -> Stream m b -> Stream m c -> Stream m (a,b,c)
+{-# INLINE zip3 #-}
+zip3 = zipWith3 (,,)
+
+zip4 :: Monad m => Stream m a -> Stream m b -> Stream m c -> Stream m d
+                -> Stream m (a,b,c,d)
+{-# INLINE zip4 #-}
+zip4 = zipWith4 (,,,)
+
+zip5 :: Monad m => Stream m a -> Stream m b -> Stream m c -> Stream m d
+                -> Stream m e -> Stream m (a,b,c,d,e)
+{-# INLINE zip5 #-}
+zip5 = zipWith5 (,,,,)
+
+zip6 :: Monad m => Stream m a -> Stream m b -> Stream m c -> Stream m d
+                -> Stream m e -> Stream m f -> Stream m (a,b,c,d,e,f)
+{-# INLINE zip6 #-}
+zip6 = zipWith6 (,,,,,)
 
 -- Filtering
 -- ---------
