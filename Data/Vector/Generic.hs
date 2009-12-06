@@ -39,7 +39,9 @@ module Data.Vector.Generic (
   map, concatMap,
 
   -- * Zipping and unzipping
-  zipWith, zipWith3, zip, zip3, unzip, unzip3,
+  zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
+  zip, zip3, zip4, zip5, zip6,
+  unzip, unzip3, unzip4, unzip5, unzip6,
 
   -- * Comparisons
   eq, cmp,
@@ -486,25 +488,113 @@ zipWith :: (Vector v a, Vector v b, Vector v c) => (a -> b -> c) -> v a -> v b -
 zipWith f xs ys = unstream (Stream.zipWith f (stream xs) (stream ys))
 
 -- | Zip three vectors with the given function.
-zipWith3 :: (Vector v a, Vector v b, Vector v c, Vector v d) => (a -> b -> c -> d) -> v a -> v b -> v c -> v d
+zipWith3 :: (Vector v a, Vector v b, Vector v c, Vector v d)
+         => (a -> b -> c -> d) -> v a -> v b -> v c -> v d
 {-# INLINE zipWith3 #-}
-zipWith3 f xs ys zs = unstream (Stream.zipWith3 f (stream xs) (stream ys) (stream zs))
+zipWith3 f as bs cs = unstream (Stream.zipWith3 f (stream as)
+                                                  (stream bs)
+                                                  (stream cs))
+
+zipWith4 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e)
+         => (a -> b -> c -> d -> e) -> v a -> v b -> v c -> v d -> v e
+{-# INLINE zipWith4 #-}
+zipWith4 f as bs cs ds
+  = unstream (Stream.zipWith4 f (stream as)
+                                (stream bs)
+                                (stream cs)
+                                (stream ds))
+
+zipWith5 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e,
+             Vector v f)
+         => (a -> b -> c -> d -> e -> f) -> v a -> v b -> v c -> v d -> v e
+                                         -> v f
+{-# INLINE zipWith5 #-}
+zipWith5 f as bs cs ds es
+  = unstream (Stream.zipWith5 f (stream as)
+                                (stream bs)
+                                (stream cs)
+                                (stream ds)
+                                (stream es))
+
+zipWith6 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e,
+             Vector v f, Vector v g)
+         => (a -> b -> c -> d -> e -> f -> g)
+         -> v a -> v b -> v c -> v d -> v e -> v f -> v g
+{-# INLINE zipWith6 #-}
+zipWith6 f as bs cs ds es fs
+  = unstream (Stream.zipWith6 f (stream as)
+                                (stream bs)
+                                (stream cs)
+                                (stream ds)
+                                (stream es)
+                                (stream fs))
 
 zip :: (Vector v a, Vector v b, Vector v (a,b)) => v a -> v b -> v (a, b)
 {-# INLINE zip #-}
 zip = zipWith (,)
 
-zip3 :: (Vector v a, Vector v b, Vector v c, Vector v (a, b, c)) => v a -> v b -> v c -> v (a, b, c)
+zip3 :: (Vector v a, Vector v b, Vector v c, Vector v (a, b, c))
+     => v a -> v b -> v c -> v (a, b, c)
 {-# INLINE zip3 #-}
 zip3 = zipWith3 (,,)
+
+zip4 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v (a, b, c, d))
+     => v a -> v b -> v c -> v d -> v (a, b, c, d)
+{-# INLINE zip4 #-}
+zip4 = zipWith4 (,,,)
+
+zip5 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e,
+         Vector v (a, b, c, d, e))
+     => v a -> v b -> v c -> v d -> v e -> v (a, b, c, d, e)
+{-# INLINE zip5 #-}
+zip5 = zipWith5 (,,,,)
+
+zip6 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e,
+         Vector v f, Vector v (a, b, c, d, e, f))
+     => v a -> v b -> v c -> v d -> v e -> v f -> v (a, b, c, d, e, f)
+{-# INLINE zip6 #-}
+zip6 = zipWith6 (,,,,,)
 
 unzip :: (Vector v a, Vector v b, Vector v (a,b)) => v (a, b) -> (v a, v b)
 {-# INLINE unzip #-}
 unzip xs = (map fst xs, map snd xs)
 
-unzip3 :: (Vector v a, Vector v b, Vector v c, Vector v (a, b, c)) => v (a, b, c) -> (v a, v b, v c)
+unzip3 :: (Vector v a, Vector v b, Vector v c, Vector v (a, b, c))
+       => v (a, b, c) -> (v a, v b, v c)
 {-# INLINE unzip3 #-}
-unzip3 xs = (map (\(a, b, c) -> a) xs, map (\(a, b, c) -> b) xs, map (\(a, b, c) -> c) xs)
+unzip3 xs = (map (\(a, b, c) -> a) xs,
+             map (\(a, b, c) -> b) xs,
+             map (\(a, b, c) -> c) xs)
+
+unzip4 :: (Vector v a, Vector v b, Vector v c, Vector v d,
+           Vector v (a, b, c, d))
+       => v (a, b, c, d) -> (v a, v b, v c, v d)
+{-# INLINE unzip4 #-}
+unzip4 xs = (map (\(a, b, c, d) -> a) xs,
+             map (\(a, b, c, d) -> b) xs,
+             map (\(a, b, c, d) -> c) xs,
+             map (\(a, b, c, d) -> d) xs)
+
+unzip5 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e,
+           Vector v (a, b, c, d, e))
+       => v (a, b, c, d, e) -> (v a, v b, v c, v d, v e)
+{-# INLINE unzip5 #-}
+unzip5 xs = (map (\(a, b, c, d, e) -> a) xs,
+             map (\(a, b, c, d, e) -> b) xs,
+             map (\(a, b, c, d, e) -> c) xs,
+             map (\(a, b, c, d, e) -> d) xs,
+             map (\(a, b, c, d, e) -> e) xs)
+
+unzip6 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e,
+           Vector v f, Vector v (a, b, c, d, e, f))
+       => v (a, b, c, d, e, f) -> (v a, v b, v c, v d, v e, v f)
+{-# INLINE unzip6 #-}
+unzip6 xs = (map (\(a, b, c, d, e, f) -> a) xs,
+             map (\(a, b, c, d, e, f) -> b) xs,
+             map (\(a, b, c, d, e, f) -> c) xs,
+             map (\(a, b, c, d, e, f) -> d) xs,
+             map (\(a, b, c, d, e, f) -> e) xs,
+             map (\(a, b, c, d, e, f) -> f) xs)
 
 -- Comparisons
 -- -----------
