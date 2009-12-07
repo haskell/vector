@@ -296,6 +296,40 @@ transform :: (PrimMonad m, MVector v a)
 {-# INLINE_STREAM transform #-}
 transform f v = munstream v (f (mstream v))
 
+mrstream :: (PrimMonad m, MVector v a) => v (PrimState m) a -> MStream m a
+{-# INLINE mrstream #-}
+mrstream v = v `seq` (MStream.unfoldrM get n `MStream.sized` Exact n)
+  where
+    n = length v
+
+    {-# INLINE_INNER get #-}
+    get i | j >= 0    = do x <- unsafeRead v j
+                           return $ Just (x,j)
+          | otherwise = return Nothing
+      where
+        j = i-1
+
+mrunstream :: (PrimMonad m, MVector v a)
+           => v (PrimState m) a -> MStream m a -> m (v (PrimState m) a)
+{-# INLINE mrunstream #-}
+mrunstream v s = v `seq` do
+                           i <- MStream.foldM put n s
+                           return $ unsafeSlice v i (n-i)
+  where
+    n = length v
+
+    {-# INLINE_INNER put #-}
+    put i x = do
+                unsafeWrite v j x
+                return j
+      where
+        j = i-1
+
+rtransform :: (PrimMonad m, MVector v a)
+  => (MStream m a -> MStream m a) -> v (PrimState m) a -> m (v (PrimState m) a)
+{-# INLINE_STREAM rtransform #-}
+rtransform f v = mrunstream v (f (mrstream v))
+
 -- | Create a new mutable vector and fill it with elements from the 'Stream'.
 -- The vector will grow logarithmically if the 'Size' hint of the 'Stream' is
 -- inexact.
