@@ -10,8 +10,11 @@
 -- Fusion-related utility types
 --
 
-module Data.Vector.Fusion.Util ( Id(..), Box(..) )
-where
+module Data.Vector.Fusion.Util (
+  Id(..), Box(..),
+
+  delay_inline
+) where
 
 -- | Identity monad
 newtype Id a = Id { unId :: a }
@@ -32,4 +35,10 @@ instance Functor Box where
 instance Monad Box where
   return      = Box
   Box x >>= f = f x
+
+-- | Delay inlining a function until late in the game (simplifier phase 0).
+delay_inline :: (a -> b) -> a -> b
+{-# INLINE [0] delay_inline #-}
+delay_inline f = f
+
 

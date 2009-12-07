@@ -69,7 +69,7 @@ module Data.Vector.Fusion.Stream.Monadic (
 ) where
 
 import Data.Vector.Fusion.Stream.Size
-import Data.Vector.Fusion.Util ( Box(..) )
+import Data.Vector.Fusion.Util ( Box(..), delay_inline )
 
 import Data.Char      ( ord )
 import GHC.Base       ( unsafeChr )
@@ -155,7 +155,9 @@ singleton x = Stream (return . step) True (Exact 1)
 -- | Replicate a value to a given length
 replicate :: Monad m => Int -> a -> Stream m a
 {-# INLINE_STREAM replicate #-}
-replicate n x = Stream (return . step) n (Exact (max n 0))
+-- NOTE: We delay inlining max here because GHC will create a join point for
+-- the call to newArray# otherwise which is not really nice.
+replicate n x = Stream (return . step) n (Exact (delay_inline max n 0))
   where
     {-# INLINE_INNER step #-}
     step i | i > 0     = Yield x (i-1)
