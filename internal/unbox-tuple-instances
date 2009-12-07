@@ -80,6 +80,10 @@ instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
           a <- G.basicUnsafeIndexM as i_
           b <- G.basicUnsafeIndexM bs i_
           return (a, b)
+  {-# INLINE elemseq  #-}
+  elemseq _ (a, b) x_
+      = G.elemseq (undefined :: Vector a) a $
+        G.elemseq (undefined :: Vector b) b $ x_
 #endif
 #ifdef DEFINE_MUTABLE
 zip :: (Unbox a, Unbox b) => MVector s a ->
@@ -207,6 +211,11 @@ instance (Unbox a,
           b <- G.basicUnsafeIndexM bs i_
           c <- G.basicUnsafeIndexM cs i_
           return (a, b, c)
+  {-# INLINE elemseq  #-}
+  elemseq _ (a, b, c) x_
+      = G.elemseq (undefined :: Vector a) a $
+        G.elemseq (undefined :: Vector b) b $
+        G.elemseq (undefined :: Vector c) c $ x_
 #endif
 #ifdef DEFINE_MUTABLE
 zip3 :: (Unbox a, Unbox b, Unbox c) => MVector s a ->
@@ -366,6 +375,12 @@ instance (Unbox a,
           c <- G.basicUnsafeIndexM cs i_
           d <- G.basicUnsafeIndexM ds i_
           return (a, b, c, d)
+  {-# INLINE elemseq  #-}
+  elemseq _ (a, b, c, d) x_
+      = G.elemseq (undefined :: Vector a) a $
+        G.elemseq (undefined :: Vector b) b $
+        G.elemseq (undefined :: Vector c) c $
+        G.elemseq (undefined :: Vector d) d $ x_
 #endif
 #ifdef DEFINE_MUTABLE
 zip4 :: (Unbox a, Unbox b, Unbox c, Unbox d) => MVector s a ->
@@ -564,6 +579,13 @@ instance (Unbox a,
           d <- G.basicUnsafeIndexM ds i_
           e <- G.basicUnsafeIndexM es i_
           return (a, b, c, d, e)
+  {-# INLINE elemseq  #-}
+  elemseq _ (a, b, c, d, e) x_
+      = G.elemseq (undefined :: Vector a) a $
+        G.elemseq (undefined :: Vector b) b $
+        G.elemseq (undefined :: Vector c) c $
+        G.elemseq (undefined :: Vector d) d $
+        G.elemseq (undefined :: Vector e) e $ x_
 #endif
 #ifdef DEFINE_MUTABLE
 zip5 :: (Unbox a,
@@ -811,6 +833,14 @@ instance (Unbox a,
           e <- G.basicUnsafeIndexM es i_
           f <- G.basicUnsafeIndexM fs i_
           return (a, b, c, d, e, f)
+  {-# INLINE elemseq  #-}
+  elemseq _ (a, b, c, d, e, f) x_
+      = G.elemseq (undefined :: Vector a) a $
+        G.elemseq (undefined :: Vector b) b $
+        G.elemseq (undefined :: Vector c) c $
+        G.elemseq (undefined :: Vector d) d $
+        G.elemseq (undefined :: Vector e) e $
+        G.elemseq (undefined :: Vector f) f $ x_
 #endif
 #ifdef DEFINE_MUTABLE
 zip6 :: (Unbox a,

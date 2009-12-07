@@ -181,8 +181,12 @@ generate n =
                         | vs <- varss | v <- vars]
                $ text "return" <+> tuple vars)
 
-    
-         
+    gen_elemseq rec
+      = (char '_' <+> tuple vars <+> var 'x',
+         vcat [qG rec <+> parens (text "undefined :: Vector" <+> v)
+                      <+> v <+> char '$' | v <- vars]
+         <+> var 'x')
+
 
     mk_do cmds ret = hang (text "do")
                           2
@@ -210,4 +214,5 @@ generate n =
     methods_Vector  = [("unsafeFreeze",           gen_unsafeFreeze)
                       ,("basicLength",            gen_length "V")
                       ,("basicUnsafeSlice",       gen_unsafeSlice "G" "V")
-                      ,("basicUnsafeIndexM",      gen_basicUnsafeIndexM)]
+                      ,("basicUnsafeIndexM",      gen_basicUnsafeIndexM)
+                      ,("elemseq",                gen_elemseq)]

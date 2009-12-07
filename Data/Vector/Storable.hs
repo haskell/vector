@@ -125,6 +125,9 @@ instance Storable a => G.Vector Vector a where
                                      . inlinePerformIO
                                      $ withForeignPtr p (`peekElemOff` (i+j))
 
+  {-# INLINE elemseq #-}
+  elemseq _ = seq
+
 instance (Storable a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
   (==) = G.eq

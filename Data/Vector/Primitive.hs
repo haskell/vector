@@ -115,6 +115,9 @@ instance Prim a => G.Vector Vector a where
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (Vector i _ arr) j = return (indexByteArray arr (i+j))
 
+  {-# INLINE elemseq #-}
+  elemseq _ = seq
+
 instance (Prim a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
   (==) = G.eq

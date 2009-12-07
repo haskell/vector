@@ -1,4 +1,5 @@
-{-# LANGUAGE MultiParamTypeClasses, TypeFamilies, FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses, TypeFamilies, FlexibleContexts,
+             ScopedTypeVariables #-}
 -- |
 -- Module      : Data.Vector.Unboxed.Base
 -- Copyright   : (c) Roman Leshchinskiy 2009
@@ -95,6 +96,9 @@ instance G.Vector Vector () where
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (V_Unit _) i = return ()
 
+  {-# INLINE elemseq #-}
+  elemseq _ = seq
+
 
 -- ---------------
 -- Primitive types
@@ -131,10 +135,12 @@ instance G.Vector Vector ty where {                                     \
 ; {-# INLINE basicLength #-}                                            \
 ; {-# INLINE basicUnsafeSlice #-}                                       \
 ; {-# INLINE basicUnsafeIndexM #-}                                      \
+; {-# INLINE elemseq #-}                                                \
 ; unsafeFreeze (mcon v) = con `liftM` G.unsafeFreeze v                  \
 ; basicLength (con v) = G.basicLength v                                 \
 ; basicUnsafeSlice (con v) i n = con $ G.basicUnsafeSlice v i n         \
-; basicUnsafeIndexM (con v) i = G.basicUnsafeIndexM v i }
+; basicUnsafeIndexM (con v) i = G.basicUnsafeIndexM v i                 \
+; elemseq _ = seq }
 
 newtype instance MVector s Int = MV_Int (P.MVector s Int)
 newtype instance Vector    Int = V_Int  (P.Vector    Int)
@@ -265,10 +271,12 @@ instance G.Vector Vector Bool where
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
   {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE elemseq #-}
   unsafeFreeze (MV_Bool v) = V_Bool `liftM` G.unsafeFreeze v
   basicLength (V_Bool v) = G.basicLength v
   basicUnsafeSlice (V_Bool v) i n = V_Bool $ G.basicUnsafeSlice v i n
   basicUnsafeIndexM (V_Bool v) i = toBool `liftM` G.basicUnsafeIndexM v i
+  elemseq _ = seq
 
 -- -------
 -- Complex
@@ -308,11 +316,14 @@ instance (RealFloat a, Unbox a) => G.Vector Vector (Complex a) where
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
   {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE elemseq #-}
   unsafeFreeze (MV_Complex v) = V_Complex `liftM` G.unsafeFreeze v
   basicLength (V_Complex v) = G.basicLength v
   basicUnsafeSlice (V_Complex v) i n = V_Complex $ G.basicUnsafeSlice v i n
   basicUnsafeIndexM (V_Complex v) i
                 = uncurry (:+) `liftM` G.basicUnsafeIndexM v i
+  elemseq _ (x :+ y) z = G.elemseq (undefined :: Vector a) x
+                       $ G.elemseq (undefined :: Vector a) y z
 
 -- ------
 -- Tuples

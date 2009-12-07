@@ -150,6 +150,11 @@ class MVector (Mutable v) a => Vector v a where
   --
   basicUnsafeIndexM  :: Monad m => v a -> Int -> m a
 
+  elemseq :: v a -> a -> b -> b
+
+  {-# INLINE elemseq #-}
+  elemseq _ = \_ x -> x
+
 -- Fusion
 -- ------
 
@@ -164,9 +169,9 @@ new m = new' undefined m
 -- See http://hackage.haskell.org/trac/ghc/ticket/2600
 new' :: Vector v a => v a -> New a -> v a
 {-# INLINE_STREAM new' #-}
-new' _ m = runST (do
-                    mv <- New.run m
-                    unsafeFreeze mv)
+new' _ m = m `seq` runST (do
+                            mv <- New.run m
+                            unsafeFreeze mv)
 
 -- | Convert a vector to a 'Stream'
 stream :: Vector v a => v a -> Stream a
@@ -240,9 +245,11 @@ singleton :: Vector v a => a -> v a
 singleton x = unstream (Stream.singleton x)
 
 -- | Vector of the given length with the given value in each position
-replicate :: Vector v a => Int -> a -> v a
+replicate :: forall v a. Vector v a => Int -> a -> v a
 {-# INLINE replicate #-}
-replicate n = unstream . Stream.replicate n
+replicate n x = elemseq (undefined :: v a) x
+              $ unstream
+              $ Stream.replicate n x
 
 -- | Prepend an element
 cons :: Vector v a => a -> v a -> v a

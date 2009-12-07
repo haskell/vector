@@ -30,7 +30,7 @@ import Prelude hiding ( init, tail, take, drop, reverse, map, filter )
 
 #include "vector.h"
 
-newtype New a = New (forall mv s. MVector mv a => ST s (mv s a))
+data New a = New (forall mv s. MVector mv a => ST s (mv s a))
 
 run :: MVector mv a => New a -> ST s (mv s a)
 {-# INLINE run #-}
@@ -46,7 +46,7 @@ modify (New p) q = New (do { v <- p; q v; return v })
 
 unstream :: Stream a -> New a
 {-# INLINE_STREAM unstream #-}
-unstream s = New (MVector.unstream s)
+unstream s = s `seq` New (MVector.unstream s)
 
 transform :: (forall m. Monad m => MStream m a -> MStream m a) -> New a -> New a
 {-# INLINE_STREAM transform #-}
@@ -118,19 +118,19 @@ drop n m = apply (\v -> MVector.unsafeSlice v
 
 unsafeAccum :: (a -> b -> a) -> New a -> Stream (Int, b) -> New a
 {-# INLINE_STREAM unsafeAccum #-}
-unsafeAccum f m s = modify m (\v -> MVector.unsafeAccum f v s)
+unsafeAccum f m s = s `seq` modify m (\v -> MVector.unsafeAccum f v s)
 
 accum :: (a -> b -> a) -> New a -> Stream (Int, b) -> New a
 {-# INLINE_STREAM accum #-}
-accum f m s = modify m (\v -> MVector.accum f v s)
+accum f m s = s `seq` modify m (\v -> MVector.accum f v s)
 
 unsafeUpdate :: New a -> Stream (Int, a) -> New a
 {-# INLINE_STREAM unsafeUpdate #-}
-unsafeUpdate m s = modify m (\v -> MVector.unsafeUpdate v s)
+unsafeUpdate m s = s `seq` modify m (\v -> MVector.unsafeUpdate v s)
 
 update :: New a -> Stream (Int, a) -> New a
 {-# INLINE_STREAM update #-}
-update m s = modify m (\v -> MVector.update v s)
+update m s = s `seq` modify m (\v -> MVector.update v s)
 
 reverse :: New a -> New a
 {-# INLINE_STREAM reverse #-}
