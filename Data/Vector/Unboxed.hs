@@ -1,3 +1,15 @@
+-- |
+-- Module      : Data.Vector.Unboxed
+-- Copyright   : (c) Roman Leshchinskiy 2009
+-- License     : BSD-style
+--
+-- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
+-- Stability   : experimental
+-- Portability : non-portable
+--
+-- Adaptive unboxed vectors
+--
+
 module Data.Vector.Unboxed (
   Vector, MVector(..), Unbox,
 

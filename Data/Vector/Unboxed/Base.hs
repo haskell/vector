@@ -1,4 +1,16 @@
 {-# LANGUAGE MultiParamTypeClasses, TypeFamilies, FlexibleContexts #-}
+-- |
+-- Module      : Data.Vector.Unboxed.Base
+-- Copyright   : (c) Roman Leshchinskiy 2009
+-- License     : BSD-style
+--
+-- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
+-- Stability   : experimental
+-- Portability : non-portable
+--
+-- Adaptive unboxed vectors: basic implementation
+--
+
 module Data.Vector.Unboxed.Base (
   MVector(..), IOVector, STVector, Vector(..), Unbox
 ) where

@@ -1,3 +1,15 @@
+-- |
+-- Module      : Data.Vector.Unboxed.Mutable
+-- Copyright   : (c) Roman Leshchinskiy 2009
+-- License     : BSD-style
+--
+-- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
+-- Stability   : experimental
+-- Portability : non-portable
+--
+-- Mutable adaptive unboxed vectors
+--
+
 module Data.Vector.Unboxed.Mutable (
   -- * Mutable vectors of primitive types
   MVector(..), IOVector, STVector, Unbox,

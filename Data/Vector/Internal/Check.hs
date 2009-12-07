@@ -1,3 +1,15 @@
+-- |
+-- Module      : Data.Vector.Internal.Check
+-- Copyright   : (c) Roman Leshchinskiy 2009
+-- License     : BSD-style
+--
+-- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
+-- Stability   : experimental
+-- Portability : non-portable
+--
+-- Bounds checking infrastructure
+--
+
 module Data.Vector.Internal.Check (
   Checks(..), doChecks,
 
