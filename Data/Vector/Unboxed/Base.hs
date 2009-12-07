@@ -14,6 +14,7 @@ import Control.Monad ( liftM )
 
 import Data.Word ( Word, Word8, Word16, Word32, Word64 )
 import Data.Int  ( Int8, Int16, Int32, Int64 )
+import Data.Complex
 
 #include "vector.h"
 
@@ -256,6 +257,50 @@ instance G.Vector Vector Bool where
   basicLength (V_Bool v) = G.basicLength v
   basicUnsafeSlice (V_Bool v) i n = V_Bool $ G.basicUnsafeSlice v i n
   basicUnsafeIndexM (V_Bool v) i = toBool `liftM` G.basicUnsafeIndexM v i
+
+-- -------
+-- Complex
+-- -------
+
+newtype instance MVector s (Complex a) = MV_Complex (MVector s (a,a))
+newtype instance Vector    (Complex a) = V_Complex  (Vector    (a,a))
+
+instance (RealFloat a, Unbox a) => Unbox (Complex a)
+
+instance (RealFloat a, Unbox a) => M.MVector MVector (Complex a) where
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicOverlaps #-}
+  {-# INLINE basicUnsafeNew #-}
+  {-# INLINE basicUnsafeNewWith #-}
+  {-# INLINE basicUnsafeRead #-}
+  {-# INLINE basicUnsafeWrite #-}
+  {-# INLINE basicClear #-}
+  {-# INLINE basicSet #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeGrow #-}
+  basicLength (MV_Complex v) = M.basicLength v
+  basicUnsafeSlice (MV_Complex v) i n = MV_Complex $ M.basicUnsafeSlice v i n
+  basicOverlaps (MV_Complex v1) (MV_Complex v2) = M.basicOverlaps v1 v2
+  basicUnsafeNew n = MV_Complex `liftM` M.basicUnsafeNew n
+  basicUnsafeNewWith n (x :+ y) = MV_Complex `liftM` M.basicUnsafeNewWith n (x,y)
+  basicUnsafeRead (MV_Complex v) i = uncurry (:+) `liftM` M.basicUnsafeRead v i
+  basicUnsafeWrite (MV_Complex v) i (x :+ y) = M.basicUnsafeWrite v i (x,y)
+  basicClear (MV_Complex v) = M.basicClear v
+  basicSet (MV_Complex v) (x :+ y) = M.basicSet v (x,y)
+  basicUnsafeCopy (MV_Complex v1) (MV_Complex v2) = M.basicUnsafeCopy v1 v2
+  basicUnsafeGrow (MV_Complex v) n = MV_Complex `liftM` M.basicUnsafeGrow v n
+
+instance (RealFloat a, Unbox a) => G.Vector Vector (Complex a) where
+  {-# INLINE unsafeFreeze #-}
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicUnsafeIndexM #-}
+  unsafeFreeze (MV_Complex v) = V_Complex `liftM` G.unsafeFreeze v
+  basicLength (V_Complex v) = G.basicLength v
+  basicUnsafeSlice (V_Complex v) i n = V_Complex $ G.basicUnsafeSlice v i n
+  basicUnsafeIndexM (V_Complex v) i
+                = uncurry (:+) `liftM` G.basicUnsafeIndexM v i
 
 -- ------
 -- Tuples
