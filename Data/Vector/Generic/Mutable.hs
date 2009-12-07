@@ -279,7 +279,7 @@ mstream v = v `seq` (MStream.unfoldrM get 0 `MStream.sized` Exact n)
           | otherwise = return $ Nothing
 
 munstream :: (PrimMonad m, MVector v a)
-        => v (PrimState m) a -> MStream m a -> m (v (PrimState m) a)
+           => v (PrimState m) a -> MStream m a -> m (v (PrimState m) a)
 {-# INLINE munstream #-}
 munstream v s = v `seq` do
                           n' <- MStream.foldM put 0 s
