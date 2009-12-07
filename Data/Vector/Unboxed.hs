@@ -16,7 +16,9 @@ module Data.Vector.Unboxed (
   unsafeSlice,
 
   -- * Permutations
-  accum, accumulate_, (//), update_, backpermute, reverse,
+  accum, accumulate, accumulate_,
+  (//), update, update_,
+  backpermute, reverse,
 
   -- * Mapping
   map, concatMap,
@@ -199,6 +201,11 @@ accum :: Unbox a => (a -> b -> a) -> Vector a -> [(Int,b)] -> Vector a
 {-# INLINE accum #-}
 accum = G.accum
 
+accumulate :: (Unbox a, Unbox b)
+                => (a -> b -> a) -> Vector a -> Vector (Int,b) -> Vector a
+{-# INLINE accumulate #-}
+accumulate = G.accumulate
+
 accumulate_ :: (Unbox a, Unbox b) =>
                (a -> b -> a) -> Vector a -> Vector Int -> Vector b -> Vector a
 {-# INLINE accumulate_ #-}
@@ -207,6 +214,10 @@ accumulate_ = G.accumulate_
 (//) :: Unbox a => Vector a -> [(Int, a)] -> Vector a
 {-# INLINE (//) #-}
 (//) = (G.//)
+
+update :: Unbox a => Vector a -> Vector (Int, a) -> Vector a
+{-# INLINE update #-}
+update = G.update
 
 update_ :: Unbox a => Vector a -> Vector Int -> Vector a -> Vector a
 {-# INLINE update_ #-}
