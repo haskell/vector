@@ -102,7 +102,7 @@ type MStream = M.Stream
 inplace :: (forall m. Monad m => M.Stream m a -> M.Stream m a)
         -> Stream a -> Stream a
 {-# INLINE_STREAM inplace #-}
-inplace f s = f s
+inplace f s = s `seq` f s
 
 {-# RULES
 
@@ -117,7 +117,7 @@ inplace f s = f s
 inplace' :: (forall m. Monad m => M.Stream m a -> M.Stream m b)
          -> Stream a -> Stream b
 {-# INLINE_STREAM inplace' #-}
-inplace' f s = f s
+inplace' f s = s `seq`f s
 
 -- FIXME: We'd like to have this
 {- RULES
