@@ -14,6 +14,8 @@ module Data.Vector.Fusion.Stream.Size (
   Size(..), smaller, larger, toMax, upperBound
 ) where
 
+import Data.Vector.Fusion.Util ( delay_inline )
+
 -- | Size hint
 data Size = Exact Int          -- ^ Exact size
           | Max   Int          -- ^ Upper bound on the size
@@ -44,11 +46,12 @@ instance Num Size where
 
 -- | Minimum of two size hints
 smaller :: Size -> Size -> Size
-smaller (Exact m) (Exact n) = Exact (m `min` n)
-smaller (Exact m) (Max   n) = Max   (m `min` n)
+{-# INLINE smaller #-}
+smaller (Exact m) (Exact n) = Exact (delay_inline min m n)
+smaller (Exact m) (Max   n) = Max   (delay_inline min m n)
 smaller (Exact m) Unknown   = Max   m
-smaller (Max   m) (Exact n) = Max   (m `min` n)
-smaller (Max   m) (Max   n) = Max   (m `min` n)
+smaller (Max   m) (Exact n) = Max   (delay_inline min m n)
+smaller (Max   m) (Max   n) = Max   (delay_inline min m n)
 smaller (Max   m) Unknown   = Max   m
 smaller Unknown   (Exact n) = Max   n
 smaller Unknown   (Max   n) = Max   n
@@ -56,12 +59,13 @@ smaller Unknown   Unknown   = Unknown
 
 -- | Maximum of two size hints
 larger :: Size -> Size -> Size
-larger (Exact m) (Exact n)             = Exact (m `max` n)
+{-# INLINE larger #-}
+larger (Exact m) (Exact n)             = Exact (delay_inline max m n)
 larger (Exact m) (Max   n) | m >= n    = Exact m
                            | otherwise = Max   n
 larger (Max   m) (Exact n) | n >= m    = Exact n
                            | otherwise = Max   m
-larger (Max   m) (Max   n)             = Max   (m `max` n)
+larger (Max   m) (Max   n)             = Max   (delay_inline max m n)
 larger _         _                     = Unknown
 
 -- | Convert a size hint to an upper bound
