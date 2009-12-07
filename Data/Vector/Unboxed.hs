@@ -21,7 +21,6 @@ module Data.Vector.Unboxed (
 
   -- * Accessing individual elements
   (!), head, last,
-  unsafeIndex,
 
   -- * Subvectors
   slice, init, tail, take, drop,
@@ -64,7 +63,12 @@ module Data.Vector.Unboxed (
   enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
-  toList, fromList
+  toList, fromList,
+
+  -- * Unsafe operations
+  unsafeIndex,
+  unsafeAccum, unsafeAccumulate, unsafeAccumulate_,
+  unsafeUpd, unsafeUpdate, unsafeUpdate_
 ) where
 
 import Data.Vector.Unboxed.Base
@@ -209,6 +213,20 @@ drop = G.drop
 -- Permutations
 -- ------------
 
+unsafeAccum :: Unbox a => (a -> b -> a) -> Vector a -> [(Int,b)] -> Vector a
+{-# INLINE unsafeAccum #-}
+unsafeAccum = G.unsafeAccum
+
+unsafeAccumulate :: (Unbox a, Unbox b)
+                => (a -> b -> a) -> Vector a -> Vector (Int,b) -> Vector a
+{-# INLINE unsafeAccumulate #-}
+unsafeAccumulate = G.unsafeAccumulate
+
+unsafeAccumulate_ :: (Unbox a, Unbox b) =>
+               (a -> b -> a) -> Vector a -> Vector Int -> Vector b -> Vector a
+{-# INLINE unsafeAccumulate_ #-}
+unsafeAccumulate_ = G.unsafeAccumulate_
+
 accum :: Unbox a => (a -> b -> a) -> Vector a -> [(Int,b)] -> Vector a
 {-# INLINE accum #-}
 accum = G.accum
@@ -222,6 +240,18 @@ accumulate_ :: (Unbox a, Unbox b) =>
                (a -> b -> a) -> Vector a -> Vector Int -> Vector b -> Vector a
 {-# INLINE accumulate_ #-}
 accumulate_ = G.accumulate_
+
+unsafeUpd :: Unbox a => Vector a -> [(Int, a)] -> Vector a
+{-# INLINE unsafeUpd #-}
+unsafeUpd = G.unsafeUpd
+
+unsafeUpdate :: Unbox a => Vector a -> Vector (Int, a) -> Vector a
+{-# INLINE unsafeUpdate #-}
+unsafeUpdate = G.unsafeUpdate
+
+unsafeUpdate_ :: Unbox a => Vector a -> Vector Int -> Vector a -> Vector a
+{-# INLINE unsafeUpdate_ #-}
+unsafeUpdate_ = G.unsafeUpdate_
 
 (//) :: Unbox a => Vector a -> [(Int, a)] -> Vector a
 {-# INLINE (//) #-}

@@ -23,7 +23,6 @@ module Data.Vector.Primitive (
 
   -- * Accessing individual elements
   (!), head, last,
-  unsafeIndex,
 
   -- * Subvectors
   slice, init, tail, take, drop,
@@ -62,7 +61,12 @@ module Data.Vector.Primitive (
   enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
-  toList, fromList
+  toList, fromList,
+
+  -- * Unsafe operations
+  unsafeIndex,
+  unsafeAccum, unsafeAccumulate_,
+  unsafeUpd, unsafeUpdate_
 ) where
 
 import qualified Data.Vector.Generic           as G
@@ -234,6 +238,15 @@ drop = G.drop
 -- Permutations
 -- ------------
 
+unsafeAccum :: Prim a => (a -> b -> a) -> Vector a -> [(Int,b)] -> Vector a
+{-# INLINE unsafeAccum #-}
+unsafeAccum = G.unsafeAccum
+
+unsafeAccumulate_ :: (Prim a, Prim b) =>
+               (a -> b -> a) -> Vector a -> Vector Int -> Vector b -> Vector a
+{-# INLINE unsafeAccumulate_ #-}
+unsafeAccumulate_ = G.unsafeAccumulate_
+
 accum :: Prim a => (a -> b -> a) -> Vector a -> [(Int,b)] -> Vector a
 {-# INLINE accum #-}
 accum = G.accum
@@ -242,6 +255,14 @@ accumulate_ :: (Prim a, Prim b) =>
                (a -> b -> a) -> Vector a -> Vector Int -> Vector b -> Vector a
 {-# INLINE accumulate_ #-}
 accumulate_ = G.accumulate_
+
+unsafeUpd :: Prim a => Vector a -> [(Int, a)] -> Vector a
+{-# INLINE unsafeUpd #-}
+unsafeUpd = G.unsafeUpd
+
+unsafeUpdate_ :: Prim a => Vector a -> Vector Int -> Vector a -> Vector a
+{-# INLINE unsafeUpdate_ #-}
+unsafeUpdate_ = G.unsafeUpdate_
 
 (//) :: Prim a => Vector a -> [(Int, a)] -> Vector a
 {-# INLINE (//) #-}

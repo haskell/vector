@@ -23,7 +23,7 @@ module Data.Vector.Generic.Mutable (
   unsafeCopy, unsafeGrow,
 
   -- * Internal operations
-  unstream, transform, accum, update, reverse
+  unstream, transform, unsafeAccum, accum, unsafeUpdate, update, reverse
 ) where
 
 import qualified Data.Vector.Fusion.Stream      as Stream
@@ -382,6 +382,17 @@ unstreamUnknown s
               $ double2Int
               $ int2Double (length v) * gROWTH_FACTOR
 
+unsafeAccum :: (PrimMonad m, MVector v a)
+            => (a -> b -> a) -> v (PrimState m) a -> Stream (Int, b) -> m ()
+{-# INLINE unsafeAccum #-}
+unsafeAccum f !v s = Stream.mapM_ upd s
+  where
+    {-# INLINE_INNER upd #-}
+    upd (i,b) = do
+                  a <- UNSAFE_CHECK(checkIndex) "accum" i (length v)
+                     $ unsafeRead v i
+                  unsafeWrite v i (f a b)
+
 accum :: (PrimMonad m, MVector v a)
         => (a -> b -> a) -> v (PrimState m) a -> Stream (Int, b) -> m ()
 {-# INLINE accum #-}
@@ -389,8 +400,14 @@ accum f !v s = Stream.mapM_ upd s
   where
     {-# INLINE_INNER upd #-}
     upd (i,b) = do
-                  a <- read v i
-                  write v i (f a b)
+                  a <- BOUNDS_CHECK(checkIndex) "accum" i (length v)
+                     $ unsafeRead v i
+                  unsafeWrite v i (f a b)
+
+unsafeUpdate :: (PrimMonad m, MVector v a)
+                        => v (PrimState m) a -> Stream (Int, a) -> m ()
+{-# INLINE unsafeUpdate #-}
+unsafeUpdate = unsafeAccum (const id)
 
 update :: (PrimMonad m, MVector v a)
                         => v (PrimState m) a -> Stream (Int, a) -> m ()

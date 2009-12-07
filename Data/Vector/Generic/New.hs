@@ -15,7 +15,7 @@
 module Data.Vector.Generic.New (
   New(..), run, unstream, transform, accum, update, reverse,
   slice, init, tail, take, drop,
-  unsafeSlice
+  unsafeSlice, unsafeAccum, unsafeUpdate
 ) where
 
 import qualified Data.Vector.Generic.Mutable as MVector
@@ -116,9 +116,17 @@ drop n m = apply (\v -> MVector.unsafeSlice v
 
   #-}
 
+unsafeAccum :: (a -> b -> a) -> New a -> Stream (Int, b) -> New a
+{-# INLINE_STREAM unsafeAccum #-}
+unsafeAccum f m s = modify m (\v -> MVector.unsafeAccum f v s)
+
 accum :: (a -> b -> a) -> New a -> Stream (Int, b) -> New a
 {-# INLINE_STREAM accum #-}
 accum f m s = modify m (\v -> MVector.accum f v s)
+
+unsafeUpdate :: New a -> Stream (Int, a) -> New a
+{-# INLINE_STREAM unsafeUpdate #-}
+unsafeUpdate m s = modify m (\v -> MVector.unsafeUpdate v s)
 
 update :: New a -> Stream (Int, a) -> New a
 {-# INLINE_STREAM update #-}

@@ -24,7 +24,6 @@ module Data.Vector.Generic (
 
   -- * Accessing individual elements
   (!), head, last, indexM, headM, lastM,
-  unsafeIndex, unsafeIndexM,
 
   -- * Subvectors
   slice, init, tail, take, drop,
@@ -76,7 +75,12 @@ module Data.Vector.Generic (
   stream, unstream,
 
   -- * MVector-based initialisation
-  new
+  new,
+
+  -- * Unsafe operations
+  unsafeIndex, unsafeIndexM,
+  unsafeAccum, unsafeAccumulate, unsafeAccumulate_,
+  unsafeUpd, unsafeUpdate, unsafeUpdate_
 ) where
 
 import           Data.Vector.Generic.Mutable ( MVector )
@@ -414,6 +418,26 @@ drop n v = slice v (min n' len) (max 0 (len - n'))
 -- Permutations
 -- ------------
 
+unsafeAccum_stream
+  :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
+{-# INLINE unsafeAccum_stream #-}
+unsafeAccum_stream f v s = new (New.accum f (New.unstream (stream v)) s)
+
+unsafeAccum :: Vector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
+{-# INLINE unsafeAccum #-}
+unsafeAccum f v us = unsafeAccum_stream f v (Stream.fromList us)
+
+unsafeAccumulate :: (Vector v a, Vector v (Int, b))
+                => (a -> b -> a) -> v a -> v (Int,b) -> v a
+{-# INLINE unsafeAccumulate #-}
+unsafeAccumulate f v us = unsafeAccum_stream f v (stream us)
+
+unsafeAccumulate_ :: (Vector v a, Vector v Int, Vector v b)
+                => (a -> b -> a) -> v a -> v Int -> v b -> v a
+{-# INLINE unsafeAccumulate_ #-}
+unsafeAccumulate_ f v is xs
+  = unsafeAccum_stream f v (Stream.zipWith (,) (stream is) (stream xs))
+
 accum_stream :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
 {-# INLINE accum_stream #-}
 accum_stream f v s = new (New.accum f (New.unstream (stream v)) s)
@@ -433,6 +457,23 @@ accumulate_ :: (Vector v a, Vector v Int, Vector v b)
 accumulate_ f v is xs = accum_stream f v (Stream.zipWith (,) (stream is)
                                                              (stream xs))
                                         
+
+unsafeUpdate_stream :: Vector v a => v a -> Stream (Int,a) -> v a
+{-# INLINE unsafeUpdate_stream #-}
+unsafeUpdate_stream v s = new (New.unsafeUpdate (New.unstream (stream v)) s)
+
+unsafeUpd :: Vector v a => v a -> [(Int, a)] -> v a
+{-# INLINE unsafeUpd #-}
+unsafeUpd v us = unsafeUpdate_stream v (Stream.fromList us)
+
+unsafeUpdate :: (Vector v a, Vector v (Int, a)) => v a -> v (Int, a) -> v a
+{-# INLINE unsafeUpdate #-}
+unsafeUpdate v w = unsafeUpdate_stream v (stream w)
+
+unsafeUpdate_ :: (Vector v a, Vector v Int) => v a -> v Int -> v a -> v a
+{-# INLINE unsafeUpdate_ #-}
+unsafeUpdate_ v is w
+  = unsafeUpdate_stream v (Stream.zipWith (,) (stream is) (stream w))
 
 update_stream :: Vector v a => v a -> Stream (Int,a) -> v a
 {-# INLINE update_stream #-}
