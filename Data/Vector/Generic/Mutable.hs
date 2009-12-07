@@ -278,23 +278,23 @@ mstream v = v `seq` (MStream.unfoldrM get 0 `MStream.sized` Exact n)
                            return $ Just (x, i+1)
           | otherwise = return $ Nothing
 
-internal_munstream :: (PrimMonad m, MVector v a)
+munstream :: (PrimMonad m, MVector v a)
         => v (PrimState m) a -> MStream m a -> m (v (PrimState m) a)
-{-# INLINE internal_munstream #-}
-internal_munstream v s = v `seq` do
-                                   n' <- MStream.foldM put 0 s
-                                   return $ slice v 0 n'
+{-# INLINE munstream #-}
+munstream v s = v `seq` do
+                          n' <- MStream.foldM put 0 s
+                          return $ slice v 0 n'
   where
     {-# INLINE_INNER put #-}
     put i x = do
-                INTERNAL_CHECK(checkIndex) "internal_munstream" i (length v)
+                INTERNAL_CHECK(checkIndex) "munstream" i (length v)
                   $ unsafeWrite v i x
                 return (i+1)
 
 transform :: (PrimMonad m, MVector v a)
   => (MStream m a -> MStream m a) -> v (PrimState m) a -> m (v (PrimState m) a)
 {-# INLINE_STREAM transform #-}
-transform f v = internal_munstream v (f (mstream v))
+transform f v = munstream v (f (mstream v))
 
 -- | Create a new mutable vector and fill it with elements from the 'Stream'.
 -- The vector will grow logarithmically if the 'Size' hint of the 'Stream' is
