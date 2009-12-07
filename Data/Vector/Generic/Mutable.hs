@@ -283,7 +283,7 @@ munstream :: (PrimMonad m, MVector v a)
 {-# INLINE munstream #-}
 munstream v s = v `seq` do
                           n' <- MStream.foldM put 0 s
-                          return $ slice v 0 n'
+                          return $ unsafeSlice v 0 n'
   where
     {-# INLINE_INNER put #-}
     put i x = do
