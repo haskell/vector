@@ -44,7 +44,7 @@ generate n =
       = hang (hsep [text "data instance", text ty, tuple vars])
              4
              (hsep [char '=', con c, text "{-# UNPACK #-} !Int"
-                   , vcat $ map (\v -> parens (text ty <+> v)) vars])
+                   , vcat $ map (\v -> char '!' <> parens (text ty <+> v)) vars])
 
     class_instance cls
       = text "instance" <+> vtuple [text "Unbox" <+> v | v <- vars]
