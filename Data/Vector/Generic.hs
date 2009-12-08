@@ -242,9 +242,10 @@ empty :: Vector v a => v a
 empty = unstream Stream.empty
 
 -- | Vector with exaclty one element
-singleton :: Vector v a => a -> v a
+singleton :: forall v a. Vector v a => a -> v a
 {-# INLINE singleton #-}
-singleton x = unstream (Stream.singleton x)
+singleton x = elemseq (undefined :: v a) x
+            $ unstream (Stream.singleton x)
 
 -- | Vector of the given length with the given value in each position
 replicate :: forall v a. Vector v a => Int -> a -> v a
@@ -254,14 +255,19 @@ replicate n x = elemseq (undefined :: v a) x
               $ Stream.replicate n x
 
 -- | Prepend an element
-cons :: Vector v a => a -> v a -> v a
+cons :: forall v a. Vector v a => a -> v a -> v a
 {-# INLINE cons #-}
-cons x = unstream . Stream.cons x . stream
+cons x v = elemseq (undefined :: v a) x
+         $ unstream
+         $ Stream.cons x
+         $ stream v
 
 -- | Append an element
-snoc :: Vector v a => v a -> a -> v a
+snoc :: forall v a. Vector v a => v a -> a -> v a
 {-# INLINE snoc #-}
-snoc v = unstream . Stream.snoc (stream v)
+snoc v x = elemseq (undefined :: v a) x
+         $ unstream
+         $ Stream.snoc (stream v) x
 
 infixr 5 ++
 -- | Concatenate two vectors
