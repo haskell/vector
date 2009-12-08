@@ -34,6 +34,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   map, mapM, mapM_, trans, unbox, concatMap,
   
   -- * Zipping
+  indexed,
   zipWithM, zipWith3M, zipWith4M, zipWith5M, zipWith6M,
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
   zip, zip3, zip4, zip5, zip6,
@@ -346,6 +347,7 @@ map :: Monad m => (a -> b) -> Stream m a -> Stream m b
 {-# INLINE map #-}
 map f = mapM (return . f)
 
+
 -- | Map a monadic function over a 'Stream'
 mapM :: Monad m => (a -> m b) -> Stream m a -> Stream m b
 {-# INLINE_STREAM mapM #-}
@@ -392,6 +394,20 @@ unbox (Stream step s n) = Stream step' s n
 
 -- Zipping
 -- -------
+
+-- | Pair each element in a 'Stream' with its index
+indexed :: Monad m => Stream m a -> Stream m (Int,a)
+{-# INLINE_STREAM indexed #-}
+indexed (Stream step s n) = Stream step' (s,0) n
+  where
+    {-# INLINE_INNER step' #-}
+    step' (s,i) = i `seq`
+                  do
+                    r <- step s
+                    case r of
+                      Yield x s' -> return $ Yield (i,x) (s', i+1)
+                      Skip    s' -> return $ Skip        (s', i)
+                      Done       -> return Done
 
 -- | Zip two 'Stream's with the given monadic function
 zipWithM :: Monad m => (a -> b -> m c) -> Stream m a -> Stream m b -> Stream m c

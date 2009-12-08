@@ -38,6 +38,7 @@ module Data.Vector.Fusion.Stream (
   map, concatMap, unbox,
   
   -- * Zipping
+  indexed,
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
   zip, zip3, zip4, zip5, zip6,
 
@@ -242,6 +243,11 @@ concatMap = M.concatMap
 
 -- Zipping
 -- -------
+
+-- | Associate all 'Stream' elements with their indices
+indexed :: Stream a -> Stream (Int,a)
+{-# INLINE indexed #-}
+indexed = M.indexed
 
 -- | Zip two 'Stream's with the given function
 zipWith :: (a -> b -> c) -> Stream a -> Stream b -> Stream c

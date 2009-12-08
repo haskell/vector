@@ -35,10 +35,11 @@ module Data.Vector.Generic (
   backpermute, reverse,
 
   -- * Mapping
-  map, concatMap,
+  map, imap, concatMap,
 
   -- * Zipping and unzipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
+  izipWith, izipWith3, izipWith4, izipWith5, izipWith6,
   zip, zip3, zip4, zip5, zip6,
   unzip, unzip3, unzip4, unzip5, unzip6,
 
@@ -46,16 +47,17 @@ module Data.Vector.Generic (
   eq, cmp,
 
   -- * Filtering
-  filter, takeWhile, dropWhile,
+  filter, ifilter, takeWhile, dropWhile,
 
   -- * Searching
   elem, notElem, find, findIndex,
 
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
+  ifoldl, ifoldl', ifoldr,
  
   -- * Specialised folds
-  and, or, sum, product, maximum, minimum,
+  and, or, sum, product, maximum, minimum, minIndex, maxIndex,
 
   -- * Unfolding
   unfoldr,
@@ -523,6 +525,12 @@ map :: (Vector v a, Vector v b) => (a -> b) -> v a -> v b
 {-# INLINE map #-}
 map f = unstream . inplace (MStream.map f) . stream
 
+-- | Apply a function to every index/value pair
+imap :: (Vector v a, Vector v b) => (Int -> a -> b) -> v a -> v b
+{-# INLINE imap #-}
+imap f = unstream . inplace (MStream.map (uncurry f) . MStream.indexed)
+                  . stream
+
 concatMap :: (Vector v a, Vector v b) => (a -> v b) -> v a -> v b
 {-# INLINE concatMap #-}
 concatMap f = unstream . Stream.concatMap (stream . f) . stream
@@ -531,7 +539,8 @@ concatMap f = unstream . Stream.concatMap (stream . f) . stream
 -- -----------------
 
 -- | Zip two vectors with the given function.
-zipWith :: (Vector v a, Vector v b, Vector v c) => (a -> b -> c) -> v a -> v b -> v c
+zipWith :: (Vector v a, Vector v b, Vector v c)
+        => (a -> b -> c) -> v a -> v b -> v c
 {-# INLINE zipWith #-}
 zipWith f xs ys = unstream (Stream.zipWith f (stream xs) (stream ys))
 
@@ -576,6 +585,57 @@ zipWith6 f as bs cs ds es fs
                                 (stream ds)
                                 (stream es)
                                 (stream fs))
+
+-- | Zip two vectors and their indices with the given function.
+izipWith :: (Vector v a, Vector v b, Vector v c)
+        => (Int -> a -> b -> c) -> v a -> v b -> v c
+{-# INLINE izipWith #-}
+izipWith f xs ys = unstream
+                  (Stream.zipWith (uncurry f) (Stream.indexed (stream xs))
+                                                              (stream ys))
+
+-- | Zip three vectors and their indices with the given function.
+izipWith3 :: (Vector v a, Vector v b, Vector v c, Vector v d)
+         => (Int -> a -> b -> c -> d) -> v a -> v b -> v c -> v d
+{-# INLINE izipWith3 #-}
+izipWith3 f as bs cs
+  = unstream (Stream.zipWith3 (uncurry f) (Stream.indexed (stream as))
+                                                          (stream bs)
+                                                          (stream cs))
+
+izipWith4 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e)
+         => (Int -> a -> b -> c -> d -> e) -> v a -> v b -> v c -> v d -> v e
+{-# INLINE izipWith4 #-}
+izipWith4 f as bs cs ds
+  = unstream (Stream.zipWith4 (uncurry f) (Stream.indexed (stream as))
+                                                          (stream bs)
+                                                          (stream cs)
+                                                          (stream ds))
+
+izipWith5 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e,
+             Vector v f)
+         => (Int -> a -> b -> c -> d -> e -> f) -> v a -> v b -> v c -> v d
+                                                -> v e -> v f
+{-# INLINE izipWith5 #-}
+izipWith5 f as bs cs ds es
+  = unstream (Stream.zipWith5 (uncurry f) (Stream.indexed (stream as))
+                                                          (stream bs)
+                                                          (stream cs)
+                                                          (stream ds)
+                                                          (stream es))
+
+izipWith6 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e,
+             Vector v f, Vector v g)
+         => (Int -> a -> b -> c -> d -> e -> f -> g)
+         -> v a -> v b -> v c -> v d -> v e -> v f -> v g
+{-# INLINE izipWith6 #-}
+izipWith6 f as bs cs ds es fs
+  = unstream (Stream.zipWith6 (uncurry f) (Stream.indexed (stream as))
+                                                          (stream bs)
+                                                          (stream cs)
+                                                          (stream ds)
+                                                          (stream es)
+                                                          (stream fs))
 
 zip :: (Vector v a, Vector v b, Vector v (a,b)) => v a -> v b -> v (a, b)
 {-# INLINE zip #-}
@@ -658,10 +718,19 @@ cmp xs ys = compare (stream xs) (stream ys)
 -- Filtering
 -- ---------
 
--- | Drop elements which do not satisfy the predicate
+-- | Drop elements that do not satisfy the predicate
 filter :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE filter #-}
 filter f = unstream . inplace (MStream.filter f) . stream
+
+-- | Drop elements that do not satisfy the predicate (applied to values and
+-- their indices)
+ifilter :: Vector v a => (Int -> a -> Bool) -> v a -> v a
+{-# INLINE ifilter #-}
+ifilter f = unstream
+          . inplace (MStream.map snd . MStream.filter (uncurry f)
+                                     . MStream.indexed)
+          . stream
 
 -- | Yield the longest prefix of elements satisfying the predicate.
 takeWhile :: Vector v a => (a -> Bool) -> v a -> v a
@@ -708,7 +777,7 @@ foldl :: Vector v b => (a -> b -> a) -> a -> v b -> a
 {-# INLINE foldl #-}
 foldl f z = Stream.foldl f z . stream
 
--- | Lefgt fold on non-empty vectors
+-- | Left fold on non-empty vectors
 foldl1 :: Vector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldl1 #-}
 foldl1 f = Stream.foldl1 f . stream
@@ -732,6 +801,22 @@ foldr f z = Stream.foldr f z . stream
 foldr1 :: Vector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldr1 #-}
 foldr1 f = Stream.foldr1 f . stream
+
+-- | Left fold (function applied to each element and its index)
+ifoldl :: Vector v b => (a -> Int -> b -> a) -> a -> v b -> a
+{-# INLINE ifoldl #-}
+ifoldl f z = Stream.foldl (uncurry . f) z . Stream.indexed . stream
+
+-- | Left fold with strict accumulator (function applied to each element and
+-- its index)
+ifoldl' :: Vector v b => (a -> Int -> b -> a) -> a -> v b -> a
+{-# INLINE ifoldl' #-}
+ifoldl' f z = Stream.foldl' (uncurry . f) z . Stream.indexed . stream
+
+-- | Right fold (function applied to each element and its index)
+ifoldr :: Vector v a => (Int -> a -> b -> b) -> b -> v a -> b
+{-# INLINE ifoldr #-}
+ifoldr f z = Stream.foldr (uncurry f) z . Stream.indexed . stream
 
 -- Specialised folds
 -- -----------------
@@ -759,6 +844,21 @@ maximum = Stream.foldl1' max . stream
 minimum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE minimum #-}
 minimum = Stream.foldl1' min . stream
+
+minIndex :: (Vector v a, Ord a) => v a -> Int
+{-# INLINE minIndex #-}
+minIndex = fst . Stream.foldl1' imin . Stream.indexed . stream
+  where
+    imin (i,x) (j,y) | x <= y    = (i,x)
+                     | otherwise = (j,y)
+
+maxIndex :: (Vector v a, Ord a) => v a -> Int
+{-# INLINE maxIndex #-}
+maxIndex = fst . Stream.foldl1' imax . Stream.indexed . stream
+  where
+    imax (i,x) (j,y) | x >= y    = (i,x)
+                     | otherwise = (j,y)
+
 
 -- Unfolding
 -- ---------

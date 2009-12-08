@@ -32,19 +32,21 @@ module Data.Vector.Storable (
   accum, accumulate_, (//), update_, backpermute, reverse,
 
   -- * Mapping
-  map, concatMap,
+  map, imap, concatMap,
 
   -- * Zipping and unzipping
-  zipWith, zipWith3,
+  zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
+  izipWith, izipWith3, izipWith4, izipWith5, izipWith6,
 
   -- * Filtering
-  filter, takeWhile, dropWhile,
+  filter, ifilter, takeWhile, dropWhile,
 
   -- * Searching
-  elem, notElem, find, findIndex,
+  elem, notElem, find, findIndex, minIndex, maxIndex,
 
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
+  ifoldl, ifoldl', ifoldr,
 
   -- * Specialised folds
   and, or, sum, product, maximum, minimum,
@@ -322,6 +324,11 @@ map :: (Storable a, Storable b) => (a -> b) -> Vector a -> Vector b
 {-# INLINE map #-}
 map = G.map
 
+-- | Apply a function to every index/value pair
+imap :: (Storable a, Storable b) => (Int -> a -> b) -> Vector a -> Vector b
+{-# INLINE imap #-}
+imap = G.imap
+
 concatMap :: (Storable a, Storable b) => (a -> Vector b) -> Vector a -> Vector b
 {-# INLINE concatMap #-}
 concatMap = G.concatMap
@@ -341,6 +348,63 @@ zipWith3 :: (Storable a, Storable b, Storable c, Storable d)
 {-# INLINE zipWith3 #-}
 zipWith3 = G.zipWith3
 
+zipWith4 :: (Storable a, Storable b, Storable c, Storable d, Storable e)
+         => (a -> b -> c -> d -> e)
+         -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+{-# INLINE zipWith4 #-}
+zipWith4 = G.zipWith4
+
+zipWith5 :: (Storable a, Storable b, Storable c, Storable d, Storable e,
+             Storable f)
+         => (a -> b -> c -> d -> e -> f)
+         -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+         -> Vector f
+{-# INLINE zipWith5 #-}
+zipWith5 = G.zipWith5
+
+zipWith6 :: (Storable a, Storable b, Storable c, Storable d, Storable e,
+             Storable f, Storable g)
+         => (a -> b -> c -> d -> e -> f -> g)
+         -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+         -> Vector f -> Vector g
+{-# INLINE zipWith6 #-}
+zipWith6 = G.zipWith6
+
+-- | Zip two vectors and their indices with the given function.
+izipWith :: (Storable a, Storable b, Storable c)
+         => (Int -> a -> b -> c) -> Vector a -> Vector b -> Vector c
+{-# INLINE izipWith #-}
+izipWith = G.izipWith
+
+-- | Zip three vectors and their indices with the given function.
+izipWith3 :: (Storable a, Storable b, Storable c, Storable d)
+          => (Int -> a -> b -> c -> d)
+          -> Vector a -> Vector b -> Vector c -> Vector d
+{-# INLINE izipWith3 #-}
+izipWith3 = G.izipWith3
+
+izipWith4 :: (Storable a, Storable b, Storable c, Storable d, Storable e)
+          => (Int -> a -> b -> c -> d -> e)
+          -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+{-# INLINE izipWith4 #-}
+izipWith4 = G.izipWith4
+
+izipWith5 :: (Storable a, Storable b, Storable c, Storable d, Storable e,
+              Storable f)
+          => (Int -> a -> b -> c -> d -> e -> f)
+          -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+          -> Vector f
+{-# INLINE izipWith5 #-}
+izipWith5 = G.izipWith5
+
+izipWith6 :: (Storable a, Storable b, Storable c, Storable d, Storable e,
+              Storable f, Storable g)
+          => (Int -> a -> b -> c -> d -> e -> f -> g)
+          -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+          -> Vector f -> Vector g
+{-# INLINE izipWith6 #-}
+izipWith6 = G.izipWith6
+
 -- Filtering
 -- ---------
 
@@ -348,6 +412,12 @@ zipWith3 = G.zipWith3
 filter :: Storable a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE filter #-}
 filter = G.filter
+
+-- | Drop elements that do not satisfy the predicate (applied to values and
+-- their indices)
+ifilter :: Storable a => (Int -> a -> Bool) -> Vector a -> Vector a
+{-# INLINE ifilter #-}
+ifilter = G.ifilter
 
 -- | Yield the longest prefix of elements satisfying the predicate.
 takeWhile :: Storable a => (a -> Bool) -> Vector a -> Vector a
@@ -419,6 +489,22 @@ foldr1 :: Storable a => (a -> a -> a) -> Vector a -> a
 {-# INLINE foldr1 #-}
 foldr1 = G.foldr1
 
+-- | Left fold (function applied to each element and its index)
+ifoldl :: Storable b => (a -> Int -> b -> a) -> a -> Vector b -> a
+{-# INLINE ifoldl #-}
+ifoldl = G.ifoldl
+
+-- | Left fold with strict accumulator (function applied to each element and
+-- its index)
+ifoldl' :: Storable b => (a -> Int -> b -> a) -> a -> Vector b -> a
+{-# INLINE ifoldl' #-}
+ifoldl' = G.ifoldl'
+
+-- | Right fold (function applied to each element and its index)
+ifoldr :: Storable a => (Int -> a -> b -> b) -> b -> Vector a -> b
+{-# INLINE ifoldr #-}
+ifoldr = G.ifoldr
+
 -- Specialised folds
 -- -----------------
 
@@ -445,6 +531,14 @@ maximum = G.maximum
 minimum :: (Storable a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum
+
+minIndex :: (Storable a, Ord a) => Vector a -> Int
+{-# INLINE minIndex #-}
+minIndex = G.minIndex
+
+maxIndex :: (Storable a, Ord a) => Vector a -> Int
+{-# INLINE maxIndex #-}
+maxIndex = G.maxIndex
 
 -- Unfolding
 -- ---------

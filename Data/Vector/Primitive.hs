@@ -32,22 +32,24 @@ module Data.Vector.Primitive (
   accum, accumulate_, (//), update_, backpermute, reverse,
 
   -- * Mapping
-  map, concatMap,
+  map, imap, concatMap,
 
   -- * Zipping and unzipping
-  zipWith, zipWith3,
+  zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
+  izipWith, izipWith3, izipWith4, izipWith5, izipWith6,
 
   -- * Filtering
-  filter, takeWhile, dropWhile,
+  filter, ifilter, takeWhile, dropWhile,
 
   -- * Searching
   elem, notElem, find, findIndex,
 
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
+  ifoldl, ifoldl', ifoldr,
 
   -- * Specialised folds
-  sum, product, maximum, minimum,
+  sum, product, maximum, minimum, minIndex, maxIndex,
 
   -- * Unfolding
   unfoldr,
@@ -291,6 +293,11 @@ map :: (Prim a, Prim b) => (a -> b) -> Vector a -> Vector b
 {-# INLINE map #-}
 map = G.map
 
+-- | Apply a function to every index/value pair
+imap :: (Prim a, Prim b) => (Int -> a -> b) -> Vector a -> Vector b
+{-# INLINE imap #-}
+imap = G.imap
+
 concatMap :: (Prim a, Prim b) => (a -> Vector b) -> Vector a -> Vector b
 {-# INLINE concatMap #-}
 concatMap = G.concatMap
@@ -310,6 +317,59 @@ zipWith3 :: (Prim a, Prim b, Prim c, Prim d)
 {-# INLINE zipWith3 #-}
 zipWith3 = G.zipWith3
 
+zipWith4 :: (Prim a, Prim b, Prim c, Prim d, Prim e)
+         => (a -> b -> c -> d -> e)
+         -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+{-# INLINE zipWith4 #-}
+zipWith4 = G.zipWith4
+
+zipWith5 :: (Prim a, Prim b, Prim c, Prim d, Prim e, Prim f)
+         => (a -> b -> c -> d -> e -> f)
+         -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+         -> Vector f
+{-# INLINE zipWith5 #-}
+zipWith5 = G.zipWith5
+
+zipWith6 :: (Prim a, Prim b, Prim c, Prim d, Prim e, Prim f, Prim g)
+         => (a -> b -> c -> d -> e -> f -> g)
+         -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+         -> Vector f -> Vector g
+{-# INLINE zipWith6 #-}
+zipWith6 = G.zipWith6
+
+-- | Zip two vectors and their indices with the given function.
+izipWith :: (Prim a, Prim b, Prim c)
+         => (Int -> a -> b -> c) -> Vector a -> Vector b -> Vector c
+{-# INLINE izipWith #-}
+izipWith = G.izipWith
+
+-- | Zip three vectors and their indices with the given function.
+izipWith3 :: (Prim a, Prim b, Prim c, Prim d)
+          => (Int -> a -> b -> c -> d)
+          -> Vector a -> Vector b -> Vector c -> Vector d
+{-# INLINE izipWith3 #-}
+izipWith3 = G.izipWith3
+
+izipWith4 :: (Prim a, Prim b, Prim c, Prim d, Prim e)
+          => (Int -> a -> b -> c -> d -> e)
+          -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+{-# INLINE izipWith4 #-}
+izipWith4 = G.izipWith4
+
+izipWith5 :: (Prim a, Prim b, Prim c, Prim d, Prim e, Prim f)
+          => (Int -> a -> b -> c -> d -> e -> f)
+          -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+          -> Vector f
+{-# INLINE izipWith5 #-}
+izipWith5 = G.izipWith5
+
+izipWith6 :: (Prim a, Prim b, Prim c, Prim d, Prim e, Prim f, Prim g)
+          => (Int -> a -> b -> c -> d -> e -> f -> g)
+          -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
+          -> Vector f -> Vector g
+{-# INLINE izipWith6 #-}
+izipWith6 = G.izipWith6
+
 -- Filtering
 -- ---------
 
@@ -317,6 +377,12 @@ zipWith3 = G.zipWith3
 filter :: Prim a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE filter #-}
 filter = G.filter
+
+-- | Drop elements that do not satisfy the predicate (applied to values and
+-- their indices)
+ifilter :: Prim a => (Int -> a -> Bool) -> Vector a -> Vector a
+{-# INLINE ifilter #-}
+ifilter = G.ifilter
 
 -- | Yield the longest prefix of elements satisfying the predicate.
 takeWhile :: Prim a => (a -> Bool) -> Vector a -> Vector a
@@ -388,6 +454,22 @@ foldr1 :: Prim a => (a -> a -> a) -> Vector a -> a
 {-# INLINE foldr1 #-}
 foldr1 = G.foldr1
 
+-- | Left fold (function applied to each element and its index)
+ifoldl :: Prim b => (a -> Int -> b -> a) -> a -> Vector b -> a
+{-# INLINE ifoldl #-}
+ifoldl = G.ifoldl
+
+-- | Left fold with strict accumulator (function applied to each element and
+-- its index)
+ifoldl' :: Prim b => (a -> Int -> b -> a) -> a -> Vector b -> a
+{-# INLINE ifoldl' #-}
+ifoldl' = G.ifoldl'
+
+-- | Right fold (function applied to each element and its index)
+ifoldr :: Prim a => (Int -> a -> b -> b) -> b -> Vector a -> b
+{-# INLINE ifoldr #-}
+ifoldr = G.ifoldr
+
 -- Specialised folds
 -- -----------------
 
@@ -406,6 +488,14 @@ maximum = G.maximum
 minimum :: (Prim a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum
+
+minIndex :: (Prim a, Ord a) => Vector a -> Int
+{-# INLINE minIndex #-}
+minIndex = G.minIndex
+
+maxIndex :: (Prim a, Ord a) => Vector a -> Int
+{-# INLINE maxIndex #-}
+maxIndex = G.maxIndex
 
 -- Unfolding
 -- ---------
