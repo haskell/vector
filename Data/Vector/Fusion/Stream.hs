@@ -17,7 +17,7 @@ module Data.Vector.Fusion.Stream (
   Step(..), Stream, MStream,
 
   -- * In-place markers
-  inplace, inplace',
+  inplace,
 
   -- * Size hints
   size, sized,
@@ -99,8 +99,8 @@ type Stream = M.Stream Id
 -- | Alternative name for monadic streams
 type MStream = M.Stream
 
-inplace :: (forall m. Monad m => M.Stream m a -> M.Stream m a)
-        -> Stream a -> Stream a
+inplace :: (forall m. Monad m => M.Stream m a -> M.Stream m b)
+        -> Stream a -> Stream b
 {-# INLINE_STREAM inplace #-}
 inplace f s = s `seq` f s
 
@@ -111,27 +111,6 @@ inplace f s = s `seq` f s
          (g :: forall m. Monad m => MStream m a -> MStream m a)
          s.
   inplace f (inplace g s) = inplace (f . g) s
-
-  #-}
-
-inplace' :: (forall m. Monad m => M.Stream m a -> M.Stream m b)
-         -> Stream a -> Stream b
-{-# INLINE_STREAM inplace' #-}
-inplace' f s = s `seq`f s
-
--- FIXME: We'd like to have this
-{- RULES
-
-"inplace' [Vector]" inplace' = inplace
--}
--- but it's only available in 6.13
--- (see http://hackage.haskell.org/trac/ghc/ticket/3670)
-
-{-# RULES
-
-"inplace' [Vector]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a).
-  inplace' f = inplace f
 
   #-}
 

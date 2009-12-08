@@ -89,7 +89,7 @@ import qualified Data.Vector.Generic.New as New
 import           Data.Vector.Generic.New ( New )
 
 import qualified Data.Vector.Fusion.Stream as Stream
-import           Data.Vector.Fusion.Stream ( Stream, MStream, inplace, inplace' )
+import           Data.Vector.Fusion.Stream ( Stream, MStream, inplace )
 import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
 import           Data.Vector.Fusion.Util
@@ -521,7 +521,7 @@ reverse = new . New.reverse . New.unstream . stream
 -- | Map a function over a vector
 map :: (Vector v a, Vector v b) => (a -> b) -> v a -> v b
 {-# INLINE map #-}
-map f = unstream . inplace' (MStream.map f) . stream
+map f = unstream . inplace (MStream.map f) . stream
 
 concatMap :: (Vector v a, Vector v b) => (a -> v b) -> v a -> v b
 {-# INLINE concatMap #-}
@@ -773,22 +773,22 @@ unfoldr f = unstream . Stream.unfoldr f
 -- | Prefix scan
 prescanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE prescanl #-}
-prescanl f z = unstream . inplace' (MStream.prescanl f z) . stream
+prescanl f z = unstream . inplace (MStream.prescanl f z) . stream
 
 -- | Prefix scan with strict accumulator
 prescanl' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE prescanl' #-}
-prescanl' f z = unstream . inplace' (MStream.prescanl' f z) . stream
+prescanl' f z = unstream . inplace (MStream.prescanl' f z) . stream
 
 -- | Suffix scan
 postscanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE postscanl #-}
-postscanl f z = unstream . inplace' (MStream.postscanl f z) . stream
+postscanl f z = unstream . inplace (MStream.postscanl f z) . stream
 
 -- | Suffix scan with strict accumulator
 postscanl' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE postscanl' #-}
-postscanl' f z = unstream . inplace' (MStream.postscanl' f z) . stream
+postscanl' f z = unstream . inplace (MStream.postscanl' f z) . stream
 
 -- | Haskell-style scan
 scanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
