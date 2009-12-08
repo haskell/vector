@@ -407,12 +407,20 @@ accum f !v s = Stream.mapM_ upd s
 unsafeUpdate :: (PrimMonad m, MVector v a)
                         => v (PrimState m) a -> Stream (Int, a) -> m ()
 {-# INLINE unsafeUpdate #-}
-unsafeUpdate = unsafeAccum (const id)
+unsafeUpdate !v s = Stream.mapM_ upd s
+  where
+    {-# INLINE_INNER upd #-}
+    upd (i,b) = UNSAFE_CHECK(checkIndex) "accum" i (length v)
+                  $ unsafeWrite v i b
 
 update :: (PrimMonad m, MVector v a)
                         => v (PrimState m) a -> Stream (Int, a) -> m ()
 {-# INLINE update #-}
-update = accum (const id)
+update !v s = Stream.mapM_ upd s
+  where
+    {-# INLINE_INNER upd #-}
+    upd (i,b) = BOUNDS_CHECK(checkIndex) "update" i (length v)
+                  $ unsafeWrite v i b
 
 reverse :: (PrimMonad m, MVector v a) => v (PrimState m) a -> m ()
 {-# INLINE reverse #-}
