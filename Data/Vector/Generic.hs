@@ -50,7 +50,7 @@ module Data.Vector.Generic (
   filter, ifilter, takeWhile, dropWhile,
 
   -- * Searching
-  elem, notElem, find, findIndex,
+  elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
 
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
@@ -774,6 +774,26 @@ find f = Stream.find f . stream
 findIndex :: Vector v a => (a -> Bool) -> v a -> Maybe Int
 {-# INLINE findIndex #-}
 findIndex f = Stream.findIndex f . stream
+
+-- | Yield the indices of elements satisfying the predicate
+findIndices :: (Vector v a, Vector v Int) => (a -> Bool) -> v a -> v Int
+{-# INLINE findIndices #-}
+findIndices f = unstream
+              . Stream.map fst
+              . Stream.filter (f . snd)
+              . Stream.indexed
+              . stream
+
+-- | Yield 'Just' the index of the first occurence of the given element or
+-- 'Nothing' if the vector does not contain the element
+elemIndex :: (Vector v a, Eq a) => a -> v a -> Maybe Int
+{-# INLINE elemIndex #-}
+elemIndex x = findIndex (x==)
+
+-- | Yield the indices of all occurences of the given element
+elemIndices :: (Vector v a, Vector v Int, Eq a) => a -> v a -> v Int
+{-# INLINE elemIndices #-}
+elemIndices x = findIndices (x==)
 
 -- Folding
 -- -------

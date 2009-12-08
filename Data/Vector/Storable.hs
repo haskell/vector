@@ -42,14 +42,14 @@ module Data.Vector.Storable (
   filter, ifilter, takeWhile, dropWhile,
 
   -- * Searching
-  elem, notElem, find, findIndex, minIndex, maxIndex,
+  elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
 
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
   ifoldl, ifoldl', ifoldr,
 
   -- * Specialised folds
-  and, or, sum, product, maximum, minimum,
+  and, or, sum, product, maximum, minimum, minIndex, maxIndex,
 
   -- * Unfolding
   unfoldr,
@@ -455,6 +455,22 @@ find = G.find
 findIndex :: Storable a => (a -> Bool) -> Vector a -> Maybe Int
 {-# INLINE findIndex #-}
 findIndex = G.findIndex
+
+-- | Yield the indices of elements satisfying the predicate
+findIndices :: Storable a => (a -> Bool) -> Vector a -> Vector Int
+{-# INLINE findIndices #-}
+findIndices = G.findIndices
+
+-- | Yield 'Just' the index of the first occurence of the given element or
+-- 'Nothing' if the vector does not contain the element
+elemIndex :: (Storable a, Eq a) => a -> Vector a -> Maybe Int
+{-# INLINE elemIndex #-}
+elemIndex = G.elemIndex
+
+-- | Yield the indices of all occurences of the given element
+elemIndices :: (Storable a, Eq a) => a -> Vector a -> Vector Int
+{-# INLINE elemIndices #-}
+elemIndices = G.elemIndices
 
 -- Folding
 -- -------

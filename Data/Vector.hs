@@ -46,7 +46,7 @@ module Data.Vector (
   filter, ifilter, takeWhile, dropWhile,
 
   -- * Searching
-  elem, notElem, find, findIndex,
+  elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
 
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1,
@@ -488,6 +488,22 @@ find = G.find
 findIndex :: (a -> Bool) -> Vector a -> Maybe Int
 {-# INLINE findIndex #-}
 findIndex = G.findIndex
+
+-- | Yield the indices of elements satisfying the predicate
+findIndices :: (a -> Bool) -> Vector a -> Vector Int
+{-# INLINE findIndices #-}
+findIndices = G.findIndices
+
+-- | Yield 'Just' the index of the first occurence of the given element or
+-- 'Nothing' if the vector does not contain the element
+elemIndex :: Eq a => a -> Vector a -> Maybe Int
+{-# INLINE elemIndex #-}
+elemIndex = G.elemIndex
+
+-- | Yield the indices of all occurences of the given element
+elemIndices :: Eq a => a -> Vector a -> Vector Int
+{-# INLINE elemIndices #-}
+elemIndices = G.elemIndices
 
 -- Folding
 -- -------
