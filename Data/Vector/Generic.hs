@@ -57,7 +57,9 @@ module Data.Vector.Generic (
   ifoldl, ifoldl', ifoldr,
  
   -- * Specialised folds
-  and, or, sum, product, maximum, minimum, minIndex, maxIndex,
+  and, or, sum, product,
+  maximum, maximumBy, minimum, minimumBy,
+  minIndex, minIndexBy, maxIndex, maxIndexBy,
 
   -- * Unfolding
   unfoldr,
@@ -867,23 +869,51 @@ maximum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE maximum #-}
 maximum = Stream.foldl1' max . stream
 
+maximumBy :: Vector v a => (a -> a -> Ordering) -> v a -> a
+{-# INLINE maximumBy #-}
+maximumBy cmp = Stream.foldl1' maxBy . stream
+  where
+    {-# INLINE maxBy #-}
+    maxBy x y = case cmp x y of
+                  LT -> y
+                  _  -> x
+
 minimum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE minimum #-}
 minimum = Stream.foldl1' min . stream
 
-minIndex :: (Vector v a, Ord a) => v a -> Int
-{-# INLINE minIndex #-}
-minIndex = fst . Stream.foldl1' imin . Stream.indexed . stream
+minimumBy :: Vector v a => (a -> a -> Ordering) -> v a -> a
+{-# INLINE minimumBy #-}
+minimumBy cmp = Stream.foldl1' minBy . stream
   where
-    imin (i,x) (j,y) | x <= y    = (i,x)
-                     | otherwise = (j,y)
+    {-# INLINE minBy #-}
+    minBy x y = case cmp x y of
+                  GT -> y
+                  _  -> x
 
 maxIndex :: (Vector v a, Ord a) => v a -> Int
 {-# INLINE maxIndex #-}
-maxIndex = fst . Stream.foldl1' imax . Stream.indexed . stream
+maxIndex = maxIndexBy compare
+
+maxIndexBy :: Vector v a => (a -> a -> Ordering) -> v a -> Int
+{-# INLINE maxIndexBy #-}
+maxIndexBy cmp = fst . Stream.foldl1' imax . Stream.indexed . stream
   where
-    imax (i,x) (j,y) | x >= y    = (i,x)
-                     | otherwise = (j,y)
+    imax (i,x) (j,y) = case cmp x y of
+                         LT -> (j,y)
+                         _  -> (i,x)
+
+minIndex :: (Vector v a, Ord a) => v a -> Int
+{-# INLINE minIndex #-}
+minIndex = minIndexBy compare
+
+minIndexBy :: Vector v a => (a -> a -> Ordering) -> v a -> Int
+{-# INLINE minIndexBy #-}
+minIndexBy cmp = fst . Stream.foldl1' imin . Stream.indexed . stream
+  where
+    imin (i,x) (j,y) = case cmp x y of
+                         GT -> (j,y)
+                         _  -> (i,x)
 
 
 -- Unfolding

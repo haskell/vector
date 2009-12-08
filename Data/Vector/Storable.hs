@@ -49,7 +49,9 @@ module Data.Vector.Storable (
   ifoldl, ifoldl', ifoldr,
 
   -- * Specialised folds
-  and, or, sum, product, maximum, minimum, minIndex, maxIndex,
+  and, or, sum, product,
+  maximum, maximumBy, minimum, minimumBy,
+  minIndex, minIndexBy, maxIndex, maxIndexBy,
 
   -- * Unfolding
   unfoldr,
@@ -544,17 +546,33 @@ maximum :: (Storable a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
 maximum = G.maximum
 
+maximumBy :: Storable a => (a -> a -> Ordering) -> Vector a -> a
+{-# INLINE maximumBy #-}
+maximumBy = G.maximumBy
+
 minimum :: (Storable a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum
+
+minimumBy :: Storable a => (a -> a -> Ordering) -> Vector a -> a
+{-# INLINE minimumBy #-}
+minimumBy = G.minimumBy
+
+maxIndex :: (Storable a, Ord a) => Vector a -> Int
+{-# INLINE maxIndex #-}
+maxIndex = G.maxIndex
+
+maxIndexBy :: Storable a => (a -> a -> Ordering) -> Vector a -> Int
+{-# INLINE maxIndexBy #-}
+maxIndexBy = G.maxIndexBy
 
 minIndex :: (Storable a, Ord a) => Vector a -> Int
 {-# INLINE minIndex #-}
 minIndex = G.minIndex
 
-maxIndex :: (Storable a, Ord a) => Vector a -> Int
-{-# INLINE maxIndex #-}
-maxIndex = G.maxIndex
+minIndexBy :: Storable a => (a -> a -> Ordering) -> Vector a -> Int
+{-# INLINE minIndexBy #-}
+minIndexBy = G.minIndexBy
 
 -- Unfolding
 -- ---------

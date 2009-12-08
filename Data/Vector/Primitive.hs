@@ -49,7 +49,9 @@ module Data.Vector.Primitive (
   ifoldl, ifoldl', ifoldr,
 
   -- * Specialised folds
-  sum, product, maximum, minimum, minIndex, maxIndex,
+  sum, product,
+  maximum, maximumBy, minimum, minimumBy,
+  minIndex, minIndexBy, maxIndex, maxIndexBy,
 
   -- * Unfolding
   unfoldr,
@@ -501,17 +503,33 @@ maximum :: (Prim a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
 maximum = G.maximum
 
+maximumBy :: Prim a => (a -> a -> Ordering) -> Vector a -> a
+{-# INLINE maximumBy #-}
+maximumBy = G.maximumBy
+
 minimum :: (Prim a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum
+
+minimumBy :: Prim a => (a -> a -> Ordering) -> Vector a -> a
+{-# INLINE minimumBy #-}
+minimumBy = G.minimumBy
+
+maxIndex :: (Prim a, Ord a) => Vector a -> Int
+{-# INLINE maxIndex #-}
+maxIndex = G.maxIndex
+
+maxIndexBy :: Prim a => (a -> a -> Ordering) -> Vector a -> Int
+{-# INLINE maxIndexBy #-}
+maxIndexBy = G.maxIndexBy
 
 minIndex :: (Prim a, Ord a) => Vector a -> Int
 {-# INLINE minIndex #-}
 minIndex = G.minIndex
 
-maxIndex :: (Prim a, Ord a) => Vector a -> Int
-{-# INLINE maxIndex #-}
-maxIndex = G.maxIndex
+minIndexBy :: Prim a => (a -> a -> Ordering) -> Vector a -> Int
+{-# INLINE minIndexBy #-}
+minIndexBy = G.minIndexBy
 
 -- Unfolding
 -- ---------

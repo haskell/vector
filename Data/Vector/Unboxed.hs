@@ -51,7 +51,9 @@ module Data.Vector.Unboxed (
   ifoldl, ifoldl', ifoldr,
 
   -- * Specialised folds
-  and, or, sum, product, maximum, minimum, minIndex, maxIndex,
+  and, or, sum, product,
+  maximum, maximumBy, minimum, minimumBy,
+  minIndex, minIndexBy, maxIndex, maxIndexBy,
 
   -- * Unfolding
   unfoldr,
@@ -499,17 +501,33 @@ maximum :: (Unbox a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
 maximum = G.maximum
 
+maximumBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> a
+{-# INLINE maximumBy #-}
+maximumBy = G.maximumBy
+
 minimum :: (Unbox a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum
+
+minimumBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> a
+{-# INLINE minimumBy #-}
+minimumBy = G.minimumBy
+
+maxIndex :: (Unbox a, Ord a) => Vector a -> Int
+{-# INLINE maxIndex #-}
+maxIndex = G.maxIndex
+
+maxIndexBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> Int
+{-# INLINE maxIndexBy #-}
+maxIndexBy = G.maxIndexBy
 
 minIndex :: (Unbox a, Ord a) => Vector a -> Int
 {-# INLINE minIndex #-}
 minIndex = G.minIndex
 
-maxIndex :: (Unbox a, Ord a) => Vector a -> Int
-{-# INLINE maxIndex #-}
-maxIndex = G.maxIndex
+minIndexBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> Int
+{-# INLINE minIndexBy #-}
+minIndexBy = G.minIndexBy
 
 -- Unfolding
 -- ---------
