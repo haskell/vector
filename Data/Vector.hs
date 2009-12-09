@@ -34,6 +34,9 @@ module Data.Vector (
   accum, accumulate, accumulate_,
   (//), update, update_,
   backpermute, reverse,
+  unsafeAccum, unsafeAccumulate, unsafeAccumulate_,
+  unsafeUpd, unsafeUpdate, unsafeUpdate_,
+  unsafeBackpermute,
 
   -- * Mapping
   map, imap, concatMap,
@@ -73,11 +76,7 @@ module Data.Vector (
   enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
-  toList, fromList,
-
-  -- * Unsafe operations
-  unsafeAccum, unsafeAccumulate, unsafeAccumulate_,
-  unsafeUpd, unsafeUpdate, unsafeUpdate_
+  toList, fromList
 ) where
 
 import qualified Data.Vector.Generic as G
@@ -362,6 +361,10 @@ update_ = G.update_
 backpermute :: Vector a -> Vector Int -> Vector a
 {-# INLINE backpermute #-}
 backpermute = G.backpermute
+
+unsafeBackpermute :: Vector a -> Vector Int -> Vector a
+{-# INLINE unsafeBackpermute #-}
+unsafeBackpermute = G.unsafeBackpermute
 
 reverse :: Vector a -> Vector a
 {-# INLINE reverse #-}

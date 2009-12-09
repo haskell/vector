@@ -32,6 +32,9 @@ module Data.Vector.Unboxed (
   accum, accumulate, accumulate_,
   (//), update, update_,
   backpermute, reverse,
+  unsafeAccum, unsafeAccumulate, unsafeAccumulate_,
+  unsafeUpd, unsafeUpdate, unsafeUpdate_,
+  unsafeBackpermute,
 
   -- * Mapping
   map, imap, concatMap,
@@ -71,11 +74,7 @@ module Data.Vector.Unboxed (
   enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
-  toList, fromList,
-
-  -- * Unsafe operations
-  unsafeAccum, unsafeAccumulate, unsafeAccumulate_,
-  unsafeUpd, unsafeUpdate, unsafeUpdate_
+  toList, fromList
 ) where
 
 import Data.Vector.Unboxed.Base
@@ -338,6 +337,10 @@ update_ = G.update_
 backpermute :: Unbox a => Vector a -> Vector Int -> Vector a
 {-# INLINE backpermute #-}
 backpermute = G.backpermute
+
+unsafeBackpermute :: Unbox a => Vector a -> Vector Int -> Vector a
+{-# INLINE unsafeBackpermute #-}
+unsafeBackpermute = G.unsafeBackpermute
 
 reverse :: Unbox a => Vector a -> Vector a
 {-# INLINE reverse #-}

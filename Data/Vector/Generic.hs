@@ -35,6 +35,9 @@ module Data.Vector.Generic (
   accum, accumulate, accumulate_,
   (//), update, update_,
   backpermute, reverse,
+  unsafeAccum, unsafeAccumulate, unsafeAccumulate_,
+  unsafeUpd, unsafeUpdate, unsafeUpdate_,
+  unsafeBackpermute,
 
   -- * Mapping
   map, imap, concatMap,
@@ -83,11 +86,7 @@ module Data.Vector.Generic (
   stream, unstream,
 
   -- * MVector-based initialisation
-  new,
-
-  -- * Unsafe operations
-  unsafeAccum, unsafeAccumulate, unsafeAccumulate_,
-  unsafeUpd, unsafeUpdate, unsafeUpdate_
+  new
 ) where
 
 import           Data.Vector.Generic.Mutable ( MVector )
@@ -580,6 +579,14 @@ backpermute v is = seq v
                  $ Stream.unbox
                  $ Stream.map (indexM v)
                  $ stream is
+
+unsafeBackpermute :: (Vector v a, Vector v Int) => v a -> v Int -> v a
+{-# INLINE unsafeBackpermute #-}
+unsafeBackpermute v is = seq v
+                       $ unstream
+                       $ Stream.unbox
+                       $ Stream.map (unsafeIndexM v)
+                       $ stream is
 
 reverse :: (Vector v a) => v a -> v a
 {-# INLINE reverse #-}

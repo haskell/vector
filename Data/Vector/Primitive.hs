@@ -32,6 +32,9 @@ module Data.Vector.Primitive (
 
   -- * Permutations
   accum, accumulate_, (//), update_, backpermute, reverse,
+  unsafeAccum, unsafeAccumulate_,
+  unsafeUpd, unsafeUpdate_,
+  unsafeBackpermute,
 
   -- * Mapping
   map, imap, concatMap,
@@ -69,11 +72,7 @@ module Data.Vector.Primitive (
   enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
-  toList, fromList,
-
-  -- * Unsafe operations
-  unsafeAccum, unsafeAccumulate_,
-  unsafeUpd, unsafeUpdate_
+  toList, fromList
 ) where
 
 import qualified Data.Vector.Generic           as G
@@ -348,6 +347,10 @@ update_ = G.update_
 backpermute :: Prim a => Vector a -> Vector Int -> Vector a
 {-# INLINE backpermute #-}
 backpermute = G.backpermute
+
+unsafeBackpermute :: Prim a => Vector a -> Vector Int -> Vector a
+{-# INLINE unsafeBackpermute #-}
+unsafeBackpermute = G.unsafeBackpermute
 
 reverse :: Prim a => Vector a -> Vector a
 {-# INLINE reverse #-}
