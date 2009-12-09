@@ -29,7 +29,7 @@ module Data.Vector.Generic (
 
   -- * Subvectors
   slice, init, tail, take, drop,
-  unsafeSlice,
+  unsafeSlice, unsafeInit, unsafeTail,
 
   -- * Permutations
   accum, accumulate, accumulate_,
@@ -415,16 +415,6 @@ slice :: Vector v a => Int   -- ^ starting index
 slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
             $ basicUnsafeSlice i n v
 
--- | Unsafely yield a part of the vector without copying it and without
--- performing bounds checks.
-unsafeSlice :: Vector v a => Int   -- ^ starting index
-                          -> Int   -- ^ length
-                          -> v a
-                          -> v a
-{-# INLINE_STREAM unsafeSlice #-}
-unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
-                  $ basicUnsafeSlice i n v
-
 -- | Yield all but the last element without copying.
 init :: Vector v a => v a -> v a
 {-# INLINE_STREAM init #-}
@@ -448,13 +438,28 @@ drop n v = slice (min n' len) (max 0 (len - n')) v
   where n' = max n 0
         len = length v
 
+-- | Unsafely yield a part of the vector without copying it and without
+-- performing bounds checks.
+unsafeSlice :: Vector v a => Int   -- ^ starting index
+                          -> Int   -- ^ length
+                          -> v a
+                          -> v a
+{-# INLINE_STREAM unsafeSlice #-}
+unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
+                  $ basicUnsafeSlice i n v
+
+unsafeInit :: Vector v a => v a -> v a
+{-# INLINE_STREAM unsafeInit #-}
+unsafeInit v = unsafeSlice 0 (length v - 1) v
+
+unsafeTail :: Vector v a => v a -> v a
+{-# INLINE_STREAM unsafeTail #-}
+unsafeTail v = unsafeSlice 1 (length v - 1) v
+
 {-# RULES
 
 "slice/new [Vector]" forall i n v p.
   slice i n (new' v p) = new' v (New.slice i n p)
-
-"unsafeSlice/new [Vector]" forall i n v p.
-  unsafeSlice i n (new' v p) = new' v (New.unsafeSlice i n p)
 
 "init/new [Vector]" forall v p.
   init (new' v p) = new' v (New.init p)
@@ -467,6 +472,15 @@ drop n v = slice (min n' len) (max 0 (len - n')) v
 
 "drop/new [Vector]" forall n v p.
   drop n (new' v p) = new' v (New.drop n p)
+
+"unsafeSlice/new [Vector]" forall i n v p.
+  unsafeSlice i n (new' v p) = new' v (New.unsafeSlice i n p)
+
+"unsafeInit/new [Vector]" forall v p.
+  unsafeInit (new' v p) = new' v (New.unsafeInit p)
+
+"unsafeTail/new [Vector]" forall v p.
+  unsafeTail (new' v p) = new' v (New.unsafeTail p)
 
   #-}
 
