@@ -16,10 +16,13 @@ module Data.Vector.Generic.Mutable (
   MVector(..),
 
   -- * Operations on mutable vectors
-  length, overlaps, slice, new, newWith, read, write, clear, set, copy, grow,
+  length, overlaps, new, newWith, read, write, clear, set, copy, grow,
+
+  slice, take, drop, init, tail,
+  unsafeSlice, unsafeInit, unsafeTail,
 
   -- * Unsafe operations
-  unsafeSlice, unsafeNew, unsafeNewWith, unsafeRead, unsafeWrite,
+  unsafeNew, unsafeNewWith, unsafeRead, unsafeWrite,
   unsafeCopy, unsafeGrow,
 
   -- * Internal operations
@@ -38,7 +41,8 @@ import GHC.Float (
     double2Int, int2Double
   )
 
-import Prelude hiding ( length, reverse, map, read )
+import Prelude hiding ( length, reverse, map, read,
+                        take, drop, init, tail )
 
 #include "vector.h"
 
@@ -139,19 +143,6 @@ class MVector v a where
     where
       n = length v
 
-
-
--- | Yield a part of the mutable vector without copying it. No bounds checks
--- are performed.
-unsafeSlice :: MVector v a => Int  -- ^ starting index
-                           -> Int  -- ^ length of the slice
-                           -> v s a
-                           -> v s a
-{-# INLINE unsafeSlice #-}
-unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
-                  $ basicUnsafeSlice i n v
-
-
 -- | Create a mutable vector of the given length. The length is not checked.
 unsafeNew :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
 {-# INLINE unsafeNew #-}
@@ -208,12 +199,6 @@ length = basicLength
 overlaps :: MVector v a => v s a -> v s a -> Bool
 {-# INLINE overlaps #-}
 overlaps = basicOverlaps
-
--- | Yield a part of the mutable vector without copying it.
-slice :: MVector v a => Int -> Int -> v s a -> v s a
-{-# INLINE slice #-}
-slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
-            $ unsafeSlice i n v
 
 -- | Create a mutable vector of the given length.
 new :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
@@ -278,6 +263,50 @@ enlarge v = unsafeGrow v
           $ max 1
           $ double2Int
           $ int2Double (length v) * gROWTH_FACTOR
+
+
+-- | Yield a part of the mutable vector without copying it.
+slice :: MVector v a => Int -> Int -> v s a -> v s a
+{-# INLINE slice #-}
+slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
+            $ unsafeSlice i n v
+
+take :: MVector v a => Int -> v s a -> v s a
+{-# INLINE take #-}
+take n v = unsafeSlice 0 (min (max n 0) (length v)) v
+
+drop :: MVector v a => Int -> v s a -> v s a
+{-# INLINE drop #-}
+drop n v = unsafeSlice (min m n') (max 0 (m - n')) v
+  where
+    n' = max n 0
+    m  = length v
+
+init :: MVector v a => v s a -> v s a
+{-# INLINE init #-}
+init v = slice 0 (length v - 1) v
+
+tail :: MVector v a => v s a -> v s a
+{-# INLINE tail #-}
+tail v = slice 1 (length v - 1) v
+
+-- | Yield a part of the mutable vector without copying it. No bounds checks
+-- are performed.
+unsafeSlice :: MVector v a => Int  -- ^ starting index
+                           -> Int  -- ^ length of the slice
+                           -> v s a
+                           -> v s a
+{-# INLINE unsafeSlice #-}
+unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
+                  $ basicUnsafeSlice i n v
+
+unsafeInit :: MVector v a => v s a -> v s a
+{-# INLINE unsafeInit #-}
+unsafeInit v = unsafeSlice 0 (length v - 1) v
+
+unsafeTail :: MVector v a => v s a -> v s a
+{-# INLINE unsafeTail #-}
+unsafeTail v = unsafeSlice 1 (length v - 1) v
 
 unsafeAppend1 :: (PrimMonad m, MVector v a)
         => v (PrimState m) a -> Int -> a -> m (v (PrimState m) a)

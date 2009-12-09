@@ -15,7 +15,8 @@
 module Data.Vector.Generic.New (
   New(..), run, unstream, transform, accum, update, reverse,
   slice, init, tail, take, drop,
-  unsafeSlice, unsafeAccum, unsafeUpdate
+  unsafeSlice, unsafeInit, unsafeTail,
+  unsafeAccum, unsafeUpdate
 ) where
 
 import qualified Data.Vector.Generic.Mutable as MVector
@@ -71,36 +72,38 @@ slice :: Int -> Int -> New a -> New a
 {-# INLINE_STREAM slice #-}
 slice i n m = apply (MVector.slice i n) m
 
+init :: New a -> New a
+{-# INLINE_STREAM init #-}
+init m = apply MVector.init m
+
+tail :: New a -> New a
+{-# INLINE_STREAM tail #-}
+tail m = apply MVector.tail m
+
+take :: Int -> New a -> New a
+{-# INLINE_STREAM take #-}
+take n m = apply (MVector.take n) m
+
+drop :: Int -> New a -> New a
+{-# INLINE_STREAM drop #-}
+drop n m = apply (MVector.drop n) m
+
 unsafeSlice :: Int -> Int -> New a -> New a
 {-# INLINE_STREAM unsafeSlice #-}
 unsafeSlice i n m = apply (MVector.unsafeSlice i n) m
 
-init :: New a -> New a
-{-# INLINE_STREAM init #-}
-init m = apply (\v -> MVector.slice 0 (MVector.length v - 1) v) m
+unsafeInit :: New a -> New a
+{-# INLINE_STREAM unsafeInit #-}
+unsafeInit m = apply MVector.unsafeInit m
 
-tail :: New a -> New a
-{-# INLINE_STREAM tail #-}
-tail m = apply (\v -> MVector.slice 1 (MVector.length v - 1) v) m
-
-take :: Int -> New a -> New a
-{-# INLINE_STREAM take #-}
-take n m = apply (\v -> MVector.unsafeSlice 0
-                                   (min (max 0 n) (MVector.length v)) v) m
-
-drop :: Int -> New a -> New a
-{-# INLINE_STREAM drop #-}
-drop n m = apply (\v -> MVector.unsafeSlice
-                                (min (max 0 n) (MVector.length v))
-                                (max 0 (MVector.length v - n)) v) m
+unsafeTail :: New a -> New a
+{-# INLINE_STREAM unsafeTail #-}
+unsafeTail m = apply MVector.unsafeTail m
 
 {-# RULES
 
 "slice/unstream [New]" forall i n s.
   slice i n (unstream s) = unstream (Stream.slice i n s)
-
-"unsafeSlice/unstream [New]" forall i n s.
-  unsafeSlice i n (unstream s) = unstream (Stream.slice i n s)
 
 "init/unstream [New]" forall s.
   init (unstream s) = unstream (Stream.init s)
@@ -113,6 +116,15 @@ drop n m = apply (\v -> MVector.unsafeSlice
 
 "drop/unstream [New]" forall n s.
   drop n (unstream s) = unstream (Stream.drop n s)
+
+"unsafeSlice/unstream [New]" forall i n s.
+  unsafeSlice i n (unstream s) = unstream (Stream.slice i n s)
+
+"unsafeInit/unstream [New]" forall s.
+  unsafeInit (unstream s) = unstream (Stream.init s)
+
+"unsafeTail/unstream [New]" forall s.
+  unsafeTail (unstream s) = unstream (Stream.tail s)
 
   #-}
 
