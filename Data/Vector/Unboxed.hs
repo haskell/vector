@@ -20,7 +20,9 @@ module Data.Vector.Unboxed (
   empty, singleton, cons, snoc, replicate, generate, (++), copy,
 
   -- * Accessing individual elements
-  (!), head, last,
+  (!), head, last, indexM, headM, lastM,
+  unsafeIndex, unsafeHead, unsafeLast,
+  unsafeIndexM, unsafeHeadM, unsafeLastM,
 
   -- * Subvectors
   slice, init, tail, take, drop,
@@ -72,7 +74,6 @@ module Data.Vector.Unboxed (
   toList, fromList,
 
   -- * Unsafe operations
-  unsafeIndex,
   unsafeAccum, unsafeAccumulate, unsafeAccumulate_,
   unsafeUpd, unsafeUpdate, unsafeUpdate_
 ) where
@@ -168,11 +169,6 @@ copy = G.copy
 {-# INLINE (!) #-}
 (!) = (G.!)
 
--- | Unsafe indexing without bounds checks
-unsafeIndex :: Unbox a => Vector a -> Int -> a
-{-# INLINE unsafeIndex #-}
-unsafeIndex = G.unsafeIndex
-
 -- | First element
 head :: Unbox a => Vector a -> a
 {-# INLINE head #-}
@@ -182,6 +178,50 @@ head = G.head
 last :: Unbox a => Vector a -> a
 {-# INLINE last #-}
 last = G.last
+
+-- | Unsafe indexing without bounds checking
+unsafeIndex :: Unbox a => Vector a -> Int -> a
+{-# INLINE unsafeIndex #-}
+unsafeIndex = G.unsafeIndex
+
+-- | Yield the first element of a vector without checking if the vector is
+-- empty
+unsafeHead :: Unbox a => Vector a -> a
+{-# INLINE unsafeHead #-}
+unsafeHead = G.unsafeHead
+
+-- | Yield the last element of a vector without checking if the vector is
+-- empty
+unsafeLast :: Unbox a => Vector a -> a
+{-# INLINE unsafeLast #-}
+unsafeLast = G.unsafeLast
+
+-- | Monadic indexing which can be strict in the vector while remaining lazy in
+-- the element
+indexM :: (Unbox a, Monad m) => Vector a -> Int -> m a
+{-# INLINE indexM #-}
+indexM = G.indexM
+
+headM :: (Unbox a, Monad m) => Vector a -> m a
+{-# INLINE headM #-}
+headM = G.headM
+
+lastM :: (Unbox a, Monad m) => Vector a -> m a
+{-# INLINE lastM #-}
+lastM = G.lastM
+
+-- | Unsafe monadic indexing without bounds checks
+unsafeIndexM :: (Unbox a, Monad m) => Vector a -> Int -> m a
+{-# INLINE unsafeIndexM #-}
+unsafeIndexM = G.unsafeIndexM
+
+unsafeHeadM :: (Unbox a, Monad m) => Vector a -> m a
+{-# INLINE unsafeHeadM #-}
+unsafeHeadM = G.unsafeHeadM
+
+unsafeLastM :: (Unbox a, Monad m) => Vector a -> m a
+{-# INLINE unsafeLastM #-}
+unsafeLastM = G.unsafeLastM
 
 -- Subarrays
 -- ---------

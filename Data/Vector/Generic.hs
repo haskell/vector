@@ -24,6 +24,8 @@ module Data.Vector.Generic (
 
   -- * Accessing individual elements
   (!), head, last, indexM, headM, lastM,
+  unsafeIndex, unsafeHead, unsafeLast,
+  unsafeIndexM, unsafeHeadM, unsafeLastM,
 
   -- * Subvectors
   slice, init, tail, take, drop,
@@ -84,7 +86,6 @@ module Data.Vector.Generic (
   new,
 
   -- * Unsafe operations
-  unsafeIndex, unsafeIndexM,
   unsafeAccum, unsafeAccumulate, unsafeAccumulate_,
   unsafeUpd, unsafeUpdate, unsafeUpdate_
 ) where
@@ -307,12 +308,6 @@ copy = unstream . stream
 v ! i = BOUNDS_CHECK(checkIndex) "(!)" i (length v)
       $ unId (basicUnsafeIndexM v i)
 
--- | Unsafe indexing without bounds checking
-unsafeIndex :: Vector v a => v a -> Int -> a
-{-# INLINE_STREAM unsafeIndex #-}
-unsafeIndex v i = UNSAFE_CHECK(checkIndex) "unsafeIndex" i (length v)
-                $ unId (basicUnsafeIndexM v i)
-
 -- | First element
 head :: Vector v a => v a -> a
 {-# INLINE_STREAM head #-}
@@ -323,19 +318,43 @@ last :: Vector v a => v a -> a
 {-# INLINE_STREAM last #-}
 last v = v ! (length v - 1)
 
+-- | Unsafe indexing without bounds checking
+unsafeIndex :: Vector v a => v a -> Int -> a
+{-# INLINE_STREAM unsafeIndex #-}
+unsafeIndex v i = UNSAFE_CHECK(checkIndex) "unsafeIndex" i (length v)
+                $ unId (basicUnsafeIndexM v i)
+
+-- | Yield the first element of a vector without checking if the vector is
+-- empty
+unsafeHead :: Vector v a => v a -> a
+{-# INLINE_STREAM unsafeHead #-}
+unsafeHead v = unsafeIndex v 0
+
+-- | Yield the last element of a vector without checking if the vector is
+-- empty
+unsafeLast :: Vector v a => v a -> a
+{-# INLINE_STREAM unsafeLast #-}
+unsafeLast v = unsafeIndex v (length v - 1)
+
 {-# RULES
 
 "(!)/unstream [Vector]" forall v i s.
   new' v (New.unstream s) ! i = s Stream.!! i
-
-"unsafeIndex/unstream [Vector]" forall v i s.
-  unsafeIndex (new' v (New.unstream s)) i = s Stream.!! i
 
 "head/unstream [Vector]" forall v s.
   head (new' v (New.unstream s)) = Stream.head s
 
 "last/unstream [Vector]" forall v s.
   last (new' v (New.unstream s)) = Stream.last s
+
+"unsafeIndex/unstream [Vector]" forall v i s.
+  unsafeIndex (new' v (New.unstream s)) i = s Stream.!! i
+
+"unsafeHead/unstream [Vector]" forall v s.
+  unsafeHead (new' v (New.unstream s)) = Stream.head s
+
+"unsafeLast/unstream [Vector]" forall v s.
+  unsafeLast (new' v (New.unstream s)) = Stream.last s
 
  #-}
 
@@ -346,12 +365,6 @@ indexM :: (Vector v a, Monad m) => v a -> Int -> m a
 indexM v i = BOUNDS_CHECK(checkIndex) "indexM" i (length v)
            $ basicUnsafeIndexM v i
 
--- | Unsafe monadic indexing without bounds checks
-unsafeIndexM :: (Vector v a, Monad m) => v a -> Int -> m a
-{-# INLINE_STREAM unsafeIndexM #-}
-unsafeIndexM v i = UNSAFE_CHECK(checkIndex) "unsafeIndexM" i (length v)
-                 $ basicUnsafeIndexM v i
-
 headM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_STREAM headM #-}
 headM v = indexM v 0
@@ -359,6 +372,20 @@ headM v = indexM v 0
 lastM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_STREAM lastM #-}
 lastM v = indexM v (length v - 1)
+
+-- | Unsafe monadic indexing without bounds checks
+unsafeIndexM :: (Vector v a, Monad m) => v a -> Int -> m a
+{-# INLINE_STREAM unsafeIndexM #-}
+unsafeIndexM v i = UNSAFE_CHECK(checkIndex) "unsafeIndexM" i (length v)
+                 $ basicUnsafeIndexM v i
+
+unsafeHeadM :: (Vector v a, Monad m) => v a -> m a
+{-# INLINE_STREAM unsafeHeadM #-}
+unsafeHeadM v = unsafeIndexM v 0
+
+unsafeLastM :: (Vector v a, Monad m) => v a -> m a
+{-# INLINE_STREAM unsafeLastM #-}
+unsafeLastM v = unsafeIndexM v (length v - 1)
 
 -- FIXME: the rhs of these rules are lazy in the stream which is WRONG
 {- RULES
