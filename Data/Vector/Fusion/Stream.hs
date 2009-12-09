@@ -26,7 +26,7 @@ module Data.Vector.Fusion.Stream (
   length, null,
 
   -- * Construction
-  empty, singleton, cons, snoc, replicate, (++),
+  empty, singleton, cons, snoc, replicate, generate, (++),
 
   -- * Accessing individual elements
   head, last, (!!),
@@ -160,6 +160,11 @@ singleton = M.singleton
 replicate :: Int -> a -> Stream a
 {-# INLINE replicate #-}
 replicate = M.replicate
+
+-- | Generate a stream from its indices
+generate :: Int -> (Int -> a) -> Stream a
+{-# INLINE generate #-}
+generate = M.generate
 
 -- | Prepend an element
 cons :: a -> Stream a -> Stream a

@@ -19,7 +19,7 @@ module Data.Vector (
   length, null,
 
   -- * Construction
-  empty, singleton, cons, snoc, replicate, (++), copy,
+  empty, singleton, cons, snoc, replicate, generate, (++), copy,
 
   -- * Accessing individual elements
   (!), head, last, indexM, headM, lastM,
@@ -158,6 +158,12 @@ singleton = G.singleton
 replicate :: Int -> a -> Vector a
 {-# INLINE replicate #-}
 replicate = G.replicate
+
+-- | Generate a vector of the given length by applying the function to each
+-- index
+generate :: Int -> (Int -> a) -> Vector a
+{-# INLINE generate #-}
+generate = G.generate
 
 -- | Prepend an element
 cons :: a -> Vector a -> Vector a

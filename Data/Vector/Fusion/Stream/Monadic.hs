@@ -22,7 +22,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   length, null,
 
   -- * Construction
-  empty, singleton, cons, snoc, replicate, (++),
+  empty, singleton, cons, snoc, replicate, generate, generateM, (++),
 
   -- * Accessing elements
   head, last, (!!),
@@ -163,6 +163,21 @@ replicate n x = Stream (return . step) n (Exact (delay_inline max n 0))
     {-# INLINE_INNER step #-}
     step i | i > 0     = Yield x (i-1)
            | otherwise = Done
+
+generate :: Monad m => Int -> (Int -> a) -> Stream m a
+{-# INLINE generate #-}
+generate n f = generateM n (return . f)
+
+-- | Generate a stream from its indices
+generateM :: Monad m => Int -> (Int -> m a) -> Stream m a
+{-# INLINE_STREAM generateM #-}
+generateM n f = n `seq` Stream step 0 (Exact (delay_inline max n 0))
+  where
+    {-# INLINE_INNER step #-}
+    step i | i < n     = do
+                           x <- f i
+                           return $ Yield x (i+1)
+           | otherwise = return Done
 
 -- | Prepend an element
 cons :: Monad m => a -> Stream m a -> Stream m a

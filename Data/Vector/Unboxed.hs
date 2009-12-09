@@ -17,7 +17,7 @@ module Data.Vector.Unboxed (
   length, null,
 
   -- * Construction
-  empty, singleton, cons, snoc, replicate, (++), copy,
+  empty, singleton, cons, snoc, replicate, generate, (++), copy,
 
   -- * Accessing individual elements
   (!), head, last,
@@ -131,6 +131,12 @@ singleton = G.singleton
 replicate :: Unbox a => Int -> a -> Vector a
 {-# INLINE replicate #-}
 replicate = G.replicate
+
+-- | Generate a vector of the given length by applying the function to each
+-- index
+generate :: Unbox a => Int -> (Int -> a) -> Vector a
+{-# INLINE generate #-}
+generate = G.generate
 
 -- | Prepend an element
 cons :: Unbox a => a -> Vector a -> Vector a

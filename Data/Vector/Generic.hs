@@ -20,7 +20,7 @@ module Data.Vector.Generic (
   length, null,
 
   -- * Construction
-  empty, singleton, cons, snoc, replicate, (++), copy,
+  empty, singleton, cons, snoc, replicate, generate, (++), copy,
 
   -- * Accessing individual elements
   (!), head, last, indexM, headM, lastM,
@@ -256,6 +256,12 @@ replicate :: forall v a. Vector v a => Int -> a -> v a
 replicate n x = elemseq (undefined :: v a) x
               $ unstream
               $ Stream.replicate n x
+
+-- | Generate a vector of the given length by applying the function to each
+-- index
+generate :: Vector v a => Int -> (Int -> a) -> v a
+{-# INLINE generate #-}
+generate n f = unstream (Stream.generate n f)
 
 -- | Prepend an element
 cons :: forall v a. Vector v a => a -> v a -> v a
