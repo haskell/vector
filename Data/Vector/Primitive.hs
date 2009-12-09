@@ -28,7 +28,7 @@ module Data.Vector.Primitive (
 
   -- * Subvectors
   slice, init, tail, take, drop,
-  unsafeSlice, unsafeInit, unsafeTail,
+  unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
 
   -- * Permutations
   accum, accumulate_, (//), update_, backpermute, reverse,
@@ -299,6 +299,14 @@ unsafeInit = G.unsafeInit
 unsafeTail :: Prim a => Vector a -> Vector a
 {-# INLINE unsafeTail #-}
 unsafeTail = G.unsafeTail
+
+unsafeTake :: Prim a => Int -> Vector a -> Vector a
+{-# INLINE unsafeTake #-}
+unsafeTake = G.unsafeTake
+
+unsafeDrop :: Prim a => Int -> Vector a -> Vector a
+{-# INLINE unsafeDrop #-}
+unsafeDrop = G.unsafeDrop
 
 -- Permutations
 -- ------------

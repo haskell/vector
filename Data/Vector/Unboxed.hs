@@ -26,7 +26,7 @@ module Data.Vector.Unboxed (
 
   -- * Subvectors
   slice, init, tail, take, drop,
-  unsafeSlice, unsafeInit, unsafeTail,
+  unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
 
   -- * Permutations
   accum, accumulate, accumulate_,
@@ -271,6 +271,14 @@ unsafeInit = G.unsafeInit
 unsafeTail :: Unbox a => Vector a -> Vector a
 {-# INLINE unsafeTail #-}
 unsafeTail = G.unsafeTail
+
+unsafeTake :: Unbox a => Int -> Vector a -> Vector a
+{-# INLINE unsafeTake #-}
+unsafeTake = G.unsafeTake
+
+unsafeDrop :: Unbox a => Int -> Vector a -> Vector a
+{-# INLINE unsafeDrop #-}
+unsafeDrop = G.unsafeDrop
 
 -- Permutations
 -- ------------

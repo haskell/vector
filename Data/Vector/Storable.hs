@@ -28,7 +28,7 @@ module Data.Vector.Storable (
 
   -- * Subvectors
   slice, init, tail, take, drop,
-  unsafeSlice, unsafeInit, unsafeTail,
+  unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
 
   -- * Permutations
   accum, accumulate_, (//), update_, backpermute, reverse,
@@ -330,6 +330,14 @@ unsafeInit = G.unsafeInit
 unsafeTail :: Storable a => Vector a -> Vector a
 {-# INLINE unsafeTail #-}
 unsafeTail = G.unsafeTail
+
+unsafeTake :: Storable a => Int -> Vector a -> Vector a
+{-# INLINE unsafeTake #-}
+unsafeTake = G.unsafeTake
+
+unsafeDrop :: Storable a => Int -> Vector a -> Vector a
+{-# INLINE unsafeDrop #-}
+unsafeDrop = G.unsafeDrop
 
 -- Permutations
 -- ------------

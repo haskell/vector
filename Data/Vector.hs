@@ -28,7 +28,7 @@ module Data.Vector (
 
   -- * Subvectors
   slice, init, tail, take, drop,
-  unsafeSlice, unsafeInit, unsafeTail,
+  unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
 
   -- * Permutations
   accum, accumulate, accumulate_,
@@ -282,14 +282,6 @@ drop :: Int -> Vector a -> Vector a
 {-# INLINE drop #-}
 drop = G.drop
 
-unsafeInit :: Vector a -> Vector a
-{-# INLINE unsafeInit #-}
-unsafeInit = G.unsafeInit
-
-unsafeTail :: Vector a -> Vector a
-{-# INLINE unsafeTail #-}
-unsafeTail = G.unsafeTail
-
 -- | Unsafely yield a part of the vector without copying it and without
 -- performing bounds checks.
 unsafeSlice :: Int   -- ^ starting index
@@ -298,6 +290,22 @@ unsafeSlice :: Int   -- ^ starting index
             -> Vector a
 {-# INLINE unsafeSlice #-}
 unsafeSlice = G.unsafeSlice
+
+unsafeInit :: Vector a -> Vector a
+{-# INLINE unsafeInit #-}
+unsafeInit = G.unsafeInit
+
+unsafeTail :: Vector a -> Vector a
+{-# INLINE unsafeTail #-}
+unsafeTail = G.unsafeTail
+
+unsafeTake :: Int -> Vector a -> Vector a
+{-# INLINE unsafeTake #-}
+unsafeTake = G.unsafeTake
+
+unsafeDrop :: Int -> Vector a -> Vector a
+{-# INLINE unsafeDrop #-}
+unsafeDrop = G.unsafeDrop
 
 -- Permutations
 -- ------------

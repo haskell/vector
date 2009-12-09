@@ -29,7 +29,7 @@ module Data.Vector.Generic (
 
   -- * Subvectors
   slice, init, tail, take, drop,
-  unsafeSlice, unsafeInit, unsafeTail,
+  unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
 
   -- * Permutations
   accum, accumulate, accumulate_,
@@ -455,6 +455,14 @@ unsafeInit v = unsafeSlice 0 (length v - 1) v
 unsafeTail :: Vector v a => v a -> v a
 {-# INLINE_STREAM unsafeTail #-}
 unsafeTail v = unsafeSlice 1 (length v - 1) v
+
+unsafeTake :: Vector v a => Int -> v a -> v a
+{-# INLINE unsafeTake #-}
+unsafeTake n v = unsafeSlice 0 n v
+
+unsafeDrop :: Vector v a => Int -> v a -> v a
+{-# INLINE unsafeDrop #-}
+unsafeDrop n v = unsafeSlice n (length v - n) v
 
 {-# RULES
 
