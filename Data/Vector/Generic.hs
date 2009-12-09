@@ -48,6 +48,7 @@ module Data.Vector.Generic (
 
   -- * Filtering
   filter, ifilter, takeWhile, dropWhile,
+  unstablePartition, span, break,
 
   -- * Searching
   elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
@@ -89,6 +90,7 @@ module Data.Vector.Generic (
 ) where
 
 import           Data.Vector.Generic.Mutable ( MVector )
+import qualified Data.Vector.Generic.Mutable as M
 
 import qualified Data.Vector.Generic.New as New
 import           Data.Vector.Generic.New ( New )
@@ -107,7 +109,7 @@ import Prelude hiding ( length, null,
                         init, tail, take, drop, reverse,
                         map, concatMap,
                         zipWith, zipWith3, zip, zip3, unzip, unzip3,
-                        filter, takeWhile, dropWhile,
+                        filter, takeWhile, dropWhile, span, break,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         all, any, and, or, sum, product, maximum, minimum,
@@ -756,6 +758,58 @@ takeWhile f = unstream . Stream.takeWhile f . stream
 dropWhile :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE dropWhile #-}
 dropWhile f = unstream . Stream.dropWhile f . stream
+
+-- | Split the vector in two parts, the first one containing those elements
+-- that satisfy the predicate and the second one those that don't. The order
+-- of the elements is not preserved.
+unstablePartition :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
+{-# INLINE unstablePartition #-}
+unstablePartition f = unstablePartition_stream f . stream
+
+unstablePartition_stream
+  :: Vector v a => (a -> Bool) -> Stream a -> (v a, v a)
+{-# INLINE_STREAM unstablePartition_stream #-}
+unstablePartition_stream f s = s `seq` runST (
+  do
+    (mv1,mv2) <- M.unstablePartitionStream f s
+    v1 <- unsafeFreeze mv1
+    v2 <- unsafeFreeze mv2
+    return (v1,v2))
+
+unstablePartition_new :: Vector v a => (a -> Bool) -> New a -> (v a, v a)
+{-# INLINE_STREAM unstablePartition_new #-}
+unstablePartition_new f (New.New p) = runST (
+  do
+    mv <- p
+    i <- M.unstablePartition f mv
+    v <- unsafeFreeze mv
+    return (take i v, drop i v))
+
+{-# RULES
+
+"unstablePartition" forall f v p.
+  unstablePartition_stream f (stream (new' v p))
+    = unstablePartition_new f p
+
+  #-}
+
+
+-- FIXME: make span and break fusible
+
+-- | Split the vector into the longest prefix of elements that satisfy the
+-- predicate and the rest.
+span :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
+{-# INLINE span #-}
+span f = break (not . f)
+
+-- | Split the vector into the longest prefix of elements that do not satisfy
+-- the predicate and the rest.
+break :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
+{-# INLINE break #-}
+break f xs = case findIndex f xs of
+               Just i  -> (unsafeSlice xs 0 i, unsafeSlice xs i (length xs - i))
+               Nothing -> (xs, empty)
+    
 
 -- Searching
 -- ---------

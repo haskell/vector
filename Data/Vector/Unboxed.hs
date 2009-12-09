@@ -42,6 +42,7 @@ module Data.Vector.Unboxed (
 
   -- * Filtering
   filter, ifilter, takeWhile, dropWhile,
+  unstablePartition, span, break,
 
   -- * Searching
   elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
@@ -86,7 +87,7 @@ import Prelude hiding ( length, null,
                         init, tail, take, drop, reverse,
                         map, concatMap,
                         zipWith, zipWith3, zip, zip3, unzip, unzip3,
-                        filter, takeWhile, dropWhile,
+                        filter, takeWhile, dropWhile, span, break,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         all, any, and, or, sum, product, minimum, maximum,
@@ -392,6 +393,25 @@ takeWhile = G.takeWhile
 dropWhile :: Unbox a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE dropWhile #-}
 dropWhile = G.dropWhile
+
+-- | Split the vector in two parts, the first one containing those elements
+-- that satisfy the predicate and the second one those that don't. The order
+-- of the elements is not preserved.
+unstablePartition :: Unbox a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
+{-# INLINE unstablePartition #-}
+unstablePartition = G.unstablePartition
+
+-- | Split the vector into the longest prefix of elements that satisfy the
+-- predicate and the rest.
+span :: Unbox a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
+{-# INLINE span #-}
+span = G.span
+
+-- | Split the vector into the longest prefix of elements that do not satisfy
+-- the predicate and the rest.
+break :: Unbox a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
+{-# INLINE break #-}
+break = G.break
 
 -- Searching
 -- ---------

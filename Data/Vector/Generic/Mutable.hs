@@ -23,7 +23,8 @@ module Data.Vector.Generic.Mutable (
   unsafeCopy, unsafeGrow,
 
   -- * Internal operations
-  unstream, transform, unsafeAccum, accum, unsafeUpdate, update, reverse
+  unstream, transform, unsafeAccum, accum, unsafeUpdate, update, reverse,
+  unstablePartition, unstablePartitionStream
 ) where
 
 import qualified Data.Vector.Fusion.Stream      as Stream
@@ -267,6 +268,33 @@ grow :: (PrimMonad m, MVector v a)
 grow v by = BOUNDS_CHECK(checkLength) "grow" by
           $ unsafeGrow v by
 
+-- | Grow a vector logarithmically
+enlarge :: (PrimMonad m, MVector v a)
+                => v (PrimState m) a -> m (v (PrimState m) a)
+{-# INLINE enlarge #-}
+enlarge v = unsafeGrow v
+          $ max 1
+          $ double2Int
+          $ int2Double (length v) * gROWTH_FACTOR
+
+unsafeAppend1 :: (PrimMonad m, MVector v a)
+        => v (PrimState m) a -> Int -> a -> m (v (PrimState m) a)
+{-# INLINE_INNER unsafeAppend1 #-}
+    -- NOTE: The case distinction has to be on the outside because
+    -- GHC creates a join point for the unsafeWrite even when everything
+    -- is inlined. This is bad because with the join point, v isn't getting
+    -- unboxed.
+unsafeAppend1 v i x
+  | i < length v = do
+                     unsafeWrite v i x
+                     return v
+  | otherwise    = do
+                     v' <- enlarge v
+                     INTERNAL_CHECK(checkIndex) "unsafeAppend1" i (length v')
+                       $ unsafeWrite v' i x
+                     return v'
+
+
 mstream :: (PrimMonad m, MVector v a) => v (PrimState m) a -> MStream m a
 {-# INLINE mstream #-}
 mstream v = v `seq` (MStream.unfoldrM get 0 `MStream.sized` Exact n)
@@ -361,26 +389,10 @@ unstreamUnknown s
       (v', n) <- Stream.foldM put (v, 0) s
       return $ slice v' 0 n
   where
-    -- NOTE: The case distinction has to be on the outside because
-    -- GHC creates a join point for the unsafeWrite even when everything
-    -- is inlined. This is bad because with the join point, v isn't getting
-    -- unboxed.
     {-# INLINE_INNER put #-}
-    put (v, i) x
-      | i < length v = do
-                         unsafeWrite v i x
-                         return (v, i+1)
-      | otherwise    = do
-                         v' <- enlarge v
-                         INTERNAL_CHECK(checkIndex) "unstreamMax" i (length v')
-                           $ unsafeWrite v' i x
-                         return (v', i+1)
-
-    {-# INLINE_INNER enlarge #-}
-    enlarge v = unsafeGrow v
-              $ max 1
-              $ double2Int
-              $ int2Double (length v) * gROWTH_FACTOR
+    put (v,i) x = do
+                    v' <- unsafeAppend1 v i x
+                    return (v',i+1)
 
 unsafeAccum :: (PrimMonad m, MVector v a)
             => (a -> b -> a) -> v (PrimState m) a -> Stream (Int, b) -> m ()
@@ -433,4 +445,80 @@ reverse !v = reverse_loop 0 (length v - 1)
                                  unsafeWrite v j x
                                  reverse_loop (i + 1) (j - 1)
     reverse_loop _ _ = return ()
+
+unstablePartition :: (PrimMonad m, MVector v a)
+                  => (a -> Bool) -> v (PrimState m) a -> m Int
+{-# INLINE unstablePartition #-}
+unstablePartition f !v = from_left 0 (length v)
+  where
+    from_left i j
+      | i == j    = return i
+      | otherwise = do
+                      x <- unsafeRead v i
+                      if f x
+                        then from_left (i+1) j
+                        else from_right i (j-1)
+
+    from_right i j
+      | i == j    = return i
+      | otherwise = do
+                      x <- unsafeRead v j
+                      if f x
+                        then do
+                               y <- unsafeRead v i
+                               unsafeWrite v i x
+                               unsafeWrite v j y
+                               from_left (i+1) j
+                        else from_right i (j-1)
+
+unstablePartitionStream :: (PrimMonad m, MVector v a)
+        => (a -> Bool) -> Stream a -> m (v (PrimState m) a, v (PrimState m) a)
+{-# INLINE unstablePartitionStream #-}
+unstablePartitionStream f s
+  = case upperBound (Stream.size s) of
+      Just n  -> unstablePartitionMax f s n
+      Nothing -> partitionUnknown f s
+
+
+unstablePartitionMax :: (PrimMonad m, MVector v a)
+        => (a -> Bool) -> Stream a -> Int
+        -> m (v (PrimState m) a, v (PrimState m) a)
+{-# INLINE unstablePartitionMax #-}
+unstablePartitionMax f s n
+  = do
+      v <- new n
+      let {-# INLINE_INNER put #-}
+          put (i, j) x
+            | f x       = do
+                            unsafeWrite v i x
+                            return (i+1, j)
+            | otherwise = do
+                            unsafeWrite v (j-1) x
+                            return (i, j-1)
+                                
+      (i,j) <- Stream.foldM' put (0, n) s
+      return (slice v 0 i, slice v j (n-j))
+
+partitionUnknown :: (PrimMonad m, MVector v a)
+        => (a -> Bool) -> Stream a -> m (v (PrimState m) a, v (PrimState m) a)
+{-# INLINE partitionUnknown #-}
+partitionUnknown f s
+  = do
+      v1 <- new 0
+      v2 <- new 0
+      (v1', n1, v2', n2) <- Stream.foldM' put (v1, 0, v2, 0) s
+      return (slice v1' 0 n1, slice v2' 0 n2)
+  where
+    -- NOTE: The case distinction has to be on the outside because
+    -- GHC creates a join point for the unsafeWrite even when everything
+    -- is inlined. This is bad because with the join point, v isn't getting
+    -- unboxed.
+    {-# INLINE_INNER put #-}
+    put (v1, i1, v2, i2) x
+      | f x       = do
+                      v1' <- unsafeAppend1 v1 i1 x
+                      return (v1', i1+1, v2, i2)
+      | otherwise = do
+                      v2' <- unsafeAppend1 v2 i2 x
+                      return (v1, i1, v2', i2+1)
 
