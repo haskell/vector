@@ -403,22 +403,25 @@ unstreamMax
 {-# INLINE unstreamMax #-}
 unstreamMax s n
   = do
-      v  <- new n
+      v <- INTERNAL_CHECK(checkLength) "unstreamMax" n
+           $ unsafeNew n
       let put i x = do
                        INTERNAL_CHECK(checkIndex) "unstreamMax" i n
                          $ unsafeWrite v i x
                        return (i+1)
       n' <- Stream.foldM' put 0 s
-      return $ INTERNAL_CHECK(checkSlice) "unstreamMax" 0 n' n $ slice 0 n' v
+      return $ INTERNAL_CHECK(checkSlice) "unstreamMax" 0 n' n
+             $ unsafeSlice 0 n' v
 
 unstreamUnknown
   :: (PrimMonad m, MVector v a) => Stream a -> m (v (PrimState m) a)
 {-# INLINE unstreamUnknown #-}
 unstreamUnknown s
   = do
-      v <- new 0
+      v <- unsafeNew 0
       (v', n) <- Stream.foldM put (v, 0) s
-      return $ slice 0 n v'
+      return $ INTERNAL_CHECK(checkSlice) "unstreamUnknown" 0 n (length v')
+             $ slice 0 n v'
   where
     {-# INLINE_INNER put #-}
     put (v,i) x = do
@@ -517,7 +520,8 @@ unstablePartitionMax :: (PrimMonad m, MVector v a)
 {-# INLINE unstablePartitionMax #-}
 unstablePartitionMax f s n
   = do
-      v <- new n
+      v <- INTERNAL_CHECK(checkLength) "unstablePartitionMax" n
+           $ unsafeNew n
       let {-# INLINE_INNER put #-}
           put (i, j) x
             | f x       = do
@@ -528,17 +532,19 @@ unstablePartitionMax f s n
                             return (i, j-1)
                                 
       (i,j) <- Stream.foldM' put (0, n) s
-      return (slice 0 i v, slice j (n-j) v)
+      return (unsafeSlice 0 i v, unsafeSlice j (n-j) v)
 
 partitionUnknown :: (PrimMonad m, MVector v a)
         => (a -> Bool) -> Stream a -> m (v (PrimState m) a, v (PrimState m) a)
 {-# INLINE partitionUnknown #-}
 partitionUnknown f s
   = do
-      v1 <- new 0
-      v2 <- new 0
+      v1 <- unsafeNew 0
+      v2 <- unsafeNew 0
       (v1', n1, v2', n2) <- Stream.foldM' put (v1, 0, v2, 0) s
-      return (slice 0 n1 v1', slice 0 n2 v2')
+      INTERNAL_CHECK(checkSlice) "partitionUnknown" 0 n1 (length v1')
+        $ INTERNAL_CHECK(checkSlice) "partitionUnknown" 0 n2 (length v2')
+        $ return (unsafeSlice 0 n1 v1', unsafeSlice 0 n2 v2')
   where
     -- NOTE: The case distinction has to be on the outside because
     -- GHC creates a join point for the unsafeWrite even when everything
