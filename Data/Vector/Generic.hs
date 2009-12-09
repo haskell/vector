@@ -57,7 +57,8 @@ module Data.Vector.Generic (
   ifoldl, ifoldl', ifoldr,
  
   -- * Specialised folds
-  and, or, sum, product,
+  all, any, and, or,
+  sum, product,
   maximum, maximumBy, minimum, minimumBy,
   minIndex, minIndexBy, maxIndex, maxIndexBy,
 
@@ -109,7 +110,7 @@ import Prelude hiding ( length, null,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
-                        and, or, sum, product, maximum, minimum,
+                        all, any, and, or, sum, product, maximum, minimum,
                         scanl, scanl1,
                         enumFromTo, enumFromThenTo )
 
@@ -848,6 +849,14 @@ ifoldr f z = Stream.foldr (uncurry f) z . Stream.indexed . stream
 
 -- Specialised folds
 -- -----------------
+
+all :: Vector v a => (a -> Bool) -> v a -> Bool
+{-# INLINE all #-}
+all f = Stream.and . Stream.map f . stream
+
+any :: Vector v a => (a -> Bool) -> v a -> Bool
+{-# INLINE any #-}
+any f = Stream.or . Stream.map f . stream
 
 and :: Vector v Bool => v Bool -> Bool
 {-# INLINE and #-}

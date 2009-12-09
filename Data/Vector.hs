@@ -53,7 +53,8 @@ module Data.Vector (
   ifoldl, ifoldl', ifoldr,
 
   -- * Specialised folds
-  and, or, sum, product,
+  all, any, and, or,
+  sum, product,
   maximum, maximumBy, minimum, minimumBy,
   minIndex, minIndexBy, maxIndex, maxIndexBy,
 
@@ -92,7 +93,7 @@ import Prelude hiding ( length, null,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
-                        and, or, sum, product, minimum, maximum,
+                        all, any, and, or, sum, product, minimum, maximum,
                         scanl, scanl1,
                         enumFromTo, enumFromThenTo )
 
@@ -558,6 +559,14 @@ ifoldr = G.ifoldr
 
 -- Specialised folds
 -- -----------------
+
+all :: (a -> Bool) -> Vector a -> Bool
+{-# INLINE all #-}
+all = G.all
+
+any :: (a -> Bool) -> Vector a -> Bool
+{-# INLINE any #-}
+any = G.any
 
 and :: Vector Bool -> Bool
 {-# INLINE and #-}

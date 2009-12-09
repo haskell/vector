@@ -49,6 +49,7 @@ module Data.Vector.Primitive (
   ifoldl, ifoldl', ifoldr,
 
   -- * Specialised folds
+  all, any,
   sum, product,
   maximum, maximumBy, minimum, minimumBy,
   minIndex, minIndexBy, maxIndex, maxIndexBy,
@@ -89,7 +90,7 @@ import Prelude hiding ( length, null,
                         filter, takeWhile, dropWhile,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
-                        sum, product, minimum, maximum,
+                        all, any, sum, product, minimum, maximum,
                         scanl, scanl1,
                         enumFromTo, enumFromThenTo )
 
@@ -490,6 +491,14 @@ ifoldr = G.ifoldr
 
 -- Specialised folds
 -- -----------------
+
+all :: Prim a => (a -> Bool) -> Vector a -> Bool
+{-# INLINE all #-}
+all = G.all
+
+any :: Prim a => (a -> Bool) -> Vector a -> Bool
+{-# INLINE any #-}
+any = G.any
 
 sum :: (Prim a, Num a) => Vector a -> a
 {-# INLINE sum #-}
