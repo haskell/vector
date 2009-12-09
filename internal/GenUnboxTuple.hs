@@ -64,9 +64,9 @@ generate n =
                    <+> con c
                    <+> text "len"
                    <+> sep [parens $ text "unsafeSlice"
-                                     <+> vs
                                      <+> char '0'
-                                     <+> text "len" | vs <- varss]
+                                     <+> text "len"
+                                     <+> vs | vs <- varss]
              ,nest 2 $ hang (text "where")
                             2
                      $ text "len ="
@@ -115,11 +115,11 @@ generate n =
     gen_length c _ = (pat c, var 'n')
 
     gen_unsafeSlice mod c rec
-      = (pat c <+> var 'i' <+> var 'm',
+      = (var 'i' <+> var 'm' <+> pat c,
          con c <+> var 'm'
                <+> vcat [parens
                          $ text mod <> char '.' <> text rec
-                                    <+> vs <+> var 'i' <+> var 'm'
+                                    <+> var 'i' <+> var 'm' <+> vs
                                         | vs <- varss])
 
 

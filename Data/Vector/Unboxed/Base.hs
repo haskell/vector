@@ -65,7 +65,7 @@ instance M.MVector MVector () where
 
   basicLength (MV_Unit n) = n
 
-  basicUnsafeSlice (MV_Unit n) i m = MV_Unit m
+  basicUnsafeSlice i m (MV_Unit n) = MV_Unit m
 
   basicOverlaps _ _ = False
 
@@ -91,7 +91,7 @@ instance G.Vector Vector () where
   basicLength (V_Unit n) = n
 
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice (V_Unit n) i m = V_Unit m
+  basicUnsafeSlice i m (V_Unit n) = V_Unit m
 
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (V_Unit _) i = return ()
@@ -118,7 +118,7 @@ instance M.MVector MVector ty where {                                   \
 ; {-# INLINE basicUnsafeCopy #-}                                        \
 ; {-# INLINE basicUnsafeGrow #-}                                        \
 ; basicLength (con v) = M.basicLength v                                 \
-; basicUnsafeSlice (con v) i n = con $ M.basicUnsafeSlice v i n         \
+; basicUnsafeSlice i n (con v) = con $ M.basicUnsafeSlice i n v         \
 ; basicOverlaps (con v1) (con v2) = M.basicOverlaps v1 v2               \
 ; basicUnsafeNew n = con `liftM` M.basicUnsafeNew n                     \
 ; basicUnsafeNewWith n x = con `liftM` M.basicUnsafeNewWith n x         \
@@ -138,7 +138,7 @@ instance G.Vector Vector ty where {                                     \
 ; {-# INLINE elemseq #-}                                                \
 ; unsafeFreeze (mcon v) = con `liftM` G.unsafeFreeze v                  \
 ; basicLength (con v) = G.basicLength v                                 \
-; basicUnsafeSlice (con v) i n = con $ G.basicUnsafeSlice v i n         \
+; basicUnsafeSlice i n (con v) = con $ G.basicUnsafeSlice i n v         \
 ; basicUnsafeIndexM (con v) i = G.basicUnsafeIndexM v i                 \
 ; elemseq _ = seq }
 
@@ -255,7 +255,7 @@ instance M.MVector MVector Bool where
   {-# INLINE basicUnsafeCopy #-}
   {-# INLINE basicUnsafeGrow #-}
   basicLength (MV_Bool v) = M.basicLength v
-  basicUnsafeSlice (MV_Bool v) i n = MV_Bool $ M.basicUnsafeSlice v i n
+  basicUnsafeSlice i n (MV_Bool v) = MV_Bool $ M.basicUnsafeSlice i n v
   basicOverlaps (MV_Bool v1) (MV_Bool v2) = M.basicOverlaps v1 v2
   basicUnsafeNew n = MV_Bool `liftM` M.basicUnsafeNew n
   basicUnsafeNewWith n x = MV_Bool `liftM` M.basicUnsafeNewWith n (fromBool x)
@@ -274,7 +274,7 @@ instance G.Vector Vector Bool where
   {-# INLINE elemseq #-}
   unsafeFreeze (MV_Bool v) = V_Bool `liftM` G.unsafeFreeze v
   basicLength (V_Bool v) = G.basicLength v
-  basicUnsafeSlice (V_Bool v) i n = V_Bool $ G.basicUnsafeSlice v i n
+  basicUnsafeSlice i n (V_Bool v) = V_Bool $ G.basicUnsafeSlice i n v
   basicUnsafeIndexM (V_Bool v) i = toBool `liftM` G.basicUnsafeIndexM v i
   elemseq _ = seq
 
@@ -300,7 +300,7 @@ instance (RealFloat a, Unbox a) => M.MVector MVector (Complex a) where
   {-# INLINE basicUnsafeCopy #-}
   {-# INLINE basicUnsafeGrow #-}
   basicLength (MV_Complex v) = M.basicLength v
-  basicUnsafeSlice (MV_Complex v) i n = MV_Complex $ M.basicUnsafeSlice v i n
+  basicUnsafeSlice i n (MV_Complex v) = MV_Complex $ M.basicUnsafeSlice i n v
   basicOverlaps (MV_Complex v1) (MV_Complex v2) = M.basicOverlaps v1 v2
   basicUnsafeNew n = MV_Complex `liftM` M.basicUnsafeNew n
   basicUnsafeNewWith n (x :+ y) = MV_Complex `liftM` M.basicUnsafeNewWith n (x,y)
@@ -319,7 +319,7 @@ instance (RealFloat a, Unbox a) => G.Vector Vector (Complex a) where
   {-# INLINE elemseq #-}
   unsafeFreeze (MV_Complex v) = V_Complex `liftM` G.unsafeFreeze v
   basicLength (V_Complex v) = G.basicLength v
-  basicUnsafeSlice (V_Complex v) i n = V_Complex $ G.basicUnsafeSlice v i n
+  basicUnsafeSlice i n (V_Complex v) = V_Complex $ G.basicUnsafeSlice i n v
   basicUnsafeIndexM (V_Complex v) i
                 = uncurry (:+) `liftM` G.basicUnsafeIndexM v i
   elemseq _ (x :+ y) z = G.elemseq (undefined :: Vector a) x

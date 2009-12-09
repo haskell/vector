@@ -10,9 +10,9 @@ instance (Unbox a, Unbox b) => M.MVector MVector (a, b) where
   {-# INLINE basicLength  #-}
   basicLength (MV_2 n_ as bs) = n_
   {-# INLINE basicUnsafeSlice  #-}
-  basicUnsafeSlice (MV_2 n_ as bs) i_ m_
-      = MV_2 m_ (M.basicUnsafeSlice as i_ m_)
-                (M.basicUnsafeSlice bs i_ m_)
+  basicUnsafeSlice i_ m_ (MV_2 n_ as bs)
+      = MV_2 m_ (M.basicUnsafeSlice i_ m_ as)
+                (M.basicUnsafeSlice i_ m_ bs)
   {-# INLINE basicOverlaps  #-}
   basicOverlaps (MV_2 n_1 as1 bs1) (MV_2 n_2 as2 bs2)
       = M.basicOverlaps as1 as2
@@ -71,9 +71,9 @@ instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
   {-# INLINE basicLength  #-}
   basicLength (V_2 n_ as bs) = n_
   {-# INLINE basicUnsafeSlice  #-}
-  basicUnsafeSlice (V_2 n_ as bs) i_ m_
-      = V_2 m_ (G.basicUnsafeSlice as i_ m_)
-               (G.basicUnsafeSlice bs i_ m_)
+  basicUnsafeSlice i_ m_ (V_2 n_ as bs)
+      = V_2 m_ (G.basicUnsafeSlice i_ m_ as)
+               (G.basicUnsafeSlice i_ m_ bs)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_2 n_ as bs) i_
       = do
@@ -89,7 +89,7 @@ instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
 zip :: (Unbox a, Unbox b) => MVector s a ->
                              MVector s b -> MVector s (a, b)
 {-# INLINE_STREAM zip #-}
-zip as bs = MV_2 len (unsafeSlice as 0 len) (unsafeSlice bs 0 len)
+zip as bs = MV_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
   where len = length as `min` length bs
 unzip :: (Unbox a, Unbox b) => MVector s (a, b) -> (MVector s a,
                                                     MVector s b)
@@ -99,7 +99,7 @@ unzip (MV_2 n_ as bs) = (as, bs)
 #ifdef DEFINE_IMMUTABLE
 zip :: (Unbox a, Unbox b) => Vector a -> Vector b -> Vector (a, b)
 {-# INLINE_STREAM zip #-}
-zip as bs = V_2 len (unsafeSlice as 0 len) (unsafeSlice bs 0 len)
+zip as bs = V_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
   where len = length as `min` length bs
 {-# RULES "stream/zip [Vector.Unboxed]" forall as bs .
   G.stream (zip as bs) = Stream.zipWith (,) (G.stream as)
@@ -126,10 +126,10 @@ instance (Unbox a,
   {-# INLINE basicLength  #-}
   basicLength (MV_3 n_ as bs cs) = n_
   {-# INLINE basicUnsafeSlice  #-}
-  basicUnsafeSlice (MV_3 n_ as bs cs) i_ m_
-      = MV_3 m_ (M.basicUnsafeSlice as i_ m_)
-                (M.basicUnsafeSlice bs i_ m_)
-                (M.basicUnsafeSlice cs i_ m_)
+  basicUnsafeSlice i_ m_ (MV_3 n_ as bs cs)
+      = MV_3 m_ (M.basicUnsafeSlice i_ m_ as)
+                (M.basicUnsafeSlice i_ m_ bs)
+                (M.basicUnsafeSlice i_ m_ cs)
   {-# INLINE basicOverlaps  #-}
   basicOverlaps (MV_3 n_1 as1 bs1 cs1) (MV_3 n_2 as2 bs2 cs2)
       = M.basicOverlaps as1 as2
@@ -200,10 +200,10 @@ instance (Unbox a,
   {-# INLINE basicLength  #-}
   basicLength (V_3 n_ as bs cs) = n_
   {-# INLINE basicUnsafeSlice  #-}
-  basicUnsafeSlice (V_3 n_ as bs cs) i_ m_
-      = V_3 m_ (G.basicUnsafeSlice as i_ m_)
-               (G.basicUnsafeSlice bs i_ m_)
-               (G.basicUnsafeSlice cs i_ m_)
+  basicUnsafeSlice i_ m_ (V_3 n_ as bs cs)
+      = V_3 m_ (G.basicUnsafeSlice i_ m_ as)
+               (G.basicUnsafeSlice i_ m_ bs)
+               (G.basicUnsafeSlice i_ m_ cs)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_3 n_ as bs cs) i_
       = do
@@ -222,9 +222,9 @@ zip3 :: (Unbox a, Unbox b, Unbox c) => MVector s a ->
                                        MVector s b ->
                                        MVector s c -> MVector s (a, b, c)
 {-# INLINE_STREAM zip3 #-}
-zip3 as bs cs = MV_3 len (unsafeSlice as 0 len)
-                         (unsafeSlice bs 0 len)
-                         (unsafeSlice cs 0 len)
+zip3 as bs cs = MV_3 len (unsafeSlice 0 len as)
+                         (unsafeSlice 0 len bs)
+                         (unsafeSlice 0 len cs)
   where len = length as `min` length bs `min` length cs
 unzip3 :: (Unbox a,
            Unbox b,
@@ -239,9 +239,9 @@ zip3 :: (Unbox a, Unbox b, Unbox c) => Vector a ->
                                        Vector b ->
                                        Vector c -> Vector (a, b, c)
 {-# INLINE_STREAM zip3 #-}
-zip3 as bs cs = V_3 len (unsafeSlice as 0 len)
-                        (unsafeSlice bs 0 len)
-                        (unsafeSlice cs 0 len)
+zip3 as bs cs = V_3 len (unsafeSlice 0 len as)
+                        (unsafeSlice 0 len bs)
+                        (unsafeSlice 0 len cs)
   where len = length as `min` length bs `min` length cs
 {-# RULES "stream/zip3 [Vector.Unboxed]" forall as bs cs .
   G.stream (zip3 as bs cs) = Stream.zipWith3 (, ,) (G.stream as)
@@ -273,11 +273,11 @@ instance (Unbox a,
   {-# INLINE basicLength  #-}
   basicLength (MV_4 n_ as bs cs ds) = n_
   {-# INLINE basicUnsafeSlice  #-}
-  basicUnsafeSlice (MV_4 n_ as bs cs ds) i_ m_
-      = MV_4 m_ (M.basicUnsafeSlice as i_ m_)
-                (M.basicUnsafeSlice bs i_ m_)
-                (M.basicUnsafeSlice cs i_ m_)
-                (M.basicUnsafeSlice ds i_ m_)
+  basicUnsafeSlice i_ m_ (MV_4 n_ as bs cs ds)
+      = MV_4 m_ (M.basicUnsafeSlice i_ m_ as)
+                (M.basicUnsafeSlice i_ m_ bs)
+                (M.basicUnsafeSlice i_ m_ cs)
+                (M.basicUnsafeSlice i_ m_ ds)
   {-# INLINE basicOverlaps  #-}
   basicOverlaps (MV_4 n_1 as1 bs1 cs1 ds1) (MV_4 n_2 as2 bs2 cs2 ds2)
       = M.basicOverlaps as1 as2
@@ -362,11 +362,11 @@ instance (Unbox a,
   {-# INLINE basicLength  #-}
   basicLength (V_4 n_ as bs cs ds) = n_
   {-# INLINE basicUnsafeSlice  #-}
-  basicUnsafeSlice (V_4 n_ as bs cs ds) i_ m_
-      = V_4 m_ (G.basicUnsafeSlice as i_ m_)
-               (G.basicUnsafeSlice bs i_ m_)
-               (G.basicUnsafeSlice cs i_ m_)
-               (G.basicUnsafeSlice ds i_ m_)
+  basicUnsafeSlice i_ m_ (V_4 n_ as bs cs ds)
+      = V_4 m_ (G.basicUnsafeSlice i_ m_ as)
+               (G.basicUnsafeSlice i_ m_ bs)
+               (G.basicUnsafeSlice i_ m_ cs)
+               (G.basicUnsafeSlice i_ m_ ds)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_4 n_ as bs cs ds) i_
       = do
@@ -388,10 +388,10 @@ zip4 :: (Unbox a, Unbox b, Unbox c, Unbox d) => MVector s a ->
                                                 MVector s c ->
                                                 MVector s d -> MVector s (a, b, c, d)
 {-# INLINE_STREAM zip4 #-}
-zip4 as bs cs ds = MV_4 len (unsafeSlice as 0 len)
-                            (unsafeSlice bs 0 len)
-                            (unsafeSlice cs 0 len)
-                            (unsafeSlice ds 0 len)
+zip4 as bs cs ds = MV_4 len (unsafeSlice 0 len as)
+                            (unsafeSlice 0 len bs)
+                            (unsafeSlice 0 len cs)
+                            (unsafeSlice 0 len ds)
   where
     len = length as `min` length bs `min` length cs `min` length ds
 unzip4 :: (Unbox a,
@@ -410,10 +410,10 @@ zip4 :: (Unbox a, Unbox b, Unbox c, Unbox d) => Vector a ->
                                                 Vector c ->
                                                 Vector d -> Vector (a, b, c, d)
 {-# INLINE_STREAM zip4 #-}
-zip4 as bs cs ds = V_4 len (unsafeSlice as 0 len)
-                           (unsafeSlice bs 0 len)
-                           (unsafeSlice cs 0 len)
-                           (unsafeSlice ds 0 len)
+zip4 as bs cs ds = V_4 len (unsafeSlice 0 len as)
+                           (unsafeSlice 0 len bs)
+                           (unsafeSlice 0 len cs)
+                           (unsafeSlice 0 len ds)
   where
     len = length as `min` length bs `min` length cs `min` length ds
 {-# RULES "stream/zip4 [Vector.Unboxed]" forall as bs cs ds .
@@ -458,12 +458,12 @@ instance (Unbox a,
   {-# INLINE basicLength  #-}
   basicLength (MV_5 n_ as bs cs ds es) = n_
   {-# INLINE basicUnsafeSlice  #-}
-  basicUnsafeSlice (MV_5 n_ as bs cs ds es) i_ m_
-      = MV_5 m_ (M.basicUnsafeSlice as i_ m_)
-                (M.basicUnsafeSlice bs i_ m_)
-                (M.basicUnsafeSlice cs i_ m_)
-                (M.basicUnsafeSlice ds i_ m_)
-                (M.basicUnsafeSlice es i_ m_)
+  basicUnsafeSlice i_ m_ (MV_5 n_ as bs cs ds es)
+      = MV_5 m_ (M.basicUnsafeSlice i_ m_ as)
+                (M.basicUnsafeSlice i_ m_ bs)
+                (M.basicUnsafeSlice i_ m_ cs)
+                (M.basicUnsafeSlice i_ m_ ds)
+                (M.basicUnsafeSlice i_ m_ es)
   {-# INLINE basicOverlaps  #-}
   basicOverlaps (MV_5 n_1 as1 bs1 cs1 ds1 es1) (MV_5 n_2 as2
                                                          bs2
@@ -564,12 +564,12 @@ instance (Unbox a,
   {-# INLINE basicLength  #-}
   basicLength (V_5 n_ as bs cs ds es) = n_
   {-# INLINE basicUnsafeSlice  #-}
-  basicUnsafeSlice (V_5 n_ as bs cs ds es) i_ m_
-      = V_5 m_ (G.basicUnsafeSlice as i_ m_)
-               (G.basicUnsafeSlice bs i_ m_)
-               (G.basicUnsafeSlice cs i_ m_)
-               (G.basicUnsafeSlice ds i_ m_)
-               (G.basicUnsafeSlice es i_ m_)
+  basicUnsafeSlice i_ m_ (V_5 n_ as bs cs ds es)
+      = V_5 m_ (G.basicUnsafeSlice i_ m_ as)
+               (G.basicUnsafeSlice i_ m_ bs)
+               (G.basicUnsafeSlice i_ m_ cs)
+               (G.basicUnsafeSlice i_ m_ ds)
+               (G.basicUnsafeSlice i_ m_ es)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_5 n_ as bs cs ds es) i_
       = do
@@ -598,11 +598,11 @@ zip5 :: (Unbox a,
                      MVector s d ->
                      MVector s e -> MVector s (a, b, c, d, e)
 {-# INLINE_STREAM zip5 #-}
-zip5 as bs cs ds es = MV_5 len (unsafeSlice as 0 len)
-                               (unsafeSlice bs 0 len)
-                               (unsafeSlice cs 0 len)
-                               (unsafeSlice ds 0 len)
-                               (unsafeSlice es 0 len)
+zip5 as bs cs ds es = MV_5 len (unsafeSlice 0 len as)
+                               (unsafeSlice 0 len bs)
+                               (unsafeSlice 0 len cs)
+                               (unsafeSlice 0 len ds)
+                               (unsafeSlice 0 len es)
   where
     len = length as `min`
           length bs `min`
@@ -632,11 +632,11 @@ zip5 :: (Unbox a,
                      Vector d ->
                      Vector e -> Vector (a, b, c, d, e)
 {-# INLINE_STREAM zip5 #-}
-zip5 as bs cs ds es = V_5 len (unsafeSlice as 0 len)
-                              (unsafeSlice bs 0 len)
-                              (unsafeSlice cs 0 len)
-                              (unsafeSlice ds 0 len)
-                              (unsafeSlice es 0 len)
+zip5 as bs cs ds es = V_5 len (unsafeSlice 0 len as)
+                              (unsafeSlice 0 len bs)
+                              (unsafeSlice 0 len cs)
+                              (unsafeSlice 0 len ds)
+                              (unsafeSlice 0 len es)
   where
     len = length as `min`
           length bs `min`
@@ -696,13 +696,13 @@ instance (Unbox a,
   {-# INLINE basicLength  #-}
   basicLength (MV_6 n_ as bs cs ds es fs) = n_
   {-# INLINE basicUnsafeSlice  #-}
-  basicUnsafeSlice (MV_6 n_ as bs cs ds es fs) i_ m_
-      = MV_6 m_ (M.basicUnsafeSlice as i_ m_)
-                (M.basicUnsafeSlice bs i_ m_)
-                (M.basicUnsafeSlice cs i_ m_)
-                (M.basicUnsafeSlice ds i_ m_)
-                (M.basicUnsafeSlice es i_ m_)
-                (M.basicUnsafeSlice fs i_ m_)
+  basicUnsafeSlice i_ m_ (MV_6 n_ as bs cs ds es fs)
+      = MV_6 m_ (M.basicUnsafeSlice i_ m_ as)
+                (M.basicUnsafeSlice i_ m_ bs)
+                (M.basicUnsafeSlice i_ m_ cs)
+                (M.basicUnsafeSlice i_ m_ ds)
+                (M.basicUnsafeSlice i_ m_ es)
+                (M.basicUnsafeSlice i_ m_ fs)
   {-# INLINE basicOverlaps  #-}
   basicOverlaps (MV_6 n_1 as1 bs1 cs1 ds1 es1 fs1) (MV_6 n_2 as2
                                                              bs2
@@ -816,13 +816,13 @@ instance (Unbox a,
   {-# INLINE basicLength  #-}
   basicLength (V_6 n_ as bs cs ds es fs) = n_
   {-# INLINE basicUnsafeSlice  #-}
-  basicUnsafeSlice (V_6 n_ as bs cs ds es fs) i_ m_
-      = V_6 m_ (G.basicUnsafeSlice as i_ m_)
-               (G.basicUnsafeSlice bs i_ m_)
-               (G.basicUnsafeSlice cs i_ m_)
-               (G.basicUnsafeSlice ds i_ m_)
-               (G.basicUnsafeSlice es i_ m_)
-               (G.basicUnsafeSlice fs i_ m_)
+  basicUnsafeSlice i_ m_ (V_6 n_ as bs cs ds es fs)
+      = V_6 m_ (G.basicUnsafeSlice i_ m_ as)
+               (G.basicUnsafeSlice i_ m_ bs)
+               (G.basicUnsafeSlice i_ m_ cs)
+               (G.basicUnsafeSlice i_ m_ ds)
+               (G.basicUnsafeSlice i_ m_ es)
+               (G.basicUnsafeSlice i_ m_ fs)
   {-# INLINE basicUnsafeIndexM  #-}
   basicUnsafeIndexM (V_6 n_ as bs cs ds es fs) i_
       = do
@@ -855,12 +855,12 @@ zip6 :: (Unbox a,
                      MVector s e ->
                      MVector s f -> MVector s (a, b, c, d, e, f)
 {-# INLINE_STREAM zip6 #-}
-zip6 as bs cs ds es fs = MV_6 len (unsafeSlice as 0 len)
-                                  (unsafeSlice bs 0 len)
-                                  (unsafeSlice cs 0 len)
-                                  (unsafeSlice ds 0 len)
-                                  (unsafeSlice es 0 len)
-                                  (unsafeSlice fs 0 len)
+zip6 as bs cs ds es fs = MV_6 len (unsafeSlice 0 len as)
+                                  (unsafeSlice 0 len bs)
+                                  (unsafeSlice 0 len cs)
+                                  (unsafeSlice 0 len ds)
+                                  (unsafeSlice 0 len es)
+                                  (unsafeSlice 0 len fs)
   where
     len = length as `min`
           length bs `min`
@@ -895,12 +895,12 @@ zip6 :: (Unbox a,
                      Vector e ->
                      Vector f -> Vector (a, b, c, d, e, f)
 {-# INLINE_STREAM zip6 #-}
-zip6 as bs cs ds es fs = V_6 len (unsafeSlice as 0 len)
-                                 (unsafeSlice bs 0 len)
-                                 (unsafeSlice cs 0 len)
-                                 (unsafeSlice ds 0 len)
-                                 (unsafeSlice es 0 len)
-                                 (unsafeSlice fs 0 len)
+zip6 as bs cs ds es fs = V_6 len (unsafeSlice 0 len as)
+                                 (unsafeSlice 0 len bs)
+                                 (unsafeSlice 0 len cs)
+                                 (unsafeSlice 0 len ds)
+                                 (unsafeSlice 0 len es)
+                                 (unsafeSlice 0 len fs)
   where
     len = length as `min`
           length bs `min`

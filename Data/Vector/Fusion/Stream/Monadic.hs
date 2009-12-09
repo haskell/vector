@@ -28,7 +28,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   head, last, (!!),
 
   -- * Substreams
-  extract, init, tail, take, drop,
+  slice, init, tail, take, drop,
 
   -- * Mapping
   map, mapM, mapM_, trans, unbox, concatMap,
@@ -268,11 +268,12 @@ Stream step s _ !! i | i < 0     = BOUNDS_ERROR(error) "!!" "negative index"
 -- ----------
 
 -- | Extract a substream of the given length starting at the given position.
-extract :: Monad m => Stream m a -> Int   -- ^ starting index
-                                 -> Int   -- ^ length
-                                 -> Stream m a
-{-# INLINE extract #-}
-extract s i n = take n (drop i s)
+slice :: Monad m => Int   -- ^ starting index
+                 -> Int   -- ^ length
+                 -> Stream m a
+                 -> Stream m a
+{-# INLINE slice #-}
+slice i n s = take n (drop i s)
 
 -- | All but the last element
 init :: Monad m => Stream m a -> Stream m a

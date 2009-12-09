@@ -228,17 +228,19 @@ unsafeLastM = G.unsafeLastM
 
 -- | Yield a part of the vector without copying it. Safer version of
 -- 'basicUnsafeSlice'.
-slice :: Unbox a => Vector a -> Int   -- ^ starting index
-                            -> Int   -- ^ length
-                            -> Vector a
+slice :: Unbox a => Int   -- ^ starting index
+                 -> Int   -- ^ length
+                 -> Vector a
+                 -> Vector a
 {-# INLINE slice #-}
 slice = G.slice
 
 -- | Unsafely yield a part of the vector without copying it and without
 -- performing bounds checks.
-unsafeSlice :: Unbox a => Vector a -> Int   -- ^ starting index
-                                  -> Int   -- ^ length
-                                  -> Vector a
+unsafeSlice :: Unbox a => Int   -- ^ starting index
+                       -> Int   -- ^ length
+                       -> Vector a
+                       -> Vector a
 {-# INLINE unsafeSlice #-}
 unsafeSlice = G.unsafeSlice
 

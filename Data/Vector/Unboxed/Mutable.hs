@@ -34,12 +34,12 @@ import Prelude hiding ( zip, zip3, unzip, unzip3, length, read )
 
 -- | Yield a part of the mutable vector without copying it. No bounds checks
 -- are performed.
-unsafeSlice :: Unbox a => MVector s a -> Int  -- ^ starting index
-                                     -> Int  -- ^ length of the slice
-                                     -> MVector s a
+unsafeSlice :: Unbox a => Int  -- ^ starting index
+                       -> Int  -- ^ length of the slice
+                       -> MVector s a
+                       -> MVector s a
 {-# INLINE unsafeSlice #-}
 unsafeSlice = G.unsafeSlice
-
 
 -- | Create a mutable vector of the given length. The length is not checked.
 unsafeNew :: (PrimMonad m, Unbox a) => Int -> m (MVector (PrimState m) a)
@@ -91,7 +91,7 @@ overlaps :: Unbox a => MVector s a -> MVector s a -> Bool
 overlaps = G.overlaps
 
 -- | Yield a part of the mutable vector without copying it.
-slice :: Unbox a => MVector s a -> Int -> Int -> MVector s a
+slice :: Unbox a => Int -> Int -> MVector s a -> MVector s a
 {-# INLINE slice #-}
 slice = G.slice
 

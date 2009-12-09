@@ -125,7 +125,7 @@ instance Storable a => G.Vector Vector a where
   basicLength (Vector _ n _) = n
 
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice (Vector i _ p) j n = Vector (i+j) n p
+  basicUnsafeSlice j n (Vector i _ p) = Vector (i+j) n p
 
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (Vector i _ p) j = return
@@ -287,17 +287,19 @@ unsafeLastM = G.unsafeLastM
 
 -- | Yield a part of the vector without copying it. Safer version of
 -- 'basicUnsafeSlice'.
-slice :: Storable a => Vector a -> Int   -- ^ starting index
-                                -> Int   -- ^ length
-                                -> Vector a
+slice :: Storable a => Int   -- ^ starting index
+                    -> Int   -- ^ length
+                    -> Vector a
+                    -> Vector a
 {-# INLINE slice #-}
 slice = G.slice
 
 -- | Unsafely yield a part of the vector without copying it and without
 -- performing bounds checks.
-unsafeSlice :: Storable a => Vector a -> Int   -- ^ starting index
-                                      -> Int   -- ^ length
-                                      -> Vector a
+unsafeSlice :: Storable a => Int   -- ^ starting index
+                          -> Int   -- ^ length
+                          -> Vector a
+                          -> Vector a
 {-# INLINE unsafeSlice #-}
 unsafeSlice = G.unsafeSlice
 

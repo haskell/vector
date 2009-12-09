@@ -48,7 +48,7 @@ instance Storable a => G.MVector MVector a where
   basicLength (MVector _ n _) = n
 
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice (MVector i n p) j m = MVector (i+j) m p
+  basicUnsafeSlice j m (MVector i n p) = MVector (i+j) m p
 
   -- FIXME: implement this properly
   {-# INLINE basicOverlaps #-}
@@ -72,12 +72,12 @@ instance Storable a => G.MVector MVector a where
 
 -- | Yield a part of the mutable vector without copying it. No bounds checks
 -- are performed.
-unsafeSlice :: Storable a => MVector s a -> Int  -- ^ starting index
-                                         -> Int  -- ^ length of the slice
-                                         -> MVector s a
+unsafeSlice :: Storable a => Int  -- ^ starting index
+                          -> Int  -- ^ length of the slice
+                          -> MVector s a
+                          -> MVector s a
 {-# INLINE unsafeSlice #-}
 unsafeSlice = G.unsafeSlice
-
 
 -- | Create a mutable vector of the given length. The length is not checked.
 unsafeNew :: (PrimMonad m, Storable a) => Int -> m (MVector (PrimState m) a)
@@ -131,7 +131,7 @@ overlaps :: Storable a => MVector s a -> MVector s a -> Bool
 overlaps = G.overlaps
 
 -- | Yield a part of the mutable vector without copying it.
-slice :: Storable a => MVector s a -> Int -> Int -> MVector s a
+slice :: Storable a => Int -> Int -> MVector s a -> MVector s a
 {-# INLINE slice #-}
 slice = G.slice
 

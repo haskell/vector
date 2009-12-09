@@ -133,7 +133,7 @@ class MVector (Mutable v) a => Vector v a where
   basicLength      :: v a -> Int
 
   -- | Yield a part of the vector without copying it. No range checks!
-  basicUnsafeSlice  :: v a -> Int -> Int -> v a
+  basicUnsafeSlice  :: Int -> Int -> v a -> v a
 
   -- | Yield the element at the given position in a monad. The monad allows us
   -- to be strict in the vector if we want. Suppose we had
@@ -407,52 +407,54 @@ unsafeLastM v = unsafeIndexM v (length v - 1)
 -- FIXME: slicing doesn't work with the inplace stuff at the moment
 
 -- | Yield a part of the vector without copying it.
-slice :: Vector v a => v a -> Int   -- ^ starting index
-                           -> Int   -- ^ length
-                           -> v a
+slice :: Vector v a => Int   -- ^ starting index
+                    -> Int   -- ^ length
+                    -> v a
+                    -> v a
 {-# INLINE_STREAM slice #-}
-slice v i n = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
-            $ basicUnsafeSlice v i n
+slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
+            $ basicUnsafeSlice i n v
 
 -- | Unsafely yield a part of the vector without copying it and without
 -- performing bounds checks.
-unsafeSlice :: Vector v a => v a -> Int   -- ^ starting index
-                                 -> Int   -- ^ length
-                                 -> v a
+unsafeSlice :: Vector v a => Int   -- ^ starting index
+                          -> Int   -- ^ length
+                          -> v a
+                          -> v a
 {-# INLINE_STREAM unsafeSlice #-}
-unsafeSlice v i n = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
-                  $ basicUnsafeSlice v i n
+unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
+                  $ basicUnsafeSlice i n v
 
 -- | Yield all but the last element without copying.
 init :: Vector v a => v a -> v a
 {-# INLINE_STREAM init #-}
-init v = slice v 0 (length v - 1)
+init v = slice 0 (length v - 1) v
 
 -- | All but the first element (without copying).
 tail :: Vector v a => v a -> v a
 {-# INLINE_STREAM tail #-}
-tail v = slice v 1 (length v - 1)
+tail v = slice 1 (length v - 1) v
 
 -- | Yield the first @n@ elements without copying.
 take :: Vector v a => Int -> v a -> v a
 {-# INLINE_STREAM take #-}
-take n v = slice v 0 (min n' (length v))
+take n v = slice 0 (min n' (length v)) v
   where n' = max n 0
 
 -- | Yield all but the first @n@ elements without copying.
 drop :: Vector v a => Int -> v a -> v a
 {-# INLINE_STREAM drop #-}
-drop n v = slice v (min n' len) (max 0 (len - n'))
+drop n v = slice (min n' len) (max 0 (len - n')) v
   where n' = max n 0
         len = length v
 
 {-# RULES
 
-"slice/new [Vector]" forall v p i n.
-  slice (new' v p) i n = new' v (New.slice p i n)
+"slice/new [Vector]" forall i n v p.
+  slice i n (new' v p) = new' v (New.slice i n p)
 
-"unsafeSlice/new [Vector]" forall v p i n.
-  unsafeSlice (new' v p) i n = new' v (New.unsafeSlice p i n)
+"unsafeSlice/new [Vector]" forall i n v p.
+  unsafeSlice i n (new' v p) = new' v (New.unsafeSlice i n p)
 
 "init/new [Vector]" forall v p.
   init (new' v p) = new' v (New.init p)
@@ -834,7 +836,7 @@ span f = break (not . f)
 break :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 {-# INLINE break #-}
 break f xs = case findIndex f xs of
-               Just i  -> (unsafeSlice xs 0 i, unsafeSlice xs i (length xs - i))
+               Just i  -> (unsafeSlice 0 i xs, unsafeSlice i (length xs - i) xs)
                Nothing -> (xs, empty)
     
 

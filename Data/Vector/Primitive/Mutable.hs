@@ -46,7 +46,7 @@ type STVector s = MVector s
 
 instance Prim a => G.MVector MVector a where
   basicLength (MVector _ n _) = n
-  basicUnsafeSlice (MVector i n arr) j m
+  basicUnsafeSlice j m (MVector i n arr)
     = MVector (i+j) m arr
 
   {-# INLINE basicOverlaps #-}
@@ -68,9 +68,10 @@ instance Prim a => G.MVector MVector a where
 
 -- | Yield a part of the mutable vector without copying it. No bounds checks
 -- are performed.
-unsafeSlice :: Prim a => MVector s a -> Int  -- ^ starting index
-                                     -> Int  -- ^ length of the slice
-                                     -> MVector s a
+unsafeSlice :: Prim a => Int  -- ^ starting index
+                      -> Int  -- ^ length of the slice
+                      -> MVector s a   
+                      -> MVector s a
 {-# INLINE unsafeSlice #-}
 unsafeSlice = G.unsafeSlice
 
@@ -125,7 +126,7 @@ overlaps :: Prim a => MVector s a -> MVector s a -> Bool
 overlaps = G.overlaps
 
 -- | Yield a part of the mutable vector without copying it.
-slice :: Prim a => MVector s a -> Int -> Int -> MVector s a
+slice :: Prim a => Int -> Int -> MVector s a -> MVector s a
 {-# INLINE slice #-}
 slice = G.slice
 

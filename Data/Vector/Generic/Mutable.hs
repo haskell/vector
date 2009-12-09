@@ -54,9 +54,10 @@ class MVector v a where
 
   -- | Yield a part of the mutable vector without copying it. This method
   -- should not be called directly, use 'unsafeSlice' instead.
-  basicUnsafeSlice :: v s a -> Int  -- ^ starting index
-                            -> Int  -- ^ length of the slice
-                            -> v s a
+  basicUnsafeSlice :: Int  -- ^ starting index
+                   -> Int  -- ^ length of the slice
+                   -> v s a
+                   -> v s a
 
   -- Check whether two vectors overlap. This method should not be
   -- called directly, use 'overlaps' instead.
@@ -133,7 +134,7 @@ class MVector v a where
   basicUnsafeGrow v by
     = do
         v' <- basicUnsafeNew (n+by)
-        basicUnsafeCopy (basicUnsafeSlice v' 0 n) v
+        basicUnsafeCopy (basicUnsafeSlice 0 n v') v
         return v'
     where
       n = length v
@@ -142,12 +143,13 @@ class MVector v a where
 
 -- | Yield a part of the mutable vector without copying it. No bounds checks
 -- are performed.
-unsafeSlice :: MVector v a => v s a -> Int  -- ^ starting index
-                                    -> Int  -- ^ length of the slice
-                                    -> v s a
+unsafeSlice :: MVector v a => Int  -- ^ starting index
+                           -> Int  -- ^ length of the slice
+                           -> v s a
+                           -> v s a
 {-# INLINE unsafeSlice #-}
-unsafeSlice v i n = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
-                  $ basicUnsafeSlice v i n
+unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
+                  $ basicUnsafeSlice i n v
 
 
 -- | Create a mutable vector of the given length. The length is not checked.
@@ -208,10 +210,10 @@ overlaps :: MVector v a => v s a -> v s a -> Bool
 overlaps = basicOverlaps
 
 -- | Yield a part of the mutable vector without copying it.
-slice :: MVector v a => v s a -> Int -> Int -> v s a
+slice :: MVector v a => Int -> Int -> v s a -> v s a
 {-# INLINE slice #-}
-slice v i n = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
-            $ unsafeSlice v i n
+slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
+            $ unsafeSlice i n v
 
 -- | Create a mutable vector of the given length.
 new :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
@@ -311,7 +313,7 @@ munstream :: (PrimMonad m, MVector v a)
 {-# INLINE munstream #-}
 munstream v s = v `seq` do
                           n' <- MStream.foldM put 0 s
-                          return $ unsafeSlice v 0 n'
+                          return $ unsafeSlice 0 n' v
   where
     {-# INLINE_INNER put #-}
     put i x = do
@@ -342,7 +344,7 @@ mrunstream :: (PrimMonad m, MVector v a)
 {-# INLINE mrunstream #-}
 mrunstream v s = v `seq` do
                            i <- MStream.foldM put n s
-                           return $ unsafeSlice v i (n-i)
+                           return $ unsafeSlice i (n-i) v
   where
     n = length v
 
@@ -378,7 +380,7 @@ unstreamMax s n
                          $ unsafeWrite v i x
                        return (i+1)
       n' <- Stream.foldM' put 0 s
-      return $ INTERNAL_CHECK(checkSlice) "unstreamMax" 0 n' n $ slice v 0 n'
+      return $ INTERNAL_CHECK(checkSlice) "unstreamMax" 0 n' n $ slice 0 n' v
 
 unstreamUnknown
   :: (PrimMonad m, MVector v a) => Stream a -> m (v (PrimState m) a)
@@ -387,7 +389,7 @@ unstreamUnknown s
   = do
       v <- new 0
       (v', n) <- Stream.foldM put (v, 0) s
-      return $ slice v' 0 n
+      return $ slice 0 n v'
   where
     {-# INLINE_INNER put #-}
     put (v,i) x = do
@@ -497,7 +499,7 @@ unstablePartitionMax f s n
                             return (i, j-1)
                                 
       (i,j) <- Stream.foldM' put (0, n) s
-      return (slice v 0 i, slice v j (n-j))
+      return (slice 0 i v, slice j (n-j) v)
 
 partitionUnknown :: (PrimMonad m, MVector v a)
         => (a -> Bool) -> Stream a -> m (v (PrimState m) a, v (PrimState m) a)
@@ -507,7 +509,7 @@ partitionUnknown f s
       v1 <- new 0
       v2 <- new 0
       (v1', n1, v2', n2) <- Stream.foldM' put (v1, 0, v2, 0) s
-      return (slice v1' 0 n1, slice v2' 0 n2)
+      return (slice 0 n1 v1', slice 0 n2 v2')
   where
     -- NOTE: The case distinction has to be on the outside because
     -- GHC creates a join point for the unsafeWrite even when everything

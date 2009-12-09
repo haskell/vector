@@ -32,7 +32,7 @@ module Data.Vector.Fusion.Stream (
   head, last, (!!),
 
   -- * Substreams
-  extract, init, tail, take, drop,
+  slice, init, tail, take, drop,
 
   -- * Mapping
   map, concatMap, unbox,
@@ -204,11 +204,12 @@ s !! i = unId (s M.!! i)
 -- ----------
 
 -- | Extract a substream of the given length starting at the given position.
-extract :: Stream a -> Int   -- ^ starting index
-                    -> Int   -- ^ length
-                    -> Stream a
-{-# INLINE extract #-}
-extract = M.extract
+slice :: Int   -- ^ starting index
+      -> Int   -- ^ length
+      -> Stream a
+      -> Stream a
+{-# INLINE slice #-}
+slice = M.slice
 
 -- | All but the last element
 init :: Stream a -> Stream a

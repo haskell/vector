@@ -119,7 +119,7 @@ instance G.Vector Vector a where
   basicLength (Vector _ n _) = n
 
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice (Vector i _ arr) j n = Vector (i+j) n arr
+  basicUnsafeSlice j n (Vector i _ arr) = Vector (i+j) n arr
 
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (Vector i _ arr) j = indexArrayM arr (i+j)
@@ -255,17 +255,19 @@ unsafeLastM = G.unsafeLastM
 
 -- | Yield a part of the vector without copying it. Safer version of
 -- 'basicUnsafeSlice'.
-slice :: Vector a -> Int   -- ^ starting index
-                  -> Int   -- ^ length
-                  -> Vector a
+slice :: Int   -- ^ starting index
+      -> Int   -- ^ length
+      -> Vector a
+      -> Vector a
 {-# INLINE slice #-}
 slice = G.slice
 
 -- | Unsafely yield a part of the vector without copying it and without
 -- performing bounds checks.
-unsafeSlice :: Vector a -> Int   -- ^ starting index
-                        -> Int   -- ^ length
-                        -> Vector a
+unsafeSlice :: Int   -- ^ starting index
+            -> Int   -- ^ length
+            -> Vector a
+            -> Vector a
 {-# INLINE unsafeSlice #-}
 unsafeSlice = G.unsafeSlice
 

@@ -67,40 +67,40 @@ transform f (New p) = New (MVector.transform f =<< p)
 
  #-}
 
-slice :: New a -> Int -> Int -> New a
+slice :: Int -> Int -> New a -> New a
 {-# INLINE_STREAM slice #-}
-slice m i n = apply (\v -> MVector.slice v i n) m
+slice i n m = apply (MVector.slice i n) m
 
-unsafeSlice :: New a -> Int -> Int -> New a
+unsafeSlice :: Int -> Int -> New a -> New a
 {-# INLINE_STREAM unsafeSlice #-}
-unsafeSlice m i n = apply (\v -> MVector.unsafeSlice v i n) m
+unsafeSlice i n m = apply (MVector.unsafeSlice i n) m
 
 init :: New a -> New a
 {-# INLINE_STREAM init #-}
-init m = apply (\v -> MVector.slice v 0 (MVector.length v - 1)) m
+init m = apply (\v -> MVector.slice 0 (MVector.length v - 1) v) m
 
 tail :: New a -> New a
 {-# INLINE_STREAM tail #-}
-tail m = apply (\v -> MVector.slice v 1 (MVector.length v - 1)) m
+tail m = apply (\v -> MVector.slice 1 (MVector.length v - 1) v) m
 
 take :: Int -> New a -> New a
 {-# INLINE_STREAM take #-}
-take n m = apply (\v -> MVector.unsafeSlice v 0
-                                (min (max 0 n) (MVector.length v))) m
+take n m = apply (\v -> MVector.unsafeSlice 0
+                                   (min (max 0 n) (MVector.length v)) v) m
 
 drop :: Int -> New a -> New a
 {-# INLINE_STREAM drop #-}
-drop n m = apply (\v -> MVector.unsafeSlice v
+drop n m = apply (\v -> MVector.unsafeSlice
                                 (min (max 0 n) (MVector.length v))
-                                (max 0 (MVector.length v - n))) m
+                                (max 0 (MVector.length v - n)) v) m
 
 {-# RULES
 
-"slice/unstream [New]" forall s i n.
-  slice (unstream s) i n = unstream (Stream.extract s i n)
+"slice/unstream [New]" forall i n s.
+  slice i n (unstream s) = unstream (Stream.slice i n s)
 
-"unsafeSlice/unstream [New]" forall s i n.
-  unsafeSlice (unstream s) i n = unstream (Stream.extract s i n)
+"unsafeSlice/unstream [New]" forall i n s.
+  unsafeSlice i n (unstream s) = unstream (Stream.slice i n s)
 
 "init/unstream [New]" forall s.
   init (unstream s) = unstream (Stream.init s)
