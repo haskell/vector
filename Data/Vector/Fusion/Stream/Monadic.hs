@@ -1101,7 +1101,7 @@ enumFromTo_small :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo_small #-}
 enumFromTo_small x y = Stream step x (Exact n)
   where
-    n = max (fromIntegral y - fromIntegral x + 1) 0
+    n = delay_inline max (fromIntegral y - fromIntegral x + 1) 0
 
     {-# INLINE_INNER step #-}
     step x | x <= y    = return $ Yield x (x+1)
@@ -1132,11 +1132,12 @@ enumFromTo_small x y = Stream step x (Exact n)
 -- FIXME: the "too large" test is totally wrong
 enumFromTo_big :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo_big #-}
-enumFromTo_big x y = Stream step x (Exact n)
+enumFromTo_big x y = Stream step x (Exact (len x y))
   where
-    n | x > y = 0
-      | y - x < fromIntegral (maxBound :: Int) = fromIntegral (y-x+1)
-      | otherwise = error $ "vector.enumFromTo_big: Array too large"
+    {-# INLINE [0] len #-}
+    len x y | x > y = 0
+            | y - x < fromIntegral (maxBound :: Int) = fromIntegral (y-x+1)
+            | otherwise = error $ "vector.enumFromTo_big: Array too large"
 
     {-# INLINE_INNER step #-}
     step x | x <= y    = return $ Yield x (x+1)
@@ -1165,8 +1166,7 @@ enumFromTo_char x y = Stream step xn (Exact n)
     xn = ord x
     yn = ord y
 
-    n | xn > yn   = 0
-      | otherwise = yn - xn + 1
+    n = delay_inline max 0 (yn - xn + 1)
 
     {-# INLINE_INNER step #-}
     step xn | xn <= yn  = return $ Yield (unsafeChr xn) (xn+1)
