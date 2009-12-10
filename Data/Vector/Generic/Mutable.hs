@@ -484,8 +484,8 @@ unstreamRMax s n
       let put i x = do
                       let i' = i-1
                       INTERNAL_CHECK(checkIndex) "unstreamRMax" i' n
-                        $ unsafeWrite v i x
-                      return i
+                        $ unsafeWrite v i' x
+                      return i'
       i <- Stream.foldM' put n s
       return $ INTERNAL_CHECK(checkSlice) "unstreamRMax" i (n-i) n
              $ unsafeSlice i (n-i) v
