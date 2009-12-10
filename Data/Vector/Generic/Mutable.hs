@@ -47,9 +47,6 @@ import Prelude hiding ( length, reverse, map, read,
 
 #include "vector.h"
 
-gROWTH_FACTOR :: Double
-gROWTH_FACTOR = 1.5
-
 -- | Class of mutable vectors parametrised with a primitive state token.
 --
 class MVector v a where
@@ -268,7 +265,7 @@ grow :: (PrimMonad m, MVector v a)
 grow v by = BOUNDS_CHECK(checkLength) "grow" by
           $ unsafeGrow v by
 
-enlarge_delta v = double2Int (int2Double (length v) * gROWTH_FACTOR) + 1
+enlarge_delta v = max (length v) 1
 
 -- | Grow a vector logarithmically
 enlarge :: (PrimMonad m, MVector v a)
