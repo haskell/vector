@@ -458,7 +458,7 @@ unstreamUnknown s
       v <- unsafeNew 0
       (v', n) <- Stream.foldM put (v, 0) s
       return $ INTERNAL_CHECK(checkSlice) "unstreamUnknown" 0 n (length v')
-             $ slice 0 n v'
+             $ unsafeSlice 0 n v'
   where
     {-# INLINE_INNER put #-}
     put (v,i) x = do
@@ -499,7 +499,7 @@ unstreamRUnknown s
       (v', i) <- Stream.foldM put (v, 0) s
       let n = length v'
       return $ INTERNAL_CHECK(checkSlice) "unstreamRUnknown" i (n-i) n
-             $ slice i (n-i) v'
+             $ unsafeSlice i (n-i) v'
   where
     {-# INLINE_INNER put #-}
     put (v,i) x = unsafePrepend1 v i x
