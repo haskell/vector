@@ -132,9 +132,9 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_slice        = \xs ->
                         forAll (choose (0, V.length xs))     $ \i ->
                         forAll (choose (0, V.length xs - i)) $ \n ->
-                        unP prop xs i n
+                        unP prop i n xs
       where
-        prop :: P (v a -> Int -> Int -> v a) = V.slice `eq` slice
+        prop :: P (Int -> Int -> v a -> v a) = V.slice `eq` slice
 
     prop_tail :: P (v a -> v a) = not . V.null ===> V.tail `eq` tail
     prop_init :: P (v a -> v a) = not . V.null ===> V.init `eq` init

@@ -86,9 +86,9 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_extract      = \xs ->
                         forAll (choose (0, S.length xs))     $ \i ->
                         forAll (choose (0, S.length xs - i)) $ \n ->
-                        unP prop xs i n
+                        unP prop i n xs
       where
-        prop :: P (S.Stream a -> Int -> Int -> S.Stream a) = S.extract `eq` slice
+        prop :: P (Int -> Int -> S.Stream a -> S.Stream a) = S.slice `eq` slice
 
     prop_tail :: P (S.Stream a -> S.Stream a) = not . S.null ===> S.tail `eq` tail
     prop_init :: P (S.Stream a -> S.Stream a) = not . S.null ===> S.init `eq` init
