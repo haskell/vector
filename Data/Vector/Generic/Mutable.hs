@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, BangPatterns #-}
+{-# LANGUAGE MultiParamTypeClasses, BangPatterns, ScopedTypeVariables #-}
 -- |
 -- Module      : Data.Vector.Generic.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2008-2009
@@ -556,11 +556,14 @@ reverse !v = reverse_loop 0 (length v - 1)
                                  reverse_loop (i + 1) (j - 1)
     reverse_loop _ _ = return ()
 
-unstablePartition :: (PrimMonad m, MVector v a)
+unstablePartition :: forall m v a. (PrimMonad m, MVector v a)
                   => (a -> Bool) -> v (PrimState m) a -> m Int
 {-# INLINE unstablePartition #-}
 unstablePartition f !v = from_left 0 (length v)
   where
+    -- NOTE: GHC 6.10.4 panics without the signatures on from_left and
+    -- from_right
+    from_left :: Int -> Int -> m Int
     from_left i j
       | i == j    = return i
       | otherwise = do
@@ -569,6 +572,7 @@ unstablePartition f !v = from_left 0 (length v)
                         then from_left (i+1) j
                         else from_right i (j-1)
 
+    from_right :: Int -> Int -> m Int
     from_right i j
       | i == j    = return i
       | otherwise = do
@@ -588,7 +592,6 @@ unstablePartitionStream f s
   = case upperBound (Stream.size s) of
       Just n  -> unstablePartitionMax f s n
       Nothing -> partitionUnknown f s
-
 
 unstablePartitionMax :: (PrimMonad m, MVector v a)
         => (a -> Bool) -> Stream a -> Int
