@@ -1,10 +1,10 @@
 Name:           vector-tests
-Version:        0.2
+Version:        0.5
 License:        BSD3
 License-File:   LICENSE
-Author:         Roman Leshchinskiy
+Author:         Max Bolingbroke, Roman Leshchinskiy
 Maintainer:     Roman Leshchinskiy <rl@cse.unsw.edu.au>
-Copyright:      (c) Roman Leshchinskiy 2008
+Copyright:      (c) Max Bolinbroke, Roman Leshchinskiy 2008-2009
 Homepage:       http://darcs.haskell.org/vector
 Category:       Data Structures
 Synopsis:       Efficient Arrays
