@@ -189,10 +189,13 @@ indices m = sized $ \n ->
 -- Additional list functions
 singleton x = [x]
 snoc xs x = xs ++ [x]
-slice xs i n = take n (drop i xs)
+generate n f = [f i | i <- [0 .. n-1]]
+slice i n xs = take n (drop i xs)
 backpermute xs is = map (xs!!) is
 prescanl f z = init . scanl f z
 postscanl f z = tail . scanl f z
+prescanr f z = tail . scanr f z
+postscanr f z = init . scanr f z
 
 accum :: (a -> b -> a) -> [a] -> [(Int,b)] -> [a]
 accum f xs ps = go xs ps' 0
@@ -213,4 +216,22 @@ xs // ps = go xs ps' 0
       | i == j     = go (y:xs) ps j
     go (x:xs) ps j = x : go xs ps (j+1)
     go [] _ _      = []
+
+imap :: (Int -> a -> a) -> [a] -> [a]
+imap f = map (uncurry f) . zip [0..]
+
+izipWith :: (Int -> a -> a -> a) -> [a] -> [a] -> [a]
+izipWith f = zipWith (uncurry f) . zip [0..]
+
+izipWith3 :: (Int -> a -> a -> a -> a) -> [a] -> [a] -> [a] -> [a]
+izipWith3 f = zipWith3 (uncurry f) . zip [0..]
+
+ifilter :: (Int -> a -> Bool) -> [a] -> [a]
+ifilter f = map snd . filter (uncurry f) . zip [0..]
+
+ifoldl :: (a -> Int -> a -> a) -> a -> [a] -> a
+ifoldl f z = foldl (uncurry . f) z . zip [0..]
+
+ifoldr :: (Int -> a -> b -> b) -> b -> [a] -> b
+ifoldr f z = foldr (uncurry f) z . zip [0..]
 

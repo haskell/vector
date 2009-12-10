@@ -15,7 +15,7 @@ import Test.Framework
 import Test.Framework.Providers.QuickCheck2
 
 import Text.Show.Functions ()
-import Data.List           (foldl', foldl1', unfoldr, find, findIndex)
+import Data.List
 import System.Random       (Random)
 
 #define COMMON_CONTEXT(a, v) \
@@ -80,26 +80,38 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_length, 'prop_null,
 
         'prop_empty, 'prop_singleton, 'prop_replicate,
-        'prop_cons, 'prop_snoc, 'prop_append, 'prop_copy,
+        'prop_cons, 'prop_snoc, 'prop_append, 'prop_copy, 'prop_generate,
 
         'prop_head, 'prop_last, 'prop_index,
+        'prop_unsafeHead, 'prop_unsafeLast, 'prop_unsafeIndex,
 
         'prop_slice, 'prop_init, 'prop_tail, 'prop_take, 'prop_drop,
 
-        'prop_accum, 'prop_write, 'prop_backpermute, 'prop_reverse,
+        'prop_accum, 'prop_upd, 'prop_backpermute, 'prop_reverse,
 
         'prop_map, 'prop_zipWith, 'prop_zipWith3,
-        'prop_filter, 'prop_takeWhile, 'prop_dropWhile,
+        'prop_imap, 'prop_izipWith, 'prop_izipWith3,
+
+        'prop_filter, 'prop_ifilter, 'prop_takeWhile, 'prop_dropWhile,
+        'prop_span, 'prop_break,
 
         'prop_elem, 'prop_notElem,
-        'prop_find, 'prop_findIndex,
+        'prop_find, 'prop_findIndex, 'prop_findIndices,
+        'prop_elemIndex, 'prop_elemIndices,
 
         'prop_foldl, 'prop_foldl1, 'prop_foldl', 'prop_foldl1',
         'prop_foldr, 'prop_foldr1,
+        'prop_ifoldl, 'prop_ifoldl', 'prop_ifoldr,
+
+        'prop_all, 'prop_any,
 
         'prop_prescanl, 'prop_prescanl',
         'prop_postscanl, 'prop_postscanl',
         'prop_scanl, 'prop_scanl', 'prop_scanl1, 'prop_scanl1',
+
+        'prop_prescanr, 'prop_prescanr',
+        'prop_postscanr, 'prop_postscanr',
+        'prop_scanr, 'prop_scanr', 'prop_scanr1, 'prop_scanr1',
 
         'prop_concatMap,
         'prop_unfoldr
@@ -119,6 +131,8 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_snoc      :: P (v a -> a -> v a) = V.snoc `eq` snoc
     prop_append    :: P (v a -> v a -> v a) = (V.++) `eq` (++)
     prop_copy      :: P (v a -> v a)        = V.copy `eq` id
+    prop_generate  :: P (Int -> (Int -> a) -> v a)
+              = (\n _ -> n < 1000) ===> V.generate `eq` generate
 
     prop_head      :: P (v a -> a) = not . V.null ===> V.head `eq` head
     prop_last      :: P (v a -> a) = not . V.null ===> V.last `eq` last
@@ -128,6 +142,14 @@ testPolymorphicFunctions _ = $(testProperties [
                         unP prop xs i
       where
         prop :: P (v a -> Int -> a) = (V.!) `eq` (!!)
+    prop_unsafeHead  :: P (v a -> a) = not . V.null ===> V.unsafeHead `eq` head
+    prop_unsafeLast  :: P (v a -> a) = not . V.null ===> V.unsafeLast `eq` last
+    prop_unsafeIndex  = \xs ->
+                        not (V.null xs) ==>
+                        forAll (choose (0, V.length xs-1)) $ \i ->
+                        unP prop xs i
+      where
+        prop :: P (v a -> Int -> a) = V.unsafeIndex `eq` (!!)
 
     prop_slice        = \xs ->
                         forAll (choose (0, V.length xs))     $ \i ->
@@ -148,7 +170,7 @@ testPolymorphicFunctions _ = $(testProperties [
         prop :: P ((a -> a -> a) -> v a -> [(Int,a)] -> v a)
           = V.accum `eq` accum
 
-    prop_write        = \xs ->
+    prop_upd        = \xs ->
                         forAll (index_value_pairs (V.length xs)) $ \ps ->
                         unP prop xs ps
       where
@@ -166,16 +188,27 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_zipWith :: P ((a -> a -> a) -> v a -> v a -> v a) = V.zipWith `eq` zipWith
     prop_zipWith3 :: P ((a -> a -> a -> a) -> v a -> v a -> v a -> v a)
              = V.zipWith3 `eq` zipWith3
+    prop_imap :: P ((Int -> a -> a) -> v a -> v a) = V.imap `eq` imap
+    prop_izipWith :: P ((Int -> a -> a -> a) -> v a -> v a -> v a) = V.izipWith `eq` izipWith
+    prop_izipWith3 :: P ((Int -> a -> a -> a -> a) -> v a -> v a -> v a -> v a)
+             = V.izipWith3 `eq` izipWith3
 
     prop_filter :: P ((a -> Bool) -> v a -> v a) = V.filter `eq` filter
+    prop_ifilter :: P ((Int -> a -> Bool) -> v a -> v a) = V.ifilter `eq` ifilter
     prop_takeWhile :: P ((a -> Bool) -> v a -> v a) = V.takeWhile `eq` takeWhile
     prop_dropWhile :: P ((a -> Bool) -> v a -> v a) = V.dropWhile `eq` dropWhile
+    prop_span :: P ((a -> Bool) -> v a -> (v a, v a)) = V.span `eq` span
+    prop_break :: P ((a -> Bool) -> v a -> (v a, v a)) = V.break `eq` break
 
     prop_elem    :: P (a -> v a -> Bool) = V.elem `eq` elem
     prop_notElem :: P (a -> v a -> Bool) = V.notElem `eq` notElem
     prop_find    :: P ((a -> Bool) -> v a -> Maybe a) = V.find `eq` find
     prop_findIndex :: P ((a -> Bool) -> v a -> Maybe Int)
       = V.findIndex `eq` findIndex
+    prop_findIndices :: P ((a -> Bool) -> v a -> v Int)
+        = V.findIndices `eq` findIndices
+    prop_elemIndex :: P (a -> v a -> Maybe Int) = V.elemIndex `eq` elemIndex
+    prop_elemIndices :: P (a -> v a -> v Int) = V.elemIndices `eq` elemIndices
 
     prop_foldl :: P ((a -> a -> a) -> a -> v a -> a) = V.foldl `eq` foldl
     prop_foldl1 :: P ((a -> a -> a) -> v a -> a)     = notNull2 ===>
@@ -186,6 +219,15 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_foldr :: P ((a -> a -> a) -> a -> v a -> a) = V.foldr `eq` foldr
     prop_foldr1 :: P ((a -> a -> a) -> v a -> a)     = notNull2 ===>
                         V.foldr1 `eq` foldr1
+    prop_ifoldl :: P ((a -> Int -> a -> a) -> a -> v a -> a)
+        = V.ifoldl `eq` ifoldl
+    prop_ifoldl' :: P ((a -> Int -> a -> a) -> a -> v a -> a)
+        = V.ifoldl' `eq` ifoldl
+    prop_ifoldr :: P ((Int -> a -> a -> a) -> a -> v a -> a)
+        = V.ifoldr `eq` ifoldr
+
+    prop_all :: P ((a -> Bool) -> v a -> Bool) = V.all `eq` all
+    prop_any :: P ((a -> Bool) -> v a -> Bool) = V.any `eq` any
 
     prop_prescanl :: P ((a -> a -> a) -> a -> v a -> v a)
                 = V.prescanl `eq` prescanl
@@ -204,6 +246,23 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_scanl1' :: P ((a -> a -> a) -> v a -> v a) = notNull2 ===>
                  V.scanl1' `eq` scanl1
  
+    prop_prescanr :: P ((a -> a -> a) -> a -> v a -> v a)
+                = V.prescanr `eq` prescanr
+    prop_prescanr' :: P ((a -> a -> a) -> a -> v a -> v a)
+                = V.prescanr' `eq` prescanr
+    prop_postscanr :: P ((a -> a -> a) -> a -> v a -> v a)
+                = V.postscanr `eq` postscanr
+    prop_postscanr' :: P ((a -> a -> a) -> a -> v a -> v a)
+                = V.postscanr' `eq` postscanr
+    prop_scanr :: P ((a -> a -> a) -> a -> v a -> v a)
+                = V.scanr `eq` scanr
+    prop_scanr' :: P ((a -> a -> a) -> a -> v a -> v a)
+               = V.scanr' `eq` scanr
+    prop_scanr1 :: P ((a -> a -> a) -> v a -> v a) = notNull2 ===>
+                 V.scanr1 `eq` scanr1
+    prop_scanr1' :: P ((a -> a -> a) -> v a -> v a) = notNull2 ===>
+                 V.scanr1' `eq` scanr1
+
     prop_concatMap    = forAll arbitrary $ \xs ->
                         forAll (sized (\n -> resize (n `div` V.length xs) arbitrary)) $ \f -> unP prop f xs
       where
