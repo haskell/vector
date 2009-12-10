@@ -142,188 +142,14 @@ class MVector v a where
     where
       n = basicLength v
 
-
--- | Create a mutable vector of the given length. The length is not checked.
-unsafeNew :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
-{-# INLINE unsafeNew #-}
-unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n
-            $ basicUnsafeNew n
-
--- | Create a mutable vector of the given length and fill it with an
--- initial value. The length is not checked.
-unsafeNewWith :: (PrimMonad m, MVector v a) => Int -> a -> m (v (PrimState m) a)
-{-# INLINE unsafeNewWith #-}
-unsafeNewWith n x = UNSAFE_CHECK(checkLength) "unsafeNewWith" n
-                  $ basicUnsafeNewWith n x
-
--- | Yield the element at the given position. No bounds checks are performed.
-unsafeRead :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
-{-# INLINE unsafeRead #-}
-unsafeRead v i = UNSAFE_CHECK(checkIndex) "unsafeRead" i (length v)
-               $ basicUnsafeRead v i
-
--- | Replace the element at the given position. No bounds checks are performed.
-unsafeWrite :: (PrimMonad m, MVector v a)
-                                => v (PrimState m) a -> Int -> a -> m ()
-{-# INLINE unsafeWrite #-}
-unsafeWrite v i x = UNSAFE_CHECK(checkIndex) "unsafeWrite" i (length v)
-                  $ basicUnsafeWrite v i x
-
-
--- | Copy a vector. The two vectors must have the same length and may not
--- overlap. This is not checked.
-unsafeCopy :: (PrimMonad m, MVector v a) => v (PrimState m) a   -- ^ target
-                                         -> v (PrimState m) a   -- ^ source
-                                         -> m ()
-{-# INLINE unsafeCopy #-}
-unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
-                                         (length dst == length src)
-                   $ UNSAFE_CHECK(check) "unsafeCopy" "overlapping vectors"
-                                         (not (dst `overlaps` src))
-                   $ basicUnsafeCopy dst src
-
--- | Grow a vector by the given number of elements. The number must be
--- positive but this is not checked.
-unsafeGrow :: (PrimMonad m, MVector v a)
-                        => v (PrimState m) a -> Int -> m (v (PrimState m) a)
-{-# INLINE unsafeGrow #-}
-unsafeGrow v n = UNSAFE_CHECK(checkLength) "unsafeGrow" n
-               $ basicUnsafeGrow v n
-
-unsafeGrowFront :: (PrimMonad m, MVector v a)
-                        => v (PrimState m) a -> Int -> m (v (PrimState m) a)
-{-# INLINE unsafeGrowFront #-}
-unsafeGrowFront v by = UNSAFE_CHECK(checkLength) "unsafeGrowFront" by
-                     $ do
-                         let n = length v
-                         v' <- basicUnsafeNew (by+n)
-                         basicUnsafeCopy (basicUnsafeSlice by n v') v
-                         return v'
-
--- | Length of the mutable vector.
-length :: MVector v a => v s a -> Int
-{-# INLINE length #-}
-length = basicLength
+-- ------------------
+-- Internal functions
+-- ------------------
 
 -- Check whether two vectors overlap.
 overlaps :: MVector v a => v s a -> v s a -> Bool
 {-# INLINE overlaps #-}
 overlaps = basicOverlaps
-
--- | Create a mutable vector of the given length.
-new :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
-{-# INLINE new #-}
-new n = BOUNDS_CHECK(checkLength) "new" n
-      $ unsafeNew n
-
--- | Create a mutable vector of the given length and fill it with an
--- initial value.
-newWith :: (PrimMonad m, MVector v a) => Int -> a -> m (v (PrimState m) a)
-{-# INLINE newWith #-}
-newWith n x = BOUNDS_CHECK(checkLength) "newWith" n
-            $ unsafeNewWith n x
-
--- | Yield the element at the given position.
-read :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
-{-# INLINE read #-}
-read v i = BOUNDS_CHECK(checkIndex) "read" i (length v)
-         $ unsafeRead v i
-
--- | Replace the element at the given position.
-write :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m ()
-{-# INLINE write #-}
-write v i x = BOUNDS_CHECK(checkIndex) "write" i (length v)
-            $ unsafeWrite v i x
-
--- | Reset all elements of the vector to some undefined value, clearing all
--- references to external objects. This is usually a noop for unboxed vectors. 
-clear :: (PrimMonad m, MVector v a) => v (PrimState m) a -> m ()
-{-# INLINE clear #-}
-clear = basicClear
-
--- | Set all elements of the vector to the given value.
-set :: (PrimMonad m, MVector v a) => v (PrimState m) a -> a -> m ()
-{-# INLINE set #-}
-set = basicSet
-
--- | Copy a vector. The two vectors must have the same length and may not
--- overlap.
-copy :: (PrimMonad m, MVector v a)
-                => v (PrimState m) a -> v (PrimState m) a -> m ()
-{-# INLINE copy #-}
-copy dst src = BOUNDS_CHECK(check) "copy" "overlapping vectors"
-                                          (not (dst `overlaps` src))
-             $ BOUNDS_CHECK(check) "copy" "length mismatch"
-                                          (length dst == length src)
-             $ unsafeCopy dst src
-
--- | Grow a vector by the given number of elements. The number must be
--- positive.
-grow :: (PrimMonad m, MVector v a)
-                => v (PrimState m) a -> Int -> m (v (PrimState m) a)
-{-# INLINE grow #-}
-grow v by = BOUNDS_CHECK(checkLength) "grow" by
-          $ unsafeGrow v by
-
-enlarge_delta v = max (length v) 1
-
--- | Grow a vector logarithmically
-enlarge :: (PrimMonad m, MVector v a)
-                => v (PrimState m) a -> m (v (PrimState m) a)
-{-# INLINE enlarge #-}
-enlarge v = unsafeGrow v (enlarge_delta v)
-
-enlargeFront :: (PrimMonad m, MVector v a)
-                => v (PrimState m) a -> m (v (PrimState m) a, Int)
-{-# INLINE enlargeFront #-}
-enlargeFront v = do
-                   v' <- unsafeGrowFront v by
-                   return (v', by)
-  where
-    by = enlarge_delta v
-
--- | Yield a part of the mutable vector without copying it.
-slice :: MVector v a => Int -> Int -> v s a -> v s a
-{-# INLINE slice #-}
-slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
-            $ unsafeSlice i n v
-
-take :: MVector v a => Int -> v s a -> v s a
-{-# INLINE take #-}
-take n v = unsafeSlice 0 (min (max n 0) (length v)) v
-
-drop :: MVector v a => Int -> v s a -> v s a
-{-# INLINE drop #-}
-drop n v = unsafeSlice (min m n') (max 0 (m - n')) v
-  where
-    n' = max n 0
-    m  = length v
-
-init :: MVector v a => v s a -> v s a
-{-# INLINE init #-}
-init v = slice 0 (length v - 1) v
-
-tail :: MVector v a => v s a -> v s a
-{-# INLINE tail #-}
-tail v = slice 1 (length v - 1) v
-
--- | Yield a part of the mutable vector without copying it. No bounds checks
--- are performed.
-unsafeSlice :: MVector v a => Int  -- ^ starting index
-                           -> Int  -- ^ length of the slice
-                           -> v s a
-                           -> v s a
-{-# INLINE unsafeSlice #-}
-unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
-                  $ basicUnsafeSlice i n v
-
-unsafeInit :: MVector v a => v s a -> v s a
-{-# INLINE unsafeInit #-}
-unsafeInit v = unsafeSlice 0 (length v - 1) v
-
-unsafeTail :: MVector v a => v s a -> v s a
-{-# INLINE unsafeTail #-}
-unsafeTail v = unsafeSlice 1 (length v - 1) v
 
 unsafeAppend1 :: (PrimMonad m, MVector v a)
         => v (PrimState m) a -> Int -> a -> m (v (PrimState m) a)
@@ -356,7 +182,6 @@ unsafePrepend1 v i x
                   INTERNAL_CHECK(checkIndex) "unsafePrepend1" i' (length v')
                     $ unsafeWrite v' i' x
                   return (v', i')
-
 
 mstream :: (PrimMonad m, MVector v a) => v (PrimState m) a -> MStream m a
 {-# INLINE mstream #-}
@@ -507,6 +332,186 @@ unstreamRUnknown s
   where
     {-# INLINE_INNER put #-}
     put (v,i) x = unsafePrepend1 v i x
+
+
+-- | Create a mutable vector of the given length. The length is not checked.
+unsafeNew :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
+{-# INLINE unsafeNew #-}
+unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n
+            $ basicUnsafeNew n
+
+-- | Create a mutable vector of the given length and fill it with an
+-- initial value. The length is not checked.
+unsafeNewWith :: (PrimMonad m, MVector v a) => Int -> a -> m (v (PrimState m) a)
+{-# INLINE unsafeNewWith #-}
+unsafeNewWith n x = UNSAFE_CHECK(checkLength) "unsafeNewWith" n
+                  $ basicUnsafeNewWith n x
+
+-- | Yield the element at the given position. No bounds checks are performed.
+unsafeRead :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
+{-# INLINE unsafeRead #-}
+unsafeRead v i = UNSAFE_CHECK(checkIndex) "unsafeRead" i (length v)
+               $ basicUnsafeRead v i
+
+-- | Replace the element at the given position. No bounds checks are performed.
+unsafeWrite :: (PrimMonad m, MVector v a)
+                                => v (PrimState m) a -> Int -> a -> m ()
+{-# INLINE unsafeWrite #-}
+unsafeWrite v i x = UNSAFE_CHECK(checkIndex) "unsafeWrite" i (length v)
+                  $ basicUnsafeWrite v i x
+
+
+-- | Copy a vector. The two vectors must have the same length and may not
+-- overlap. This is not checked.
+unsafeCopy :: (PrimMonad m, MVector v a) => v (PrimState m) a   -- ^ target
+                                         -> v (PrimState m) a   -- ^ source
+                                         -> m ()
+{-# INLINE unsafeCopy #-}
+unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
+                                         (length dst == length src)
+                   $ UNSAFE_CHECK(check) "unsafeCopy" "overlapping vectors"
+                                         (not (dst `overlaps` src))
+                   $ basicUnsafeCopy dst src
+
+-- | Grow a vector by the given number of elements. The number must be
+-- positive but this is not checked.
+unsafeGrow :: (PrimMonad m, MVector v a)
+                        => v (PrimState m) a -> Int -> m (v (PrimState m) a)
+{-# INLINE unsafeGrow #-}
+unsafeGrow v n = UNSAFE_CHECK(checkLength) "unsafeGrow" n
+               $ basicUnsafeGrow v n
+
+unsafeGrowFront :: (PrimMonad m, MVector v a)
+                        => v (PrimState m) a -> Int -> m (v (PrimState m) a)
+{-# INLINE unsafeGrowFront #-}
+unsafeGrowFront v by = UNSAFE_CHECK(checkLength) "unsafeGrowFront" by
+                     $ do
+                         let n = length v
+                         v' <- basicUnsafeNew (by+n)
+                         basicUnsafeCopy (basicUnsafeSlice by n v') v
+                         return v'
+
+-- | Length of the mutable vector.
+length :: MVector v a => v s a -> Int
+{-# INLINE length #-}
+length = basicLength
+
+-- | Create a mutable vector of the given length.
+new :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
+{-# INLINE new #-}
+new n = BOUNDS_CHECK(checkLength) "new" n
+      $ unsafeNew n
+
+-- | Create a mutable vector of the given length and fill it with an
+-- initial value.
+newWith :: (PrimMonad m, MVector v a) => Int -> a -> m (v (PrimState m) a)
+{-# INLINE newWith #-}
+newWith n x = BOUNDS_CHECK(checkLength) "newWith" n
+            $ unsafeNewWith n x
+
+-- | Yield the element at the given position.
+read :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
+{-# INLINE read #-}
+read v i = BOUNDS_CHECK(checkIndex) "read" i (length v)
+         $ unsafeRead v i
+
+-- | Replace the element at the given position.
+write :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m ()
+{-# INLINE write #-}
+write v i x = BOUNDS_CHECK(checkIndex) "write" i (length v)
+            $ unsafeWrite v i x
+
+-- | Reset all elements of the vector to some undefined value, clearing all
+-- references to external objects. This is usually a noop for unboxed vectors. 
+clear :: (PrimMonad m, MVector v a) => v (PrimState m) a -> m ()
+{-# INLINE clear #-}
+clear = basicClear
+
+-- | Set all elements of the vector to the given value.
+set :: (PrimMonad m, MVector v a) => v (PrimState m) a -> a -> m ()
+{-# INLINE set #-}
+set = basicSet
+
+-- | Copy a vector. The two vectors must have the same length and may not
+-- overlap.
+copy :: (PrimMonad m, MVector v a)
+                => v (PrimState m) a -> v (PrimState m) a -> m ()
+{-# INLINE copy #-}
+copy dst src = BOUNDS_CHECK(check) "copy" "overlapping vectors"
+                                          (not (dst `overlaps` src))
+             $ BOUNDS_CHECK(check) "copy" "length mismatch"
+                                          (length dst == length src)
+             $ unsafeCopy dst src
+
+-- | Grow a vector by the given number of elements. The number must be
+-- positive.
+grow :: (PrimMonad m, MVector v a)
+                => v (PrimState m) a -> Int -> m (v (PrimState m) a)
+{-# INLINE grow #-}
+grow v by = BOUNDS_CHECK(checkLength) "grow" by
+          $ unsafeGrow v by
+
+enlarge_delta v = max (length v) 1
+
+-- | Grow a vector logarithmically
+enlarge :: (PrimMonad m, MVector v a)
+                => v (PrimState m) a -> m (v (PrimState m) a)
+{-# INLINE enlarge #-}
+enlarge v = unsafeGrow v (enlarge_delta v)
+
+enlargeFront :: (PrimMonad m, MVector v a)
+                => v (PrimState m) a -> m (v (PrimState m) a, Int)
+{-# INLINE enlargeFront #-}
+enlargeFront v = do
+                   v' <- unsafeGrowFront v by
+                   return (v', by)
+  where
+    by = enlarge_delta v
+
+-- | Yield a part of the mutable vector without copying it.
+slice :: MVector v a => Int -> Int -> v s a -> v s a
+{-# INLINE slice #-}
+slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
+            $ unsafeSlice i n v
+
+take :: MVector v a => Int -> v s a -> v s a
+{-# INLINE take #-}
+take n v = unsafeSlice 0 (min (max n 0) (length v)) v
+
+drop :: MVector v a => Int -> v s a -> v s a
+{-# INLINE drop #-}
+drop n v = unsafeSlice (min m n') (max 0 (m - n')) v
+  where
+    n' = max n 0
+    m  = length v
+
+init :: MVector v a => v s a -> v s a
+{-# INLINE init #-}
+init v = slice 0 (length v - 1) v
+
+tail :: MVector v a => v s a -> v s a
+{-# INLINE tail #-}
+tail v = slice 1 (length v - 1) v
+
+-- | Yield a part of the mutable vector without copying it. No bounds checks
+-- are performed.
+unsafeSlice :: MVector v a => Int  -- ^ starting index
+                           -> Int  -- ^ length of the slice
+                           -> v s a
+                           -> v s a
+{-# INLINE unsafeSlice #-}
+unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
+                  $ basicUnsafeSlice i n v
+
+unsafeInit :: MVector v a => v s a -> v s a
+{-# INLINE unsafeInit #-}
+unsafeInit v = unsafeSlice 0 (length v - 1) v
+
+unsafeTail :: MVector v a => v s a -> v s a
+{-# INLINE unsafeTail #-}
+unsafeTail v = unsafeSlice 1 (length v - 1) v
+
+
 
 unsafeAccum :: (PrimMonad m, MVector v a)
             => (a -> b -> a) -> v (PrimState m) a -> Stream (Int, b) -> m ()
