@@ -13,7 +13,8 @@
 --
 
 module Data.Vector.Generic.New (
-  New(..), run, unstream, transform, accum, update, reverse,
+  New(..), run, unstream, transform, unstreamR, transformR,
+  accum, update, reverse,
   slice, init, tail, take, drop,
   unsafeSlice, unsafeInit, unsafeTail,
   unsafeAccum, unsafeUpdate
@@ -65,6 +66,30 @@ transform f (New p) = New (MVector.transform f =<< p)
   forall (f :: forall m. Monad m => MStream m a -> MStream m a)
          s.
   transform f (unstream s) = unstream (f s)
+
+ #-}
+
+
+unstreamR :: Stream a -> New a
+{-# INLINE_STREAM unstreamR #-}
+unstreamR s = s `seq` New (MVector.unstreamR s)
+
+transformR :: (forall m. Monad m => MStream m a -> MStream m a) -> New a -> New a
+{-# INLINE_STREAM transformR #-}
+transformR f (New p) = New (MVector.transformR f =<< p)
+
+{-# RULES
+
+"transformR/transformR [New]"
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a)
+         (g :: forall m. Monad m => MStream m a -> MStream m a)
+         p .
+  transformR f (transformR g p) = transformR (f . g) p
+
+"transformR/unstreamR [New]"
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a)
+         s.
+  transformR f (unstreamR s) = unstreamR (f s)
 
  #-}
 

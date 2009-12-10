@@ -26,7 +26,8 @@ module Data.Vector.Generic.Mutable (
   unsafeCopy, unsafeGrow,
 
   -- * Internal operations
-  unstream, transform, unsafeAccum, accum, unsafeUpdate, update, reverse,
+  unstream, transform, unstreamR, transformR,
+  unsafeAccum, accum, unsafeUpdate, update, reverse,
   unstablePartition, unstablePartitionStream
 ) where
 
@@ -103,6 +104,7 @@ class MVector v a where
   -- called directly, use 'unsafeGrow' instead.
   basicUnsafeGrow  :: PrimMonad m => v (PrimState m) a -> Int
                                                        -> m (v (PrimState m) a)
+
   {-# INLINE basicUnsafeNewWith #-}
   basicUnsafeNewWith n x
     = do
@@ -190,6 +192,16 @@ unsafeGrow :: (PrimMonad m, MVector v a)
 unsafeGrow v n = UNSAFE_CHECK(checkLength) "unsafeGrow" n
                $ basicUnsafeGrow v n
 
+unsafeGrowFront :: (PrimMonad m, MVector v a)
+                        => v (PrimState m) a -> Int -> m (v (PrimState m) a)
+{-# INLINE unsafeGrowFront #-}
+unsafeGrowFront v by = UNSAFE_CHECK(checkLength) "unsafeGrowFront" by
+                     $ do
+                         let n = length v
+                         v' <- basicUnsafeNew (by+n)
+                         basicUnsafeCopy (basicUnsafeSlice by n v') v
+                         return v'
+
 -- | Length of the mutable vector.
 length :: MVector v a => v s a -> Int
 {-# INLINE length #-}
@@ -255,15 +267,24 @@ grow :: (PrimMonad m, MVector v a)
 grow v by = BOUNDS_CHECK(checkLength) "grow" by
           $ unsafeGrow v by
 
+enlarge_delta v = max 1
+                $ double2Int
+                $ int2Double (length v) * gROWTH_FACTOR
+
 -- | Grow a vector logarithmically
 enlarge :: (PrimMonad m, MVector v a)
                 => v (PrimState m) a -> m (v (PrimState m) a)
 {-# INLINE enlarge #-}
-enlarge v = unsafeGrow v
-          $ max 1
-          $ double2Int
-          $ int2Double (length v) * gROWTH_FACTOR
+enlarge v = unsafeGrow v (enlarge_delta v)
 
+enlargeFront :: (PrimMonad m, MVector v a)
+                => v (PrimState m) a -> m (v (PrimState m) a, Int)
+{-# INLINE enlargeFront #-}
+enlargeFront v = do
+                   v' <- unsafeGrowFront v by
+                   return (v', by)
+  where
+    by = enlarge_delta v
 
 -- | Yield a part of the mutable vector without copying it.
 slice :: MVector v a => Int -> Int -> v s a -> v s a
@@ -325,6 +346,21 @@ unsafeAppend1 v i x
                        $ unsafeWrite v' i x
                      return v'
 
+unsafePrepend1 :: (PrimMonad m, MVector v a)
+        => v (PrimState m) a -> Int -> a -> m (v (PrimState m) a, Int)
+{-# INLINE_INNER unsafePrepend1 #-}
+unsafePrepend1 v i x
+  | i /= 0    = do
+                  let i' = i-1
+                  unsafeWrite v i' x
+                  return (v, i')
+  | otherwise = do
+                  (v', i) <- enlargeFront v
+                  let i' = i-1
+                  INTERNAL_CHECK(checkIndex) "unsafePrepend1" i' (length v')
+                    $ unsafeWrite v' i' x
+                  return (v', i')
+
 
 mstream :: (PrimMonad m, MVector v a) => v (PrimState m) a -> MStream m a
 {-# INLINE mstream #-}
@@ -368,10 +404,10 @@ mrstream v = v `seq` (MStream.unfoldrM get n `MStream.sized` Exact n)
       where
         j = i-1
 
-mrunstream :: (PrimMonad m, MVector v a)
+munstreamR :: (PrimMonad m, MVector v a)
            => v (PrimState m) a -> MStream m a -> m (v (PrimState m) a)
-{-# INLINE mrunstream #-}
-mrunstream v s = v `seq` do
+{-# INLINE munstreamR #-}
+munstreamR v s = v `seq` do
                            i <- MStream.foldM put n s
                            return $ unsafeSlice i (n-i) v
   where
@@ -384,10 +420,10 @@ mrunstream v s = v `seq` do
       where
         j = i-1
 
-rtransform :: (PrimMonad m, MVector v a)
+transformR :: (PrimMonad m, MVector v a)
   => (MStream m a -> MStream m a) -> v (PrimState m) a -> m (v (PrimState m) a)
-{-# INLINE_STREAM rtransform #-}
-rtransform f v = mrunstream v (f (mrstream v))
+{-# INLINE_STREAM transformR #-}
+transformR f v = munstreamR v (f (mrstream v))
 
 -- | Create a new mutable vector and fill it with elements from the 'Stream'.
 -- The vector will grow logarithmically if the 'Size' hint of the 'Stream' is
@@ -427,6 +463,45 @@ unstreamUnknown s
     put (v,i) x = do
                     v' <- unsafeAppend1 v i x
                     return (v',i+1)
+
+-- | Create a new mutable vector and fill it with elements from the 'Stream'.
+-- The vector will grow logarithmically if the 'Size' hint of the 'Stream' is
+-- inexact.
+unstreamR :: (PrimMonad m, MVector v a) => Stream a -> m (v (PrimState m) a)
+{-# INLINE_STREAM unstreamR #-}
+unstreamR s = case upperBound (Stream.size s) of
+               Just n  -> unstreamRMax     s n
+               Nothing -> unstreamRUnknown s
+
+unstreamRMax
+  :: (PrimMonad m, MVector v a) => Stream a -> Int -> m (v (PrimState m) a)
+{-# INLINE unstreamRMax #-}
+unstreamRMax s n
+  = do
+      v <- INTERNAL_CHECK(checkLength) "unstreamRMax" n
+           $ unsafeNew n
+      let put i x = do
+                      let i' = i-1
+                      INTERNAL_CHECK(checkIndex) "unstreamRMax" i' n
+                        $ unsafeWrite v i x
+                      return i
+      i <- Stream.foldM' put n s
+      return $ INTERNAL_CHECK(checkSlice) "unstreamRMax" i (n-i) n
+             $ unsafeSlice i (n-i) v
+
+unstreamRUnknown
+  :: (PrimMonad m, MVector v a) => Stream a -> m (v (PrimState m) a)
+{-# INLINE unstreamRUnknown #-}
+unstreamRUnknown s
+  = do
+      v <- unsafeNew 0
+      (v', i) <- Stream.foldM put (v, 0) s
+      let n = length v'
+      return $ INTERNAL_CHECK(checkSlice) "unstreamRUnknown" i (n-i) n
+             $ slice i (n-i) v'
+  where
+    {-# INLINE_INNER put #-}
+    put (v,i) x = unsafePrepend1 v i x
 
 unsafeAccum :: (PrimMonad m, MVector v a)
             => (a -> b -> a) -> v (PrimState m) a -> Stream (Int, b) -> m ()

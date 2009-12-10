@@ -83,7 +83,7 @@ module Data.Vector.Generic (
   toList, fromList,
 
   -- * Conversion to/from Streams
-  stream, unstream,
+  stream, unstream, streamR, unstreamR,
 
   -- * MVector-based initialisation
   new
@@ -217,6 +217,48 @@ unstream s = new (New.unstream s)
 "uninplace [Vector]"
   forall (f :: forall m. Monad m => MStream m a -> MStream m a) v m.
   stream (new' v (New.transform f m)) = inplace f (stream (new' v m))
+
+ #-}
+
+-- | Convert a vector to a 'Stream'
+streamR :: Vector v a => v a -> Stream a
+{-# INLINE_STREAM streamR #-}
+streamR v = v `seq` (Stream.unfoldr get n `Stream.sized` Exact n)
+  where
+    n = length v
+
+    -- NOTE: the False case comes first in Core so making it the recursive one
+    -- makes the code easier to read
+    {-# INLINE get #-}
+    get 0 = Nothing
+    get i = let i' = i-1
+            in
+            case basicUnsafeIndexM v i' of Box x -> Just (x, i')
+
+-- | Create a vector from a 'Stream'
+unstreamR :: Vector v a => Stream a -> v a
+{-# INLINE unstreamR #-}
+unstreamR s = new (New.unstreamR s)
+
+{-# RULES
+
+"streamR/unstreamR [Vector]" forall v s.
+  streamR (new' v (New.unstreamR s)) = s
+
+"New.unstreamR/streamR/new [Vector]" forall v p.
+  New.unstreamR (streamR (new' v p)) = p
+
+ #-}
+
+{-# RULES
+
+"inplace [Vector]"
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a) v m.
+  New.unstreamR (inplace f (streamR (new' v m))) = New.transformR f m
+
+"uninplace [Vector]"
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a) v m.
+  streamR (new' v (New.transformR f m)) = inplace f (streamR (new' v m))
 
  #-}
 
