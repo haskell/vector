@@ -67,6 +67,9 @@ module Data.Vector.Primitive (
   prescanl, prescanl',
   postscanl, postscanl',
   scanl, scanl', scanl1, scanl1',
+  prescanr, prescanr',
+  postscanr, postscanr',
+  scanr, scanr', scanr1, scanr1',
 
   -- * Enumeration
   enumFromTo, enumFromThenTo,
@@ -92,7 +95,7 @@ import Prelude hiding ( length, null,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         all, any, sum, product, minimum, maximum,
-                        scanl, scanl1,
+                        scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo )
 
 import qualified Prelude
@@ -676,6 +679,47 @@ scanl1 = G.scanl1
 scanl1' :: Prim a => (a -> a -> a) -> Vector a -> Vector a
 {-# INLINE scanl1' #-}
 scanl1' = G.scanl1'
+
+
+-- | Prefix right-to-left scan
+prescanr :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE prescanr #-}
+prescanr = G.prescanr
+
+-- | Prefix right-to-left scan with strict accumulator
+prescanr' :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE prescanr' #-}
+prescanr' = G.prescanr'
+
+-- | Suffix right-to-left scan
+postscanr :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE postscanr #-}
+postscanr = G.postscanr
+
+-- | Suffix right-to-left scan with strict accumulator
+postscanr' :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE postscanr' #-}
+postscanr' = G.postscanr'
+
+-- | Haskell-style right-to-left scan
+scanr :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE scanr #-}
+scanr = G.scanr
+
+-- | Haskell-style right-to-left scan with strict accumulator
+scanr' :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE scanr' #-}
+scanr' = G.scanr'
+
+-- | Right-to-left scan over a non-empty vector
+scanr1 :: Prim a => (a -> a -> a) -> Vector a -> Vector a
+{-# INLINE scanr1 #-}
+scanr1 = G.scanr1
+
+-- | Right-to-left scan over a non-empty vector with a strict accumulator
+scanr1' :: Prim a => (a -> a -> a) -> Vector a -> Vector a
+{-# INLINE scanr1' #-}
+scanr1' = G.scanr1'
 
 -- Enumeration
 -- -----------

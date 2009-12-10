@@ -75,6 +75,9 @@ module Data.Vector.Generic (
   prescanl, prescanl',
   postscanl, postscanl',
   scanl, scanl', scanl1, scanl1',
+  prescanr, prescanr',
+  postscanr, postscanr',
+  scanr, scanr', scanr1, scanr1',
 
   -- * Enumeration
   enumFromTo, enumFromThenTo,
@@ -113,7 +116,7 @@ import Prelude hiding ( length, null,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         all, any, and, or, sum, product, maximum, minimum,
-                        scanl, scanl1,
+                        scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo )
 
 #include "vector.h"
@@ -1134,6 +1137,47 @@ scanl1 f = unstream . inplace (MStream.scanl1 f) . stream
 scanl1' :: Vector v a => (a -> a -> a) -> v a -> v a
 {-# INLINE scanl1' #-}
 scanl1' f = unstream . inplace (MStream.scanl1' f) . stream
+
+
+-- | Prefix right-to-left scan
+prescanr :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
+{-# INLINE prescanr #-}
+prescanr f z = unstreamR . inplace (MStream.prescanl f z) . streamR
+
+-- | Prefix right-to-left scan with strict accumulator
+prescanr' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
+{-# INLINE prescanr' #-}
+prescanr' f z = unstreamR . inplace (MStream.prescanl' f z) . streamR
+
+-- | Suffix right-to-left scan
+postscanr :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
+{-# INLINE postscanr #-}
+postscanr f z = unstreamR . inplace (MStream.postscanl f z) . streamR
+
+-- | Suffix right-to-left scan with strict accumulator
+postscanr' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
+{-# INLINE postscanr' #-}
+postscanr' f z = unstreamR . inplace (MStream.postscanl' f z) . streamR
+
+-- | Haskell-style right-to-left scan
+scanr :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
+{-# INLINE scanr #-}
+scanr f z = unstreamR . Stream.scanl f z . streamR
+
+-- | Haskell-style right-to-left scan with strict accumulator
+scanr' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
+{-# INLINE scanr' #-}
+scanr' f z = unstreamR . Stream.scanl' f z . streamR
+
+-- | Right-to-left scan over a non-empty vector
+scanr1 :: Vector v a => (a -> a -> a) -> v a -> v a
+{-# INLINE scanr1 #-}
+scanr1 f = unstreamR . inplace (MStream.scanl1 f) . streamR
+
+-- | Right-to-left scan over a non-empty vector with a strict accumulator
+scanr1' :: Vector v a => (a -> a -> a) -> v a -> v a
+{-# INLINE scanr1' #-}
+scanr1' f = unstreamR . inplace (MStream.scanl1' f) . streamR
 
 -- Enumeration
 -- -----------
