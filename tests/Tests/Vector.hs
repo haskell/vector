@@ -307,11 +307,16 @@ testTuplyFunctions _ = $(testProperties ['prop_zip, 'prop_zip3, 'prop_unzip, 'pr
     prop_unzip3 :: P (v (a, a, a) -> (v a, v a, v a))   = V.unzip3 `eq` unzip3
 
 testOrdFunctions :: forall a v. (COMMON_CONTEXT(a, v), Ord a, Ord (v a)) => v a -> [Test]
-testOrdFunctions _ = $(testProperties ['prop_compare, 'prop_maximum, 'prop_minimum])
+testOrdFunctions _ = $(testProperties
+  ['prop_compare,
+   'prop_maximum, 'prop_minimum,
+   'prop_minIndex, 'prop_maxIndex ])
   where
     prop_compare :: P (v a -> v a -> Ordering) = compare `eq` compare
     prop_maximum :: P (v a -> a) = not . V.null ===> V.maximum `eq` maximum
     prop_minimum :: P (v a -> a) = not . V.null ===> V.minimum `eq` minimum
+    prop_minIndex :: P (v a -> Int) = not . V.null ===> V.minIndex `eq` minIndex
+    prop_maxIndex :: P (v a -> Int) = not . V.null ===> V.maxIndex `eq` maxIndex
 
 testEnumFunctions :: forall a v. (COMMON_CONTEXT(a, v), Enum a, Ord a, Num a, Random a) => v a -> [Test]
 testEnumFunctions _ = $(testProperties ['prop_enumFromTo, 'prop_enumFromThenTo])

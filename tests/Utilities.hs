@@ -235,3 +235,15 @@ ifoldl f z = foldl (uncurry . f) z . zip [0..]
 ifoldr :: (Int -> a -> b -> b) -> b -> [a] -> b
 ifoldr f z = foldr (uncurry f) z . zip [0..]
 
+minIndex :: Ord a => [a] -> Int
+minIndex = fst . foldr1 imin . zip [0..]
+  where
+    imin (i,x) (j,y) | x <= y    = (i,x)
+                     | otherwise = (j,y)
+
+maxIndex :: Ord a => [a] -> Int
+maxIndex = fst . foldr1 imax . zip [0..]
+  where
+    imax (i,x) (j,y) | x >= y    = (i,x)
+                     | otherwise = (j,y)
+
