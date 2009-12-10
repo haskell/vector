@@ -109,7 +109,7 @@ class MVector v a where
   basicUnsafeNewWith n x
     = do
         v <- basicUnsafeNew n
-        set v x
+        basicSet v x
         return v
 
   {-# INLINE basicClear #-}
@@ -118,7 +118,7 @@ class MVector v a where
   {-# INLINE basicSet #-}
   basicSet v x = do_set 0
     where
-      n = length v
+      n = basicLength v
 
       do_set i | i < n = do
                            basicUnsafeWrite v i x
@@ -128,7 +128,7 @@ class MVector v a where
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy dst src = do_copy 0
     where
-      n = length src
+      n = basicLength src
 
       do_copy i | i < n = do
                             x <- basicUnsafeRead src i
@@ -143,7 +143,8 @@ class MVector v a where
         basicUnsafeCopy (basicUnsafeSlice 0 n v') v
         return v'
     where
-      n = length v
+      n = basicLength v
+
 
 -- | Create a mutable vector of the given length. The length is not checked.
 unsafeNew :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
