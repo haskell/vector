@@ -7,6 +7,7 @@ import qualified Data.Vector.Generic as V
 import qualified Data.Vector
 import qualified Data.Vector.Primitive
 import qualified Data.Vector.Storable
+import qualified Data.Vector.Unboxed
 import qualified Data.Vector.Fusion.Stream as S
 
 import Test.QuickCheck
@@ -372,8 +373,20 @@ testGeneralBoxedVector dummy = concatMap ($ dummy) [
         testNestedVectorFunctions
     ]
 
-testBoolBoxedVector dummy = testGeneralBoxedVector dummy ++ testBoolFunctions dummy
-testNumericBoxedVector dummy = testGeneralBoxedVector dummy ++ testNumFunctions dummy ++ testEnumFunctions dummy
+testBoolBoxedVector dummy = concatMap ($ dummy)
+  [
+    testGeneralBoxedVector
+  , testBoolFunctions
+  ]
+
+testNumericBoxedVector dummy = concatMap ($ dummy)
+  [
+    testGeneralBoxedVector
+  , testNumFunctions
+  , testEnumFunctions
+  ]
+
+
 
 testGeneralPrimitiveVector dummy = concatMap ($ dummy) [
         testSanity,
@@ -381,15 +394,58 @@ testGeneralPrimitiveVector dummy = concatMap ($ dummy) [
         testOrdFunctions
     ]
 
+testBoolPrimitiveVector dummy = concatMap ($ dummy)
+  [
+    testGeneralPrimitiveVector
+  , testBoolFunctions
+  ]
+
+testNumericPrimitiveVector dummy = concatMap ($ dummy)
+ [
+   testGeneralPrimitiveVector
+ , testNumFunctions
+ , testEnumFunctions
+ ]
+
+
+
 testGeneralStorableVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
         testOrdFunctions
     ]
 
-testBoolPrimitiveVector dummy = testGeneralPrimitiveVector dummy ++ testBoolFunctions dummy
-testNumericPrimitiveVector dummy = testGeneralPrimitiveVector dummy ++ testNumFunctions dummy ++ testEnumFunctions dummy
-testNumericStorableVector dummy = testGeneralStorableVector dummy ++ testNumFunctions dummy ++ testEnumFunctions dummy
+testNumericStorableVector dummy = concatMap ($ dummy)
+  [
+    testGeneralStorableVector
+  , testNumFunctions
+  , testEnumFunctions
+  ]
+
+
+
+testGeneralUnboxedVector dummy = concatMap ($ dummy) [
+        testSanity,
+        testPolymorphicFunctions
+    ]
+
+testOrdUnboxedVector dummy = concatMap ($ dummy)
+  [
+    testOrdFunctions
+  ]
+
+testBoolUnboxedVector dummy = concatMap ($ dummy)
+  [
+    testGeneralUnboxedVector
+  , testBoolFunctions
+  ]
+
+testNumericUnboxedVector dummy = concatMap ($ dummy)
+ [
+   testGeneralUnboxedVector
+ , testNumFunctions
+ , testEnumFunctions
+ ]
 
 tests = [
         testGroup "Data.Vector.Vector (Bool)"           (testBoolBoxedVector      (undefined :: Data.Vector.Vector Bool)),
@@ -401,6 +457,11 @@ tests = [
 
         testGroup "Data.Vector.Storable.Vector (Int)"    (testNumericStorableVector (undefined :: Data.Vector.Storable.Vector Int)),
         testGroup "Data.Vector.Storable.Vector (Float)"  (testNumericStorableVector (undefined :: Data.Vector.Storable.Vector Float)),
-        testGroup "Data.Vector.Storable.Vector (Double)" (testNumericStorableVector (undefined :: Data.Vector.Storable.Vector Double))
+        testGroup "Data.Vector.Storable.Vector (Double)" (testNumericStorableVector (undefined :: Data.Vector.Storable.Vector Double)),
+
+        testGroup "Data.Vector.Unboxed.Vector (Int)"    (testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Int)),
+        testGroup "Data.Vector.Unboxed.Vector (Float)"  (testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Float)),
+        testGroup "Data.Vector.Unboxed.Vector (Double)" (testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Double))
+
     ]
 

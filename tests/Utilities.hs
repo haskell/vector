@@ -7,6 +7,7 @@ import qualified Data.Vector as DV
 import qualified Data.Vector.Generic as DVG
 import qualified Data.Vector.Primitive as DVP
 import qualified Data.Vector.Storable as DVS
+import qualified Data.Vector.Unboxed as DVU
 import qualified Data.Vector.Fusion.Stream as S
 
 import Data.List ( sortBy )
@@ -33,6 +34,12 @@ instance (Arbitrary a, DVS.Storable a) => Arbitrary (DVS.Vector a) where
 
 instance (CoArbitrary a, DVS.Storable a) => CoArbitrary (DVS.Vector a) where
     coarbitrary = coarbitrary . DVS.toList
+
+instance (Arbitrary a, DVU.Unbox a) => Arbitrary (DVU.Vector a) where
+    arbitrary = fmap DVU.fromList arbitrary
+
+instance (CoArbitrary a, DVU.Unbox a) => CoArbitrary (DVU.Vector a) where
+    coarbitrary = coarbitrary . DVU.toList
 
 instance Arbitrary a => Arbitrary (S.Stream a) where
     arbitrary = fmap S.fromList arbitrary
@@ -78,6 +85,14 @@ instance (Eq a, DVS.Storable a) => TestData (DVS.Vector a) where
   unmodel = DVS.fromList
 
   type EqTest (DVS.Vector a) = Property
+  equal x y = property (x == y)
+
+instance (Eq a, DVU.Unbox a) => TestData (DVU.Vector a) where
+  type Model (DVU.Vector a) = [a]
+  model = DVU.toList
+  unmodel = DVU.fromList
+
+  type EqTest (DVU.Vector a) = Property
   equal x y = property (x == y)
 
 #define id_TestData(ty) \
