@@ -727,35 +727,35 @@ scanl1' = G.scanl1'
 
 -- | Prefix right-to-left scan
 prescanr
-  :: (Storable a, Storable b) => (a -> b -> a) -> a -> Vector b -> Vector a
+  :: (Storable a, Storable b) => (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE prescanr #-}
 prescanr = G.prescanr
 
 -- | Prefix right-to-left scan with strict accumulator
 prescanr'
-  :: (Storable a, Storable b) => (a -> b -> a) -> a -> Vector b -> Vector a
+  :: (Storable a, Storable b) => (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE prescanr' #-}
 prescanr' = G.prescanr'
 
 -- | Suffix right-to-left scan
 postscanr
-  :: (Storable a, Storable b) => (a -> b -> a) -> a -> Vector b -> Vector a
+  :: (Storable a, Storable b) => (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE postscanr #-}
 postscanr = G.postscanr
 
 -- | Suffix right-to-left scan with strict accumulator
 postscanr'
-  :: (Storable a, Storable b) => (a -> b -> a) -> a -> Vector b -> Vector a
+  :: (Storable a, Storable b) => (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE postscanr' #-}
 postscanr' = G.postscanr'
 
 -- | Haskell-style right-to-left scan
-scanr :: (Storable a, Storable b) => (a -> b -> a) -> a -> Vector b -> Vector a
+scanr :: (Storable a, Storable b) => (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE scanr #-}
 scanr = G.scanr
 
 -- | Haskell-style right-to-left scan with strict accumulator
-scanr' :: (Storable a, Storable b) => (a -> b -> a) -> a -> Vector b -> Vector a
+scanr' :: (Storable a, Storable b) => (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE scanr' #-}
 scanr' = G.scanr'
 

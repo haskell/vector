@@ -739,32 +739,32 @@ scanl1' = G.scanl1'
 
 
 -- | Prefix right-to-left scan
-prescanr :: (a -> b -> a) -> a -> Vector b -> Vector a
+prescanr :: (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE prescanr #-}
 prescanr = G.prescanr
 
 -- | Prefix right-to-left scan with strict accumulator
-prescanr' :: (a -> b -> a) -> a -> Vector b -> Vector a
+prescanr' :: (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE prescanr' #-}
 prescanr' = G.prescanr'
 
 -- | Suffix right-to-left scan
-postscanr :: (a -> b -> a) -> a -> Vector b -> Vector a
+postscanr :: (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE postscanr #-}
 postscanr = G.postscanr
 
 -- | Suffix right-to-left scan with strict accumulator
-postscanr' :: (a -> b -> a) -> a -> Vector b -> Vector a
+postscanr' :: (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE postscanr' #-}
 postscanr' = G.postscanr'
 
 -- | Haskell-style right-to-left scan
-scanr :: (a -> b -> a) -> a -> Vector b -> Vector a
+scanr :: (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE scanr #-}
 scanr = G.scanr
 
 -- | Haskell-style right-to-left scan with strict accumulator
-scanr' :: (a -> b -> a) -> a -> Vector b -> Vector a
+scanr' :: (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE scanr' #-}
 scanr' = G.scanr'
 
