@@ -426,12 +426,13 @@ testNumericStorableVector dummy = concatMap ($ dummy)
 
 testGeneralUnboxedVector dummy = concatMap ($ dummy) [
         testSanity,
-        testPolymorphicFunctions
+        testPolymorphicFunctions,
+        testOrdFunctions
     ]
 
-testOrdUnboxedVector dummy = concatMap ($ dummy)
+testUnitUnboxedVector dummy = concatMap ($ dummy)
   [
-    testOrdFunctions
+    testGeneralUnboxedVector
   ]
 
 testBoolUnboxedVector dummy = concatMap ($ dummy)
@@ -452,15 +453,13 @@ tests = [
         testGroup "Data.Vector.Vector (Int)"            (testNumericBoxedVector   (undefined :: Data.Vector.Vector Int)),
 
         testGroup "Data.Vector.Primitive.Vector (Int)"    (testNumericPrimitiveVector (undefined :: Data.Vector.Primitive.Vector Int)),
-        testGroup "Data.Vector.Primitive.Vector (Float)"  (testNumericPrimitiveVector (undefined :: Data.Vector.Primitive.Vector Float)),
         testGroup "Data.Vector.Primitive.Vector (Double)" (testNumericPrimitiveVector (undefined :: Data.Vector.Primitive.Vector Double)),
 
         testGroup "Data.Vector.Storable.Vector (Int)"    (testNumericStorableVector (undefined :: Data.Vector.Storable.Vector Int)),
-        testGroup "Data.Vector.Storable.Vector (Float)"  (testNumericStorableVector (undefined :: Data.Vector.Storable.Vector Float)),
         testGroup "Data.Vector.Storable.Vector (Double)" (testNumericStorableVector (undefined :: Data.Vector.Storable.Vector Double)),
 
+        testGroup "Data.Vector.Unboxed.Vector ()"       (testUnitUnboxedVector (undefined :: Data.Vector.Unboxed.Vector ())),
         testGroup "Data.Vector.Unboxed.Vector (Int)"    (testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Int)),
-        testGroup "Data.Vector.Unboxed.Vector (Float)"  (testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Float)),
         testGroup "Data.Vector.Unboxed.Vector (Double)" (testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Double))
 
     ]

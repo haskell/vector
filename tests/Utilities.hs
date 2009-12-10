@@ -104,6 +104,7 @@ instance TestData ty where { \
   type EqTest ty = Property; \
   equal x y = property (x == y) }
 
+id_TestData(())
 id_TestData(Bool)
 id_TestData(Int)
 id_TestData(Float)
