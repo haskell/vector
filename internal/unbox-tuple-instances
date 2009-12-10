@@ -58,9 +58,9 @@ instance (Unbox a, Unbox b) => M.MVector MVector (a, b) where
   {-# INLINE basicUnsafeGrow  #-}
   basicUnsafeGrow (MV_2 n_ as bs) m_
       = do
-          M.basicUnsafeGrow as m_
-          M.basicUnsafeGrow bs m_
-          return $ MV_2 (m_+n_) as bs
+          as' <- M.basicUnsafeGrow as m_
+          bs' <- M.basicUnsafeGrow bs m_
+          return $ MV_2 (m_+n_) as' bs'
 instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
   {-# INLINE unsafeFreeze  #-}
   unsafeFreeze (MV_2 n_ as bs)
@@ -183,10 +183,10 @@ instance (Unbox a,
   {-# INLINE basicUnsafeGrow  #-}
   basicUnsafeGrow (MV_3 n_ as bs cs) m_
       = do
-          M.basicUnsafeGrow as m_
-          M.basicUnsafeGrow bs m_
-          M.basicUnsafeGrow cs m_
-          return $ MV_3 (m_+n_) as bs cs
+          as' <- M.basicUnsafeGrow as m_
+          bs' <- M.basicUnsafeGrow bs m_
+          cs' <- M.basicUnsafeGrow cs m_
+          return $ MV_3 (m_+n_) as' bs' cs'
 instance (Unbox a,
           Unbox b,
           Unbox c) => G.Vector Vector (a, b, c) where
@@ -342,11 +342,11 @@ instance (Unbox a,
   {-# INLINE basicUnsafeGrow  #-}
   basicUnsafeGrow (MV_4 n_ as bs cs ds) m_
       = do
-          M.basicUnsafeGrow as m_
-          M.basicUnsafeGrow bs m_
-          M.basicUnsafeGrow cs m_
-          M.basicUnsafeGrow ds m_
-          return $ MV_4 (m_+n_) as bs cs ds
+          as' <- M.basicUnsafeGrow as m_
+          bs' <- M.basicUnsafeGrow bs m_
+          cs' <- M.basicUnsafeGrow cs m_
+          ds' <- M.basicUnsafeGrow ds m_
+          return $ MV_4 (m_+n_) as' bs' cs' ds'
 instance (Unbox a,
           Unbox b,
           Unbox c,
@@ -541,12 +541,12 @@ instance (Unbox a,
   {-# INLINE basicUnsafeGrow  #-}
   basicUnsafeGrow (MV_5 n_ as bs cs ds es) m_
       = do
-          M.basicUnsafeGrow as m_
-          M.basicUnsafeGrow bs m_
-          M.basicUnsafeGrow cs m_
-          M.basicUnsafeGrow ds m_
-          M.basicUnsafeGrow es m_
-          return $ MV_5 (m_+n_) as bs cs ds es
+          as' <- M.basicUnsafeGrow as m_
+          bs' <- M.basicUnsafeGrow bs m_
+          cs' <- M.basicUnsafeGrow cs m_
+          ds' <- M.basicUnsafeGrow ds m_
+          es' <- M.basicUnsafeGrow es m_
+          return $ MV_5 (m_+n_) as' bs' cs' ds' es'
 instance (Unbox a,
           Unbox b,
           Unbox c,
@@ -790,13 +790,13 @@ instance (Unbox a,
   {-# INLINE basicUnsafeGrow  #-}
   basicUnsafeGrow (MV_6 n_ as bs cs ds es fs) m_
       = do
-          M.basicUnsafeGrow as m_
-          M.basicUnsafeGrow bs m_
-          M.basicUnsafeGrow cs m_
-          M.basicUnsafeGrow ds m_
-          M.basicUnsafeGrow es m_
-          M.basicUnsafeGrow fs m_
-          return $ MV_6 (m_+n_) as bs cs ds es fs
+          as' <- M.basicUnsafeGrow as m_
+          bs' <- M.basicUnsafeGrow bs m_
+          cs' <- M.basicUnsafeGrow cs m_
+          ds' <- M.basicUnsafeGrow ds m_
+          es' <- M.basicUnsafeGrow es m_
+          fs' <- M.basicUnsafeGrow fs m_
+          return $ MV_6 (m_+n_) as' bs' cs' ds' es' fs'
 instance (Unbox a,
           Unbox b,
           Unbox c,

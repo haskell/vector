@@ -164,10 +164,11 @@ generate n =
 
     gen_unsafeGrow rec
       = (pat "MV" <+> var 'm',
-         mk_do [qM rec <+> vs <+> var 'm' | vs <- varss]
+         mk_do [vs <> char '\'' <+> text "<-"
+                                <+> qM rec <+> vs <+> var 'm' | vs <- varss]
                $ text "return $" <+> con "MV"
                                  <+> parens (var 'm' <> char '+' <> var 'n')
-                                 <+> sep varss)
+                                 <+> sep (map (<> char '\'') varss))
 
     gen_unsafeFreeze rec
       = (pat "MV",
