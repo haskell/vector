@@ -886,7 +886,7 @@ unstablePartition_new f (New.New p) = runST (
     mv <- p
     i <- M.unstablePartition f mv
     v <- unsafeFreeze mv
-    return (take i v, drop i v))
+    return (unsafeTake i v, unsafeDrop i v))
 
 {-# RULES
 
