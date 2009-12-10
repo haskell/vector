@@ -96,6 +96,7 @@ import Prelude hiding ( length, null,
                         all, any, and, or, sum, product, minimum, maximum,
                         scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo )
+import qualified Prelude
 
 #include "vector.h"
 
@@ -106,6 +107,9 @@ instance (Unbox a, Eq a) => Eq (Vector a) where
 instance (Unbox a, Ord a) => Ord (Vector a) where
   {-# INLINE compare #-}
   compare = G.cmp
+
+instance (Show a, Unbox a) => Show (Vector a) where
+    show = (Prelude.++ " :: Data.Vector.Unboxed.Vector") . ("fromList " Prelude.++) . show . toList
 
 -- Length
 -- ------
