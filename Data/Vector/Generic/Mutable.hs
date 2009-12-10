@@ -433,6 +433,15 @@ unstream s = case upperBound (Stream.size s) of
                Just n  -> unstreamMax     s n
                Nothing -> unstreamUnknown s
 
+-- FIXME: I can't think of how to prevent GHC from floating out
+-- unstreamUnknown. That is bad because SpecConstr then generates two
+-- specialisations: one for when it is called from unstream (it doesn't know
+-- the shape of the vector) and one for when the vector has grown. To see the
+-- problem simply compile this:
+--
+-- fromList = Data.Vector.Unboxed.unstream . Stream.fromList
+--
+
 unstreamMax
   :: (PrimMonad m, MVector v a) => Stream a -> Int -> m (v (PrimState m) a)
 {-# INLINE unstreamMax #-}
