@@ -114,8 +114,8 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_postscanr, 'prop_postscanr',
         'prop_scanr, 'prop_scanr', 'prop_scanr1, 'prop_scanr1',
 
-        'prop_concatMap,
-        'prop_unfoldr
+        'prop_concatMap {- ,
+        'prop_unfoldr -}
     ])
   where
     -- Prelude
@@ -442,11 +442,16 @@ testBoolUnboxedVector dummy = concatMap ($ dummy)
   ]
 
 testNumericUnboxedVector dummy = concatMap ($ dummy)
- [
-   testGeneralUnboxedVector
- , testNumFunctions
- , testEnumFunctions
- ]
+  [
+    testGeneralUnboxedVector
+  , testNumFunctions
+  , testEnumFunctions
+  ]
+
+testTupleUnboxedVector dummy = concatMap ($ dummy)
+  [
+    testGeneralUnboxedVector
+  ]
 
 tests = [
         testGroup "Data.Vector.Vector (Bool)"           (testBoolBoxedVector      (undefined :: Data.Vector.Vector Bool)),
@@ -460,7 +465,9 @@ tests = [
 
         testGroup "Data.Vector.Unboxed.Vector ()"       (testUnitUnboxedVector (undefined :: Data.Vector.Unboxed.Vector ())),
         testGroup "Data.Vector.Unboxed.Vector (Int)"    (testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Int)),
-        testGroup "Data.Vector.Unboxed.Vector (Double)" (testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Double))
+        testGroup "Data.Vector.Unboxed.Vector (Double)" (testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Double)),
+       testGroup "Data.Vector.Unboxed.Vector (Int,Bool)" (testTupleUnboxedVector (undefined :: Data.Vector.Unboxed.Vector (Int,Bool))),
+         testGroup "Data.Vector.Unboxed.Vector (Int,Bool,Int)" (testTupleUnboxedVector (undefined :: Data.Vector.Unboxed.Vector (Int,Bool,Int)))
 
     ]
 
