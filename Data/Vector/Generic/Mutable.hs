@@ -268,9 +268,7 @@ grow :: (PrimMonad m, MVector v a)
 grow v by = BOUNDS_CHECK(checkLength) "grow" by
           $ unsafeGrow v by
 
-enlarge_delta v = max 1
-                $ double2Int
-                $ int2Double (length v) * gROWTH_FACTOR
+enlarge_delta v = double2Int (int2Double (length v) * gROWTH_FACTOR) + 1
 
 -- | Grow a vector logarithmically
 enlarge :: (PrimMonad m, MVector v a)
