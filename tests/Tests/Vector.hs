@@ -327,8 +327,18 @@ testOrdFunctions _ = $(testProperties
     prop_maxIndex :: P (v a -> Int) = not . V.null ===> V.maxIndex `eq` maxIndex
 
 testEnumFunctions :: forall a v. (COMMON_CONTEXT(a, v), Enum a, Ord a, Num a, Random a) => v a -> [Test]
-testEnumFunctions _ = $(testProperties ['prop_enumFromTo, 'prop_enumFromThenTo])
+testEnumFunctions _ = $(testProperties
+  [ 'prop_enumFromN, 'prop_enumFromThenN,
+    'prop_enumFromTo, 'prop_enumFromThenTo])
   where
+    prop_enumFromN :: P (a -> Int -> v a)
+      = (\_ n -> n < 1000)
+        ===> V.enumFromN `eq` (\x n -> take n $ scanl (+) x $ repeat 1)
+
+    prop_enumFromThenN :: P (a -> a -> Int -> v a)
+      = (\_ _ n -> n < 1000)
+        ===> V.enumFromStepN `eq` (\x y n -> take n $ scanl (+) x $ repeat y)
+
     prop_enumFromTo = \m ->
                       forAll (choose (-2,100)) $ \n ->
                       unP prop m (m+n)
