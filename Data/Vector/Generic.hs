@@ -945,9 +945,8 @@ findIndex f = Stream.findIndex f . stream
 findIndices :: (Vector v a, Vector v Int) => (a -> Bool) -> v a -> v Int
 {-# INLINE findIndices #-}
 findIndices f = unstream
-              . Stream.map fst
-              . Stream.filter (f . snd)
-              . Stream.indexed
+              . inplace (MStream.map fst . MStream.filter (f . snd)
+                                         . MStream.indexed)
               . stream
 
 -- | Yield 'Just' the index of the first occurence of the given element or
