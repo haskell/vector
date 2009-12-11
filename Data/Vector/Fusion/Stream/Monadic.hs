@@ -34,7 +34,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   map, mapM, mapM_, trans, unbox, concatMap,
   
   -- * Zipping
-  indexed,
+  indexed, indexedR,
   zipWithM, zipWith3M, zipWith4M, zipWith5M, zipWith6M,
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
   zip, zip3, zip4, zip5, zip6,
@@ -423,6 +423,23 @@ indexed (Stream step s n) = Stream step' (s,0) n
                     case r of
                       Yield x s' -> return $ Yield (i,x) (s', i+1)
                       Skip    s' -> return $ Skip        (s', i)
+                      Done       -> return Done
+
+-- | Pair each element in a 'Stream' with its index, starting from the right
+-- and counting down
+indexedR :: Monad m => Int -> Stream m a -> Stream m (Int,a)
+{-# INLINE_STREAM indexedR #-}
+indexedR m (Stream step s n) = Stream step' (s,m) n
+  where
+    {-# INLINE_INNER step' #-}
+    step' (s,i) = i `seq`
+                  do
+                    r <- step s
+                    case r of
+                      Yield x s' -> let i' = i-1
+                                    in
+                                    return $ Yield (i',x) (s', i')
+                      Skip    s' -> return $ Skip         (s', i)
                       Done       -> return Done
 
 -- | Zip two 'Stream's with the given monadic function

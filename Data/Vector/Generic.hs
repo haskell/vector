@@ -59,8 +59,8 @@ module Data.Vector.Generic (
   elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
 
   -- * Folding
-  foldl, foldl1, foldl', foldl1', foldr, foldr1,
-  ifoldl, ifoldl', ifoldr,
+  foldl, foldl1, foldl', foldl1', foldr, foldr1, foldr', foldr1',
+  ifoldl, ifoldl', ifoldr, ifoldr',
  
   -- * Specialised folds
   all, any, and, or,
@@ -993,6 +993,16 @@ foldr1 :: Vector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldr1 #-}
 foldr1 f = Stream.foldr1 f . stream
 
+-- | Right fold with a strict accumulator
+foldr' :: Vector v a => (a -> b -> b) -> b -> v a -> b
+{-# INLINE foldr' #-}
+foldr' f z = Stream.foldl' (flip f) z . streamR
+
+-- | Right fold on non-empty vectors with strict accumulator
+foldr1' :: Vector v a => (a -> a -> a) -> v a -> a
+{-# INLINE foldr1' #-}
+foldr1' f = Stream.foldl1' (flip f) . streamR
+
 -- | Left fold (function applied to each element and its index)
 ifoldl :: Vector v b => (a -> Int -> b -> a) -> a -> v b -> a
 {-# INLINE ifoldl #-}
@@ -1008,6 +1018,13 @@ ifoldl' f z = Stream.foldl' (uncurry . f) z . Stream.indexed . stream
 ifoldr :: Vector v a => (Int -> a -> b -> b) -> b -> v a -> b
 {-# INLINE ifoldr #-}
 ifoldr f z = Stream.foldr (uncurry f) z . Stream.indexed . stream
+
+-- | Right fold with strict accumulator (function applied to each element and
+-- its index)
+ifoldr' :: Vector v a => (Int -> a -> b -> b) -> b -> v a -> b
+{-# INLINE ifoldr' #-}
+ifoldr' f z xs = Stream.foldl' (flip (uncurry f)) z
+               $ Stream.indexedR (length xs) $ streamR xs
 
 -- Specialised folds
 -- -----------------

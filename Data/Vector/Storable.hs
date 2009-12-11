@@ -51,8 +51,8 @@ module Data.Vector.Storable (
   elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
 
   -- * Folding
-  foldl, foldl1, foldl', foldl1', foldr, foldr1,
-  ifoldl, ifoldl', ifoldr,
+  foldl, foldl1, foldl', foldl1', foldr, foldr1, foldr', foldr1',
+  ifoldl, ifoldl', ifoldr, ifoldr',
 
   -- * Specialised folds
   all, any, and, or,
@@ -599,6 +599,16 @@ foldr1 :: Storable a => (a -> a -> a) -> Vector a -> a
 {-# INLINE foldr1 #-}
 foldr1 = G.foldr1
 
+-- | Right fold with a strict accumulator
+foldr' :: Storable a => (a -> b -> b) -> b -> Vector a -> b
+{-# INLINE foldr' #-}
+foldr' = G.foldr'
+
+-- | Right fold on non-empty vectors with strict accumulator
+foldr1' :: Storable a => (a -> a -> a) -> Vector a -> a
+{-# INLINE foldr1' #-}
+foldr1' = G.foldr1'
+
 -- | Left fold (function applied to each element and its index)
 ifoldl :: Storable b => (a -> Int -> b -> a) -> a -> Vector b -> a
 {-# INLINE ifoldl #-}
@@ -614,6 +624,12 @@ ifoldl' = G.ifoldl'
 ifoldr :: Storable a => (Int -> a -> b -> b) -> b -> Vector a -> b
 {-# INLINE ifoldr #-}
 ifoldr = G.ifoldr
+
+-- | Right fold with strict accumulator (function applied to each element and
+-- its index)
+ifoldr' :: Storable a => (Int -> a -> b -> b) -> b -> Vector a -> b
+{-# INLINE ifoldr' #-}
+ifoldr' = G.ifoldr'
 
 -- Specialised folds
 -- -----------------

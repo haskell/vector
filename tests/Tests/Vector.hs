@@ -101,8 +101,8 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_elemIndex, 'prop_elemIndices,
 
         'prop_foldl, 'prop_foldl1, 'prop_foldl', 'prop_foldl1',
-        'prop_foldr, 'prop_foldr1,
-        'prop_ifoldl, 'prop_ifoldl', 'prop_ifoldr,
+        'prop_foldr, 'prop_foldr1, 'prop_foldr', 'prop_foldr1',
+        'prop_ifoldl, 'prop_ifoldl', 'prop_ifoldr, 'prop_ifoldr',
 
         'prop_all, 'prop_any,
 
@@ -220,12 +220,17 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_foldr :: P ((a -> a -> a) -> a -> v a -> a) = V.foldr `eq` foldr
     prop_foldr1 :: P ((a -> a -> a) -> v a -> a)     = notNull2 ===>
                         V.foldr1 `eq` foldr1
+    prop_foldr' :: P ((a -> a -> a) -> a -> v a -> a) = V.foldr' `eq` foldr
+    prop_foldr1' :: P ((a -> a -> a) -> v a -> a)     = notNull2 ===>
+                        V.foldr1' `eq` foldr1
     prop_ifoldl :: P ((a -> Int -> a -> a) -> a -> v a -> a)
         = V.ifoldl `eq` ifoldl
     prop_ifoldl' :: P ((a -> Int -> a -> a) -> a -> v a -> a)
         = V.ifoldl' `eq` ifoldl
     prop_ifoldr :: P ((Int -> a -> a -> a) -> a -> v a -> a)
         = V.ifoldr `eq` ifoldr
+    prop_ifoldr' :: P ((Int -> a -> a -> a) -> a -> v a -> a)
+        = V.ifoldr' `eq` ifoldr
 
     prop_all :: P ((a -> Bool) -> v a -> Bool) = V.all `eq` all
     prop_any :: P ((a -> Bool) -> v a -> Bool) = V.any `eq` any
