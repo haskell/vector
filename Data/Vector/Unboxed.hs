@@ -74,7 +74,7 @@ module Data.Vector.Unboxed (
   scanr, scanr', scanr1, scanr1',
 
   -- * Enumeration
-  enumFromTo, enumFromThenTo,
+  enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
   toList, fromList
@@ -750,10 +750,31 @@ scanr1' = G.scanr1'
 -- Enumeration
 -- -----------
 
+-- | Yield a vector of the given length containing the values @x@, @x+1@ etc.
+-- This operation is usually more efficient than 'enumFromTo'.
+enumFromN :: (Unbox a, Num a) => a -> Int -> Vector a
+{-# INLINE enumFromN #-}
+enumFromN = G.enumFromN
+
+-- | Yield a vector of the given length containing the values @x@, @x+y@,
+-- @x+y+y@ etc. This operations is usually more efficient than
+-- 'enumFromThenTo'.
+enumFromStepN :: (Unbox a, Num a) => a -> a -> Int -> Vector a
+{-# INLINE enumFromStepN #-}
+enumFromStepN = G.enumFromStepN
+
+-- | Enumerate values from @x@ to @y@.
+--
+-- /WARNING:/ This operation can be very inefficient. If at all possible, use
+-- 'enumFromN' instead.
 enumFromTo :: (Unbox a, Enum a) => a -> a -> Vector a
 {-# INLINE enumFromTo #-}
 enumFromTo = G.enumFromTo
 
+-- | Enumerate values from @x@ to @y@ with a specific step @z@.
+--
+-- /WARNING:/ This operation can be very inefficient. If at all possible, use
+-- 'enumFromStepN' instead.
 enumFromThenTo :: (Unbox a, Enum a) => a -> a -> a -> Vector a
 {-# INLINE enumFromThenTo #-}
 enumFromThenTo = G.enumFromThenTo

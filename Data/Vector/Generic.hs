@@ -80,7 +80,7 @@ module Data.Vector.Generic (
   scanr, scanr', scanr1, scanr1',
 
   -- * Enumeration
-  enumFromTo, enumFromThenTo,
+  enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
   toList, fromList,
@@ -1219,10 +1219,34 @@ scanr1' f = unstreamR . inplace (MStream.scanl1' (flip f)) . streamR
 -- Enumeration
 -- -----------
 
+-- | Yield a vector of the given length containing the values @x@, @x+1@ etc.
+-- This operation is usually more efficient than 'enumFromTo'.
+enumFromN :: (Vector v a, Num a) => a -> Int -> v a
+{-# INLINE enumFromN #-}
+enumFromN x n = enumFromStepN x 1 n
+
+-- | Yield a vector of the given length containing the values @x@, @x+y@,
+-- @x+y+y@ etc. This operations is usually more efficient than
+-- 'enumFromThenTo'.
+enumFromStepN :: forall v a. (Vector v a, Num a) => a -> a -> Int -> v a
+{-# INLINE enumFromStepN #-}
+enumFromStepN x y n = elemseq (undefined :: v a) x
+                    $ elemseq (undefined :: v a) y
+                    $ unstream
+                    $ Stream.enumFromStepN  x y n
+
+-- | Enumerate values from @x@ to @y@.
+--
+-- /WARNING:/ This operation can be very inefficient. If at all possible, use
+-- 'enumFromN' instead.
 enumFromTo :: (Vector v a, Enum a) => a -> a -> v a
 {-# INLINE enumFromTo #-}
 enumFromTo x y = unstream (Stream.enumFromTo x y)
 
+-- | Enumerate values from @x@ to @y@ with a specific step @z@.
+--
+-- /WARNING:/ This operation can be very inefficient. If at all possible, use
+-- 'enumFromStepN' instead.
 enumFromThenTo :: (Vector v a, Enum a) => a -> a -> a -> v a
 {-# INLINE enumFromThenTo #-}
 enumFromThenTo x y z = unstream (Stream.enumFromThenTo x y z)

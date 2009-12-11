@@ -63,7 +63,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   scanl1, scanl1M, scanl1', scanl1M',
 
   -- * Enumerations
-  enumFromTo, enumFromThenTo,
+  enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversions
   toList, fromList
@@ -1102,13 +1102,29 @@ scanl1M' f (Stream step s sz) = Stream step' (s, Nothing) sz
 -- ------------
 
 -- The Enum class is broken for this, there just doesn't seem to be a
--- way to implement this generically. We have specialise for as many types as
--- we can but this doesn't help in polymorphic loops.
+-- way to implement this generically. We have to specialise for as many types
+-- as we can but this doesn't help in polymorphic loops.
 
--- | Enumerate values from @x@ to @y@
+-- | Yield a 'Stream' of the given length containing the values @x@, @x+y@,
+-- @x+y+y@ etc.
+enumFromStepN :: (Num a, Monad m) => a -> a -> Int -> Stream m a
+{-# INLINE_STREAM enumFromStepN #-}
+enumFromStepN x y n = n `seq` Stream step (x,n) (Exact (delay_inline max n 0))
+  where
+    {-# INLINE_INNER step #-}
+    step (x,n) | n > 0     = return $ Yield x (x+y,n-1)
+               | otherwise = return $ Done
+
+-- | Enumerate values
+--
+-- /WARNING:/ This operation can be very inefficient. If at all possible, use
+-- 'enumFromStepN' instead.
 enumFromTo :: (Enum a, Monad m) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo #-}
 enumFromTo x y = fromList [x .. y]
+
+-- FIXME: Specialise enumFromTo for Float and Double. Also, try to do
+-- something about pairs?
 
 -- NOTE: We use (x+1) instead of (succ x) below because the latter checks for
 -- overflow which can't happen here.
@@ -1288,10 +1304,15 @@ enumFromTo_char x y = Stream step xn (Exact n)
 
   #-}
 
--- | Enumerate values from @x@ to @y@
+-- | Enumerate values with a given step.
+--
+-- /WARNING:/ This operation is very inefficient. If at all possible, use
+-- 'enumFromStepN' instead.
 enumFromThenTo :: (Enum a, Monad m) => a -> a -> a -> Stream m a
 {-# INLINE_STREAM enumFromThenTo #-}
 enumFromThenTo x y z = fromList [x, y .. z]
+
+-- FIXME: Specialise enumFromThenTo.
 
 -- Conversions
 -- -----------

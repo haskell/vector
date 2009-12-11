@@ -64,7 +64,7 @@ module Data.Vector.Fusion.Stream (
   scanl1, scanl1',
 
   -- * Enumerations
-  enumFromTo, enumFromThenTo,
+  enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversions
   toList, fromList, liftStream,
@@ -528,10 +528,24 @@ fold1M' m = M.fold1M' m . liftStream
 -- Enumerations
 -- ------------
 
+-- | Yield a 'Stream' of the given length containing the values @x@, @x+y@,
+-- @x+y+y@ etc.
+enumFromStepN :: Num a => a -> a -> Int -> Stream a
+{-# INLINE enumFromStepN #-}
+enumFromStepN = M.enumFromStepN
+
+-- | Enumerate values
+--
+-- /WARNING:/ This operations can be very inefficient. If at all possible, use
+-- 'enumFromStepN' instead.
 enumFromTo :: Enum a => a -> a -> Stream a
 {-# INLINE enumFromTo #-}
 enumFromTo = M.enumFromTo
 
+-- | Enumerate values with a given step.
+--
+-- /WARNING:/ This operations is very inefficient. If at all possible, use
+-- 'enumFromStepN' instead.
 enumFromThenTo :: Enum a => a -> a -> a -> Stream a
 {-# INLINE enumFromThenTo #-}
 enumFromThenTo = M.enumFromThenTo
