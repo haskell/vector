@@ -588,10 +588,7 @@ reverse :: (PrimMonad m, MVector v a) => v (PrimState m) a -> m ()
 reverse !v = reverse_loop 0 (length v - 1)
   where
     reverse_loop i j | i < j = do
-                                 x <- unsafeRead v i
-                                 y <- unsafeRead v j
-                                 unsafeWrite v i y
-                                 unsafeWrite v j x
+                                 unsafeSwap v i j
                                  reverse_loop (i + 1) (j - 1)
     reverse_loop _ _ = return ()
 
