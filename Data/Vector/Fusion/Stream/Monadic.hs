@@ -1126,17 +1126,11 @@ enumFromTo_small x y = Stream step x (Exact n)
 
 {-# RULES
 
-"enumFromTo<Int> [Stream]"
-  enumFromTo = enumFromTo_small :: Monad m => Int -> Int -> Stream m Int
-
 "enumFromTo<Int8> [Stream]"
   enumFromTo = enumFromTo_small :: Monad m => Int8 -> Int8 -> Stream m Int8
 
 "enumFromTo<Int16> [Stream]"
   enumFromTo = enumFromTo_small :: Monad m => Int16 -> Int16 -> Stream m Int16
-
-"enumFromTo<Int32> [Stream]"
-  enumFromTo = enumFromTo_small :: Monad m => Int32 -> Int32 -> Stream m Int32
 
 "enumFromTo<Word8> [Stream]"
   enumFromTo = enumFromTo_small :: Monad m => Word8 -> Word8 -> Stream m Word8
@@ -1146,15 +1140,43 @@ enumFromTo_small x y = Stream step x (Exact n)
 
   #-}
 
--- FIXME: the "too large" test is totally wrong
-enumFromTo_big :: (Integral a, Monad m) => a -> a -> Stream m a
-{-# INLINE_STREAM enumFromTo_big #-}
-enumFromTo_big x y = Stream step x (Exact (len x y))
+#if WORD_SIZE_IN_BITS > 32
+
+{-# RULES
+
+"enumFromTo<Int32> [Stream]"
+  enumFromTo = enumFromTo_small :: Monad m => Int32 -> Int32 -> Stream m Int32
+
+"enumFromTo<Word32> [Stream]"
+  enumFromTo = enumFromTo_small :: Monad m => Word32 -> Word32 -> Stream m Word32
+
+  #-}
+
+#endif
+
+-- NOTE: We could implement a generic "too large" test:
+--
+-- len x y | x > y = 0
+--         | n > 0 && n <= fromIntegral (maxBound :: Int) = fromIntegral n
+--         | otherwise = error
+--   where
+--     n = y-x+1
+--
+-- Alas, GHC won't eliminate unnecessary comparisons (such as n >= 0 for
+-- unsigned types). See http://hackage.haskell.org/trac/ghc/ticket/3744
+--
+
+enumFromTo_int :: (Integral a, Monad m) => a -> a -> Stream m a
+{-# INLINE_STREAM enumFromTo_int #-}
+enumFromTo_int x y = Stream step x (Exact (len x y))
   where
     {-# INLINE [0] len #-}
-    len x y | x > y = 0
-            | y - x < fromIntegral (maxBound :: Int) = fromIntegral (y-x+1)
-            | otherwise = error $ "vector.enumFromTo_big: Array too large"
+    len x y | x > y     = 0
+            | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
+                          (n > 0)
+                        $ fromIntegral n
+      where
+        n = y-x+1
 
     {-# INLINE_INNER step #-}
     step x | x <= y    = return $ Yield x (x+1)
@@ -1162,19 +1184,89 @@ enumFromTo_big x y = Stream step x (Exact (len x y))
 
 {-# RULES
 
+"enumFromTo<Int> [Stream]"
+  enumFromTo = enumFromTo_int :: Monad m => Int -> Int -> Stream m Int
+
+#if WORD_SIZE_IN_BITS > 32
+
+"enumFromTo<Int64> [Stream]"
+  enumFromTo = enumFromTo_int :: Monad m => Int64 -> Int64 -> Stream m Int64
+
+#else
+
+"enumFromTo<Int32> [Stream]"
+  enumFromTo = enumFromTo_int :: Monad m => Int32 -> Int32 -> Stream m Int32
+
+#endif
+
+  #-}
+
+enumFromTo_big_word :: (Integral a, Monad m) => a -> a -> Stream m a
+{-# INLINE_STREAM enumFromTo_big_word #-}
+enumFromTo_big_word x y = Stream step x (Exact (len x y))
+  where
+    {-# INLINE [0] len #-}
+    len x y | x > y     = 0
+            | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
+                          (n < fromIntegral (maxBound :: Int))
+                        $ fromIntegral (n+1)
+      where
+        n = y-x
+
+    {-# INLINE_INNER step #-}
+    step x | x <= y    = return $ Yield x (x+1)
+           | otherwise = return $ Done
+
+{-# RULES
+
+"enumFromTo<Word> [Stream]"
+  enumFromTo = enumFromTo_big_word :: Monad m => Word -> Word -> Stream m Word
+
+"enumFromTo<Word64> [Stream]"
+  enumFromTo = enumFromTo_big_word
+                        :: Monad m => Word64 -> Word64 -> Stream m Word64
+
+#if WORD_SIZE_IN_BITS == 32
+
+"enumFromTo<Word32> [Stream]"
+  enumFromTo = enumFromTo_big_word
+                        :: Monad m => Word32 -> Word32 -> Stream m Word32
+
+#endif
+
+"enumFromTo<Integer> [Stream]"
+  enumFromTo = enumFromTo_big_word
+                        :: Monad m => Integer -> Integer -> Stream m Integer
+
+  #-}
+
+-- FIXME: the "too large" test is totally wrong
+enumFromTo_big_int :: (Integral a, Monad m) => a -> a -> Stream m a
+{-# INLINE_STREAM enumFromTo_big_int #-}
+enumFromTo_big_int x y = Stream step x (Exact (len x y))
+  where
+    {-# INLINE [0] len #-}
+    len x y | x > y     = 0
+            | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
+                          (n > 0 && n <= fromIntegral (maxBound :: Int))
+                        $ fromIntegral n
+      where
+        n = y-x+1
+                        
+    {-# INLINE_INNER step #-}
+    step x | x <= y    = return $ Yield x (x+1)
+           | otherwise = return $ Done
+
+#if WORD_SIZE_IN_BITS > 32
+
+{-# RULES
+
 "enumFromTo<Int64> [Stream]"
   enumFromTo = enumFromTo_big :: Monad m => Int64 -> Int64 -> Stream m Int64
 
-"enumFromTo<Word32> [Stream]"
-  enumFromTo = enumFromTo_big :: Monad m => Word32 -> Word32 -> Stream m Word32
-
-"enumFromTo<Word64> [Stream]"
-  enumFromTo = enumFromTo_big :: Monad m => Word64 -> Word64 -> Stream m Word64
-
-"enumFromTo<Integer> [Stream]"
-  enumFromTo = enumFromTo_big :: Monad m => Integer -> Integer -> Stream m Integer
-
   #-}
+
+#endif
 
 enumFromTo_char :: Monad m => Char -> Char -> Stream m Char
 {-# INLINE_STREAM enumFromTo_char #-}
