@@ -555,17 +555,6 @@ accum f !v s = Stream.mapM_ upd s
                      $ unsafeRead v i
                   unsafeWrite v i (f a b)
 
-unsafeAccum :: (PrimMonad m, MVector v a)
-            => (a -> b -> a) -> v (PrimState m) a -> Stream (Int, b) -> m ()
-{-# INLINE unsafeAccum #-}
-unsafeAccum f !v s = Stream.mapM_ upd s
-  where
-    {-# INLINE_INNER upd #-}
-    upd (i,b) = do
-                  a <- UNSAFE_CHECK(checkIndex) "accum" i (length v)
-                     $ unsafeRead v i
-                  unsafeWrite v i (f a b)
-
 update :: (PrimMonad m, MVector v a)
                         => v (PrimState m) a -> Stream (Int, a) -> m ()
 {-# INLINE update #-}
@@ -573,16 +562,7 @@ update !v s = Stream.mapM_ upd s
   where
     {-# INLINE_INNER upd #-}
     upd (i,b) = BOUNDS_CHECK(checkIndex) "update" i (length v)
-                  $ unsafeWrite v i b
-
-unsafeUpdate :: (PrimMonad m, MVector v a)
-                        => v (PrimState m) a -> Stream (Int, a) -> m ()
-{-# INLINE unsafeUpdate #-}
-unsafeUpdate !v s = Stream.mapM_ upd s
-  where
-    {-# INLINE_INNER upd #-}
-    upd (i,b) = UNSAFE_CHECK(checkIndex) "accum" i (length v)
-                  $ unsafeWrite v i b
+              $ unsafeWrite v i b
 
 reverse :: (PrimMonad m, MVector v a) => v (PrimState m) a -> m ()
 {-# INLINE reverse #-}
@@ -595,6 +575,26 @@ reverse !v = reverse_loop 0 (length v - 1)
                                  unsafeWrite v j x
                                  reverse_loop (i + 1) (j - 1)
     reverse_loop _ _ = return ()
+
+unsafeAccum :: (PrimMonad m, MVector v a)
+            => (a -> b -> a) -> v (PrimState m) a -> Stream (Int, b) -> m ()
+{-# INLINE unsafeAccum #-}
+unsafeAccum f !v s = Stream.mapM_ upd s
+  where
+    {-# INLINE_INNER upd #-}
+    upd (i,b) = do
+                  a <- UNSAFE_CHECK(checkIndex) "accum" i (length v)
+                     $ unsafeRead v i
+                  unsafeWrite v i (f a b)
+
+unsafeUpdate :: (PrimMonad m, MVector v a)
+                        => v (PrimState m) a -> Stream (Int, a) -> m ()
+{-# INLINE unsafeUpdate #-}
+unsafeUpdate !v s = Stream.mapM_ upd s
+  where
+    {-# INLINE_INNER upd #-}
+    upd (i,b) = UNSAFE_CHECK(checkIndex) "accum" i (length v)
+                  $ unsafeWrite v i b
 
 unstablePartition :: forall m v a. (PrimMonad m, MVector v a)
                   => (a -> Bool) -> v (PrimState m) a -> m Int
