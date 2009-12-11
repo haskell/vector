@@ -94,7 +94,7 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_imap, 'prop_izipWith, 'prop_izipWith3,
 
         'prop_filter, 'prop_ifilter, 'prop_takeWhile, 'prop_dropWhile,
-        'prop_span, 'prop_break,
+        'prop_partition, 'prop_span, 'prop_break,
 
         'prop_elem, 'prop_notElem,
         'prop_find, 'prop_findIndex, 'prop_findIndices,
@@ -198,6 +198,8 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_ifilter :: P ((Int -> a -> Bool) -> v a -> v a) = V.ifilter `eq` ifilter
     prop_takeWhile :: P ((a -> Bool) -> v a -> v a) = V.takeWhile `eq` takeWhile
     prop_dropWhile :: P ((a -> Bool) -> v a -> v a) = V.dropWhile `eq` dropWhile
+    prop_partition :: P ((a -> Bool) -> v a -> (v a, v a))
+      = V.partition `eq` partition
     prop_span :: P ((a -> Bool) -> v a -> (v a, v a)) = V.span `eq` span
     prop_break :: P ((a -> Bool) -> v a -> (v a, v a)) = V.break `eq` break
 

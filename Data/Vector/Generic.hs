@@ -53,7 +53,7 @@ module Data.Vector.Generic (
 
   -- * Filtering
   filter, ifilter, takeWhile, dropWhile,
-  unstablePartition, span, break,
+  partition, unstablePartition, span, break,
 
   -- * Searching
   elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
@@ -863,8 +863,29 @@ dropWhile :: Vector v a => (a -> Bool) -> v a -> v a
 dropWhile f = unstream . Stream.dropWhile f . stream
 
 -- | Split the vector in two parts, the first one containing those elements
+-- that satisfy the predicate and the second one those that don't. The
+-- relative order of the elements is preserved at the cost of a (sometimes)
+-- reduced performance compared to 'unstablePartition'.
+partition :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
+{-# INLINE partition #-}
+partition f = partition_stream f . stream
+
+-- FIXME: Make this inplace-fusible (look at how stable_partition is
+-- implemented in C++)
+
+partition_stream :: Vector v a => (a -> Bool) -> Stream a -> (v a, v a)
+{-# INLINE_STREAM partition_stream #-}
+partition_stream f s = s `seq` runST (
+  do
+    (mv1,mv2) <- M.partitionStream f s
+    v1 <- unsafeFreeze mv1
+    v2 <- unsafeFreeze mv2
+    return (v1,v2))
+
+-- | Split the vector in two parts, the first one containing those elements
 -- that satisfy the predicate and the second one those that don't. The order
--- of the elements is not preserved.
+-- of the elements is not preserved but the operation is often faster than
+-- 'partition'.
 unstablePartition :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 {-# INLINE unstablePartition #-}
 unstablePartition f = unstablePartition_stream f . stream

@@ -28,7 +28,7 @@ module Data.Vector.Generic.Mutable (
   -- * Internal operations
   unstream, transform, unstreamR, transformR,
   unsafeAccum, accum, unsafeUpdate, update, reverse,
-  unstablePartition, unstablePartitionStream
+  unstablePartition, unstablePartitionStream, partitionStream
 ) where
 
 import qualified Data.Vector.Fusion.Stream      as Stream
@@ -692,6 +692,41 @@ unstablePartitionMax f s n
                                 
       (i,j) <- Stream.foldM' put (0, n) s
       return (unsafeSlice 0 i v, unsafeSlice j (n-j) v)
+
+partitionStream :: (PrimMonad m, MVector v a)
+        => (a -> Bool) -> Stream a -> m (v (PrimState m) a, v (PrimState m) a)
+{-# INLINE partitionStream #-}
+partitionStream f s
+  = case upperBound (Stream.size s) of
+      Just n  -> partitionMax f s n
+      Nothing -> partitionUnknown f s
+
+partitionMax :: (PrimMonad m, MVector v a)
+  => (a -> Bool) -> Stream a -> Int -> m (v (PrimState m) a, v (PrimState m) a)
+{-# INLINE partitionMax #-}
+partitionMax f s n
+  = do
+      v <- INTERNAL_CHECK(checkLength) "unstablePartitionMax" n
+         $ unsafeNew n
+
+      let {-# INLINE_INNER put #-}
+          put (i,j) x
+            | f x       = do
+                            unsafeWrite v i x
+                            return (i+1,j)
+
+            | otherwise = let j' = j-1 in
+                          do
+                            unsafeWrite v j' x
+                            return (i,j') 
+                            
+      (i,j) <- Stream.foldM' put (0,n) s
+      INTERNAL_CHECK(check) "partitionMax" "invalid indices" (i <= j)
+        $ return ()
+      let l = unsafeSlice 0 i v
+          r = unsafeSlice j (n-j) v
+      reverse r
+      return (l,r)
 
 partitionUnknown :: (PrimMonad m, MVector v a)
         => (a -> Bool) -> Stream a -> m (v (PrimState m) a, v (PrimState m) a)

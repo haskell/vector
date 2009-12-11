@@ -45,7 +45,7 @@ module Data.Vector.Primitive (
 
   -- * Filtering
   filter, ifilter, takeWhile, dropWhile,
-  unstablePartition, span, break,
+  partition, unstablePartition, span, break,
 
   -- * Searching
   elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
@@ -467,6 +467,14 @@ takeWhile = G.takeWhile
 dropWhile :: Prim a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE dropWhile #-}
 dropWhile = G.dropWhile
+
+-- | Split the vector in two parts, the first one containing those elements
+-- that satisfy the predicate and the second one those that don't. The
+-- relative order of the elements is preserved at the cost of a (sometimes)
+-- reduced performance compared to 'unstablePartition'.
+partition :: Prim a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
+{-# INLINE partition #-}
+partition = G.partition
 
 -- | Split the vector in two parts, the first one containing those elements
 -- that satisfy the predicate and the second one those that don't. The order
