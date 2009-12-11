@@ -451,6 +451,12 @@ swap v i j = BOUNDS_CHECK(checkIndex) "swap" i (length v)
            $ BOUNDS_CHECK(checkIndex) "swap" j (length v)
            $ unsafeSwap v i j
 
+-- | Replace the element at the give position and return the old element.
+exchange :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m a
+{-# INLINE exchange #-}
+exchange v i x = BOUNDS_CHECK(checkIndex) "exchange" i (length v)
+               $ unsafeExchange v i x
+
 -- | Yield the element at the given position. No bounds checks are performed.
 unsafeRead :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
 {-# INLINE unsafeRead #-}
@@ -475,6 +481,17 @@ unsafeSwap v i j = UNSAFE_CHECK(checkIndex) "unsafeSwap" i (length v)
                      y <- unsafeRead v j
                      unsafeWrite v i y
                      unsafeWrite v j x
+
+-- | Replace the element at the give position and return the old element. No
+-- bounds checks are performed.
+unsafeExchange :: (PrimMonad m, MVector v a)
+                                => v (PrimState m) a -> Int -> a -> m a
+{-# INLINE unsafeExchange #-}
+unsafeExchange v i x = UNSAFE_CHECK(checkIndex) "unsafeExchange" i (length v)
+                     $ do
+                         y <- unsafeRead v i
+                         unsafeWrite v i x
+                         return y
 
 -- Block operations
 -- ----------------
