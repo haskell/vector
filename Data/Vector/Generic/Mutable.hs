@@ -518,7 +518,6 @@ copy dst src = BOUNDS_CHECK(check) "copy" "overlapping vectors"
                                           (length dst == length src)
              $ unsafeCopy dst src
 
-
 -- | Copy a vector. The two vectors must have the same length and may not
 -- overlap. This is not checked.
 unsafeCopy :: (PrimMonad m, MVector v a) => v (PrimState m) a   -- ^ target
@@ -576,6 +575,14 @@ unsafeInit v = unsafeSlice 0 (length v - 1) v
 unsafeTail :: MVector v a => v s a -> v s a
 {-# INLINE unsafeTail #-}
 unsafeTail v = unsafeSlice 1 (length v - 1) v
+
+unsafeTake :: MVector v a => Int -> v s a -> v s a
+{-# INLINE unsafeTake #-}
+unsafeTake n v = unsafeSlice 0 n v
+
+unsafeDrop :: MVector v a => Int -> v s a -> v s a
+{-# INLINE unsafeDrop #-}
+unsafeDrop n v = unsafeSlice n (length v - n) v
 
 -- Permutations
 -- ------------
