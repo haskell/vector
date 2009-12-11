@@ -444,6 +444,13 @@ write :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m ()
 write v i x = BOUNDS_CHECK(checkIndex) "write" i (length v)
             $ unsafeWrite v i x
 
+-- | Swap the elements at the gived positions.
+swap :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> Int -> m ()
+{-# INLINE swap #-}
+swap v i j = BOUNDS_CHECK(checkIndex) "swap" i (length v)
+           $ BOUNDS_CHECK(checkIndex) "swap" j (length v)
+           $ unsafeSwap v i j
+
 -- | Yield the element at the given position. No bounds checks are performed.
 unsafeRead :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
 {-# INLINE unsafeRead #-}
@@ -456,6 +463,18 @@ unsafeWrite :: (PrimMonad m, MVector v a)
 {-# INLINE unsafeWrite #-}
 unsafeWrite v i x = UNSAFE_CHECK(checkIndex) "unsafeWrite" i (length v)
                   $ basicUnsafeWrite v i x
+
+-- | Swap the elements at the given positions. No bounds checks are performed.
+unsafeSwap :: (PrimMonad m, MVector v a)
+                => v (PrimState m) a -> Int -> Int -> m ()
+{-# INLINE unsafeSwap #-}
+unsafeSwap v i j = UNSAFE_CHECK(checkIndex) "unsafeSwap" i (length v)
+                 $ UNSAFE_CHECK(checkIndex) "unsafeSwap" j (length v)
+                 $ do
+                     x <- unsafeRead v i
+                     y <- unsafeRead v j
+                     unsafeWrite v i y
+                     unsafeWrite v j x
 
 -- Block operations
 -- ----------------
