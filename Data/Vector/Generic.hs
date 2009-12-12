@@ -472,13 +472,14 @@ tail v = slice 1 (length v - 1) v
 -- | Yield the first @n@ elements without copying.
 take :: Vector v a => Int -> v a -> v a
 {-# INLINE_STREAM take #-}
-take n v = unsafeSlice 0 (min n' (length v)) v
+take n v = unsafeSlice 0 (delay_inline min n' (length v)) v
   where n' = max n 0
 
 -- | Yield all but the first @n@ elements without copying.
 drop :: Vector v a => Int -> v a -> v a
 {-# INLINE_STREAM drop #-}
-drop n v = unsafeSlice (min n' len) (max 0 (len - n')) v
+drop n v = unsafeSlice (delay_inline min n' len)
+                       (delay_inline max 0 (len - n')) v
   where n' = max n 0
         len = length v
 
