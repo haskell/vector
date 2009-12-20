@@ -28,6 +28,17 @@ Description:
         .
         [@Data.Vector.Generic@] Generic interface to the vector types.
         .
+        Changes since version 0.4.2
+        .
+        * Unboxed vectors of primitive types and tuples
+        .
+        * Redesigned interface between mutable and immutable vector (now
+          with the popular @unsafeFreeze@ primitive)
+        .
+        * Many new combinators
+        .
+        * Significant performance improvements
+        .
 
 Cabal-Version:  >= 1.2
 Build-Type:     Simple
