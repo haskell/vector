@@ -75,7 +75,10 @@ module Data.Vector.Storable (
   enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
-  toList, fromList
+  toList, fromList,
+
+  -- * Accessing the underlying memory
+  unsafeFromForeignPtr, unsafeToForeignPtr, unsafeWith
 ) where
 
 import qualified Data.Vector.Generic          as G
@@ -84,8 +87,8 @@ import Data.Vector.Storable.Internal
 
 import Foreign.Storable
 import Foreign.ForeignPtr
--- import Foreign.Ptr
--- import Foreign.C.Types
+import Foreign.Ptr
+import Foreign.Marshal.Array ( advancePtr )
 
 import Control.Monad.ST ( ST, runST )
 
@@ -837,4 +840,29 @@ toList = G.toList
 fromList :: Storable a => [a] -> Vector a
 {-# INLINE fromList #-}
 fromList = G.fromList
+
+-- Accessing the underlying memory
+-- -------------------------------
+
+-- | Create a vector from a 'ForeignPtr' with an offset and a length. The data
+-- may not be modified through the 'ForeignPtr' afterwards.
+unsafeFromForeignPtr :: ForeignPtr a    -- ^ pointer
+                     -> Int             -- ^ offset
+                     -> Int             -- ^ length
+                     -> Vector a
+{-# INLINE unsafeFromForeignPtr #-}
+unsafeFromForeignPtr p i n = Vector i n p
+
+-- | Yield the underlying 'ForeignPtr' together with the offset to the data
+-- and its length. The data may not be modified through the 'ForeignPtr'.
+unsafeToForeignPtr :: Vector a -> (ForeignPtr a, Int, Int)
+{-# INLINE unsafeToForeignPtr #-}
+unsafeToForeignPtr (Vector i n p) = (p,i,n)
+
+-- | Pass a pointer to the vector's data to the IO action. The data may not be
+-- modified through the 'Ptr.
+unsafeWith :: Storable a => Vector a -> (Ptr a -> IO b) -> IO b
+{-# INLINE unsafeWith #-}
+unsafeWith (Vector i n fp) m
+  = withForeignPtr fp $ \p -> m (p `advancePtr` i)
 

@@ -22,13 +22,18 @@ module Data.Vector.Storable.Mutable(
 
   -- * Unsafe operations
   unsafeSlice, unsafeNew, unsafeNewWith, unsafeRead, unsafeWrite, unsafeSwap,
-  unsafeCopy, unsafeGrow
+  unsafeCopy, unsafeGrow,
+
+  -- * Accessing the underlying memory
+  unsafeFromForeignPtr, unsafeToForeignPtr, unsafeWith
 ) where
 
 import qualified Data.Vector.Generic.Mutable as G
 
 import Foreign.Storable
 import Foreign.ForeignPtr
+import Foreign.Ptr
+import Foreign.Marshal.Array ( advancePtr )
 
 import Control.Monad.Primitive
 
@@ -70,6 +75,30 @@ instance Storable a => G.MVector MVector a where
     = unsafePrimToPrim
     $ withForeignPtr p $ \ptr -> pokeElemOff ptr (i+j) x
 
+-- | Create a mutable vector from a 'ForeignPtr' with an offset and a length.
+-- Modifying data through the 'ForeignPtr' afterwards is unsafe if the vector
+-- could have been frozen before the modification.
+unsafeFromForeignPtr :: ForeignPtr a    -- ^ pointer
+                     -> Int             -- ^ offset
+                     -> Int             -- ^ length
+                     -> MVector s a
+{-# INLINE unsafeFromForeignPtr #-}
+unsafeFromForeignPtr p i n = MVector i n p
+
+-- | Yield the underlying 'ForeignPtr' together with the offset to the data
+-- and its length. Modifying the data through the 'ForeignPtr' is
+-- unsafe if the vector could have frozen before the modification.
+unsafeToForeignPtr :: MVector s a -> (ForeignPtr a, Int, Int)
+{-# INLINE unsafeToForeignPtr #-}
+unsafeToForeignPtr (MVector i n p) = (p,i,n)
+
+-- | Pass a pointer to the vector's data to the IO action. Modifying data
+-- through the pointer is unsafe if the vector could have been frozen before
+-- the modification.
+unsafeWith :: Storable a => IOVector a -> (Ptr a -> IO b) -> IO b
+{-# INLINE unsafeWith #-}
+unsafeWith (MVector i n fp) m
+  = withForeignPtr fp $ \p -> m (p `advancePtr` i)
 
 -- | Yield a part of the mutable vector without copying it. No bounds checks
 -- are performed.
