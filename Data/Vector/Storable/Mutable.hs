@@ -17,10 +17,11 @@ module Data.Vector.Storable.Mutable(
   MVector(..), IOVector, STVector, Storable,
 
   -- * Operations on mutable vectors
-  length, overlaps, slice, new, newWith, read, write, clear, set, copy, grow,
+  length, overlaps, slice, new, newWith, read, write, swap,
+  clear, set, copy, grow,
 
   -- * Unsafe operations
-  unsafeSlice, unsafeNew, unsafeNewWith, unsafeRead, unsafeWrite,
+  unsafeSlice, unsafeNew, unsafeNewWith, unsafeRead, unsafeWrite, unsafeSwap,
   unsafeCopy, unsafeGrow
 ) where
 
@@ -103,6 +104,11 @@ unsafeWrite :: (PrimMonad m, Storable a)
 {-# INLINE unsafeWrite #-}
 unsafeWrite = G.unsafeWrite
 
+-- | Swap the elements at the given positions. No bounds checks are performed.
+unsafeSwap :: (PrimMonad m, Storable a)
+                => MVector (PrimState m) a -> Int -> Int -> m ()
+{-# INLINE unsafeSwap #-}
+unsafeSwap = G.unsafeSwap
 
 -- | Copy a vector. The two vectors must have the same length and may not
 -- overlap. This is not checked.
@@ -156,6 +162,12 @@ write :: (PrimMonad m, Storable a)
                                 => MVector (PrimState m) a -> Int -> a -> m ()
 {-# INLINE write #-}
 write = G.write
+
+-- | Swap the elements at the given positions.
+swap :: (PrimMonad m, Storable a)
+                => MVector (PrimState m) a -> Int -> Int -> m ()
+{-# INLINE swap #-}
+swap = G.swap
 
 -- | Reset all elements of the vector to some undefined value, clearing all
 -- references to external objects. This is usually a noop for unboxed vectors. 

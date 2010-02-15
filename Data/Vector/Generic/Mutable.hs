@@ -16,13 +16,13 @@ module Data.Vector.Generic.Mutable (
   MVector(..),
 
   -- * Operations on mutable vectors
-  length, overlaps, new, newWith, read, write, clear, set, copy, grow,
+  length, overlaps, new, newWith, read, write, swap, clear, set, copy, grow,
 
   slice, take, drop, init, tail,
   unsafeSlice, unsafeInit, unsafeTail,
 
   -- * Unsafe operations
-  unsafeNew, unsafeNewWith, unsafeRead, unsafeWrite,
+  unsafeNew, unsafeNewWith, unsafeRead, unsafeWrite, unsafeSwap,
   unsafeCopy, unsafeGrow,
 
   -- * Internal operations
@@ -444,7 +444,7 @@ write :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m ()
 write v i x = BOUNDS_CHECK(checkIndex) "write" i (length v)
             $ unsafeWrite v i x
 
--- | Swap the elements at the gived positions.
+-- | Swap the elements at the given positions.
 swap :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> Int -> m ()
 {-# INLINE swap #-}
 swap v i j = BOUNDS_CHECK(checkIndex) "swap" i (length v)
