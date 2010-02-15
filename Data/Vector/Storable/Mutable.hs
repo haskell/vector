@@ -2,7 +2,7 @@
 
 -- |
 -- Module      : Data.Vector.Storable.Mutable
--- Copyright   : (c) Roman Leshchinskiy 2009
+-- Copyright   : (c) Roman Leshchinskiy 2009-2010
 -- License     : BSD-style
 --
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
