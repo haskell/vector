@@ -280,8 +280,15 @@ length v = basicLength v
   #-}
 
 null :: Vector v a => v a -> Bool
-{-# INLINE null #-}
-null v = length v == 0
+{-# INLINE_STREAM null #-}
+null v = basicLength v == 0
+
+{-# RULES
+
+"null/unstream [Vector]" forall v s.
+  null (new' v (New.unstream s)) = Stream.null s
+
+  #-}
 
 -- Construction
 -- ------------
