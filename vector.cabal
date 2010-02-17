@@ -32,7 +32,7 @@ Description:
         .
         * Unboxed vectors of primitive types and tuples
         .
-        * Redesigned interface between mutable and immutable vector (now
+        * Redesigned interface between mutable and immutable vectors (now
           with the popular @unsafeFreeze@ primitive)
         .
         * Many new combinators
