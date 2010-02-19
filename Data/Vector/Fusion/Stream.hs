@@ -70,7 +70,9 @@ module Data.Vector.Fusion.Stream (
   toList, fromList, liftStream,
 
   -- * Monadic combinators
-  mapM_, foldM, fold1M, foldM', fold1M'
+  mapM_, foldM, fold1M, foldM', fold1M',
+
+  eq, cmp
 ) where
 
 import Data.Vector.Fusion.Stream.Size

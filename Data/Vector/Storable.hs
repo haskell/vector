@@ -84,6 +84,7 @@ module Data.Vector.Storable (
 import qualified Data.Vector.Generic          as G
 import           Data.Vector.Storable.Mutable ( MVector(..) )
 import Data.Vector.Storable.Internal
+import qualified Data.Vector.Fusion.Stream as Stream
 
 import Foreign.Storable
 import Foreign.ForeignPtr
@@ -140,9 +141,30 @@ instance Storable a => G.Vector Vector a where
   {-# INLINE elemseq #-}
   elemseq _ = seq
 
+-- See [HACKS:Eq and Ord instances]
 instance (Storable a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
-  (==) = G.eq
+  xs == ys = Stream.eq (G.stream xs) (G.stream ys)
+
+  {-# INLINE (/=) #-}
+  xs /= ys = not (Stream.eq (G.stream xs) (G.stream ys))
+
+-- See [HACKS:Eq and Ord instances]
+instance (Storable a, Ord a) => Ord (Vector a) where
+  {-# INLINE compare #-}
+  compare xs ys = Stream.cmp (G.stream xs) (G.stream ys)
+
+  {-# INLINE (<) #-}
+  xs < ys = Stream.cmp (G.stream xs) (G.stream ys) == LT
+
+  {-# INLINE (<=) #-}
+  xs <= ys = Stream.cmp (G.stream xs) (G.stream ys) /= GT
+
+  {-# INLINE (>) #-}
+  xs > ys = Stream.cmp (G.stream xs) (G.stream ys) == GT
+
+  {-# INLINE (>=) #-}
+  xs >= ys = Stream.cmp (G.stream xs) (G.stream ys) /= LT
 
 {-
 eq_memcmp :: forall a. Storable a => Vector a -> Vector a -> Bool
@@ -165,9 +187,6 @@ foreign import ccall unsafe "string.h memcmp" memcmp
  #-}
 -}
 
-instance (Storable a, Ord a) => Ord (Vector a) where
-  {-# INLINE compare #-}
-  compare = G.cmp
 
 -- Length
 -- ------

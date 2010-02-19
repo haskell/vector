@@ -100,13 +100,30 @@ import qualified Prelude
 
 #include "vector.h"
 
+-- See [HACKS:Eq and Ord instances]
 instance (Unbox a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
-  (==) = G.eq
+  xs == ys = Stream.eq (G.stream xs) (G.stream ys)
 
+  {-# INLINE (/=) #-}
+  xs /= ys = not (Stream.eq (G.stream xs) (G.stream ys))
+
+-- See [HACKS:Eq and Ord instances]
 instance (Unbox a, Ord a) => Ord (Vector a) where
   {-# INLINE compare #-}
-  compare = G.cmp
+  compare xs ys = Stream.cmp (G.stream xs) (G.stream ys)
+
+  {-# INLINE (<) #-}
+  xs < ys = Stream.cmp (G.stream xs) (G.stream ys) == LT
+
+  {-# INLINE (<=) #-}
+  xs <= ys = Stream.cmp (G.stream xs) (G.stream ys) /= GT
+
+  {-# INLINE (>) #-}
+  xs > ys = Stream.cmp (G.stream xs) (G.stream ys) == GT
+
+  {-# INLINE (>=) #-}
+  xs >= ys = Stream.cmp (G.stream xs) (G.stream ys) /= LT
 
 instance (Show a, Unbox a) => Show (Vector a) where
     show = (Prelude.++ " :: Data.Vector.Unboxed.Vector") . ("fromList " Prelude.++) . show . toList

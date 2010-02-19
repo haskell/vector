@@ -120,6 +120,7 @@ module Data.Vector (
 import qualified Data.Vector.Generic as G
 import           Data.Vector.Mutable  ( MVector(..) )
 import           Data.Primitive.Array
+import qualified Data.Vector.Fusion.Stream as Stream
 
 import Control.Monad ( liftM )
 
@@ -162,13 +163,30 @@ instance G.Vector Vector a where
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (Vector i _ arr) j = indexArrayM arr (i+j)
 
+-- See [HACKS:Eq and Ord instances]
 instance Eq a => Eq (Vector a) where
   {-# INLINE (==) #-}
-  (==) = G.eq
+  xs == ys = Stream.eq (G.stream xs) (G.stream ys)
 
+  {-# INLINE (/=) #-}
+  xs /= ys = not (Stream.eq (G.stream xs) (G.stream ys))
+
+-- See [HACKS:Eq and Ord instances]
 instance Ord a => Ord (Vector a) where
   {-# INLINE compare #-}
-  compare = G.cmp
+  compare xs ys = Stream.cmp (G.stream xs) (G.stream ys)
+
+  {-# INLINE (<) #-}
+  xs < ys = Stream.cmp (G.stream xs) (G.stream ys) == LT
+
+  {-# INLINE (<=) #-}
+  xs <= ys = Stream.cmp (G.stream xs) (G.stream ys) /= GT
+
+  {-# INLINE (>) #-}
+  xs > ys = Stream.cmp (G.stream xs) (G.stream ys) == GT
+
+  {-# INLINE (>=) #-}
+  xs >= ys = Stream.cmp (G.stream xs) (G.stream ys) /= LT
 
 -- Length
 -- ------

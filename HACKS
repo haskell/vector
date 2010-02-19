@@ -37,5 +37,6 @@ instance (..., Ord a) => Ord (Vector a) where
   {-# INLINE (>=) #-}
   xs >= ys = Stream.cmp (G.stream xs) (G.stream ys) /= LT
 
-Ugly, but it works.
+Ugly, but it works. This also requires the package (but not necessarily the
+clients!) to be compiled with -fno-method-sharing.
 
