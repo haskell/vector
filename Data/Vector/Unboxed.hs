@@ -63,7 +63,7 @@ module Data.Vector.Unboxed (
   minIndex, minIndexBy, maxIndex, maxIndexBy,
 
   -- * Unfolding
-  unfoldr,
+  unfoldr, unfoldrN,
 
   -- * Scans
   prescanl, prescanl',
@@ -676,9 +676,26 @@ minIndexBy = G.minIndexBy
 -- Unfolding
 -- ---------
 
+-- | The 'unfoldr' function is a \`dual\' to 'foldr': while 'foldr'
+-- reduces a vector to a summary value, 'unfoldr' builds a list from
+-- a seed value.  The function takes the element and returns 'Nothing'
+-- if it is done generating the vector or returns 'Just' @(a,b)@, in which
+-- case, @a@ is a prepended to the vector and @b@ is used as the next
+-- element in a recursive call.
+--
+-- A simple use of unfoldr:
+--
+-- > unfoldr (\b -> if b == 0 then Nothing else Just (b, b-1)) 10
+-- >  [10,9,8,7,6,5,4,3,2,1]
+--
 unfoldr :: Unbox a => (b -> Maybe (a, b)) -> b -> Vector a
 {-# INLINE unfoldr #-}
 unfoldr = G.unfoldr
+
+-- | Unfold at most @n@ elements
+unfoldrN :: Unbox a => Int -> (b -> Maybe (a, b)) -> b -> Vector a
+{-# INLINE unfoldrN #-}
+unfoldrN = G.unfoldrN
 
 -- Scans
 -- -----

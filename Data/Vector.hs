@@ -100,7 +100,7 @@ module Data.Vector (
   minIndex, minIndexBy, maxIndex, maxIndexBy,
 
   -- * Unfolding
-  unfoldr,
+  unfoldr, unfoldrN,
 
   -- * Scans
   prescanl, prescanl',
@@ -847,6 +847,11 @@ minIndexBy = G.minIndexBy
 unfoldr :: (b -> Maybe (a, b)) -> b -> Vector a
 {-# INLINE unfoldr #-}
 unfoldr = G.unfoldr
+
+-- | Unfold at most @n@ elements
+unfoldrN :: Int -> (b -> Maybe (a, b)) -> b -> Vector a
+{-# INLINE unfoldrN #-}
+unfoldrN = G.unfoldrN
 
 -- Scans
 -- -----

@@ -55,6 +55,7 @@ module Data.Vector.Fusion.Stream.Monadic (
 
   -- * Unfolding
   unfoldr, unfoldrM,
+  unfoldrN, unfoldrNM,
 
   -- * Scans
   prescanl, prescanlM, prescanl', prescanlM',
@@ -936,6 +937,24 @@ unfoldrM f s = Stream step s Unknown
                  Just (x, s') -> Yield x s'
                  Nothing      -> Done
              ) (f s)
+
+-- | Unfold at most @n@ elements
+unfoldrN :: Monad m => Int -> (s -> Maybe (a, s)) -> s -> Stream m a
+{-# INLINE_STREAM unfoldrN #-}
+unfoldrN n f = unfoldrNM n (return . f)
+
+-- | Unfold at most @n@ elements with a monadic functions
+unfoldrNM :: Monad m => Int -> (s -> m (Maybe (a, s))) -> s -> Stream m a
+{-# INLINE_STREAM unfoldrNM #-}
+unfoldrNM n f s = Stream step (s,n) (Max (delay_inline max n 0))
+  where
+    {-# INLINE_INNER step #-}
+    step (s,n) | n <= 0    = return Done
+               | otherwise = liftM (\r ->
+                               case r of
+                                 Just (x,s') -> Yield x (s',n-1)
+                                 Nothing     -> Done
+                             ) (f s)
 
 -- Scans
 -- -----

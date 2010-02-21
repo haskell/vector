@@ -55,7 +55,7 @@ module Data.Vector.Fusion.Stream (
   and, or,
 
   -- * Unfolding
-  unfoldr,
+  unfoldr, unfoldrN,
 
   -- * Scans
   prescanl, prescanl',
@@ -410,6 +410,11 @@ or = unId . M.or
 unfoldr :: (s -> Maybe (a, s)) -> s -> Stream a
 {-# INLINE unfoldr #-}
 unfoldr = M.unfoldr
+
+-- | Unfold at most @n@ elements
+unfoldrN :: Int -> (s -> Maybe (a, s)) -> s -> Stream a
+{-# INLINE unfoldrN #-}
+unfoldrN = M.unfoldrN
 
 -- Scans
 -- -----

@@ -69,7 +69,7 @@ module Data.Vector.Generic (
   minIndex, minIndexBy, maxIndex, maxIndexBy,
 
   -- * Unfolding
-  unfoldr,
+  unfoldr, unfoldrN,
 
   -- * Scans
   prescanl, prescanl',
@@ -1136,9 +1136,15 @@ minIndexBy cmp = fst . Stream.foldl1' imin . Stream.indexed . stream
 -- Unfolding
 -- ---------
 
+-- | Unfold
 unfoldr :: Vector v a => (b -> Maybe (a, b)) -> b -> v a
 {-# INLINE unfoldr #-}
 unfoldr f = unstream . Stream.unfoldr f
+
+-- | Unfoldr at most @n@ elements.
+unfoldrN  :: Vector v a => Int -> (b -> Maybe (a, b)) -> b -> v a
+{-# INLINE unfoldrN #-}
+unfoldrN n f = unstream . Stream.unfoldrN n f
 
 -- Scans
 -- -----
