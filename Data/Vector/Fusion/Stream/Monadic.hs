@@ -9,7 +9,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- Monadic streams
+-- Monadic stream combinators.
 --
 
 module Data.Vector.Fusion.Stream.Monadic (
@@ -1123,9 +1123,6 @@ enumFromTo :: (Enum a, Monad m) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo #-}
 enumFromTo x y = fromList [x .. y]
 
--- FIXME: Specialise enumFromTo for Float and Double. Also, try to do
--- something about pairs?
-
 -- NOTE: We use (x+1) instead of (succ x) below because the latter checks for
 -- overflow which can't happen here.
 
@@ -1268,7 +1265,7 @@ enumFromTo_big_int x y = Stream step x (Exact (len x y))
                         $ fromIntegral n
       where
         n = y-x+1
-                        
+
     {-# INLINE_INNER step #-}
     step x | x <= y    = return $ Yield x (x+1)
            | otherwise = return $ Done
@@ -1303,6 +1300,41 @@ enumFromTo_char x y = Stream step xn (Exact n)
   enumFromTo = enumFromTo_char
 
   #-}
+
+------------------------------------------------------------------------
+
+-- Specialise enumFromTo for Float and Double.
+-- Also, try to do something about pairs?
+
+enumFromTo_double :: (Monad m, Ord a, RealFrac a) => a -> a -> Stream m a
+{-# INLINE_STREAM enumFromTo_double #-}
+enumFromTo_double n m = Stream step n (Max (len n m))
+  where
+    lim = m + 1/2 -- important to float out
+
+    {-# INLINE [0] len #-}
+    len x y | x > y     = 0
+            | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
+                          (n > 0)
+                        $ fromIntegral n
+      where
+        n = truncate (y-x)+2
+
+    {-# INLINE_INNER step #-}
+    step x | x <= lim  = return $ Yield x (x+1)
+           | otherwise = return $ Done
+
+{-# RULES
+
+"enumFromTo<Double> [Stream]"
+  enumFromTo = enumFromTo_double :: Monad m => Double -> Double -> Stream m Double
+
+"enumFromTo<Float> [Stream]"
+  enumFromTo = enumFromTo_double :: Monad m => Float -> Float -> Stream m Float
+
+  #-}
+
+------------------------------------------------------------------------
 
 -- | Enumerate values with a given step.
 --

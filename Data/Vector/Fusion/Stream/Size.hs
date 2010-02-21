@@ -7,7 +7,7 @@
 -- Stability   : experimental
 -- Portability : portable
 -- 
--- Size hints
+-- Size hints for streams.
 --
 
 module Data.Vector.Fusion.Stream.Size (
