@@ -108,7 +108,7 @@ Library
   Install-Includes:
         vector.h
 
-  Build-Depends: base >= 2 && < 5, ghc >= 6.9, primitive >= 0.2 && < 0.3
+  Build-Depends: base >= 2 && < 5, ghc >= 6.9, primitive >= 0.3 && < 0.4
 
   if impl(ghc<6.13)
     Ghc-Options: -finline-if-enough-args -fno-method-sharing
