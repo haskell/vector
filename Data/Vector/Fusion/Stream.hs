@@ -67,7 +67,7 @@ module Data.Vector.Fusion.Stream (
   enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversions
-  toList, fromList, liftStream,
+  toList, fromList, fromListN, liftStream,
 
   -- * Monadic combinators
   mapM_, foldM, fold1M, foldM', fold1M',
@@ -569,4 +569,11 @@ toList s = unId (M.toList s)
 fromList :: [a] -> Stream a
 {-# INLINE fromList #-}
 fromList = M.fromList
+
+-- | Create a 'Stream' from the first @n@ elements of a list
+--
+-- > fromListN n xs = fromList (take n xs)
+fromListN :: Int -> [a] -> Stream a
+{-# INLINE fromListN #-}
+fromListN = M.fromListN
 

@@ -83,7 +83,7 @@ module Data.Vector.Generic (
   enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
-  toList, fromList,
+  toList, fromList, fromListN,
 
   -- * Conversion to/from Streams
   stream, unstream, streamR, unstreamR,
@@ -1274,4 +1274,11 @@ toList = Stream.toList . stream
 fromList :: Vector v a => [a] -> v a
 {-# INLINE fromList #-}
 fromList = unstream . Stream.fromList
+
+-- | Convert the first @n@ elements of a list to a vector
+--
+-- > fromListN n xs = fromList (take n xs)
+fromListN :: Vector v a => Int -> [a] -> v a
+{-# INLINE fromListN #-}
+fromListN n = unstream . Stream.fromListN n
 

@@ -67,7 +67,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversions
-  toList, fromList
+  toList, fromList, fromListN
 ) where
 
 import Data.Vector.Fusion.Stream.Size
@@ -1380,4 +1380,14 @@ fromList xs = Stream step xs Unknown
   where
     step (x:xs) = return (Yield x xs)
     step []     = return Done
+
+-- | Convert the first @n@ elements of a list to a 'Stream'
+fromListN :: Monad m => Int -> [a] -> Stream m a
+{-# INLINE_STREAM fromListN #-}
+fromListN n xs = Stream step (xs,n) (Max (delay_inline max n 0))
+  where
+    {-# INLINE_INNER step #-}
+    step (xs,n) | n <= 0 = return Done
+    step (x:xs,n)        = return (Yield x (xs,n-1))
+    step ([],n)          = return Done
 

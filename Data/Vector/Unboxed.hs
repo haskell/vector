@@ -77,7 +77,7 @@ module Data.Vector.Unboxed (
   enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
-  toList, fromList
+  toList, fromList, fromListN
 ) where
 
 import Data.Vector.Unboxed.Base
@@ -825,6 +825,13 @@ toList = G.toList
 fromList :: Unbox a => [a] -> Vector a
 {-# INLINE fromList #-}
 fromList = G.fromList
+
+-- | Convert the first @n@ elements of a list to a vector
+--
+-- > fromListN n xs = fromList (take n xs)
+fromListN :: Unbox a => Int -> [a] -> Vector a
+{-# INLINE fromListN #-}
+fromListN = G.fromListN
 
 #define DEFINE_IMMUTABLE
 #include "unbox-tuple-instances"

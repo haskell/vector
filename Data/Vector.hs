@@ -114,7 +114,7 @@ module Data.Vector (
   enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
-  toList, fromList
+  toList, fromList, fromListN
 ) where
 
 import qualified Data.Vector.Generic as G
@@ -980,4 +980,11 @@ toList = G.toList
 fromList :: [a] -> Vector a
 {-# INLINE fromList #-}
 fromList = G.fromList
+
+-- | Convert the first @n@ elements of a list to a vector
+--
+-- > fromListN n xs = fromList (take n xs)
+fromListN :: Int -> [a] -> Vector a
+{-# INLINE fromListN #-}
+fromListN = G.fromListN
 

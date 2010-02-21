@@ -75,7 +75,7 @@ module Data.Vector.Storable (
   enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
-  toList, fromList,
+  toList, fromList, fromListN,
 
   -- * Accessing the underlying memory
   unsafeFromForeignPtr, unsafeToForeignPtr, unsafeWith
@@ -876,6 +876,13 @@ toList = G.toList
 fromList :: Storable a => [a] -> Vector a
 {-# INLINE fromList #-}
 fromList = G.fromList
+
+-- | Convert the first @n@ elements of a list to a vector
+--
+-- > fromListN n xs = fromList (take n xs)
+fromListN :: Storable a => Int -> [a] -> Vector a
+{-# INLINE fromListN #-}
+fromListN = G.fromListN
 
 -- Accessing the underlying memory
 -- -------------------------------
