@@ -26,7 +26,9 @@ module Data.Vector.Generic.Mutable (
   unsafeCopy, unsafeGrow,
 
   -- * Internal operations
-  unstream, transform, unstreamR, transformR,
+  unstream, unstreamR,
+  transform, transformR,
+  munstream, munstreamR,
   unsafeAccum, accum, unsafeUpdate, update, reverse,
   unstablePartition, unstablePartitionStream, partitionStream
 ) where
