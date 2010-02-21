@@ -103,10 +103,11 @@ Library
         Data.Vector
 
   Include-Dirs:
-        include, internal
+        include, internal, cbits
 
   Install-Includes:
         vector.h
+        memops.h
 
   Build-Depends: base >= 2 && < 5, ghc >= 6.9, primitive >= 0.3 && < 0.4
 
@@ -123,4 +124,7 @@ Library
 
   if flag(InternalChecks)
     cpp-options: -DVECTOR_INTERNAL_CHECKS
+
+  includes: memops.h
+  c-sources: cbits/memops.c
 

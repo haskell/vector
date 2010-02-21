@@ -530,7 +530,7 @@ unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
                                          (length dst == length src)
                    $ UNSAFE_CHECK(check) "unsafeCopy" "overlapping vectors"
                                          (not (dst `overlaps` src))
-                   $ basicUnsafeCopy dst src
+                   $ (dst `seq` src `seq` basicUnsafeCopy dst src)
 
 -- Subvectors
 -- ----------

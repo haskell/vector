@@ -1,5 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables,
-             FlexibleContexts #-}
+             FlexibleContexts, ForeignFunctionInterface, UnliftedFFITypes,
+             MagicHash #-}
 
 -- |
 -- Module      : Data.Vector.Primitive.Mutable
@@ -32,6 +33,8 @@ import           Data.Primitive ( Prim, sizeOf )
 import           Control.Monad.Primitive
 import           Control.Monad.ST ( ST )
 import           Control.Monad ( liftM )
+
+import Foreign.C.Types ( CInt )
 
 import Prelude hiding( length, read )
 
@@ -66,6 +69,16 @@ instance Prim a => G.MVector MVector a where
 
   {-# INLINE basicUnsafeWrite #-}
   basicUnsafeWrite (MVector i n arr) j x = writeByteArray arr (i+j) x
+
+  {-# INLINE basicUnsafeCopy #-}
+  basicUnsafeCopy (MVector i n (MutableByteArray dst))
+                  (MVector j _ (MutableByteArray src))
+    = unsafePrimToPrim
+    $ memcpy_off dst (fromIntegral (i * sz))
+                 src (fromIntegral (j * sz))
+                 (fromIntegral (n * sz))
+    where
+      sz = sizeOf (undefined :: a)
 
 -- | Yield a part of the mutable vector without copying it. No bounds checks
 -- are performed.
@@ -187,4 +200,9 @@ grow :: (PrimMonad m, Prim a)
               => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE grow #-}
 grow = G.grow
+
+foreign import ccall unsafe "memops.h memcpy_off"
+  memcpy_off :: MutableByteArray# s -> CInt
+             -> MutableByteArray# s -> CInt -> CInt -> IO ()
+
 

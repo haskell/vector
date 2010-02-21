@@ -1,4 +1,5 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances,
+             ScopedTypeVariables, ForeignFunctionInterface #-}
 
 -- |
 -- Module      : Data.Vector.Storable.Mutable
@@ -34,6 +35,7 @@ import Foreign.Storable
 import Foreign.ForeignPtr
 import Foreign.Ptr
 import Foreign.Marshal.Array ( advancePtr )
+import Foreign.C.Types ( CInt )
 
 import Control.Monad.Primitive
 
@@ -74,6 +76,16 @@ instance Storable a => G.MVector MVector a where
   basicUnsafeWrite (MVector i n p) j x
     = unsafePrimToPrim
     $ withForeignPtr p $ \ptr -> pokeElemOff ptr (i+j) x
+
+  {-# INLINE basicUnsafeCopy #-}
+  basicUnsafeCopy (MVector i n p) (MVector j _ q)
+    = unsafePrimToPrim
+    $ withForeignPtr p $ \dst ->
+      withForeignPtr q $ \src ->
+      do
+        memcpy (dst `advancePtr` i) (src `advancePtr` j)
+               (fromIntegral (n * sizeOf (undefined :: a)))
+        return ()
 
 -- | Create a mutable vector from a 'ForeignPtr' with an offset and a length.
 -- Modifying data through the 'ForeignPtr' afterwards is unsafe if the vector
@@ -222,4 +234,8 @@ grow :: (PrimMonad m, Storable a)
               => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE grow #-}
 grow = G.grow
+
+foreign import ccall unsafe "string.h memcpy"
+  memcpy :: Ptr a -> Ptr a -> CInt -> IO (Ptr a)
+
 
