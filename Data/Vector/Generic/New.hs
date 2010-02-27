@@ -13,7 +13,7 @@
 --
 
 module Data.Vector.Generic.New (
-  New(..), run, unstream, transform, unstreamR, transformR,
+  New(..), run, apply, modify, unstream, transform, unstreamR, transformR,
   accum, update, reverse,
   slice, init, tail, take, drop,
   unsafeSlice, unsafeInit, unsafeTail,
