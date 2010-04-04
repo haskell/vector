@@ -1,6 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables,
-             FlexibleContexts, ForeignFunctionInterface, UnliftedFFITypes,
-             MagicHash #-}
+             FlexibleContexts #-}
 
 -- |
 -- Module      : Data.Vector.Primitive.Mutable
@@ -71,12 +70,8 @@ instance Prim a => G.MVector MVector a where
   basicUnsafeWrite (MVector i n arr) j x = writeByteArray arr (i+j) x
 
   {-# INLINE basicUnsafeCopy #-}
-  basicUnsafeCopy (MVector i n (MutableByteArray dst))
-                  (MVector j _ (MutableByteArray src))
-    = unsafePrimToPrim
-    $ memcpy_off dst (fromIntegral (i * sz))
-                 src (fromIntegral (j * sz))
-                 (fromIntegral (n * sz))
+  basicUnsafeCopy (MVector i n dst) (MVector j _ src)
+    = memcpyByteArray dst (i * sz) src (j * sz) (n * sz)
     where
       sz = sizeOf (undefined :: a)
 
@@ -200,9 +195,4 @@ grow :: (PrimMonad m, Prim a)
               => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE grow #-}
 grow = G.grow
-
-foreign import ccall unsafe "memops.h memcpy_off"
-  memcpy_off :: MutableByteArray# s -> CInt
-             -> MutableByteArray# s -> CInt -> CInt -> IO ()
-
 
