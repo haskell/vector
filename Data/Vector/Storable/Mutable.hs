@@ -30,6 +30,7 @@ module Data.Vector.Storable.Mutable(
 ) where
 
 import qualified Data.Vector.Generic.Mutable as G
+import Data.Vector.Storable.Internal
 
 import Foreign.Storable
 import Foreign.ForeignPtr
@@ -44,7 +45,7 @@ import Prelude hiding( length, read )
 #include "vector.h"
 
 -- | Mutable 'Storable'-based vectors
-data MVector s a = MVector {-# UNPACK #-} !Int
+data MVector s a = MVector {-# UNPACK #-} !(Ptr a)
                            {-# UNPACK #-} !Int
                            {-# UNPACK #-} !(ForeignPtr a)
 
@@ -56,61 +57,62 @@ instance Storable a => G.MVector MVector a where
   basicLength (MVector _ n _) = n
 
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice j m (MVector i n p) = MVector (i+j) m p
+  basicUnsafeSlice j m (MVector p n fp) = MVector (p `advancePtr` j) m fp
 
   -- FIXME: implement this properly
   {-# INLINE basicOverlaps #-}
-  basicOverlaps (MVector i m p) (MVector j n q) = True
+  basicOverlaps (MVector _ _ _) (MVector _ _ _) = True
 
   {-# INLINE basicUnsafeNew #-}
   basicUnsafeNew n
     = unsafePrimToPrim
-    $ MVector 0 n `fmap` mallocForeignPtrArray n
+    $ do
+        fp <- mallocForeignPtrArray n
+        withForeignPtr fp $ \p -> return $ MVector p n fp
 
   {-# INLINE basicUnsafeRead #-}
-  basicUnsafeRead (MVector i n p) j
+  basicUnsafeRead (MVector p _ fp) i
     = unsafePrimToPrim
-    $ withForeignPtr p $ \ptr -> peekElemOff ptr (i+j)
+    $ withForeignPtr fp $ \_ -> peekElemOff p i
 
   {-# INLINE basicUnsafeWrite #-}
-  basicUnsafeWrite (MVector i n p) j x
+  basicUnsafeWrite (MVector p n fp) i x
     = unsafePrimToPrim
-    $ withForeignPtr p $ \ptr -> pokeElemOff ptr (i+j) x
+    $ withForeignPtr fp $ \_ -> pokeElemOff p i x
 
   {-# INLINE basicUnsafeCopy #-}
-  basicUnsafeCopy (MVector i n p) (MVector j _ q)
+  basicUnsafeCopy (MVector p n fp) (MVector q _ fq)
     = unsafePrimToPrim
-    $ withForeignPtr p $ \dst ->
-      withForeignPtr q $ \src ->
+    $ withForeignPtr fp $ \_ ->
+      withForeignPtr fq $ \_ ->
       do
-        memcpy (dst `advancePtr` i) (src `advancePtr` j)
-               (fromIntegral (n * sizeOf (undefined :: a)))
+        memcpy p q (fromIntegral (n * sizeOf (undefined :: a)))
         return ()
 
 -- | Create a mutable vector from a 'ForeignPtr' with an offset and a length.
 -- Modifying data through the 'ForeignPtr' afterwards is unsafe if the vector
 -- could have been frozen before the modification.
-unsafeFromForeignPtr :: ForeignPtr a    -- ^ pointer
+unsafeFromForeignPtr :: Storable a
+                     => ForeignPtr a    -- ^ pointer
                      -> Int             -- ^ offset
                      -> Int             -- ^ length
                      -> MVector s a
 {-# INLINE unsafeFromForeignPtr #-}
-unsafeFromForeignPtr p i n = MVector i n p
+unsafeFromForeignPtr fp i n = MVector (offsetToPtr fp i) n fp
 
 -- | Yield the underlying 'ForeignPtr' together with the offset to the data
 -- and its length. Modifying the data through the 'ForeignPtr' is
 -- unsafe if the vector could have frozen before the modification.
-unsafeToForeignPtr :: MVector s a -> (ForeignPtr a, Int, Int)
+unsafeToForeignPtr :: Storable a => MVector s a -> (ForeignPtr a, Int, Int)
 {-# INLINE unsafeToForeignPtr #-}
-unsafeToForeignPtr (MVector i n p) = (p,i,n)
+unsafeToForeignPtr (MVector p n fp) = (fp, ptrToOffset fp p, n)
 
 -- | Pass a pointer to the vector's data to the IO action. Modifying data
 -- through the pointer is unsafe if the vector could have been frozen before
 -- the modification.
 unsafeWith :: Storable a => IOVector a -> (Ptr a -> IO b) -> IO b
 {-# INLINE unsafeWith #-}
-unsafeWith (MVector i n fp) m
-  = withForeignPtr fp $ \p -> m (p `advancePtr` i)
+unsafeWith (MVector p n fp) m = withForeignPtr fp $ \_ -> m p
 
 -- | Yield a part of the mutable vector without copying it. No bounds checks
 -- are performed.

@@ -111,7 +111,7 @@ import qualified Prelude
 #include "vector.h"
 
 -- | 'Storable'-based vectors
-data Vector a = Vector {-# UNPACK #-} !Int
+data Vector a = Vector {-# UNPACK #-} !(Ptr a)
                        {-# UNPACK #-} !Int
                        {-# UNPACK #-} !(ForeignPtr a)
 
@@ -125,18 +125,19 @@ type instance G.Mutable Vector = MVector
 
 instance Storable a => G.Vector Vector a where
   {-# INLINE unsafeFreeze #-}
-  unsafeFreeze (MVector i n p) = return $ Vector i n p
+  unsafeFreeze (MVector p n fp) = return $ Vector p n fp
 
   {-# INLINE basicLength #-}
   basicLength (Vector _ n _) = n
 
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice j n (Vector i _ p) = Vector (i+j) n p
+  basicUnsafeSlice i n (Vector p _ fp) = Vector (p `advancePtr` i) n fp
 
   {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM (Vector i _ p) j = return
-                                     . inlinePerformIO
-                                     $ withForeignPtr p (`peekElemOff` (i+j))
+  basicUnsafeIndexM (Vector p _ fp) i = return
+                                      . inlinePerformIO
+                                      $ withForeignPtr fp $ \_ ->
+                                        peekElemOff p i
 
   {-# INLINE elemseq #-}
   elemseq _ = seq
@@ -889,23 +890,23 @@ fromListN = G.fromListN
 
 -- | Create a vector from a 'ForeignPtr' with an offset and a length. The data
 -- may not be modified through the 'ForeignPtr' afterwards.
-unsafeFromForeignPtr :: ForeignPtr a    -- ^ pointer
+unsafeFromForeignPtr :: Storable a
+                     => ForeignPtr a    -- ^ pointer
                      -> Int             -- ^ offset
                      -> Int             -- ^ length
                      -> Vector a
 {-# INLINE unsafeFromForeignPtr #-}
-unsafeFromForeignPtr p i n = Vector i n p
+unsafeFromForeignPtr fp i n = Vector (offsetToPtr fp i) n fp
 
 -- | Yield the underlying 'ForeignPtr' together with the offset to the data
 -- and its length. The data may not be modified through the 'ForeignPtr'.
-unsafeToForeignPtr :: Vector a -> (ForeignPtr a, Int, Int)
+unsafeToForeignPtr :: Storable a => Vector a -> (ForeignPtr a, Int, Int)
 {-# INLINE unsafeToForeignPtr #-}
-unsafeToForeignPtr (Vector i n p) = (p,i,n)
+unsafeToForeignPtr (Vector p n fp) = (fp, ptrToOffset fp p, n)
 
 -- | Pass a pointer to the vector's data to the IO action. The data may not be
 -- modified through the 'Ptr.
 unsafeWith :: Storable a => Vector a -> (Ptr a -> IO b) -> IO b
 {-# INLINE unsafeWith #-}
-unsafeWith (Vector i n fp) m
-  = withForeignPtr fp $ \p -> m (p `advancePtr` i)
+unsafeWith (Vector p n fp) m = withForeignPtr fp $ \_ -> m p
 
