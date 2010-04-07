@@ -639,6 +639,7 @@ unsafeBackpermute v is = seq v
                        $ Stream.map (unsafeIndexM v)
                        $ stream is
 
+-- FIXME: make this fuse better, add support for recycling
 reverse :: (Vector v a) => v a -> v a
 {-# INLINE reverse #-}
 reverse = unstream . streamR
