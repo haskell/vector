@@ -32,6 +32,11 @@ Description:
         .
         * <http://haskell.org/haskellwiki/Numeric_Haskell:_A_Vector_Tutorial>
         .
+        Please use the project trac to submit bug reports and feature
+        requests.
+        .
+        * <http://trac.haskell.org/vector>
+        .
         Changes since version 0.4.2
         .
         * Unboxed vectors of primitive types and tuples
