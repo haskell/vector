@@ -230,8 +230,6 @@ streamR v = v `seq` (Stream.unfoldr get n `Stream.sized` Exact n)
   where
     n = length v
 
-    -- NOTE: the False case comes first in Core so making it the recursive one
-    -- makes the code easier to read
     {-# INLINE get #-}
     get 0 = Nothing
     get i = let i' = i-1
