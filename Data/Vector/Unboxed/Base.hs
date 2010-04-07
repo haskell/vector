@@ -29,6 +29,9 @@ import Data.Word ( Word, Word8, Word16, Word32, Word64 )
 import Data.Int  ( Int8, Int16, Int32, Int64 )
 import Data.Complex
 
+import Data.Typeable ( Typeable1(..), mkTyConApp, mkTyCon )
+import Data.Data     ( Data(..) )
+
 #include "vector.h"
 
 data family MVector s a
@@ -41,6 +44,22 @@ type instance G.Mutable Vector = MVector
 
 class (G.Vector Vector a, M.MVector MVector a) => Unbox a
 
+-- -----------------
+-- Data and Typeable
+-- -----------------
+
+vectorTy :: String
+vectorTy = "Data.Vector.Unboxed.Vector"
+
+instance Typeable1 Vector where
+  typeOf1 _ = mkTyConApp (mkTyCon vectorTy) []
+
+instance (Data a, Unbox a) => Data (Vector a) where
+  gfoldl       = G.gfoldl
+  toConstr _   = error "toConstr"
+  gunfold _ _  = error "gunfold"
+  dataTypeOf _ = G.mkType vectorTy
+  dataCast1    = G.dataCast
 
 -- ----
 -- Unit

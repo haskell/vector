@@ -89,7 +89,10 @@ module Data.Vector.Generic (
   stream, unstream, streamR, unstreamR,
 
   -- * MVector-based initialisation
-  new
+  new,
+
+  -- * Utilities for defining Data instances
+  gfoldl, dataCast, mkType
 ) where
 
 import           Data.Vector.Generic.Mutable ( MVector )
@@ -118,6 +121,9 @@ import Prelude hiding ( length, null,
                         all, any, and, or, sum, product, maximum, minimum,
                         scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo )
+
+import Data.Typeable ( Typeable1, gcast1 )
+import Data.Data ( Data, DataType, mkNoRepType )
 
 #include "vector.h"
 
@@ -1280,4 +1286,26 @@ fromList = unstream . Stream.fromList
 fromListN :: Vector v a => Int -> [a] -> v a
 {-# INLINE fromListN #-}
 fromListN n = unstream . Stream.fromListN n
+
+-- Utilities for defining Data instances
+-- -------------------------------------
+
+-- | Generic definion of 'Data.Data.gfoldl' that views a 'Vector' as a
+-- list.
+gfoldl :: (Vector v a, Data a)
+       => (forall d b. Data d => c (d -> b) -> d -> c b)
+       -> (forall g. g -> c g)
+       -> v a
+       -> c (v a)
+{-# INLINE gfoldl #-}
+gfoldl f z v = z fromList `f` toList v
+
+mkType :: String -> DataType
+{-# INLINE mkType #-}
+mkType = mkNoRepType
+
+dataCast :: (Vector v a, Data a, Typeable1 v, Typeable1 t)
+         => (forall d. Data  d => c (t d)) -> Maybe  (c (v a))
+{-# INLINE dataCast #-}
+dataCast f = gcast1 f
 

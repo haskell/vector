@@ -108,18 +108,29 @@ import Prelude hiding ( length, null,
 
 import qualified Prelude
 
+import Data.Typeable ( Typeable )
+import Data.Data     ( Data(..) )
+
 #include "vector.h"
 
 -- | 'Storable'-based vectors
 data Vector a = Vector {-# UNPACK #-} !(Ptr a)
                        {-# UNPACK #-} !Int
                        {-# UNPACK #-} !(ForeignPtr a)
+        deriving ( Typeable )
 
 instance (Show a, Storable a) => Show (Vector a) where
   show = (Prelude.++ " :: Data.Vector.Storable.Vector")
        . ("fromList " Prelude.++)
        . show
        . toList
+
+instance (Data a, Storable a) => Data (Vector a) where
+  gfoldl       = G.gfoldl
+  toConstr _   = error "toConstr"
+  gunfold _ _  = error "gunfold"
+  dataTypeOf _ = G.mkType "Data.Vector.Storable.Vector"
+  dataCast1    = G.dataCast
 
 type instance G.Mutable Vector = MVector
 

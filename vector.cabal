@@ -75,7 +75,7 @@ Flag InternalChecks
 
 
 Library
-  Extensions: CPP
+  Extensions: CPP, DeriveDataTypeable
   Exposed-Modules:
         Data.Vector.Internal.Check
 

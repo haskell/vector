@@ -101,13 +101,25 @@ import Prelude hiding ( length, null,
 
 import qualified Prelude
 
+import Data.Typeable ( Typeable )
+import Data.Data     ( Data(..) )
+
 -- | Unboxed vectors of primitive types
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
                        {-# UNPACK #-} !ByteArray
+  deriving ( Typeable )
 
 instance (Show a, Prim a) => Show (Vector a) where
     show = (Prelude.++ " :: Data.Vector.Primitive.Vector") . ("fromList " Prelude.++) . show . toList
+
+instance (Data a, Prim a) => Data (Vector a) where
+  gfoldl       = G.gfoldl
+  toConstr _   = error "toConstr"
+  gunfold _ _  = error "gunfold"
+  dataTypeOf _ = G.mkType "Data.Vector.Primitive.Vector"
+  dataCast1    = G.dataCast
+
 
 type instance G.Mutable Vector = MVector
 
