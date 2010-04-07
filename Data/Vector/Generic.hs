@@ -123,7 +123,7 @@ import Prelude hiding ( length, null,
                         enumFromTo, enumFromThenTo )
 
 import Data.Typeable ( Typeable1, gcast1 )
-import Data.Data ( Data, DataType, mkNoRepType )
+import Data.Data ( Data, DataType, mkNorepType )
 
 #include "vector.h"
 
@@ -1302,7 +1302,7 @@ gfoldl f z v = z fromList `f` toList v
 
 mkType :: String -> DataType
 {-# INLINE mkType #-}
-mkType = mkNoRepType
+mkType = mkNorepType
 
 dataCast :: (Vector v a, Data a, Typeable1 v, Typeable1 t)
          => (forall d. Data  d => c (t d)) -> Maybe  (c (v a))
