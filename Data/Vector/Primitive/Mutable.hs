@@ -34,12 +34,15 @@ import           Control.Monad ( liftM )
 
 import Prelude hiding( length, read )
 
+import Data.Typeable ( Typeable )
+
 #include "vector.h"
 
 -- | Mutable vectors of primitive types.
 data MVector s a = MVector {-# UNPACK #-} !Int
                            {-# UNPACK #-} !Int
                            {-# UNPACK #-} !(MutableByteArray s)
+        deriving ( Typeable )
 
 type IOVector = MVector RealWorld
 type STVector s = MVector s

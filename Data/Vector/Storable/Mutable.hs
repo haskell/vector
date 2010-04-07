@@ -42,12 +42,15 @@ import Control.Monad.Primitive
 
 import Prelude hiding( length, read )
 
+import Data.Typeable ( Typeable )
+
 #include "vector.h"
 
 -- | Mutable 'Storable'-based vectors
 data MVector s a = MVector {-# UNPACK #-} !(Ptr a)
                            {-# UNPACK #-} !Int
                            {-# UNPACK #-} !(ForeignPtr a)
+        deriving ( Typeable )
 
 type IOVector = MVector RealWorld
 type STVector s = MVector s

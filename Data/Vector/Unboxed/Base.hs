@@ -28,7 +28,7 @@ import Data.Word ( Word, Word8, Word16, Word32, Word64 )
 import Data.Int  ( Int8, Int16, Int32, Int64 )
 import Data.Complex
 
-import Data.Typeable ( Typeable1(..), mkTyConApp, mkTyCon )
+import Data.Typeable ( Typeable1(..), Typeable2(..), mkTyConApp, mkTyCon )
 import Data.Data     ( Data(..) )
 
 #include "vector.h"
@@ -52,6 +52,9 @@ vectorTy = "Data.Vector.Unboxed.Vector"
 
 instance Typeable1 Vector where
   typeOf1 _ = mkTyConApp (mkTyCon vectorTy) []
+
+instance Typeable2 MVector where
+  typeOf2 _ = mkTyConApp (mkTyCon "Data.Vector.Unboxed.Mutable.MVector") []
 
 instance (Data a, Unbox a) => Data (Vector a) where
   gfoldl       = G.gfoldl

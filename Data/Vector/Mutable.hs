@@ -31,12 +31,15 @@ import           Control.Monad.Primitive
 
 import Prelude hiding ( length, read )
 
+import Data.Typeable ( Typeable )
+
 #include "vector.h"
 
 -- | Mutable boxed vectors keyed on the monad they live in ('IO' or @'ST' s@).
 data MVector s a = MVector {-# UNPACK #-} !Int
                            {-# UNPACK #-} !Int
                            {-# UNPACK #-} !(MutableArray s a)
+        deriving ( Typeable )
 
 type IOVector = MVector RealWorld
 type STVector s = MVector s
