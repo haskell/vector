@@ -1,5 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances,
-             ScopedTypeVariables, ForeignFunctionInterface #-}
+             ScopedTypeVariables #-}
 
 -- |
 -- Module      : Data.Vector.Storable.Mutable
@@ -36,6 +36,7 @@ import Foreign.Storable
 import Foreign.ForeignPtr
 import Foreign.Ptr
 import Foreign.Marshal.Array ( advancePtr )
+import Foreign.Marshal.Utils ( copyBytes )
 import Foreign.C.Types ( CInt )
 
 import Control.Monad.Primitive
@@ -89,7 +90,7 @@ instance Storable a => G.MVector MVector a where
     $ withForeignPtr fp $ \_ ->
       withForeignPtr fq $ \_ ->
       do
-        memcpy p q (fromIntegral (n * sizeOf (undefined :: a)))
+        copyBytes p q (fromIntegral (n * sizeOf (undefined :: a)))
         return ()
 
 -- | Create a mutable vector from a 'ForeignPtr' with an offset and a length.
@@ -239,8 +240,4 @@ grow :: (PrimMonad m, Storable a)
               => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE grow #-}
 grow = G.grow
-
-foreign import ccall unsafe "string.h memcpy"
-  memcpy :: Ptr a -> Ptr a -> CInt -> IO (Ptr a)
-
 
