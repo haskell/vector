@@ -643,7 +643,7 @@ unsafeBackpermute v is = seq v
 
 reverse :: (Vector v a) => v a -> v a
 {-# INLINE reverse #-}
-reverse = new . New.reverse . New.unstream . stream
+reverse = unstream . streamR
 
 -- Mapping
 -- -------
