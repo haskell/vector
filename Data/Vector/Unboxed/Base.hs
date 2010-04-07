@@ -1,5 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, TypeFamilies, FlexibleContexts,
-             ScopedTypeVariables #-}
+{-# LANGUAGE MultiParamTypeClasses, TypeFamilies, FlexibleContexts #-}
 -- |
 -- Module      : Data.Vector.Unboxed.Base
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010

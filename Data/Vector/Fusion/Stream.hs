@@ -1,4 +1,4 @@
-{-# LANGUAGE ExistentialQuantification, FlexibleInstances, Rank2Types #-}
+{-# LANGUAGE FlexibleInstances, Rank2Types #-}
 
 -- |
 -- Module      : Data.Vector.Fusion.Stream
