@@ -3,7 +3,7 @@
 
 -- |
 -- Module      : Data.Vector.Primitive.Mutable
--- Copyright   : (c) Roman Leshchinskiy 2008-2009
+-- Copyright   : (c) Roman Leshchinskiy 2008-2010
 -- License     : BSD-style
 --
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
