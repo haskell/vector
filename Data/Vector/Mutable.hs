@@ -28,7 +28,6 @@ module Data.Vector.Mutable (
 import qualified Data.Vector.Generic.Mutable as G
 import           Data.Primitive.Array
 import           Control.Monad.Primitive
-import           Control.Monad.ST ( ST )
 
 import Prelude hiding ( length, read )
 

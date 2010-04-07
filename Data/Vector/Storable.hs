@@ -91,8 +91,6 @@ import Foreign.ForeignPtr
 import Foreign.Ptr
 import Foreign.Marshal.Array ( advancePtr )
 
-import Control.Monad.ST ( ST, runST )
-
 import Prelude hiding ( length, null,
                         replicate, (++),
                         head, last,

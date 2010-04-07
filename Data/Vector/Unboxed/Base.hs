@@ -22,7 +22,6 @@ import qualified Data.Vector.Generic.Mutable as M
 import qualified Data.Vector.Primitive as P
 
 import Control.Monad.Primitive
-import Control.Monad.ST ( runST )
 import Control.Monad ( liftM )
 
 import Data.Word ( Word, Word8, Word16, Word32, Word64 )

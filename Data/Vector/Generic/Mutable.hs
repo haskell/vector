@@ -40,10 +40,6 @@ import           Data.Vector.Fusion.Stream.Size
 
 import Control.Monad.Primitive ( PrimMonad, PrimState )
 
-import GHC.Float (
-    double2Int, int2Double
-  )
-
 import Prelude hiding ( length, reverse, map, read,
                         take, drop, init, tail )
 

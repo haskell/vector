@@ -30,10 +30,7 @@ import qualified Data.Vector.Generic.Mutable as G
 import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim, sizeOf )
 import           Control.Monad.Primitive
-import           Control.Monad.ST ( ST )
 import           Control.Monad ( liftM )
-
-import Foreign.C.Types ( CInt )
 
 import Prelude hiding( length, read )
 
