@@ -37,16 +37,17 @@ Description:
         .
         * <http://trac.haskell.org/vector>
         .
-        Changes since version 0.4.2
+        Changes since version 0.5
         .
-        * Unboxed vectors of primitive types and tuples
+        * More efficient representation of @Storable@ vectors
         .
-        * Redesigned interface between mutable and immutable vectors (now
-          with the popular @unsafeFreeze@ primitive)
+        * Block copy operations used when possible
         .
-        * Many new combinators
+        * @Typeable@ and @Data@ instances
         .
-        * Significant performance improvements
+        * New combinators
+        .
+        * Performance improvements
         .
 
 Cabal-Version:  >= 1.2
