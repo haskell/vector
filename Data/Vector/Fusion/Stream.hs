@@ -94,6 +94,8 @@ import Prelude hiding ( length, null,
                         enumFromTo, enumFromThenTo,
                         mapM_ )
 
+import GHC.Base ( build )
+
 #include "vector.h"
 
 -- | The type of pure streams 
@@ -563,7 +565,18 @@ enumFromThenTo = M.enumFromThenTo
 -- | Convert a 'Stream' to a list
 toList :: Stream a -> [a]
 {-# INLINE toList #-}
-toList s = unId (M.toList s)
+-- toList s = unId (M.toList s)
+toList s = build (\c n -> toListFB c n s)
+
+-- This supports foldr/build list fusion that GHC implements
+toListFB :: (a -> b -> b) -> b -> Stream a -> b
+{-# INLINE [0] toListFB #-}
+toListFB c n (M.Stream step s _) = go s
+  where
+    go s = case unId (step s) of
+             Yield x s' -> x `c` go s'
+             Skip    s' -> go s'
+             Done       -> n
 
 -- | Create a 'Stream' from a list
 fromList :: [a] -> Stream a
