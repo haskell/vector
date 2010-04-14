@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, TypeFamilies, ScopedTypeVariables #-}
 
 -- |
 -- Module      : Data.Vector.Primitive
@@ -82,7 +82,7 @@ import qualified Data.Vector.Generic           as G
 import           Data.Vector.Primitive.Mutable ( MVector(..) )
 import qualified Data.Vector.Fusion.Stream as Stream
 import           Data.Primitive.ByteArray
-import           Data.Primitive ( Prim )
+import           Data.Primitive ( Prim, sizeOf )
 
 import Control.Monad ( liftM )
 
@@ -136,6 +136,12 @@ instance Prim a => G.Vector Vector a where
 
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (Vector i _ arr) j = return (indexByteArray arr (i+j))
+
+  {-# INLINE basicUnsafeCopy #-}
+  basicUnsafeCopy (MVector i n dst) (Vector j _ src)
+    = memcpyByteArray' dst (i * sz) src (j * sz) (n * sz)
+    where
+      sz = sizeOf (undefined :: a)
 
   {-# INLINE elemseq #-}
   elemseq _ = seq

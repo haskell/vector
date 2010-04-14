@@ -157,9 +157,9 @@ generate n =
       = (pat "MV" <+> tuple vars,
          mk_do [qM rec <+> vs <+> v | vs <- varss | v <- vars] empty)
 
-    gen_unsafeCopy rec
-      = (patn "MV" 1 <+> patn "MV" 2,
-         mk_do [qM rec <+> vs <> char '1' <+> vs <> char '2' | vs <- varss]
+    gen_unsafeCopy c q rec
+      = (patn "MV" 1 <+> patn c 2,
+         mk_do [q rec <+> vs <> char '1' <+> vs <> char '2' | vs <- varss]
                empty)
 
     gen_unsafeGrow rec
@@ -209,11 +209,12 @@ generate n =
                       ,("basicUnsafeWrite",       gen_unsafeWrite)
                       ,("basicClear",             gen_clear)
                       ,("basicSet",               gen_set)
-                      ,("basicUnsafeCopy",        gen_unsafeCopy)
+                      ,("basicUnsafeCopy",        gen_unsafeCopy "MV" qM)
                       ,("basicUnsafeGrow",        gen_unsafeGrow)]
 
     methods_Vector  = [("unsafeFreeze",           gen_unsafeFreeze)
                       ,("basicLength",            gen_length "V")
                       ,("basicUnsafeSlice",       gen_unsafeSlice "G" "V")
                       ,("basicUnsafeIndexM",      gen_basicUnsafeIndexM)
+                      ,("basicUnsafeCopy",        gen_unsafeCopy "V" qG)
                       ,("elemseq",                gen_elemseq)]

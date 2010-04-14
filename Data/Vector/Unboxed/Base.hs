@@ -116,6 +116,9 @@ instance G.Vector Vector () where
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (V_Unit _) i = return ()
 
+  {-# INLINE basicUnsafeCopy #-}
+  basicUnsafeCopy (MV_Unit _) (V_Unit _) = return ()
+
   {-# INLINE elemseq #-}
   elemseq _ = seq
 
@@ -160,6 +163,7 @@ instance G.Vector Vector ty where {                                     \
 ; basicLength (con v) = G.basicLength v                                 \
 ; basicUnsafeSlice i n (con v) = con $ G.basicUnsafeSlice i n v         \
 ; basicUnsafeIndexM (con v) i = G.basicUnsafeIndexM v i                 \
+; basicUnsafeCopy (mcon mv) (con v) = G.basicUnsafeCopy mv v            \
 ; elemseq _ = seq }
 
 newtype instance MVector s Int = MV_Int (P.MVector s Int)
@@ -296,6 +300,7 @@ instance G.Vector Vector Bool where
   basicLength (V_Bool v) = G.basicLength v
   basicUnsafeSlice i n (V_Bool v) = V_Bool $ G.basicUnsafeSlice i n v
   basicUnsafeIndexM (V_Bool v) i = toBool `liftM` G.basicUnsafeIndexM v i
+  basicUnsafeCopy (MV_Bool mv) (V_Bool v) = G.basicUnsafeCopy mv v
   elemseq _ = seq
 
 -- -------
@@ -342,6 +347,8 @@ instance (RealFloat a, Unbox a) => G.Vector Vector (Complex a) where
   basicUnsafeSlice i n (V_Complex v) = V_Complex $ G.basicUnsafeSlice i n v
   basicUnsafeIndexM (V_Complex v) i
                 = uncurry (:+) `liftM` G.basicUnsafeIndexM v i
+  basicUnsafeCopy (MV_Complex mv) (V_Complex v)
+                = G.basicUnsafeCopy mv v
   elemseq _ (x :+ y) z = G.elemseq (undefined :: Vector a) x
                        $ G.elemseq (undefined :: Vector a) y z
 

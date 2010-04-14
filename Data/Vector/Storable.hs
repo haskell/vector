@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TypeFamilies #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TypeFamilies, ScopedTypeVariables #-}
 
 -- |
 -- Module      : Data.Vector.Storable
@@ -90,6 +90,9 @@ import Foreign.Storable
 import Foreign.ForeignPtr
 import Foreign.Ptr
 import Foreign.Marshal.Array ( advancePtr )
+import Foreign.Marshal.Utils ( copyBytes )
+
+import Control.Monad.Primitive ( unsafePrimToPrim )
 
 import Prelude hiding ( length, null,
                         replicate, (++),
@@ -147,6 +150,15 @@ instance Storable a => G.Vector Vector a where
                                       . inlinePerformIO
                                       $ withForeignPtr fp $ \_ ->
                                         peekElemOff p i
+
+  {-# INLINE basicUnsafeCopy #-}
+  basicUnsafeCopy (MVector p n fp) (Vector q _ fq)
+    = unsafePrimToPrim
+    $ withForeignPtr fp $ \_ ->
+      withForeignPtr fq $ \_ ->
+      do
+        copyBytes p q (fromIntegral (n * sizeOf (undefined :: a)))
+        return ()
 
   {-# INLINE elemseq #-}
   elemseq _ = seq

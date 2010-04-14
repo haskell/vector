@@ -80,6 +80,11 @@ instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
           a <- G.basicUnsafeIndexM as i_
           b <- G.basicUnsafeIndexM bs i_
           return (a, b)
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_2 n_1 as1 bs1) (V_2 n_2 as2 bs2)
+      = do
+          G.basicUnsafeCopy as1 as2
+          G.basicUnsafeCopy bs1 bs2
   {-# INLINE elemseq  #-}
   elemseq _ (a, b) x_
       = G.elemseq (undefined :: Vector a) a $
@@ -211,6 +216,12 @@ instance (Unbox a,
           b <- G.basicUnsafeIndexM bs i_
           c <- G.basicUnsafeIndexM cs i_
           return (a, b, c)
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_3 n_1 as1 bs1 cs1) (V_3 n_2 as2 bs2 cs2)
+      = do
+          G.basicUnsafeCopy as1 as2
+          G.basicUnsafeCopy bs1 bs2
+          G.basicUnsafeCopy cs1 cs2
   {-# INLINE elemseq  #-}
   elemseq _ (a, b, c) x_
       = G.elemseq (undefined :: Vector a) a $
@@ -375,6 +386,16 @@ instance (Unbox a,
           c <- G.basicUnsafeIndexM cs i_
           d <- G.basicUnsafeIndexM ds i_
           return (a, b, c, d)
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_4 n_1 as1 bs1 cs1 ds1) (V_4 n_2 as2
+                                                      bs2
+                                                      cs2
+                                                      ds2)
+      = do
+          G.basicUnsafeCopy as1 as2
+          G.basicUnsafeCopy bs1 bs2
+          G.basicUnsafeCopy cs1 cs2
+          G.basicUnsafeCopy ds1 ds2
   {-# INLINE elemseq  #-}
   elemseq _ (a, b, c, d) x_
       = G.elemseq (undefined :: Vector a) a $
@@ -579,6 +600,18 @@ instance (Unbox a,
           d <- G.basicUnsafeIndexM ds i_
           e <- G.basicUnsafeIndexM es i_
           return (a, b, c, d, e)
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_5 n_1 as1 bs1 cs1 ds1 es1) (V_5 n_2 as2
+                                                          bs2
+                                                          cs2
+                                                          ds2
+                                                          es2)
+      = do
+          G.basicUnsafeCopy as1 as2
+          G.basicUnsafeCopy bs1 bs2
+          G.basicUnsafeCopy cs1 cs2
+          G.basicUnsafeCopy ds1 ds2
+          G.basicUnsafeCopy es1 es2
   {-# INLINE elemseq  #-}
   elemseq _ (a, b, c, d, e) x_
       = G.elemseq (undefined :: Vector a) a $
@@ -833,6 +866,20 @@ instance (Unbox a,
           e <- G.basicUnsafeIndexM es i_
           f <- G.basicUnsafeIndexM fs i_
           return (a, b, c, d, e, f)
+  {-# INLINE basicUnsafeCopy  #-}
+  basicUnsafeCopy (MV_6 n_1 as1 bs1 cs1 ds1 es1 fs1) (V_6 n_2 as2
+                                                              bs2
+                                                              cs2
+                                                              ds2
+                                                              es2
+                                                              fs2)
+      = do
+          G.basicUnsafeCopy as1 as2
+          G.basicUnsafeCopy bs1 bs2
+          G.basicUnsafeCopy cs1 cs2
+          G.basicUnsafeCopy ds1 ds2
+          G.basicUnsafeCopy es1 es2
+          G.basicUnsafeCopy fs1 fs2
   {-# INLINE elemseq  #-}
   elemseq _ (a, b, c, d, e, f) x_
       = G.elemseq (undefined :: Vector a) a $

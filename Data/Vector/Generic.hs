@@ -166,6 +166,19 @@ class MVector (Mutable v) a => Vector v a where
   --
   basicUnsafeIndexM  :: Monad m => v a -> Int -> m a
 
+  -- | Copy an immutable vector into a mutable one.
+  basicUnsafeCopy :: PrimMonad m => Mutable v (PrimState m) a -> v a -> m ()
+
+  basicUnsafeCopy dst src = do_copy 0
+    where
+      n = basicLength src
+
+      do_copy i | i < n = do
+                            x <- basicUnsafeIndexM src i
+                            M.basicUnsafeWrite dst i x
+                            do_copy (i+1)
+                | otherwise = return ()
+
   elemseq :: v a -> a -> b -> b
 
   {-# INLINE elemseq #-}
