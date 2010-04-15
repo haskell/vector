@@ -89,7 +89,7 @@ module Data.Vector.Generic (
   stream, unstream, streamR, unstreamR,
 
   -- * MVector-based initialisation
-  new,
+  new, copy, unsafeCopy,
 
   -- * Utilities for defining Data instances
   gfoldl, dataCast, mkType
@@ -281,6 +281,25 @@ unstreamR s = new (New.unstreamR s)
   streamR (new' v (New.transformR f m)) = inplace f (streamR (new' v m))
 
  #-}
+
+-- | Copy an immutable vector into a mutable one. The two vectors must have
+-- the same length. This is not checked.
+unsafeCopy
+  :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
+{-# INLINE unsafeCopy #-}
+unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
+                                         (M.length dst == length src)
+                   $ (dst `seq` src `seq` basicUnsafeCopy dst src)
+           
+-- | Copy an immutable vector into a mutale one. The two vectors must have the
+-- same length.
+copy
+  :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
+{-# INLINE copy #-}
+copy dst src = BOUNDS_CHECK(check) "copy" "length mismatch"
+                                          (M.length dst == length src)
+             $ unsafeCopy dst src
+
 
 -- Length
 -- ------
