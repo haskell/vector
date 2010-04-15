@@ -19,7 +19,7 @@ module Data.Vector.Storable (
   length, null,
 
   -- * Construction
-  empty, singleton, cons, snoc, replicate, generate, (++), copy,
+  empty, singleton, cons, snoc, replicate, generate, (++), force,
 
   -- * Accessing individual elements
   (!), head, last, indexM, headM, lastM,
@@ -262,9 +262,9 @@ infixr 5 ++
 (++) = (G.++)
 
 -- | Create a copy of a vector. Useful when dealing with slices.
-copy :: Storable a => Vector a -> Vector a
-{-# INLINE copy #-}
-copy = G.copy
+force :: Storable a => Vector a -> Vector a
+{-# INLINE force #-}
+force = G.force
 
 -- Accessing individual elements
 -- -----------------------------

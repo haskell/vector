@@ -35,7 +35,7 @@ module Data.Vector (
   (++),
   replicate,
   generate,
-  copy,
+  force,
 
   -- * Operations based on length information
   length,
@@ -254,12 +254,12 @@ infixr 5 ++
 (++) = (G.++)
 
 -- |/O(n)/, Create a copy of a vector.
--- @copy@ is useful when dealing with slices, as the garbage collector
+-- @force@ is useful when dealing with slices, as the garbage collector
 -- may be able to free the original vector if no further references are held.
 --
-copy :: Vector a -> Vector a
-{-# INLINE copy #-}
-copy = G.copy
+force :: Vector a -> Vector a
+{-# INLINE force #-}
+force = G.force
 
 -- Accessing individual elements
 -- -----------------------------

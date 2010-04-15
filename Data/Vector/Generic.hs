@@ -20,7 +20,7 @@ module Data.Vector.Generic (
   length, null,
 
   -- * Construction
-  empty, singleton, cons, snoc, replicate, generate, (++), copy,
+  empty, singleton, cons, snoc, replicate, generate, (++), force,
 
   -- * Accessing individual elements
   (!), head, last, indexM, headM, lastM,
@@ -356,14 +356,14 @@ infixr 5 ++
 v ++ w = unstream (stream v Stream.++ stream w)
 
 -- | Create a copy of a vector. Useful when dealing with slices.
-copy :: Vector v a => v a -> v a
-{-# INLINE_STREAM copy #-}
-copy = unstream . stream
+force :: Vector v a => v a -> v a
+{-# INLINE_STREAM force #-}
+force = unstream . stream
 
 {-# RULES
 
-"copy/unstream [Vector]" forall v s.
-  copy (new' v (New.unstream s)) = new' v (New.unstream s)
+"force/unstream [Vector]" forall v s.
+  force (new' v (New.unstream s)) = new' v (New.unstream s)
 
  #-}
 
