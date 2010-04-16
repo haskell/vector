@@ -42,9 +42,9 @@ apply :: (forall mv s a. MVector mv a => mv s a -> mv s a) -> New a -> New a
 {-# INLINE apply #-}
 apply f (New p) = New (liftM f p)
 
-modify :: New a -> (forall mv s. MVector mv a => mv s a -> ST s ()) -> New a
+modify :: (forall mv s. MVector mv a => mv s a -> ST s ()) -> New a -> New a
 {-# INLINE modify #-}
-modify (New p) q = New (do { v <- p; q v; return v })
+modify f (New p) = New (do { v <- p; f v; return v })
 
 unstream :: Stream a -> New a
 {-# INLINE_STREAM unstream #-}
@@ -155,21 +155,21 @@ unsafeTail m = apply MVector.unsafeTail m
 
 unsafeAccum :: (a -> b -> a) -> New a -> Stream (Int, b) -> New a
 {-# INLINE_STREAM unsafeAccum #-}
-unsafeAccum f m s = s `seq` modify m (\v -> MVector.unsafeAccum f v s)
+unsafeAccum f m s = s `seq` modify (\v -> MVector.unsafeAccum f v s) m
 
 accum :: (a -> b -> a) -> New a -> Stream (Int, b) -> New a
 {-# INLINE_STREAM accum #-}
-accum f m s = s `seq` modify m (\v -> MVector.accum f v s)
+accum f m s = s `seq` modify (\v -> MVector.accum f v s) m
 
 unsafeUpdate :: New a -> Stream (Int, a) -> New a
 {-# INLINE_STREAM unsafeUpdate #-}
-unsafeUpdate m s = s `seq` modify m (\v -> MVector.unsafeUpdate v s)
+unsafeUpdate m s = s `seq` modify (\v -> MVector.unsafeUpdate v s) m
 
 update :: New a -> Stream (Int, a) -> New a
 {-# INLINE_STREAM update #-}
-update m s = s `seq` modify m (\v -> MVector.update v s)
+update m s = s `seq` modify (\v -> MVector.update v s) m
 
 reverse :: New a -> New a
 {-# INLINE_STREAM reverse #-}
-reverse m = modify m (MVector.reverse)
+reverse m = modify (MVector.reverse) m
 
