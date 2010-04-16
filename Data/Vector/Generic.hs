@@ -107,7 +107,7 @@ import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
 import           Data.Vector.Fusion.Util
 
-import Control.Monad.ST ( runST )
+import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
 import Prelude hiding ( length, null,
                         replicate, (++),
@@ -300,6 +300,23 @@ copy dst src = BOUNDS_CHECK(check) "copy" "length mismatch"
                                           (M.length dst == length src)
              $ unsafeCopy dst src
 
+modify :: Vector v a => (forall mv s. MVector mv a => mv s a -> ST s ())
+                                                                -> v a -> v a
+{-# INLINE_STREAM modify #-}
+modify p v = runST (
+             do
+               mv <- M.unsafeNew (length v)
+               unsafeCopy mv v
+               p mv
+               unsafeFreeze mv)
+
+{-# RULES
+
+"modify/new [Vector]"
+    forall (f :: forall mv s. MVector mv a => mv s a -> ST s ())  v m.
+  modify f (new' v m) = new' v (New.modify f m)
+
+ #-}
 
 -- Length
 -- ------
