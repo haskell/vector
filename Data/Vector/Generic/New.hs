@@ -15,10 +15,8 @@
 module Data.Vector.Generic.New (
   New(..), create, run, apply, modify,
   unstream, transform, unstreamR, transformR,
-  accum, update, reverse,
   slice, init, tail, take, drop,
-  unsafeSlice, unsafeInit, unsafeTail,
-  unsafeAccum, unsafeUpdate
+  unsafeSlice, unsafeInit, unsafeTail
 ) where
 
 import qualified Data.Vector.Generic.Mutable as MVector
@@ -161,25 +159,4 @@ unsafeTail m = apply MVector.unsafeTail m
   unsafeTail (unstream s) = unstream (Stream.tail s)
 
   #-}
-
-unsafeAccum
-        :: Vector v a => (a -> b -> a) -> New v a -> Stream (Int, b) -> New v a
-{-# INLINE_STREAM unsafeAccum #-}
-unsafeAccum f m s = s `seq` modify (\v -> MVector.unsafeAccum f v s) m
-
-accum :: Vector v a => (a -> b -> a) -> New v a -> Stream (Int, b) -> New v a
-{-# INLINE_STREAM accum #-}
-accum f m s = s `seq` modify (\v -> MVector.accum f v s) m
-
-unsafeUpdate :: Vector v a => New v a -> Stream (Int, a) -> New v a
-{-# INLINE_STREAM unsafeUpdate #-}
-unsafeUpdate m s = s `seq` modify (\v -> MVector.unsafeUpdate v s) m
-
-update :: Vector v a => New v a -> Stream (Int, a) -> New v a
-{-# INLINE_STREAM update #-}
-update m s = s `seq` modify (\v -> MVector.update v s) m
-
-reverse :: Vector v a => New v a -> New v a
-{-# INLINE_STREAM reverse #-}
-reverse m = modify (MVector.reverse) m
 

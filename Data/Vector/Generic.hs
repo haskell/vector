@@ -246,23 +246,9 @@ copy dst src = BOUNDS_CHECK(check) "copy" "length mismatch"
                                           (M.length dst == length src)
              $ unsafeCopy dst src
 
-modify :: Vector v a => (forall mv s. MVector mv a => mv s a -> ST s ())
-                                                                -> v a -> v a
-{-# INLINE_STREAM modify #-}
-modify p v = runST (
-             do
-               mv <- M.unsafeNew (length v)
-               unsafeCopy mv v
-               p mv
-               unsafeFreeze mv)
-
-{-# RULES
-
-"modify/new [Vector]"
-    forall (f :: forall mv s. MVector mv a => mv s a -> ST s ()) m.
-  modify f (new m) = new (New.modify f m)
-
- #-}
+modify :: Vector v a => (forall s. Mutable v s a -> ST s ()) -> v a -> v a
+{-# INLINE modify #-}
+modify p = new . New.modify p . clone
 
 -- Length
 -- ------
@@ -549,7 +535,7 @@ unsafeDrop n v = unsafeSlice n (length v - n) v
 unsafeAccum_stream
   :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
 {-# INLINE unsafeAccum_stream #-}
-unsafeAccum_stream f v s = new (New.accum f (clone v) s)
+unsafeAccum_stream f v s = s `seq` modify (\mv -> M.unsafeAccum f mv s) v
 
 unsafeAccum :: Vector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
 {-# INLINE unsafeAccum #-}
@@ -568,7 +554,7 @@ unsafeAccumulate_ f v is xs
 
 accum_stream :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
 {-# INLINE accum_stream #-}
-accum_stream f v s = new (New.accum f (clone v) s)
+accum_stream f v s = s `seq` modify (\mv -> M.accum f mv s) v
 
 accum :: Vector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
 {-# INLINE accum #-}
@@ -588,7 +574,7 @@ accumulate_ f v is xs = accum_stream f v (Stream.zipWith (,) (stream is)
 
 unsafeUpdate_stream :: Vector v a => v a -> Stream (Int,a) -> v a
 {-# INLINE unsafeUpdate_stream #-}
-unsafeUpdate_stream v s = new (New.unsafeUpdate (clone v) s)
+unsafeUpdate_stream v s = s `seq` modify (\mv -> M.unsafeUpdate mv s) v
 
 unsafeUpd :: Vector v a => v a -> [(Int, a)] -> v a
 {-# INLINE unsafeUpd #-}
@@ -605,7 +591,7 @@ unsafeUpdate_ v is w
 
 update_stream :: Vector v a => v a -> Stream (Int,a) -> v a
 {-# INLINE update_stream #-}
-update_stream v s = new (New.update (clone v) s)
+update_stream v s = s `seq` modify (\mv -> M.update mv s) v
 
 (//) :: Vector v a => v a -> [(Int, a)] -> v a
 {-# INLINE (//) #-}
