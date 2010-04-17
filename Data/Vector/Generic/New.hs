@@ -13,7 +13,8 @@
 --
 
 module Data.Vector.Generic.New (
-  New(..), run, apply, modify, unstream, transform, unstreamR, transformR,
+  New(..), create, run, apply, modify,
+  unstream, transform, unstreamR, transformR,
   accum, update, reverse,
   slice, init, tail, take, drop,
   unsafeSlice, unsafeInit, unsafeTail,
@@ -35,6 +36,10 @@ import Prelude hiding ( init, tail, take, drop, reverse, map, filter )
 #include "vector.h"
 
 data New v a = New (forall s. ST s (Mutable v s a))
+
+create :: (forall s. ST s (Mutable v s a)) -> New v a
+{-# INLINE create #-}
+create = New
 
 run :: New v a -> ST s (Mutable v s a)
 {-# INLINE run #-}

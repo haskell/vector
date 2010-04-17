@@ -137,6 +137,14 @@ new :: Vector v a => New v a -> v a
 {-# INLINE_STREAM new #-}
 new m = m `seq` runST (unsafeFreeze =<< New.run m)
 
+clone :: Vector v a => v a -> New v a
+{-# INLINE_STREAM clone #-}
+clone v = v `seq` New.create (
+  do
+    mv <- M.new (length v)
+    unsafeCopy mv v
+    return mv)
+
 -- | Convert a vector to a 'Stream'
 stream :: Vector v a => v a -> Stream a
 {-# INLINE_STREAM stream #-}
@@ -160,8 +168,11 @@ unstream s = new (New.unstream s)
 "stream/unstream [Vector]" forall s.
   stream (new (New.unstream s)) = s
 
-"New.unstream/stream/new [Vector]" forall p.
-  New.unstream (stream (new p)) = p
+"New.unstream/stream [Vector]" forall v.
+  New.unstream (stream v) = clone v
+
+"clone/new [Vector]" forall p.
+  clone (new p) = p
 
  #-}
 
@@ -329,7 +340,7 @@ v ++ w = unstream (stream v Stream.++ stream w)
 -- | Create a copy of a vector. Useful when dealing with slices.
 force :: Vector v a => v a -> v a
 {-# INLINE_STREAM force #-}
-force = unstream . stream
+force v = new (clone v)
 
 {-# RULES
 
@@ -538,7 +549,7 @@ unsafeDrop n v = unsafeSlice n (length v - n) v
 unsafeAccum_stream
   :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
 {-# INLINE unsafeAccum_stream #-}
-unsafeAccum_stream f v s = new (New.accum f (New.unstream (stream v)) s)
+unsafeAccum_stream f v s = new (New.accum f (clone v) s)
 
 unsafeAccum :: Vector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
 {-# INLINE unsafeAccum #-}
@@ -557,7 +568,7 @@ unsafeAccumulate_ f v is xs
 
 accum_stream :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
 {-# INLINE accum_stream #-}
-accum_stream f v s = new (New.accum f (New.unstream (stream v)) s)
+accum_stream f v s = new (New.accum f (clone v) s)
 
 accum :: Vector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
 {-# INLINE accum #-}
@@ -577,7 +588,7 @@ accumulate_ f v is xs = accum_stream f v (Stream.zipWith (,) (stream is)
 
 unsafeUpdate_stream :: Vector v a => v a -> Stream (Int,a) -> v a
 {-# INLINE unsafeUpdate_stream #-}
-unsafeUpdate_stream v s = new (New.unsafeUpdate (New.unstream (stream v)) s)
+unsafeUpdate_stream v s = new (New.unsafeUpdate (clone v) s)
 
 unsafeUpd :: Vector v a => v a -> [(Int, a)] -> v a
 {-# INLINE unsafeUpd #-}
@@ -594,7 +605,7 @@ unsafeUpdate_ v is w
 
 update_stream :: Vector v a => v a -> Stream (Int,a) -> v a
 {-# INLINE update_stream #-}
-update_stream v s = new (New.update (New.unstream (stream v)) s)
+update_stream v s = new (New.update (clone v) s)
 
 (//) :: Vector v a => v a -> [(Int, a)] -> v a
 {-# INLINE (//) #-}
