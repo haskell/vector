@@ -95,6 +95,8 @@ module Data.Vector.Generic (
   gfoldl, dataCast, mkType
 ) where
 
+import           Data.Vector.Generic.Base
+
 import           Data.Vector.Generic.Mutable ( MVector )
 import qualified Data.Vector.Generic.Mutable as M
 
@@ -127,80 +129,13 @@ import Data.Data ( Data, DataType, mkNorepType )
 
 #include "vector.h"
 
-type family Mutable (v :: * -> *) :: * -> * -> *
-
--- | Class of immutable vectors.
---
-class MVector (Mutable v) a => Vector v a where
-  -- | Unsafely convert a mutable vector to its immutable version
-  -- without copying. The mutable vector may not be used after
-  -- this operation.
-  unsafeFreeze :: PrimMonad m => Mutable v (PrimState m) a -> m (v a)
-
-  -- | Length of the vector (not fusible!)
-  basicLength      :: v a -> Int
-
-  -- | Yield a part of the vector without copying it. No range checks!
-  basicUnsafeSlice  :: Int -> Int -> v a -> v a
-
-  -- | Yield the element at the given position in a monad. The monad allows us
-  -- to be strict in the vector if we want. Suppose we had
-  --
-  -- > unsafeIndex :: v a -> Int -> a
-  --
-  -- instead. Now, if we wanted to copy a vector, we'd do something like
-  --
-  -- > copy mv v ... = ... unsafeWrite mv i (unsafeIndex v i) ...
-  --
-  -- For lazy vectors, the indexing would not be evaluated which means that we
-  -- would retain a reference to the original vector in each element we write.
-  -- This is not what we want!
-  --
-  -- With 'basicUnsafeIndexM', we can do
-  --
-  -- > copy mv v ... = ... case basicUnsafeIndexM v i of
-  -- >                       Box x -> unsafeWrite mv i x ...
-  --
-  -- which does not have this problem because indexing (but not the returned
-  -- element!) is evaluated immediately.
-  --
-  basicUnsafeIndexM  :: Monad m => v a -> Int -> m a
-
-  -- | Copy an immutable vector into a mutable one.
-  basicUnsafeCopy :: PrimMonad m => Mutable v (PrimState m) a -> v a -> m ()
-
-  basicUnsafeCopy dst src = do_copy 0
-    where
-      n = basicLength src
-
-      do_copy i | i < n = do
-                            x <- basicUnsafeIndexM src i
-                            M.basicUnsafeWrite dst i x
-                            do_copy (i+1)
-                | otherwise = return ()
-
-  elemseq :: v a -> a -> b -> b
-
-  {-# INLINE elemseq #-}
-  elemseq _ = \_ x -> x
-
 -- Fusion
 -- ------
 
 -- | Construct a pure vector from a monadic initialiser 
-new :: Vector v a => New a -> v a
-{-# INLINE new #-}
-new m = new' undefined m
-
--- | Same as 'new' but with a dummy argument necessary for correctly typing
--- the rule @uninplace@.
---
--- See http://hackage.haskell.org/trac/ghc/ticket/2600
-new' :: Vector v a => v a -> New a -> v a
-{-# INLINE_STREAM new' #-}
-new' _ m = m `seq` runST (do
-                            mv <- New.run m
-                            unsafeFreeze mv)
+new :: Vector v a => New v a -> v a
+{-# INLINE_STREAM new #-}
+new m = m `seq` runST (unsafeFreeze =<< New.run m)
 
 -- | Convert a vector to a 'Stream'
 stream :: Vector v a => v a -> Stream a
@@ -222,23 +157,23 @@ unstream s = new (New.unstream s)
 
 {-# RULES
 
-"stream/unstream [Vector]" forall v s.
-  stream (new' v (New.unstream s)) = s
+"stream/unstream [Vector]" forall s.
+  stream (new (New.unstream s)) = s
 
-"New.unstream/stream/new [Vector]" forall v p.
-  New.unstream (stream (new' v p)) = p
+"New.unstream/stream/new [Vector]" forall p.
+  New.unstream (stream (new p)) = p
 
  #-}
 
 {-# RULES
 
 "inplace [Vector]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a) v m.
-  New.unstream (inplace f (stream (new' v m))) = New.transform f m
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
+  New.unstream (inplace f (stream (new m))) = New.transform f m
 
 "uninplace [Vector]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a) v m.
-  stream (new' v (New.transform f m)) = inplace f (stream (new' v m))
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
+  stream (new (New.transform f m)) = inplace f (stream (new m))
 
  #-}
 
@@ -262,23 +197,23 @@ unstreamR s = new (New.unstreamR s)
 
 {-# RULES
 
-"streamR/unstreamR [Vector]" forall v s.
-  streamR (new' v (New.unstreamR s)) = s
+"streamR/unstreamR [Vector]" forall s.
+  streamR (new (New.unstreamR s)) = s
 
-"New.unstreamR/streamR/new [Vector]" forall v p.
-  New.unstreamR (streamR (new' v p)) = p
+"New.unstreamR/streamR/new [Vector]" forall p.
+  New.unstreamR (streamR (new p)) = p
 
  #-}
 
 {-# RULES
 
 "inplace [Vector]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a) v m.
-  New.unstreamR (inplace f (streamR (new' v m))) = New.transformR f m
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
+  New.unstreamR (inplace f (streamR (new m))) = New.transformR f m
 
 "uninplace [Vector]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a) v m.
-  streamR (new' v (New.transformR f m)) = inplace f (streamR (new' v m))
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
+  streamR (new (New.transformR f m)) = inplace f (streamR (new m))
 
  #-}
 
@@ -313,8 +248,8 @@ modify p v = runST (
 {-# RULES
 
 "modify/new [Vector]"
-    forall (f :: forall mv s. MVector mv a => mv s a -> ST s ())  v m.
-  modify f (new' v m) = new' v (New.modify f m)
+    forall (f :: forall mv s. MVector mv a => mv s a -> ST s ()) m.
+  modify f (new m) = new (New.modify f m)
 
  #-}
 
@@ -327,8 +262,8 @@ length v = basicLength v
 
 {-# RULES
 
-"length/unstream [Vector]" forall v s.
-  length (new' v (New.unstream s)) = Stream.length s
+"length/unstream [Vector]" forall s.
+  length (new (New.unstream s)) = Stream.length s
 
   #-}
 
@@ -338,8 +273,8 @@ null v = basicLength v == 0
 
 {-# RULES
 
-"null/unstream [Vector]" forall v s.
-  null (new' v (New.unstream s)) = Stream.null s
+"null/unstream [Vector]" forall s.
+  null (new (New.unstream s)) = Stream.null s
 
   #-}
 
@@ -398,8 +333,8 @@ force = unstream . stream
 
 {-# RULES
 
-"force/unstream [Vector]" forall v s.
-  force (new' v (New.unstream s)) = new' v (New.unstream s)
+"force/unstream [Vector]" forall s.
+  force (new (New.unstream s)) = new (New.unstream s)
 
  #-}
 
@@ -442,23 +377,23 @@ unsafeLast v = unsafeIndex v (length v - 1)
 
 {-# RULES
 
-"(!)/unstream [Vector]" forall v i s.
-  new' v (New.unstream s) ! i = s Stream.!! i
+"(!)/unstream [Vector]" forall i s.
+  new (New.unstream s) ! i = s Stream.!! i
 
-"head/unstream [Vector]" forall v s.
-  head (new' v (New.unstream s)) = Stream.head s
+"head/unstream [Vector]" forall s.
+  head (new (New.unstream s)) = Stream.head s
 
-"last/unstream [Vector]" forall v s.
-  last (new' v (New.unstream s)) = Stream.last s
+"last/unstream [Vector]" forall s.
+  last (new (New.unstream s)) = Stream.last s
 
-"unsafeIndex/unstream [Vector]" forall v i s.
-  unsafeIndex (new' v (New.unstream s)) i = s Stream.!! i
+"unsafeIndex/unstream [Vector]" forall i s.
+  unsafeIndex (new (New.unstream s)) i = s Stream.!! i
 
-"unsafeHead/unstream [Vector]" forall v s.
-  unsafeHead (new' v (New.unstream s)) = Stream.head s
+"unsafeHead/unstream [Vector]" forall s.
+  unsafeHead (new (New.unstream s)) = Stream.head s
 
-"unsafeLast/unstream [Vector]" forall v s.
-  unsafeLast (new' v (New.unstream s)) = Stream.last s
+"unsafeLast/unstream [Vector]" forall s.
+  unsafeLast (new (New.unstream s)) = Stream.last s
 
  #-}
 
@@ -571,29 +506,29 @@ unsafeDrop n v = unsafeSlice n (length v - n) v
 
 {-# RULES
 
-"slice/new [Vector]" forall i n v p.
-  slice i n (new' v p) = new' v (New.slice i n p)
+"slice/new [Vector]" forall i n p.
+  slice i n (new p) = new (New.slice i n p)
 
-"init/new [Vector]" forall v p.
-  init (new' v p) = new' v (New.init p)
+"init/new [Vector]" forall p.
+  init (new p) = new (New.init p)
 
-"tail/new [Vector]" forall v p.
-  tail (new' v p) = new' v (New.tail p)
+"tail/new [Vector]" forall p.
+  tail (new p) = new (New.tail p)
 
-"take/new [Vector]" forall n v p.
-  take n (new' v p) = new' v (New.take n p)
+"take/new [Vector]" forall n p.
+  take n (new p) = new (New.take n p)
 
-"drop/new [Vector]" forall n v p.
-  drop n (new' v p) = new' v (New.drop n p)
+"drop/new [Vector]" forall n p.
+  drop n (new p) = new (New.drop n p)
 
-"unsafeSlice/new [Vector]" forall i n v p.
-  unsafeSlice i n (new' v p) = new' v (New.unsafeSlice i n p)
+"unsafeSlice/new [Vector]" forall i n p.
+  unsafeSlice i n (new p) = new (New.unsafeSlice i n p)
 
-"unsafeInit/new [Vector]" forall v p.
-  unsafeInit (new' v p) = new' v (New.unsafeInit p)
+"unsafeInit/new [Vector]" forall p.
+  unsafeInit (new p) = new (New.unsafeInit p)
 
-"unsafeTail/new [Vector]" forall v p.
-  unsafeTail (new' v p) = new' v (New.unsafeTail p)
+"unsafeTail/new [Vector]" forall p.
+  unsafeTail (new p) = new (New.unsafeTail p)
 
   #-}
 
@@ -962,7 +897,7 @@ unstablePartition_stream f s = s `seq` runST (
     v2 <- unsafeFreeze mv2
     return (v1,v2))
 
-unstablePartition_new :: Vector v a => (a -> Bool) -> New a -> (v a, v a)
+unstablePartition_new :: Vector v a => (a -> Bool) -> New v a -> (v a, v a)
 {-# INLINE_STREAM unstablePartition_new #-}
 unstablePartition_new f (New.New p) = runST (
   do
@@ -973,8 +908,8 @@ unstablePartition_new f (New.New p) = runST (
 
 {-# RULES
 
-"unstablePartition" forall f v p.
-  unstablePartition_stream f (stream (new' v p))
+"unstablePartition" forall f p.
+  unstablePartition_stream f (stream (new p))
     = unstablePartition_new f p
 
   #-}

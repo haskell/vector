@@ -23,6 +23,8 @@ module Data.Vector.Generic.New (
 import qualified Data.Vector.Generic.Mutable as MVector
 import           Data.Vector.Generic.Mutable ( MVector )
 
+import          Data.Vector.Generic.Base ( Vector, Mutable )
+
 import           Data.Vector.Fusion.Stream ( Stream, MStream )
 import qualified Data.Vector.Fusion.Stream as Stream
 
@@ -32,25 +34,26 @@ import Prelude hiding ( init, tail, take, drop, reverse, map, filter )
 
 #include "vector.h"
 
-data New a = New (forall mv s. MVector mv a => ST s (mv s a))
+data New v a = New (forall s. ST s (Mutable v s a))
 
-run :: MVector mv a => New a -> ST s (mv s a)
+run :: New v a -> ST s (Mutable v s a)
 {-# INLINE run #-}
 run (New p) = p
 
-apply :: (forall mv s a. MVector mv a => mv s a -> mv s a) -> New a -> New a
+apply :: (forall s. Mutable v s a -> Mutable v s a) -> New v a -> New v a
 {-# INLINE apply #-}
 apply f (New p) = New (liftM f p)
 
-modify :: (forall mv s. MVector mv a => mv s a -> ST s ()) -> New a -> New a
+modify :: (forall s. Mutable v s a -> ST s ()) -> New v a -> New v a
 {-# INLINE modify #-}
 modify f (New p) = New (do { v <- p; f v; return v })
 
-unstream :: Stream a -> New a
+unstream :: Vector v a => Stream a -> New v a
 {-# INLINE_STREAM unstream #-}
 unstream s = s `seq` New (MVector.unstream s)
 
-transform :: (forall m. Monad m => MStream m a -> MStream m a) -> New a -> New a
+transform :: Vector v a =>
+        (forall m. Monad m => MStream m a -> MStream m a) -> New v a -> New v a
 {-# INLINE_STREAM transform #-}
 transform f (New p) = New (MVector.transform f =<< p)
 
@@ -70,11 +73,12 @@ transform f (New p) = New (MVector.transform f =<< p)
  #-}
 
 
-unstreamR :: Stream a -> New a
+unstreamR :: Vector v a => Stream a -> New v a
 {-# INLINE_STREAM unstreamR #-}
 unstreamR s = s `seq` New (MVector.unstreamR s)
 
-transformR :: (forall m. Monad m => MStream m a -> MStream m a) -> New a -> New a
+transformR :: Vector v a =>
+        (forall m. Monad m => MStream m a -> MStream m a) -> New v a -> New v a
 {-# INLINE_STREAM transformR #-}
 transformR f (New p) = New (MVector.transformR f =<< p)
 
@@ -93,35 +97,35 @@ transformR f (New p) = New (MVector.transformR f =<< p)
 
  #-}
 
-slice :: Int -> Int -> New a -> New a
+slice :: Vector v a => Int -> Int -> New v a -> New v a
 {-# INLINE_STREAM slice #-}
 slice i n m = apply (MVector.slice i n) m
 
-init :: New a -> New a
+init :: Vector v a => New v a -> New v a
 {-# INLINE_STREAM init #-}
 init m = apply MVector.init m
 
-tail :: New a -> New a
+tail :: Vector v a => New v a -> New v a
 {-# INLINE_STREAM tail #-}
 tail m = apply MVector.tail m
 
-take :: Int -> New a -> New a
+take :: Vector v a => Int -> New v a -> New v a
 {-# INLINE_STREAM take #-}
 take n m = apply (MVector.take n) m
 
-drop :: Int -> New a -> New a
+drop :: Vector v a => Int -> New v a -> New v a
 {-# INLINE_STREAM drop #-}
 drop n m = apply (MVector.drop n) m
 
-unsafeSlice :: Int -> Int -> New a -> New a
+unsafeSlice :: Vector v a => Int -> Int -> New v a -> New v a
 {-# INLINE_STREAM unsafeSlice #-}
 unsafeSlice i n m = apply (MVector.unsafeSlice i n) m
 
-unsafeInit :: New a -> New a
+unsafeInit :: Vector v a => New v a -> New v a
 {-# INLINE_STREAM unsafeInit #-}
 unsafeInit m = apply MVector.unsafeInit m
 
-unsafeTail :: New a -> New a
+unsafeTail :: Vector v a => New v a -> New v a
 {-# INLINE_STREAM unsafeTail #-}
 unsafeTail m = apply MVector.unsafeTail m
 
@@ -153,23 +157,24 @@ unsafeTail m = apply MVector.unsafeTail m
 
   #-}
 
-unsafeAccum :: (a -> b -> a) -> New a -> Stream (Int, b) -> New a
+unsafeAccum
+        :: Vector v a => (a -> b -> a) -> New v a -> Stream (Int, b) -> New v a
 {-# INLINE_STREAM unsafeAccum #-}
 unsafeAccum f m s = s `seq` modify (\v -> MVector.unsafeAccum f v s) m
 
-accum :: (a -> b -> a) -> New a -> Stream (Int, b) -> New a
+accum :: Vector v a => (a -> b -> a) -> New v a -> Stream (Int, b) -> New v a
 {-# INLINE_STREAM accum #-}
 accum f m s = s `seq` modify (\v -> MVector.accum f v s) m
 
-unsafeUpdate :: New a -> Stream (Int, a) -> New a
+unsafeUpdate :: Vector v a => New v a -> Stream (Int, a) -> New v a
 {-# INLINE_STREAM unsafeUpdate #-}
 unsafeUpdate m s = s `seq` modify (\v -> MVector.unsafeUpdate v s) m
 
-update :: New a -> Stream (Int, a) -> New a
+update :: Vector v a => New v a -> Stream (Int, a) -> New v a
 {-# INLINE_STREAM update #-}
 update m s = s `seq` modify (\v -> MVector.update v s) m
 
-reverse :: New a -> New a
+reverse :: Vector v a => New v a -> New v a
 {-# INLINE_STREAM reverse #-}
 reverse m = modify (MVector.reverse) m
 

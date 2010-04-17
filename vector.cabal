@@ -91,6 +91,7 @@ Library
         Data.Vector.Fusion.Stream
 
         Data.Vector.Generic.Mutable
+        Data.Vector.Generic.Base
         Data.Vector.Generic.New
         Data.Vector.Generic
 
