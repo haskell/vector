@@ -22,7 +22,7 @@ module Data.Vector.Generic.New (
 import qualified Data.Vector.Generic.Mutable as MVector
 import           Data.Vector.Generic.Mutable ( MVector )
 
-import          Data.Vector.Generic.Base ( Vector, Mutable )
+import           Data.Vector.Generic.Base ( Vector, Mutable )
 
 import           Data.Vector.Fusion.Stream ( Stream, MStream )
 import qualified Data.Vector.Fusion.Stream as Stream
