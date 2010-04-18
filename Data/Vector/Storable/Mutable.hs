@@ -62,9 +62,12 @@ instance Storable a => G.MVector MVector a where
   {-# INLINE basicUnsafeSlice #-}
   basicUnsafeSlice j m (MVector p n fp) = MVector (p `advancePtr` j) m fp
 
-  -- FIXME: implement this properly
+  -- FIXME: this relies on non-portable pointer comparisons
   {-# INLINE basicOverlaps #-}
-  basicOverlaps (MVector _ _ _) (MVector _ _ _) = True
+  basicOverlaps (MVector p m _) (MVector q n _)
+    = between p q (q `advancePtr` n) || between q p (p `advancePtr` m)
+    where
+      between x y z = x >= y && x < z
 
   {-# INLINE basicUnsafeNew #-}
   basicUnsafeNew n
