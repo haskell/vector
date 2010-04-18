@@ -151,7 +151,7 @@ instance Storable a => G.Vector Vector a where
 
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (Vector p _ fp) i = return
-                                      . inlinePerformIO
+                                      . unsafeInlineIO
                                       $ withForeignPtr fp $ \_ ->
                                         peekElemOff p i
 
