@@ -261,6 +261,7 @@ unstream s = case upperBound (Stream.size s) of
 --
 -- fromList = Data.Vector.Unboxed.unstream . Stream.fromList
 --
+-- I'm not sure this still applies (19/04/2010)
 
 unstreamMax
   :: (PrimMonad m, MVector v a) => Stream a -> Int -> m (v (PrimState m) a)
