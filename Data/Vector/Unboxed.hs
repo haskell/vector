@@ -1,3 +1,5 @@
+{-# LANGUAGE Rank2Types #-}
+
 -- |
 -- Module      : Data.Vector.Unboxed
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010
@@ -77,12 +79,18 @@ module Data.Vector.Unboxed (
   enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
-  toList, fromList, fromListN
+  toList, fromList, fromListN,
+
+  -- * Destructive operations
+  create, modify, copy, unsafeCopy
 ) where
 
 import Data.Vector.Unboxed.Base
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Fusion.Stream as Stream
+
+import Control.Monad.ST ( ST )
+import Control.Monad.Primitive
 
 import Prelude hiding ( length, null,
                         replicate, (++),
@@ -832,6 +840,34 @@ fromList = G.fromList
 fromListN :: Unbox a => Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
 fromListN = G.fromListN
+
+-- Destructive operations
+-- ----------------------
+
+-- | Destructively initialise a vector.
+create :: Unbox a => (forall s. ST s (MVector s a)) -> Vector a
+{-# INLINE create #-}
+create = G.create
+
+-- | Apply a destructive operation to a vector. The operation is applied to a
+-- copy of the vector unless it can be safely performed in place.
+modify :: Unbox a => (forall s. MVector s a -> ST s ()) -> Vector a -> Vector a
+{-# INLINE modify #-}
+modify = G.modify
+
+-- | Copy an immutable vector into a mutable one. The two vectors must have
+-- the same length. This is not checked.
+unsafeCopy
+  :: (Unbox a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
+{-# INLINE unsafeCopy #-}
+unsafeCopy = G.unsafeCopy
+           
+-- | Copy an immutable vector into a mutable one. The two vectors must have the
+-- same length.
+copy :: (Unbox a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
+{-# INLINE copy #-}
+copy = G.copy
+
 
 #define DEFINE_IMMUTABLE
 #include "unbox-tuple-instances"

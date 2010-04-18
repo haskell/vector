@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, TypeFamilies, ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, TypeFamilies, ScopedTypeVariables, Rank2Types #-}
 
 -- |
 -- Module      : Data.Vector.Primitive
@@ -75,7 +75,10 @@ module Data.Vector.Primitive (
   enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversion to/from lists
-  toList, fromList, fromListN
+  toList, fromList, fromListN,
+
+  -- * Destructive operations
+  create, modify, copy, unsafeCopy
 ) where
 
 import qualified Data.Vector.Generic           as G
@@ -85,6 +88,8 @@ import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim, sizeOf )
 
 import Control.Monad ( liftM )
+import Control.Monad.ST ( ST )
+import Control.Monad.Primitive
 
 import Prelude hiding ( length, null,
                         replicate, (++),
@@ -849,4 +854,31 @@ fromList = G.fromList
 fromListN :: Prim a => Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
 fromListN = G.fromListN
+
+-- Destructive operations
+-- ----------------------
+
+-- | Destructively initialise a vector.
+create :: Prim a => (forall s. ST s (MVector s a)) -> Vector a
+{-# INLINE create #-}
+create = G.create
+
+-- | Apply a destructive operation to a vector. The operation is applied to a
+-- copy of the vector unless it can be safely performed in place.
+modify :: Prim a => (forall s. MVector s a -> ST s ()) -> Vector a -> Vector a
+{-# INLINE modify #-}
+modify = G.modify
+
+-- | Copy an immutable vector into a mutable one. The two vectors must have
+-- the same length. This is not checked.
+unsafeCopy
+  :: (Prim a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
+{-# INLINE unsafeCopy #-}
+unsafeCopy = G.unsafeCopy
+           
+-- | Copy an immutable vector into a mutable one. The two vectors must have the
+-- same length.
+copy :: (Prim a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
+{-# INLINE copy #-}
+copy = G.copy
 

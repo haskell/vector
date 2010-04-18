@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TypeFamilies, ScopedTypeVariables #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TypeFamilies, ScopedTypeVariables, Rank2Types #-}
 
 -- |
 -- Module      : Data.Vector.Storable
@@ -77,6 +77,9 @@ module Data.Vector.Storable (
   -- * Conversion to/from lists
   toList, fromList, fromListN,
 
+  -- * Destructive operations
+  create, modify, copy, unsafeCopy,
+
   -- * Accessing the underlying memory
   unsafeFromForeignPtr, unsafeToForeignPtr, unsafeWith
 ) where
@@ -92,7 +95,8 @@ import Foreign.Ptr
 import Foreign.Marshal.Array ( advancePtr )
 import Foreign.Marshal.Utils ( copyBytes )
 
-import Control.Monad.Primitive ( unsafePrimToPrim )
+import Control.Monad.ST ( ST )
+import Control.Monad.Primitive
 
 import Prelude hiding ( length, null,
                         replicate, (++),
@@ -906,6 +910,34 @@ fromListN :: Storable a => Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
 fromListN = G.fromListN
 
+-- Destructive operations
+-- ----------------------
+
+-- | Destructively initialise a vector.
+create :: Storable a => (forall s. ST s (MVector s a)) -> Vector a
+{-# INLINE create #-}
+create = G.create
+
+-- | Apply a destructive operation to a vector. The operation is applied to a
+-- copy of the vector unless it can be safely performed in place.
+modify
+  :: Storable a => (forall s. MVector s a -> ST s ()) -> Vector a -> Vector a
+{-# INLINE modify #-}
+modify = G.modify
+
+-- | Copy an immutable vector into a mutable one. The two vectors must have
+-- the same length. This is not checked.
+unsafeCopy
+  :: (Storable a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
+{-# INLINE unsafeCopy #-}
+unsafeCopy = G.unsafeCopy
+           
+-- | Copy an immutable vector into a mutable one. The two vectors must have the
+-- same length.
+copy :: (Storable a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
+{-# INLINE copy #-}
+copy = G.copy
+
 -- Accessing the underlying memory
 -- -------------------------------
 
@@ -930,4 +962,5 @@ unsafeToForeignPtr (Vector p n fp) = (fp, ptrToOffset fp p, n)
 unsafeWith :: Storable a => Vector a -> (Ptr a -> IO b) -> IO b
 {-# INLINE unsafeWith #-}
 unsafeWith (Vector p n fp) m = withForeignPtr fp $ \_ -> m p
+
 
