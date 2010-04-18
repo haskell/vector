@@ -510,7 +510,7 @@ instance Ord a => Ord (M.Stream Id a) where
 -- -------------------
 
 -- | Apply a monadic action to each element of the stream
-mapM_ :: Monad m => (a -> m ()) -> Stream a -> m ()
+mapM_ :: Monad m => (a -> m b) -> Stream a -> m ()
 {-# INLINE mapM_ #-}
 mapM_ f = M.mapM_ f . liftStream
 
