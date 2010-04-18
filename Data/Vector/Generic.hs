@@ -454,8 +454,6 @@ unsafeLastM v = unsafeIndexM v (length v - 1)
 -- Subarrays
 -- ---------
 
--- FIXME: slicing doesn't work with the inplace stuff at the moment
-
 -- | Yield a part of the vector without copying it.
 slice :: Vector v a => Int   -- ^ starting index
                     -> Int   -- ^ length
