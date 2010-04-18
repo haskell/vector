@@ -342,13 +342,6 @@ force :: Vector v a => v a -> v a
 {-# INLINE_STREAM force #-}
 force v = new (clone v)
 
-{-# RULES
-
-"force/unstream [Vector]" forall s.
-  force (new (New.unstream s)) = new (New.unstream s)
-
- #-}
-
 -- Accessing individual elements
 -- -----------------------------
 
