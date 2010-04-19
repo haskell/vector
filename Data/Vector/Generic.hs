@@ -177,10 +177,6 @@ unstream s = new (New.unstream s)
 "clone/new [Vector]" forall p.
   clone (new p) = p
 
- #-}
-
-{-# RULES
-
 "inplace [Vector]"
   forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
   New.unstream (inplace f (stream (new m))) = New.transform f m
@@ -217,15 +213,11 @@ unstreamR s = new (New.unstreamR s)
 "New.unstreamR/streamR/new [Vector]" forall p.
   New.unstreamR (streamR (new p)) = p
 
- #-}
-
-{-# RULES
-
-"inplace [Vector]"
+"inplace right [Vector]"
   forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
   New.unstreamR (inplace f (streamR (new m))) = New.transformR f m
 
-"uninplace [Vector]"
+"uninplace right [Vector]"
   forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
   streamR (new (New.transformR f m)) = inplace f (streamR (new m))
 
