@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 
 -- |
 -- Module      : Data.Vector.Storable.Mutable
