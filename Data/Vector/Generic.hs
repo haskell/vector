@@ -231,39 +231,6 @@ unstreamR s = new (New.unstreamR s)
 
  #-}
 
-
--- Destructive operations
--- ----------------------
-
--- | Destructively initialise a vector.
-create :: Vector v a => (forall s. ST s (Mutable v s a)) -> v a
-{-# INLINE create #-}
-create p = new (New.create p)
-
--- | Apply a destructive operation to a vector. The operation is applied to a
--- copy of the vector unless it can be safely performed in place.
-modify :: Vector v a => (forall s. Mutable v s a -> ST s ()) -> v a -> v a
-{-# INLINE modify #-}
-modify p = new . New.modify p . clone
-
--- | Copy an immutable vector into a mutable one. The two vectors must have
--- the same length. This is not checked.
-unsafeCopy
-  :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
-{-# INLINE unsafeCopy #-}
-unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
-                                         (M.length dst == length src)
-                   $ (dst `seq` src `seq` basicUnsafeCopy dst src)
-           
--- | Copy an immutable vector into a mutable one. The two vectors must have the
--- same length.
-copy
-  :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
-{-# INLINE copy #-}
-copy dst src = BOUNDS_CHECK(check) "copy" "length mismatch"
-                                          (M.length dst == length src)
-             $ unsafeCopy dst src
-
 -- Length
 -- ------
 
@@ -1275,6 +1242,38 @@ fromList = unstream . Stream.fromList
 fromListN :: Vector v a => Int -> [a] -> v a
 {-# INLINE fromListN #-}
 fromListN n = unstream . Stream.fromListN n
+
+-- Destructive operations
+-- ----------------------
+
+-- | Destructively initialise a vector.
+create :: Vector v a => (forall s. ST s (Mutable v s a)) -> v a
+{-# INLINE create #-}
+create p = new (New.create p)
+
+-- | Apply a destructive operation to a vector. The operation is applied to a
+-- copy of the vector unless it can be safely performed in place.
+modify :: Vector v a => (forall s. Mutable v s a -> ST s ()) -> v a -> v a
+{-# INLINE modify #-}
+modify p = new . New.modify p . clone
+
+-- | Copy an immutable vector into a mutable one. The two vectors must have
+-- the same length. This is not checked.
+unsafeCopy
+  :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
+{-# INLINE unsafeCopy #-}
+unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
+                                         (M.length dst == length src)
+                   $ (dst `seq` src `seq` basicUnsafeCopy dst src)
+           
+-- | Copy an immutable vector into a mutable one. The two vectors must have the
+-- same length.
+copy
+  :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
+{-# INLINE copy #-}
+copy dst src = BOUNDS_CHECK(check) "copy" "length mismatch"
+                                          (M.length dst == length src)
+             $ unsafeCopy dst src
 
 -- Utilities for defining Data instances
 -- -------------------------------------
