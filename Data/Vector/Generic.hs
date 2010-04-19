@@ -1235,6 +1235,21 @@ fromListN :: Vector v a => Int -> [a] -> v a
 {-# INLINE fromListN #-}
 fromListN n = unstream . Stream.fromListN n
 
+{-
+replicateM :: Int -> m a -> m (v a)
+replicateM n m = fromListN n (Monad.replicateM n m)
+
+replicatePrimM :: PrimMonad m => Int -> m a -> m (v a)
+replicatePrimM n m = do
+                       mv <- M.new n
+                       let go i | i >= n    = return ()
+                                | otherwise = do
+                                                x <- m
+                                                unsafeWrite mv i x
+                                                go (i+1)
+                       unsafeFreeze mv
+-}
+
 -- Destructive operations
 -- ----------------------
 
@@ -1243,7 +1258,7 @@ create :: Vector v a => (forall s. ST s (Mutable v s a)) -> v a
 {-# INLINE create #-}
 create p = new (New.create p)
 
--- | Apply a destructive operation to a vector. The operation is applied to a
+-- | Apply a destructive operation to a vector. The operation modifies a
 -- copy of the vector unless it can be safely performed in place.
 modify :: Vector v a => (forall s. Mutable v s a -> ST s ()) -> v a -> v a
 {-# INLINE modify #-}
