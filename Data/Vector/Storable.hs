@@ -92,8 +92,7 @@ import qualified Data.Vector.Fusion.Stream as Stream
 import Foreign.Storable
 import Foreign.ForeignPtr
 import Foreign.Ptr
-import Foreign.Marshal.Array ( advancePtr )
-import Foreign.Marshal.Utils ( copyBytes )
+import Foreign.Marshal.Array ( advancePtr, copyArray )
 
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
@@ -160,9 +159,7 @@ instance Storable a => G.Vector Vector a where
     = unsafePrimToPrim
     $ withForeignPtr fp $ \_ ->
       withForeignPtr fq $ \_ ->
-      do
-        copyBytes p q (fromIntegral (n * sizeOf (undefined :: a)))
-        return ()
+      copyArray p q n
 
   {-# INLINE elemseq #-}
   elemseq _ = seq

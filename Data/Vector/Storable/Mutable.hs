@@ -34,8 +34,7 @@ import Data.Vector.Storable.Internal
 import Foreign.Storable
 import Foreign.ForeignPtr
 import Foreign.Ptr
-import Foreign.Marshal.Array ( advancePtr )
-import Foreign.Marshal.Utils ( copyBytes )
+import Foreign.Marshal.Array ( advancePtr, copyArray )
 import Foreign.C.Types ( CInt )
 
 import Control.Monad.Primitive
@@ -91,9 +90,7 @@ instance Storable a => G.MVector MVector a where
     = unsafePrimToPrim
     $ withForeignPtr fp $ \_ ->
       withForeignPtr fq $ \_ ->
-      do
-        copyBytes p q (fromIntegral (n * sizeOf (undefined :: a)))
-        return ()
+      copyArray p q n
 
 -- | Create a mutable vector from a 'ForeignPtr' with an offset and a length.
 -- Modifying data through the 'ForeignPtr' afterwards is unsafe if the vector
