@@ -27,8 +27,9 @@ module Data.Vector.Generic.Mutable (
 
   -- * Internal operations
   unstream, unstreamR,
-  transform, transformR,
   munstream, munstreamR,
+  transform, transformR,
+  fill, fillR,
   unsafeAccum, accum, unsafeUpdate, update, reverse,
   unstablePartition, unstablePartitionStream, partitionStream
 ) where
@@ -192,23 +193,23 @@ mstream v = v `seq` (MStream.unfoldrM get 0 `MStream.sized` Exact n)
                            return $ Just (x, i+1)
           | otherwise = return $ Nothing
 
-munstream :: (PrimMonad m, MVector v a)
+fill :: (PrimMonad m, MVector v a)
            => v (PrimState m) a -> MStream m a -> m (v (PrimState m) a)
-{-# INLINE munstream #-}
-munstream v s = v `seq` do
-                          n' <- MStream.foldM put 0 s
-                          return $ unsafeSlice 0 n' v
+{-# INLINE fill #-}
+fill v s = v `seq` do
+                     n' <- MStream.foldM put 0 s
+                     return $ unsafeSlice 0 n' v
   where
     {-# INLINE_INNER put #-}
     put i x = do
-                INTERNAL_CHECK(checkIndex) "munstream" i (length v)
+                INTERNAL_CHECK(checkIndex) "fill" i (length v)
                   $ unsafeWrite v i x
                 return (i+1)
 
 transform :: (PrimMonad m, MVector v a)
   => (MStream m a -> MStream m a) -> v (PrimState m) a -> m (v (PrimState m) a)
 {-# INLINE_STREAM transform #-}
-transform f v = munstream v (f (mstream v))
+transform f v = fill v (f (mstream v))
 
 mstreamR :: (PrimMonad m, MVector v a) => v (PrimState m) a -> MStream m a
 {-# INLINE mstreamR #-}
@@ -223,12 +224,12 @@ mstreamR v = v `seq` (MStream.unfoldrM get n `MStream.sized` Exact n)
       where
         j = i-1
 
-munstreamR :: (PrimMonad m, MVector v a)
+fillR :: (PrimMonad m, MVector v a)
            => v (PrimState m) a -> MStream m a -> m (v (PrimState m) a)
-{-# INLINE munstreamR #-}
-munstreamR v s = v `seq` do
-                           i <- MStream.foldM put n s
-                           return $ unsafeSlice i (n-i) v
+{-# INLINE fillR #-}
+fillR v s = v `seq` do
+                      i <- MStream.foldM put n s
+                      return $ unsafeSlice i (n-i) v
   where
     n = length v
 
@@ -242,16 +243,24 @@ munstreamR v s = v `seq` do
 transformR :: (PrimMonad m, MVector v a)
   => (MStream m a -> MStream m a) -> v (PrimState m) a -> m (v (PrimState m) a)
 {-# INLINE_STREAM transformR #-}
-transformR f v = munstreamR v (f (mstreamR v))
+transformR f v = fillR v (f (mstreamR v))
 
 -- | Create a new mutable vector and fill it with elements from the 'Stream'.
--- The vector will grow logarithmically if the 'Size' hint of the 'Stream' is
--- inexact.
+-- The vector will grow exponentially if the maximum size of the 'Stream' is
+-- unknown.
 unstream :: (PrimMonad m, MVector v a) => Stream a -> m (v (PrimState m) a)
+-- NOTE: replace INLINE_STREAM by INLINE? (also in unstreamR)
 {-# INLINE_STREAM unstream #-}
-unstream s = case upperBound (Stream.size s) of
-               Just n  -> unstreamMax     s n
-               Nothing -> unstreamUnknown s
+unstream s = munstream (Stream.liftStream s)
+
+-- | Create a new mutable vector and fill it with elements from the monadic
+-- stream. The vector will grow exponentially if the maximum size of the stream
+-- is unknown.
+munstream :: (PrimMonad m, MVector v a) => MStream m a -> m (v (PrimState m) a)
+{-# INLINE_STREAM munstream #-}
+munstream s = case upperBound (MStream.size s) of
+               Just n  -> munstreamMax     s n
+               Nothing -> munstreamUnknown s
 
 -- FIXME: I can't think of how to prevent GHC from floating out
 -- unstreamUnknown. That is bad because SpecConstr then generates two
@@ -263,29 +272,29 @@ unstream s = case upperBound (Stream.size s) of
 --
 -- I'm not sure this still applies (19/04/2010)
 
-unstreamMax
-  :: (PrimMonad m, MVector v a) => Stream a -> Int -> m (v (PrimState m) a)
-{-# INLINE unstreamMax #-}
-unstreamMax s n
+munstreamMax
+  :: (PrimMonad m, MVector v a) => MStream m a -> Int -> m (v (PrimState m) a)
+{-# INLINE munstreamMax #-}
+munstreamMax s n
   = do
-      v <- INTERNAL_CHECK(checkLength) "unstreamMax" n
+      v <- INTERNAL_CHECK(checkLength) "munstreamMax" n
            $ unsafeNew n
       let put i x = do
-                       INTERNAL_CHECK(checkIndex) "unstreamMax" i n
+                       INTERNAL_CHECK(checkIndex) "munstreamMax" i n
                          $ unsafeWrite v i x
                        return (i+1)
-      n' <- Stream.foldM' put 0 s
-      return $ INTERNAL_CHECK(checkSlice) "unstreamMax" 0 n' n
+      n' <- MStream.foldM' put 0 s
+      return $ INTERNAL_CHECK(checkSlice) "munstreamMax" 0 n' n
              $ unsafeSlice 0 n' v
 
-unstreamUnknown
-  :: (PrimMonad m, MVector v a) => Stream a -> m (v (PrimState m) a)
-{-# INLINE unstreamUnknown #-}
-unstreamUnknown s
+munstreamUnknown
+  :: (PrimMonad m, MVector v a) => MStream m a -> m (v (PrimState m) a)
+{-# INLINE munstreamUnknown #-}
+munstreamUnknown s
   = do
       v <- unsafeNew 0
-      (v', n) <- Stream.foldM put (v, 0) s
-      return $ INTERNAL_CHECK(checkSlice) "unstreamUnknown" 0 n (length v')
+      (v', n) <- MStream.foldM put (v, 0) s
+      return $ INTERNAL_CHECK(checkSlice) "munstreamUnknown" 0 n (length v')
              $ unsafeSlice 0 n v'
   where
     {-# INLINE_INNER put #-}
@@ -293,38 +302,46 @@ unstreamUnknown s
                     v' <- unsafeAppend1 v i x
                     return (v',i+1)
 
--- | Create a new mutable vector and fill it with elements from the 'Stream'.
--- The vector will grow logarithmically if the 'Size' hint of the 'Stream' is
--- inexact.
+-- | Create a new mutable vector and fill it with elements from the 'Stream'
+-- from right to left. The vector will grow exponentially if the maximum size
+-- of the 'Stream' is unknown.
 unstreamR :: (PrimMonad m, MVector v a) => Stream a -> m (v (PrimState m) a)
+-- NOTE: replace INLINE_STREAM by INLINE? (also in unstream)
 {-# INLINE_STREAM unstreamR #-}
-unstreamR s = case upperBound (Stream.size s) of
-               Just n  -> unstreamRMax     s n
-               Nothing -> unstreamRUnknown s
+unstreamR s = munstreamR (Stream.liftStream s)
 
-unstreamRMax
-  :: (PrimMonad m, MVector v a) => Stream a -> Int -> m (v (PrimState m) a)
-{-# INLINE unstreamRMax #-}
-unstreamRMax s n
+-- | Create a new mutable vector and fill it with elements from the monadic
+-- stream from right to left. The vector will grow exponentially if the maximum
+-- size of the stream is unknown.
+munstreamR :: (PrimMonad m, MVector v a) => MStream m a -> m (v (PrimState m) a)
+{-# INLINE_STREAM munstreamR #-}
+munstreamR s = case upperBound (MStream.size s) of
+               Just n  -> munstreamRMax     s n
+               Nothing -> munstreamRUnknown s
+
+munstreamRMax
+  :: (PrimMonad m, MVector v a) => MStream m a -> Int -> m (v (PrimState m) a)
+{-# INLINE munstreamRMax #-}
+munstreamRMax s n
   = do
-      v <- INTERNAL_CHECK(checkLength) "unstreamRMax" n
+      v <- INTERNAL_CHECK(checkLength) "munstreamRMax" n
            $ unsafeNew n
       let put i x = do
                       let i' = i-1
-                      INTERNAL_CHECK(checkIndex) "unstreamRMax" i' n
+                      INTERNAL_CHECK(checkIndex) "munstreamRMax" i' n
                         $ unsafeWrite v i' x
                       return i'
-      i <- Stream.foldM' put n s
-      return $ INTERNAL_CHECK(checkSlice) "unstreamRMax" i (n-i) n
+      i <- MStream.foldM' put n s
+      return $ INTERNAL_CHECK(checkSlice) "munstreamRMax" i (n-i) n
              $ unsafeSlice i (n-i) v
 
-unstreamRUnknown
-  :: (PrimMonad m, MVector v a) => Stream a -> m (v (PrimState m) a)
-{-# INLINE unstreamRUnknown #-}
-unstreamRUnknown s
+munstreamRUnknown
+  :: (PrimMonad m, MVector v a) => MStream m a -> m (v (PrimState m) a)
+{-# INLINE munstreamRUnknown #-}
+munstreamRUnknown s
   = do
       v <- unsafeNew 0
-      (v', i) <- Stream.foldM put (v, 0) s
+      (v', i) <- MStream.foldM put (v, 0) s
       let n = length v'
       return $ INTERNAL_CHECK(checkSlice) "unstreamRUnknown" i (n-i) n
              $ unsafeSlice i (n-i) v'
