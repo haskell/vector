@@ -210,9 +210,9 @@ transform :: (PrimMonad m, MVector v a)
 {-# INLINE_STREAM transform #-}
 transform f v = munstream v (f (mstream v))
 
-mrstream :: (PrimMonad m, MVector v a) => v (PrimState m) a -> MStream m a
-{-# INLINE mrstream #-}
-mrstream v = v `seq` (MStream.unfoldrM get n `MStream.sized` Exact n)
+mstreamR :: (PrimMonad m, MVector v a) => v (PrimState m) a -> MStream m a
+{-# INLINE mstreamR #-}
+mstreamR v = v `seq` (MStream.unfoldrM get n `MStream.sized` Exact n)
   where
     n = length v
 
@@ -242,7 +242,7 @@ munstreamR v s = v `seq` do
 transformR :: (PrimMonad m, MVector v a)
   => (MStream m a -> MStream m a) -> v (PrimState m) a -> m (v (PrimState m) a)
 {-# INLINE_STREAM transformR #-}
-transformR f v = munstreamR v (f (mrstream v))
+transformR f v = munstreamR v (f (mstreamR v))
 
 -- | Create a new mutable vector and fill it with elements from the 'Stream'.
 -- The vector will grow logarithmically if the 'Size' hint of the 'Stream' is
