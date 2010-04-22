@@ -168,7 +168,7 @@ replicateM n p = Stream step n (Exact (delay_inline max n 0))
   where
     {-# INLINE_INNER step #-}
     step i | i <= 0    = return Done
-           | otherwise = do { x <- p; return $ Yield x (i+1) }
+           | otherwise = do { x <- p; return $ Yield x (i-1) }
 
 generate :: Monad m => Int -> (Int -> a) -> Stream m a
 {-# INLINE generate #-}
