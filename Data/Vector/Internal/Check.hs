@@ -54,8 +54,8 @@ error :: String -> Int -> Checks -> String -> String -> a
 error file line kind loc msg
   = P.error $ unlines $
       (if kind == Internal
-         then (["*** Internal error in package vector"
-               ,"*** Please submit a bug report"]++)
+         then (["*** Internal error in package vector ***"
+               ,"*** Please submit a bug report at http://trac.haskell.org/vector"]++)
          else id) $
       [ file ++ ":" ++ show line ++ " (" ++ loc ++ "): " ++ msg ]
 
