@@ -22,7 +22,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   length, null,
 
   -- * Construction
-  empty, singleton, cons, snoc, replicate, generate, generateM, (++),
+  empty, singleton, cons, snoc, replicate, replicateM, generate, generateM, (++),
 
   -- * Accessing elements
   head, last, (!!),
@@ -155,14 +155,20 @@ singleton x = Stream (return . step) True (Exact 1)
 
 -- | Replicate a value to a given length
 replicate :: Monad m => Int -> a -> Stream m a
-{-# INLINE_STREAM replicate #-}
+{-# INLINE replicate #-}
+replicate n x = replicateM n (return x)
+
+-- | Yield a 'Stream' of values obtained by performing the monadic action the
+-- given number of times
+replicateM :: Monad m => Int -> m a -> Stream m a
+{-# INLINE_STREAM replicateM #-}
 -- NOTE: We delay inlining max here because GHC will create a join point for
 -- the call to newArray# otherwise which is not really nice.
-replicate n x = Stream (return . step) n (Exact (delay_inline max n 0))
+replicateM n p = Stream step n (Exact (delay_inline max n 0))
   where
     {-# INLINE_INNER step #-}
-    step i | i <= 0    = Done
-           | otherwise = Yield x (i-1)
+    step i | i <= 0    = return Done
+           | otherwise = do { x <- p; return $ Yield x (i+1) }
 
 generate :: Monad m => Int -> (Int -> a) -> Stream m a
 {-# INLINE generate #-}
