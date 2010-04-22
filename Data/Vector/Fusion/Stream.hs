@@ -70,7 +70,7 @@ module Data.Vector.Fusion.Stream (
   toList, fromList, fromListN, liftStream,
 
   -- * Monadic combinators
-  mapM_, foldM, fold1M, foldM', fold1M',
+  mapM, mapM_, filterM, foldM, fold1M, foldM', fold1M',
 
   eq, cmp
 ) where
@@ -92,7 +92,7 @@ import Prelude hiding ( length, null,
                         and, or,
                         scanl, scanl1,
                         enumFromTo, enumFromThenTo,
-                        mapM_ )
+                        mapM, mapM_ )
 
 import GHC.Base ( build )
 
@@ -509,10 +509,21 @@ instance Ord a => Ord (M.Stream Id a) where
 -- Monadic combinators
 -- -------------------
 
+-- | Apply a monadic action to each element of the stream, producing a monadic
+-- stream of results
+mapM :: Monad m => (a -> m b) -> Stream a -> M.Stream m b
+{-# INLINE mapM #-}
+mapM f = M.mapM f . liftStream
+
 -- | Apply a monadic action to each element of the stream
 mapM_ :: Monad m => (a -> m b) -> Stream a -> m ()
 {-# INLINE mapM_ #-}
 mapM_ f = M.mapM_ f . liftStream
+
+-- | Yield a monadic stream of elements that satisfy the monadic predicate
+filterM :: Monad m => (a -> m Bool) -> Stream a -> M.Stream m a
+{-# INLINE filterM #-}
+filterM f = M.filterM f . liftStream
 
 -- | Monadic fold
 foldM :: Monad m => (a -> b -> m a) -> a -> Stream b -> m a
