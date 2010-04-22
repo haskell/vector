@@ -116,6 +116,10 @@ module Data.Vector (
   -- * Conversion to/from lists
   toList, fromList, fromListN,
 
+  -- * Monadic operations
+  replicateM, mapM, mapM_, forM, forM_, zipWithM, zipWithM_, filterM,
+  foldM, foldM', fold1M, fold1M',
+
   -- * Destructive operations
   create, modify, copy, unsafeCopy
 ) where
@@ -140,7 +144,8 @@ import Prelude hiding ( length, null,
                         foldl, foldl1, foldr, foldr1,
                         all, any, and, or, sum, product, minimum, maximum,
                         scanl, scanl1, scanr, scanr1,
-                        enumFromTo, enumFromThenTo )
+                        enumFromTo, enumFromThenTo,
+                        mapM, mapM_ )
 
 import qualified Prelude
 
@@ -1003,6 +1008,76 @@ fromList = G.fromList
 fromListN :: Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
 fromListN = G.fromListN
+
+-- Monadic operations
+-- ------------------
+
+-- | Perform the monadic action the given number of times and store the
+-- results in a vector.
+replicateM :: Monad m => Int -> m a -> m (Vector a)
+{-# INLINE replicateM #-}
+replicateM = G.replicateM
+
+-- | Apply the monadic action to all elements of the vector, yielding a vector
+-- of results
+mapM :: Monad m => (a -> m b) -> Vector a -> m (Vector b)
+{-# INLINE mapM #-}
+mapM = G.mapM
+
+-- | Apply the monadic action to all elements of a vector and ignore the
+-- results
+mapM_ :: Monad m => (a -> m b) -> Vector a -> m ()
+{-# INLINE mapM_ #-}
+mapM_ = G.mapM_
+
+-- | Apply the monadic action to all elements of the vector, yielding a vector
+-- of results
+forM :: Monad m => Vector a -> (a -> m b) -> m (Vector b)
+{-# INLINE forM #-}
+forM = G.forM
+
+-- | Apply the monadic action to all elements of a vector and ignore the
+-- results
+forM_ :: Monad m => Vector a -> (a -> m b) -> m ()
+{-# INLINE forM_ #-}
+forM_ = G.forM_
+
+-- | Zip the two vectors with the monadic action and yield a vector of results
+zipWithM :: Monad m
+         => (a -> b -> m c) -> Vector a -> Vector b -> m (Vector c)
+{-# INLINE zipWithM #-}
+zipWithM = G.zipWithM
+
+-- | Zip the two vectors with the monadic action and ignore the results
+zipWithM_ :: Monad m
+          => (a -> b -> m c) -> Vector a -> Vector b -> m ()
+{-# INLINE zipWithM_ #-}
+zipWithM_ = G.zipWithM_
+
+-- | Drop elements that do not satisfy the monadic predicate
+filterM :: Monad m => (a -> m Bool) -> Vector a -> m (Vector a)
+{-# INLINE filterM #-}
+filterM = G.filterM
+
+-- | Monadic fold
+foldM :: Monad m => (a -> b -> m a) -> a -> Vector b -> m a
+{-# INLINE foldM #-}
+foldM = G.foldM
+
+-- | Monadic fold over non-empty vectors
+fold1M :: Monad m => (a -> a -> m a) -> Vector a -> m a
+{-# INLINE fold1M #-}
+fold1M = G.fold1M
+
+-- | Monadic fold with strict accumulator
+foldM' :: Monad m => (a -> b -> m a) -> a -> Vector b -> m a
+{-# INLINE foldM' #-}
+foldM' = G.foldM'
+
+-- | Monad fold over non-empty vectors with strict accumulator
+fold1M' :: Monad m => (a -> a -> m a) -> Vector a -> m a
+{-# INLINE fold1M' #-}
+fold1M' = G.fold1M'
 
 -- Destructive operations
 -- ----------------------

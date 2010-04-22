@@ -85,6 +85,10 @@ module Data.Vector.Generic (
   -- * Conversion to/from lists
   toList, fromList, fromListN,
 
+  -- * Monadic operations
+  replicateM, mapM, mapM_, forM, forM_, zipWithM, zipWithM_, filterM,
+  foldM, foldM', fold1M, fold1M',
+
   -- * Destructive operations
   create, modify, copy, unsafeCopy,
 
@@ -114,6 +118,7 @@ import           Data.Vector.Fusion.Util
 
 import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
+import qualified Control.Monad as Monad
 import Prelude hiding ( length, null,
                         replicate, (++),
                         head, last,
@@ -125,7 +130,8 @@ import Prelude hiding ( length, null,
                         foldl, foldl1, foldr, foldr1,
                         all, any, and, or, sum, product, maximum, minimum,
                         scanl, scanl1, scanr, scanr1,
-                        enumFromTo, enumFromThenTo )
+                        enumFromTo, enumFromThenTo,
+                        mapM, mapM_ )
 
 import Data.Typeable ( Typeable1, gcast1 )
 import Data.Data ( Data, DataType, mkNorepType )
@@ -1235,20 +1241,83 @@ fromListN :: Vector v a => Int -> [a] -> v a
 {-# INLINE fromListN #-}
 fromListN n = unstream . Stream.fromListN n
 
-{-
-replicateM :: Int -> m a -> m (v a)
-replicateM n m = fromListN n (Monad.replicateM n m)
+unstreamM :: (Vector v a, Monad m) => MStream m a -> m (v a)
+{-# INLINE_STREAM unstreamM #-}
+unstreamM s = do
+                xs <- MStream.toList s
+                return $ unstream $ Stream.unsafeFromList (MStream.size s) xs
 
-replicatePrimM :: PrimMonad m => Int -> m a -> m (v a)
-replicatePrimM n m = do
-                       mv <- M.new n
-                       let go i | i >= n    = return ()
-                                | otherwise = do
-                                                x <- m
-                                                unsafeWrite mv i x
-                                                go (i+1)
-                       unsafeFreeze mv
--}
+-- Monadic operations
+-- ------------------
+
+-- FIXME: specialise various combinators for ST and IO?
+
+-- | Perform the monadic action the given number of times and store the
+-- results in a vector.
+replicateM :: (Monad m, Vector v a) => Int -> m a -> m (v a)
+{-# INLINE replicateM #-}
+replicateM n m = fromListN n `Monad.liftM` Monad.replicateM n m
+
+-- | Apply the monadic action to all elements of the vector, yielding a vector
+-- of results
+mapM :: (Monad m, Vector v a, Vector v b) => (a -> m b) -> v a -> m (v b)
+{-# INLINE mapM #-}
+mapM f = unstreamM . Stream.mapM f . stream
+
+-- | Apply the monadic action to all elements of a vector and ignore the
+-- results
+mapM_ :: (Monad m, Vector v a) => (a -> m b) -> v a -> m ()
+{-# INLINE mapM_ #-}
+mapM_ f = Stream.mapM_ f . stream
+
+-- | Apply the monadic action to all elements of the vector, yielding a vector
+-- of results
+forM :: (Monad m, Vector v a, Vector v b) => v a -> (a -> m b) -> m (v b)
+{-# INLINE forM #-}
+forM as f = mapM f as
+
+-- | Apply the monadic action to all elements of a vector and ignore the
+-- results
+forM_ :: (Monad m, Vector v a) => v a -> (a -> m b) -> m ()
+{-# INLINE forM_ #-}
+forM_ as f = mapM_ f as
+
+-- | Zip the two vectors with the monadic action and yield a vector of results
+zipWithM :: (Monad m, Vector v a, Vector v b, Vector v c)
+         => (a -> b -> m c) -> v a -> v b -> m (v c)
+{-# INLINE zipWithM #-}
+zipWithM f as bs = unstreamM $ Stream.zipWithM f (stream as) (stream bs)
+
+-- | Zip the two vectors with the monadic action and ignore the results
+zipWithM_ :: (Monad m, Vector v a, Vector v b)
+          => (a -> b -> m c) -> v a -> v b -> m ()
+{-# INLINE zipWithM_ #-}
+zipWithM_ f as bs = Stream.zipWithM_ f (stream as) (stream bs)
+
+-- | Drop elements that do not satisfy the monadic predicate
+filterM :: (Monad m, Vector v a) => (a -> m Bool) -> v a -> m (v a)
+{-# INLINE filterM #-}
+filterM f = unstreamM . Stream.filterM f . stream
+
+-- | Monadic fold
+foldM :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m a
+{-# INLINE foldM #-}
+foldM m z = Stream.foldM m z . stream
+
+-- | Monadic fold over non-empty vectors
+fold1M :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m a
+{-# INLINE fold1M #-}
+fold1M m = Stream.fold1M m . stream
+
+-- | Monadic fold with strict accumulator
+foldM' :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m a
+{-# INLINE foldM' #-}
+foldM' m z = Stream.foldM' m z . stream
+
+-- | Monad fold over non-empty vectors with strict accumulator
+fold1M' :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m a
+{-# INLINE fold1M' #-}
+fold1M' m = Stream.fold1M' m . stream
 
 -- Destructive operations
 -- ----------------------
