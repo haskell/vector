@@ -34,7 +34,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   map, mapM, mapM_, trans, unbox, concatMap,
   
   -- * Zipping
-  indexed, indexedR,
+  indexed, indexedR, zipWithM_,
   zipWithM, zipWith3M, zipWith4M, zipWith5M, zipWith6M,
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
   zip, zip3, zip4, zip5, zip6,
@@ -67,7 +67,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversions
-  toList, fromList, fromListN
+  toList, fromList, fromListN, unsafeFromList
 ) where
 
 import Data.Vector.Fusion.Stream.Size
@@ -383,18 +383,22 @@ mapM f (Stream step s n) = Stream step' s n
                   Skip    s' -> return (Skip    s')
                   Done       -> return Done
 
--- | Execute a monadic action for each element of the 'Stream'
-mapM_ :: Monad m => (a -> m b) -> Stream m a -> m ()
-{-# INLINE_STREAM mapM_ #-}
-mapM_ m (Stream step s _) = mapM_loop SPEC s
+consume :: Monad m => Stream m a -> m ()
+{-# INLINE_STREAM consume #-}
+consume (Stream step s _) = consume_loop SPEC s
   where
-    mapM_loop SPEC s
+    consume_loop SPEC s
       = do
           r <- step s
           case r of
-            Yield x s' -> do { m x; mapM_loop SPEC s' }
-            Skip    s' -> mapM_loop SPEC s'
+            Yield _ s' -> consume_loop SPEC s'
+            Skip    s' -> consume_loop SPEC s'
             Done       -> return ()
+
+-- | Execute a monadic action for each element of the 'Stream'
+mapM_ :: Monad m => (a -> m b) -> Stream m a -> m ()
+{-# INLINE_STREAM mapM_ #-}
+mapM_ m = consume . mapM m
 
 -- | Transform a 'Stream' to use a different monad
 trans :: (Monad m, Monad m') => (forall a. m a -> m' a)
@@ -479,6 +483,10 @@ zipWithM f (Stream stepa sa na) (Stream stepb sb nb)
   zipWithM f xs xs = mapM (\x -> f x x) xs
 
   #-}
+
+zipWithM_ :: Monad m => (a -> b -> m c) -> Stream m a -> Stream m b -> m ()
+{-# INLINE zipWithM_ #-}
+zipWithM_ f sa sb = consume (zipWithM f sa sb)
 
 zipWith3M :: Monad m => (a -> b -> c -> m d) -> Stream m a -> Stream m b -> Stream m c -> Stream m d
 {-# INLINE_STREAM zipWith3M #-}
@@ -1380,11 +1388,8 @@ toList = foldr (:) []
 
 -- | Convert a list to a 'Stream'
 fromList :: Monad m => [a] -> Stream m a
-{-# INLINE_STREAM fromList #-}
-fromList xs = Stream step xs Unknown
-  where
-    step (x:xs) = return (Yield x xs)
-    step []     = return Done
+{-# INLINE fromList #-}
+fromList xs = unsafeFromList Unknown xs
 
 -- | Convert the first @n@ elements of a list to a 'Stream'
 fromListN :: Monad m => Int -> [a] -> Stream m a
@@ -1395,4 +1400,12 @@ fromListN n xs = Stream step (xs,n) (Max (delay_inline max n 0))
     step (xs,n) | n <= 0 = return Done
     step (x:xs,n)        = return (Yield x (xs,n-1))
     step ([],n)          = return Done
+
+-- | Convert a list to a 'Stream' with the given 'Size' hint. 
+unsafeFromList :: Monad m => Size -> [a] -> Stream m a
+{-# INLINE_STREAM unsafeFromList #-}
+unsafeFromList sz xs = Stream step xs sz
+  where
+    step (x:xs) = return (Yield x xs)
+    step []     = return Done
 

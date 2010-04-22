@@ -67,10 +67,10 @@ module Data.Vector.Fusion.Stream (
   enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversions
-  toList, fromList, fromListN, liftStream,
+  toList, fromList, fromListN, unsafeFromList, liftStream,
 
   -- * Monadic combinators
-  mapM, mapM_, filterM, foldM, fold1M, foldM', fold1M',
+  mapM, mapM_, zipWithM, zipWithM_, filterM, foldM, fold1M, foldM', fold1M',
 
   eq, cmp
 ) where
@@ -520,6 +520,14 @@ mapM_ :: Monad m => (a -> m b) -> Stream a -> m ()
 {-# INLINE mapM_ #-}
 mapM_ f = M.mapM_ f . liftStream
 
+zipWithM :: Monad m => (a -> b -> m c) -> Stream a -> Stream b -> M.Stream m c
+{-# INLINE zipWithM #-}
+zipWithM f as bs = M.zipWithM f (liftStream as) (liftStream bs)
+
+zipWithM_ :: Monad m => (a -> b -> m c) -> Stream a -> Stream b -> m ()
+{-# INLINE zipWithM_ #-}
+zipWithM_ f as bs = M.zipWithM_ f (liftStream as) (liftStream bs)
+
 -- | Yield a monadic stream of elements that satisfy the monadic predicate
 filterM :: Monad m => (a -> m Bool) -> Stream a -> M.Stream m a
 {-# INLINE filterM #-}
@@ -600,4 +608,9 @@ fromList = M.fromList
 fromListN :: Int -> [a] -> Stream a
 {-# INLINE fromListN #-}
 fromListN = M.fromListN
+
+unsafeFromList :: Size -> [a] -> Stream a
+{-# INLINE unsafeFromList #-}
+unsafeFromList = M.unsafeFromList
+
 
