@@ -81,7 +81,7 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_length, 'prop_null,
 
         'prop_empty, 'prop_singleton, 'prop_replicate,
-        'prop_cons, 'prop_snoc, 'prop_append, 'prop_copy, 'prop_generate,
+        'prop_cons, 'prop_snoc, 'prop_append, 'prop_force, 'prop_generate,
 
         'prop_head, 'prop_last, 'prop_index,
         'prop_unsafeHead, 'prop_unsafeLast, 'prop_unsafeIndex,
@@ -131,7 +131,7 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_cons      :: P (a -> v a -> v a) = V.cons `eq` (:)
     prop_snoc      :: P (v a -> a -> v a) = V.snoc `eq` snoc
     prop_append    :: P (v a -> v a -> v a) = (V.++) `eq` (++)
-    prop_copy      :: P (v a -> v a)        = V.copy `eq` id
+    prop_force     :: P (v a -> v a)        = V.force `eq` id
     prop_generate  :: P (Int -> (Int -> a) -> v a)
               = (\n _ -> n < 1000) ===> V.generate `eq` generate
 
