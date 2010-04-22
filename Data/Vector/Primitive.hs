@@ -156,7 +156,7 @@ instance Prim a => G.Vector Vector a where
   {-# INLINE elemseq #-}
   elemseq _ = seq
 
--- See [HACKS:Eq and Ord instances]
+-- See http://trac.haskell.org/vector/ticket/12
 instance (Prim a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
   xs == ys = Stream.eq (G.stream xs) (G.stream ys)
@@ -164,7 +164,7 @@ instance (Prim a, Eq a) => Eq (Vector a) where
   {-# INLINE (/=) #-}
   xs /= ys = not (Stream.eq (G.stream xs) (G.stream ys))
 
--- See [HACKS:Eq and Ord instances]
+-- See http://trac.haskell.org/vector/ticket/12
 instance (Prim a, Ord a) => Ord (Vector a) where
   {-# INLINE compare #-}
   compare xs ys = Stream.cmp (G.stream xs) (G.stream ys)

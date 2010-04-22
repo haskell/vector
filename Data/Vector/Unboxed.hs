@@ -113,7 +113,7 @@ import qualified Prelude
 
 #include "vector.h"
 
--- See [HACKS:Eq and Ord instances]
+-- See http://trac.haskell.org/vector/ticket/12
 instance (Unbox a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
   xs == ys = Stream.eq (G.stream xs) (G.stream ys)
@@ -121,7 +121,7 @@ instance (Unbox a, Eq a) => Eq (Vector a) where
   {-# INLINE (/=) #-}
   xs /= ys = not (Stream.eq (G.stream xs) (G.stream ys))
 
--- See [HACKS:Eq and Ord instances]
+-- See http://trac.haskell.org/vector/ticket/12
 instance (Unbox a, Ord a) => Ord (Vector a) where
   {-# INLINE compare #-}
   compare xs ys = Stream.cmp (G.stream xs) (G.stream ys)

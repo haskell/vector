@@ -184,7 +184,7 @@ instance G.Vector Vector a where
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (Vector i _ arr) j = indexArrayM arr (i+j)
 
--- See [HACKS:Eq and Ord instances]
+-- See http://trac.haskell.org/vector/ticket/12
 instance Eq a => Eq (Vector a) where
   {-# INLINE (==) #-}
   xs == ys = Stream.eq (G.stream xs) (G.stream ys)
@@ -192,7 +192,7 @@ instance Eq a => Eq (Vector a) where
   {-# INLINE (/=) #-}
   xs /= ys = not (Stream.eq (G.stream xs) (G.stream ys))
 
--- See [HACKS:Eq and Ord instances]
+-- See http://trac.haskell.org/vector/ticket/12
 instance Ord a => Ord (Vector a) where
   {-# INLINE compare #-}
   compare xs ys = Stream.cmp (G.stream xs) (G.stream ys)
