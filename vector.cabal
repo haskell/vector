@@ -6,6 +6,7 @@ Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
 Maintainer:     Roman Leshchinskiy <rl@cse.unsw.edu.au>
 Copyright:      (c) Roman Leshchinskiy 2008-2010
 Homepage:       http://code.haskell.org/vector
+Bug-Reports:    http://trac.haskell.org/vector
 Category:       Data, Data Structures
 Synopsis:       Efficient Arrays
 Description:
