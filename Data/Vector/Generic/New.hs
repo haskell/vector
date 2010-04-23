@@ -13,7 +13,7 @@
 --
 
 module Data.Vector.Generic.New (
-  New(..), create, run, apply, modify,
+  New(..), create, run, apply, modify, modifyWithStream,
   unstream, transform, unstreamR, transformR,
   slice, init, tail, take, drop,
   unsafeSlice, unsafeInit, unsafeTail
@@ -50,6 +50,11 @@ apply f (New p) = New (liftM f p)
 modify :: (forall s. Mutable v s a -> ST s ()) -> New v a -> New v a
 {-# INLINE modify #-}
 modify f (New p) = New (do { v <- p; f v; return v })
+
+modifyWithStream :: (forall s. Mutable v s a -> Stream b -> ST s ())
+                 -> New v a -> Stream b -> New v a
+{-# INLINE_STREAM modifyWithStream #-}
+modifyWithStream f (New p) s = s `seq` New (do { v <- p; f v s; return v })
 
 unstream :: Vector v a => Stream a -> New v a
 {-# INLINE_STREAM unstream #-}

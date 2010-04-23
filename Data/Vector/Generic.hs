@@ -504,8 +504,8 @@ unsafeDrop n v = unsafeSlice n (length v - n) v
 
 unsafeAccum_stream
   :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
-{-# INLINE_STREAM unsafeAccum_stream #-}
-unsafeAccum_stream f v s = s `seq` modify (\mv -> M.unsafeAccum f mv s) v
+{-# INLINE unsafeAccum_stream #-}
+unsafeAccum_stream f = modifyWithStream (M.unsafeAccum f)
 
 unsafeAccum :: Vector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
 {-# INLINE unsafeAccum #-}
@@ -523,8 +523,8 @@ unsafeAccumulate_ f v is xs
   = unsafeAccum_stream f v (Stream.zipWith (,) (stream is) (stream xs))
 
 accum_stream :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
-{-# INLINE_STREAM accum_stream #-}
-accum_stream f v s = s `seq` modify (\mv -> M.accum f mv s) v
+{-# INLINE accum_stream #-}
+accum_stream f = modifyWithStream (M.accum f)
 
 accum :: Vector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
 {-# INLINE accum #-}
@@ -543,8 +543,8 @@ accumulate_ f v is xs = accum_stream f v (Stream.zipWith (,) (stream is)
                                         
 
 unsafeUpdate_stream :: Vector v a => v a -> Stream (Int,a) -> v a
-{-# INLINE_STREAM unsafeUpdate_stream #-}
-unsafeUpdate_stream v s = s `seq` modify (\mv -> M.unsafeUpdate mv s) v
+{-# INLINE unsafeUpdate_stream #-}
+unsafeUpdate_stream = modifyWithStream M.unsafeUpdate
 
 unsafeUpd :: Vector v a => v a -> [(Int, a)] -> v a
 {-# INLINE unsafeUpd #-}
@@ -560,8 +560,8 @@ unsafeUpdate_ v is w
   = unsafeUpdate_stream v (Stream.zipWith (,) (stream is) (stream w))
 
 update_stream :: Vector v a => v a -> Stream (Int,a) -> v a
-{-# INLINE_STREAM update_stream #-}
-update_stream v s = s `seq` modify (\mv -> M.update mv s) v
+{-# INLINE update_stream #-}
+update_stream = modifyWithStream M.update
 
 (//) :: Vector v a => v a -> [(Int, a)] -> v a
 {-# INLINE (//) #-}
@@ -1332,6 +1332,14 @@ create p = new (New.create p)
 modify :: Vector v a => (forall s. Mutable v s a -> ST s ()) -> v a -> v a
 {-# INLINE modify #-}
 modify p = new . New.modify p . clone
+
+-- We have to make sure that this is strict in the stream but we can't seq on
+-- it while fusion is happening. Hence this ugliness.
+modifyWithStream :: Vector v a
+                 => (forall s. Mutable v s a -> Stream b -> ST s ())
+                 -> v a -> Stream b -> v a
+{-# INLINE modifyWithStream #-}
+modifyWithStream p v s = new (New.modifyWithStream p (clone v) s)
 
 -- | Copy an immutable vector into a mutable one. The two vectors must have
 -- the same length. This is not checked.
