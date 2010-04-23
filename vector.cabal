@@ -50,7 +50,7 @@ Description:
         * Performance improvements
         .
 
-Cabal-Version:  >= 1.2
+Cabal-Version:  >= 1.2.3
 Build-Type:     Simple
 
 Extra-Source-Files:
