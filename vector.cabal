@@ -45,9 +45,13 @@ Description:
         .
         * @Typeable@ and @Data@ instances
         .
-        * New combinators
+        * Monadic combinators (@replicateM@, @mapM@ etc.)
+        .
+        * Better support for recycling (see @create@ and @modify@)
         .
         * Performance improvements
+        .
+        * Refactored implementation of recycling
         .
 
 Cabal-Version:  >= 1.2.3
