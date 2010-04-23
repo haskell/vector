@@ -1,5 +1,5 @@
-Name:           vector-bench-algorithms
-Version:        0.1
+Name:           vector-benchmarks
+Version:        0.6
 License:        BSD3
 License-File:   LICENSE
 Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>

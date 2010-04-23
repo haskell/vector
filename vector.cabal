@@ -62,6 +62,21 @@ Extra-Source-Files:
       tests/Utilities.hs
       tests/Tests/Stream.hs
       tests/Tests/Vector.hs
+      benchmarks/vector-benchmarks.cabal
+      benchmarks/LICENSE
+      benchmarks/Setup.hs
+      benchmarks/Main.hs
+      benchmarks/Algo/AwShCC.hs
+      benchmarks/Algo/HybCC.hs
+      benchmarks/Algo/Leaffix.hs
+      benchmarks/Algo/ListRank.hs
+      benchmarks/Algo/Quickhull.hs
+      benchmarks/Algo/Rootfix.hs
+      benchmarks/Algo/Spectral.hs
+      benchmarks/Algo/Tridiag.hs
+      benchmarks/TestData/Graph.hs
+      benchmarks/TestData/ParenTree.hs
+      benchmarks/TestData/Random.hs
       internal/GenUnboxTuple.hs
       internal/unbox-tuple-instances
 
