@@ -504,7 +504,7 @@ unsafeDrop n v = unsafeSlice n (length v - n) v
 
 unsafeAccum_stream
   :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
-{-# INLINE unsafeAccum_stream #-}
+{-# INLINE_STREAM unsafeAccum_stream #-}
 unsafeAccum_stream f v s = s `seq` modify (\mv -> M.unsafeAccum f mv s) v
 
 unsafeAccum :: Vector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
@@ -523,7 +523,7 @@ unsafeAccumulate_ f v is xs
   = unsafeAccum_stream f v (Stream.zipWith (,) (stream is) (stream xs))
 
 accum_stream :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
-{-# INLINE accum_stream #-}
+{-# INLINE_STREAM accum_stream #-}
 accum_stream f v s = s `seq` modify (\mv -> M.accum f mv s) v
 
 accum :: Vector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
@@ -543,7 +543,7 @@ accumulate_ f v is xs = accum_stream f v (Stream.zipWith (,) (stream is)
                                         
 
 unsafeUpdate_stream :: Vector v a => v a -> Stream (Int,a) -> v a
-{-# INLINE unsafeUpdate_stream #-}
+{-# INLINE_STREAM unsafeUpdate_stream #-}
 unsafeUpdate_stream v s = s `seq` modify (\mv -> M.unsafeUpdate mv s) v
 
 unsafeUpd :: Vector v a => v a -> [(Int, a)] -> v a
@@ -560,7 +560,7 @@ unsafeUpdate_ v is w
   = unsafeUpdate_stream v (Stream.zipWith (,) (stream is) (stream w))
 
 update_stream :: Vector v a => v a -> Stream (Int,a) -> v a
-{-# INLINE update_stream #-}
+{-# INLINE_STREAM update_stream #-}
 update_stream v s = s `seq` modify (\mv -> M.update mv s) v
 
 (//) :: Vector v a => v a -> [(Int, a)] -> v a
