@@ -12,8 +12,6 @@ Changes 0.5 - 0.6
 
   * Performance improvements
 
-  * Refactored implementation of recycling
-
 Changes 0.4.2 - 0.5
 
   * Unboxed vectors of primitive types and tuples.
