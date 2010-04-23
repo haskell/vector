@@ -86,9 +86,9 @@ instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
           G.basicUnsafeCopy as1 as2
           G.basicUnsafeCopy bs1 bs2
   {-# INLINE elemseq  #-}
-  elemseq _ (a, b) x_
-      = G.elemseq (undefined :: Vector a) a $
-        G.elemseq (undefined :: Vector b) b $ x_
+  elemseq _ (a, b)
+      = G.elemseq (undefined :: Vector a) a
+        . G.elemseq (undefined :: Vector b) b
 #endif
 #ifdef DEFINE_MUTABLE
 zip :: (Unbox a, Unbox b) => MVector s a ->
@@ -223,10 +223,10 @@ instance (Unbox a,
           G.basicUnsafeCopy bs1 bs2
           G.basicUnsafeCopy cs1 cs2
   {-# INLINE elemseq  #-}
-  elemseq _ (a, b, c) x_
-      = G.elemseq (undefined :: Vector a) a $
-        G.elemseq (undefined :: Vector b) b $
-        G.elemseq (undefined :: Vector c) c $ x_
+  elemseq _ (a, b, c)
+      = G.elemseq (undefined :: Vector a) a
+        . G.elemseq (undefined :: Vector b) b
+        . G.elemseq (undefined :: Vector c) c
 #endif
 #ifdef DEFINE_MUTABLE
 zip3 :: (Unbox a, Unbox b, Unbox c) => MVector s a ->
@@ -397,11 +397,11 @@ instance (Unbox a,
           G.basicUnsafeCopy cs1 cs2
           G.basicUnsafeCopy ds1 ds2
   {-# INLINE elemseq  #-}
-  elemseq _ (a, b, c, d) x_
-      = G.elemseq (undefined :: Vector a) a $
-        G.elemseq (undefined :: Vector b) b $
-        G.elemseq (undefined :: Vector c) c $
-        G.elemseq (undefined :: Vector d) d $ x_
+  elemseq _ (a, b, c, d)
+      = G.elemseq (undefined :: Vector a) a
+        . G.elemseq (undefined :: Vector b) b
+        . G.elemseq (undefined :: Vector c) c
+        . G.elemseq (undefined :: Vector d) d
 #endif
 #ifdef DEFINE_MUTABLE
 zip4 :: (Unbox a, Unbox b, Unbox c, Unbox d) => MVector s a ->
@@ -613,12 +613,12 @@ instance (Unbox a,
           G.basicUnsafeCopy ds1 ds2
           G.basicUnsafeCopy es1 es2
   {-# INLINE elemseq  #-}
-  elemseq _ (a, b, c, d, e) x_
-      = G.elemseq (undefined :: Vector a) a $
-        G.elemseq (undefined :: Vector b) b $
-        G.elemseq (undefined :: Vector c) c $
-        G.elemseq (undefined :: Vector d) d $
-        G.elemseq (undefined :: Vector e) e $ x_
+  elemseq _ (a, b, c, d, e)
+      = G.elemseq (undefined :: Vector a) a
+        . G.elemseq (undefined :: Vector b) b
+        . G.elemseq (undefined :: Vector c) c
+        . G.elemseq (undefined :: Vector d) d
+        . G.elemseq (undefined :: Vector e) e
 #endif
 #ifdef DEFINE_MUTABLE
 zip5 :: (Unbox a,
@@ -881,13 +881,13 @@ instance (Unbox a,
           G.basicUnsafeCopy es1 es2
           G.basicUnsafeCopy fs1 fs2
   {-# INLINE elemseq  #-}
-  elemseq _ (a, b, c, d, e, f) x_
-      = G.elemseq (undefined :: Vector a) a $
-        G.elemseq (undefined :: Vector b) b $
-        G.elemseq (undefined :: Vector c) c $
-        G.elemseq (undefined :: Vector d) d $
-        G.elemseq (undefined :: Vector e) e $
-        G.elemseq (undefined :: Vector f) f $ x_
+  elemseq _ (a, b, c, d, e, f)
+      = G.elemseq (undefined :: Vector a) a
+        . G.elemseq (undefined :: Vector b) b
+        . G.elemseq (undefined :: Vector c) c
+        . G.elemseq (undefined :: Vector d) d
+        . G.elemseq (undefined :: Vector e) e
+        . G.elemseq (undefined :: Vector f) f
 #endif
 #ifdef DEFINE_MUTABLE
 zip6 :: (Unbox a,

@@ -183,11 +183,11 @@ generate n =
                $ text "return" <+> tuple vars)
 
     gen_elemseq rec
-      = (char '_' <+> tuple vars <+> var 'x',
-         vcat [qG rec <+> parens (text "undefined :: Vector" <+> v)
-                      <+> v <+> char '$' | v <- vars]
-         <+> var 'x')
-
+      = (char '_' <+> tuple vars,
+         vcat $ r : [char '.' <+> r | r <- rs])
+      where
+        r : rs = [qG rec <+> parens (text "undefined :: Vector" <+> v)
+                         <+> v | v <- vars]
 
     mk_do cmds ret = hang (text "do")
                           2
