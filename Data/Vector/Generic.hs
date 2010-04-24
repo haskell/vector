@@ -1072,7 +1072,8 @@ maxIndexBy :: Vector v a => (a -> a -> Ordering) -> v a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy cmp = fst . Stream.foldl1' imax . Stream.indexed . stream
   where
-    imax (i,x) (j,y) = case cmp x y of
+    imax (i,x) (j,y) = i `seq` j `seq`
+                       case cmp x y of
                          LT -> (j,y)
                          _  -> (i,x)
 
@@ -1084,7 +1085,8 @@ minIndexBy :: Vector v a => (a -> a -> Ordering) -> v a -> Int
 {-# INLINE minIndexBy #-}
 minIndexBy cmp = fst . Stream.foldl1' imin . Stream.indexed . stream
   where
-    imin (i,x) (j,y) = case cmp x y of
+    imin (i,x) (j,y) = i `seq` j `seq`
+                       case cmp x y of
                          GT -> (j,y)
                          _  -> (i,x)
 
