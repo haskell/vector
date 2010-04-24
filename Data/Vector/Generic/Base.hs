@@ -27,7 +27,20 @@ import Control.Monad.Primitive
 --
 type family Mutable (v :: * -> *) :: * -> * -> *
 
--- | Class of immutable vectors.
+-- | Class of immutable vectors. Every immutable vector is associated with its
+-- mutable version through the 'Mutable' type family. Methods of this class
+-- should not be used directly. Instead, "Data.Vector.Generic" and other
+-- Data.Vector modules provide safe and fusible wrappers.
+--
+-- Minimum complete implementation:
+--
+--   * 'unsafeFreeze'
+--
+--   * 'basicLength'
+--
+--   * 'basicUnsafeSlice'
+--
+--   * 'basicUnsafeIndexM'
 --
 class MVector (Mutable v) a => Vector v a where
   -- | Unsafely convert a mutable vector to its immutable version
@@ -35,14 +48,19 @@ class MVector (Mutable v) a => Vector v a where
   -- this operation.
   unsafeFreeze :: PrimMonad m => Mutable v (PrimState m) a -> m (v a)
 
-  -- | Length of the vector (not fusible!)
+  -- | Length of the vector.
   basicLength      :: v a -> Int
 
-  -- | Yield a part of the vector without copying it. No range checks!
-  basicUnsafeSlice  :: Int -> Int -> v a -> v a
+  -- | Yield a slice of the vector without copying it. No range checks are
+  -- performed.
+  basicUnsafeSlice  :: Int -- ^ starting index
+                    -> Int -- ^ length
+                    -> v a -> v a
 
-  -- | Yield the element at the given position in a monad. The monad allows us
-  -- to be strict in the vector if we want. Suppose we had
+  -- | Yield the element at the given position in a monad. No range checks are
+  -- performed.
+  --
+  -- The monad allows us to be strict in the vector if we want. Suppose we had
   --
   -- > unsafeIndex :: v a -> Int -> a
   --
@@ -65,6 +83,10 @@ class MVector (Mutable v) a => Vector v a where
   basicUnsafeIndexM  :: Monad m => v a -> Int -> m a
 
   -- | Copy an immutable vector into a mutable one.
+  --
+  -- Instances of 'Vector' should redefine this method if they wish to support
+  -- an efficient block copy operation.
+  --
   basicUnsafeCopy :: PrimMonad m => Mutable v (PrimState m) a -> v a -> m ()
 
   {-# INLINE basicUnsafeCopy #-}
@@ -78,6 +100,14 @@ class MVector (Mutable v) a => Vector v a where
                             do_copy (i+1)
                 | otherwise = return ()
 
+  -- | Evaluate @a@ as far as storing it in a vector would and yield @b@.
+  -- The @v a@ argument only fixes the type and is not touched. The method is
+  -- only used for optimisation purposes. Thus, it is safe for instances of
+  -- 'Vector' to evaluate @a@ less than it would be when stored in a vector
+  -- although this might result in suboptimal code.
+  --
+  -- > elemseq v x y = (singleton x `asTypeOf` v) `seq` y
+  --
   elemseq :: v a -> a -> b -> b
 
   {-# INLINE elemseq #-}
