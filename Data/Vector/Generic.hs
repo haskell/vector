@@ -141,11 +141,13 @@ import Data.Data ( Data, DataType, mkNorepType )
 -- Fusion
 -- ------
 
--- | Construct a pure vector from a monadic initialiser 
+-- | Construct a vector from a monadic initialiser
 new :: Vector v a => New v a -> v a
 {-# INLINE_STREAM new #-}
 new m = m `seq` runST (unsafeFreeze =<< New.run m)
 
+-- | Convert a vector to an initialiser which, when run, produces a copy of
+-- the vector
 clone :: Vector v a => v a -> New v a
 {-# INLINE_STREAM clone #-}
 clone v = v `seq` New.create (
@@ -167,7 +169,7 @@ stream v = v `seq` (Stream.unfoldr get 0 `Stream.sized` Exact n)
     get i | i >= n    = Nothing
           | otherwise = case basicUnsafeIndexM v i of Box x -> Just (x, i+1)
 
--- | Create a vector from a 'Stream'
+-- | Construct a vector from a 'Stream'
 unstream :: Vector v a => Stream a -> v a
 {-# INLINE unstream #-}
 unstream s = new (New.unstream s)
@@ -193,7 +195,7 @@ unstream s = new (New.unstream s)
 
  #-}
 
--- | Convert a vector to a 'Stream'
+-- | Convert a vector to a 'Stream', proceeding from right to left
 streamR :: Vector v a => v a -> Stream a
 {-# INLINE_STREAM streamR #-}
 streamR v = v `seq` (Stream.unfoldr get n `Stream.sized` Exact n)
@@ -206,7 +208,7 @@ streamR v = v `seq` (Stream.unfoldr get n `Stream.sized` Exact n)
             in
             case basicUnsafeIndexM v i' of Box x -> Just (x, i')
 
--- | Create a vector from a 'Stream'
+-- | Construct a vector from a 'Stream', proceeding from right to left
 unstreamR :: Vector v a => Stream a -> v a
 {-# INLINE unstreamR #-}
 unstreamR s = new (New.unstreamR s)
@@ -232,6 +234,7 @@ unstreamR s = new (New.unstreamR s)
 -- Length
 -- ------
 
+-- | Yield the length of the vector
 length :: Vector v a => v a -> Int
 {-# INLINE_STREAM length #-}
 length v = basicLength v
@@ -243,6 +246,7 @@ length v = basicLength v
 
   #-}
 
+-- | Test where a vector if empty
 null :: Vector v a => v a -> Bool
 {-# INLINE_STREAM null #-}
 null v = basicLength v == 0
@@ -302,7 +306,14 @@ infixr 5 ++
 {-# INLINE (++) #-}
 v ++ w = unstream (stream v Stream.++ stream w)
 
--- | Create a copy of a vector. Useful when dealing with slices.
+-- | Force a vector not to retain any extra memory. This is especially useful
+-- when dealing with slices. Example:
+--
+-- > force (slice 0 2 (replicate 10000000 1))
+--
+-- Here, the slice retains the entire block of 10M elements. By forcing it, we
+-- create a copy of just the elements that are in the slice and the huge block
+-- can be garbage collected. 
 force :: Vector v a => v a -> v a
 {-# INLINE_STREAM force #-}
 force v = new (clone v)
@@ -366,31 +377,57 @@ unsafeLast v = unsafeIndex v (length v - 1)
 
  #-}
 
--- | Monadic indexing which can be strict in the vector while remaining lazy in
--- the element.
+-- | Indexing in a monad.
+--
+-- The monad allows us to be strict in the vector if we want. Suppose we
+-- implement vector copying like this:
+--
+-- > copy mv v = ... write mv i (v ! i) ...
+--
+-- For lazy vectors, @v ! i@ would not be evaluated which means that we
+-- would unnecessarily retain a reference to @v@ in each element we write.
+--
+-- With 'indexM', copying can be implemented like this instead:
+--
+-- > copy mv v = ... do
+-- >                   x <- indexM v i
+-- >                   write mv i x
+--
+-- Here, no references to @v@ are retained because indexing (but /not/ the
+-- elements) is evaluated eagerly.
+--
 indexM :: (Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_STREAM indexM #-}
 indexM v i = BOUNDS_CHECK(checkIndex) "indexM" i (length v)
            $ basicUnsafeIndexM v i
 
+-- | Yield the first element of a vector in a monad. See 'indexM' for an
+-- explanation of why this is useful.
 headM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_STREAM headM #-}
 headM v = indexM v 0
 
+-- | Yield the last element of a vector in a monad. See 'indexM' for an
+-- explanation of why this is useful.
 lastM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_STREAM lastM #-}
 lastM v = indexM v (length v - 1)
 
--- | Unsafe monadic indexing without bounds checks
+-- | Indexing in a monad without bounds checks. See 'indexM' for an
+-- explanation of why this is useful.
 unsafeIndexM :: (Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_STREAM unsafeIndexM #-}
 unsafeIndexM v i = UNSAFE_CHECK(checkIndex) "unsafeIndexM" i (length v)
                  $ basicUnsafeIndexM v i
 
+-- | Yield the first element in a monad without checking for empty vectors.
+-- See 'indexM' for an explanation of why this is useful.
 unsafeHeadM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_STREAM unsafeHeadM #-}
 unsafeHeadM v = unsafeIndexM v 0
 
+-- | Yield the last element in a monad without checking for empty vectors.
+-- See 'indexM' for an explanation of why this is useful.
 unsafeLastM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_STREAM unsafeLastM #-}
 unsafeLastM v = unsafeIndexM v (length v - 1)
@@ -412,7 +449,8 @@ unsafeLastM v = unsafeIndexM v (length v - 1)
 -- Subarrays
 -- ---------
 
--- | Yield a part of the vector without copying it.
+-- | Yield a slice of the vector without copying it. The vector must contain
+-- at least (starting index + length) elements.
 slice :: Vector v a => Int   -- ^ starting index
                     -> Int   -- ^ length
                     -> v a
@@ -421,23 +459,27 @@ slice :: Vector v a => Int   -- ^ starting index
 slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
             $ basicUnsafeSlice i n v
 
--- | Yield all but the last element without copying.
+-- | Yield all but the last element without copying. The vector may not be
+-- empty.
 init :: Vector v a => v a -> v a
 {-# INLINE_STREAM init #-}
 init v = slice 0 (length v - 1) v
 
--- | All but the first element (without copying).
+-- | Yield all but the first element without copying. The vector may not be
+-- empty.
 tail :: Vector v a => v a -> v a
 {-# INLINE_STREAM tail #-}
 tail v = slice 1 (length v - 1) v
 
--- | Yield the first @n@ elements without copying.
+-- | Yield at the first @n@ elements without copying. The vector may contain
+-- less than @n@ elements in which case the operation is an identity.
 take :: Vector v a => Int -> v a -> v a
 {-# INLINE_STREAM take #-}
 take n v = unsafeSlice 0 (delay_inline min n' (length v)) v
   where n' = max n 0
 
--- | Yield all but the first @n@ elements without copying.
+-- | Yield all but the first @n@ elements without copying. The vector may
+-- contain less than @n@ elements in which case an empty vector is returned.
 drop :: Vector v a => Int -> v a -> v a
 {-# INLINE_STREAM drop #-}
 drop n v = unsafeSlice (delay_inline min n' len)
@@ -445,8 +487,8 @@ drop n v = unsafeSlice (delay_inline min n' len)
   where n' = max n 0
         len = length v
 
--- | Unsafely yield a part of the vector without copying it and without
--- performing bounds checks.
+-- | Yield a slice of the vector without copying. The vector must contain
+-- at least (starting index + length) elements but this is not checked.
 unsafeSlice :: Vector v a => Int   -- ^ starting index
                           -> Int   -- ^ length
                           -> v a
@@ -455,18 +497,26 @@ unsafeSlice :: Vector v a => Int   -- ^ starting index
 unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
                   $ basicUnsafeSlice i n v
 
+-- | Yield all but the last element without copying. The vector may not be
+-- empty but this is not checked.
 unsafeInit :: Vector v a => v a -> v a
 {-# INLINE_STREAM unsafeInit #-}
 unsafeInit v = unsafeSlice 0 (length v - 1) v
 
+-- | Yield all but the first element without copying. The vector may not be
+-- empty but this is not checked.
 unsafeTail :: Vector v a => v a -> v a
 {-# INLINE_STREAM unsafeTail #-}
 unsafeTail v = unsafeSlice 1 (length v - 1) v
 
+-- | Yield the first @n@ elements without copying. The vector must contain at
+-- least @n@ elements but this is not checked.
 unsafeTake :: Vector v a => Int -> v a -> v a
 {-# INLINE unsafeTake #-}
 unsafeTake n v = unsafeSlice 0 n v
 
+-- | Yield all but the first @n@ elements without copying. The vector must
+-- contain at least @n@ elements but this is not checked.
 unsafeDrop :: Vector v a => Int -> v a -> v a
 {-# INLINE unsafeDrop #-}
 unsafeDrop n v = unsafeSlice n (length v - n) v
@@ -507,15 +557,29 @@ unsafeAccum_stream
 {-# INLINE unsafeAccum_stream #-}
 unsafeAccum_stream f = modifyWithStream (M.unsafeAccum f)
 
+-- | For each pair @(i,b)@ from the list, replace the vector element @a@ at
+-- position @i@ by @f a b@ where @f@ is the given accumulating function. The
+-- indices are not checked.
 unsafeAccum :: Vector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
 {-# INLINE unsafeAccum #-}
 unsafeAccum f v us = unsafeAccum_stream f v (Stream.fromList us)
 
+-- | For each pair @(i,b)@ from the vector of pairs, replace the vector element
+-- @a@ at position @i@ by @f a b@ where @f@ is the given accumulating function.
+-- The indices are not checked.
 unsafeAccumulate :: (Vector v a, Vector v (Int, b))
                 => (a -> b -> a) -> v a -> v (Int,b) -> v a
 {-# INLINE unsafeAccumulate #-}
 unsafeAccumulate f v us = unsafeAccum_stream f v (stream us)
 
+-- | For each index @i@ from the vector of indices (@v Int@) and the
+-- corresponding value @b@ from the the vector of values to accumulate (@v b@),
+-- replace the element of the initial vector (@v a@) at
+-- position @i@ by @f a b@ where @f@ is the given accumulating function. The
+-- indices are not checked.
+--
+-- This function is useful for instances of 'Vector' that cannot store pairs.
+-- In other cases, 'unsafeAccumulate' is probably more convenient.
 unsafeAccumulate_ :: (Vector v a, Vector v Int, Vector v b)
                 => (a -> b -> a) -> v a -> v Int -> v b -> v a
 {-# INLINE unsafeAccumulate_ #-}
@@ -526,17 +590,41 @@ accum_stream :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
 {-# INLINE accum_stream #-}
 accum_stream f = modifyWithStream (M.accum f)
 
+-- | For each pair @(i,b)@ from the list, replace the vector element @a@ at
+-- position @i@ by @f a b@ where @f@ is the given accumulating function.
+--
+-- > accum (+) <5,9,2> [(2,4),(1,6),(0,3),(1,7)] = <5+3, 9+6+7, 2+4>
 accum :: Vector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
 {-# INLINE accum #-}
 accum f v us = accum_stream f v (Stream.fromList us)
 
+-- | For each pair @(i,b)@ from the vector of pairs, replace the vector element
+-- @a@ at position @i@ by @f a b@ where @f@ is the given accumulating function.
+--
+-- > accumulate (+) <5,9,2> <(2,4),(1,6),(0,3),(1,7)> = <5+3, 9+6+7, 2+4>
 accumulate :: (Vector v a, Vector v (Int, b))
                 => (a -> b -> a) -> v a -> v (Int,b) -> v a
 {-# INLINE accumulate #-}
 accumulate f v us = accum_stream f v (stream us)
 
+-- | For each index @i@ from the vector of indices (@v Int@) and the
+-- corresponding value @b@ from the the vector of values to accumulate (@v b@),
+-- replace the element of the initial vector (@v a@) at
+-- position @i@ by @f a b@ where @f@ is the given accumulating function.
+--
+-- > accumulate_ (+) <5,9,2> <2,1,0,1> <4,6,3,7> = <5+3, 9+6+7, 2+4>
+--
+-- This function is useful for instances of 'Vector' that cannot store pairs.
+-- Otherwise, 'accumulate' is probably more convenient:
+--
+-- > accumulate_ f as is bs = accumulate f as (zip is bs)
+--
 accumulate_ :: (Vector v a, Vector v Int, Vector v b)
-                => (a -> b -> a) -> v a -> v Int -> v b -> v a
+                => (a -> b -> a) -- ^ accumulating function
+                -> v a           -- ^ initial values
+                -> v Int         -- ^ indices
+                -> v b           -- ^ values to accumulate
+                -> v a
 {-# INLINE accumulate_ #-}
 accumulate_ f v is xs = accum_stream f v (Stream.zipWith (,) (stream is)
                                                              (stream xs))
@@ -546,14 +634,36 @@ unsafeUpdate_stream :: Vector v a => v a -> Stream (Int,a) -> v a
 {-# INLINE unsafeUpdate_stream #-}
 unsafeUpdate_stream = modifyWithStream M.unsafeUpdate
 
+-- | For each pair @(i,a)@ from the list, replace the vector element at
+-- position @i@ by @a@. The indices are not checked. The safe version of this
+-- function is ('//').
+--
+-- > unsafeUpd <5,9,2,7> [(2,1),(0,3),(2,8)] = <3,9,8,7>
+--
 unsafeUpd :: Vector v a => v a -> [(Int, a)] -> v a
 {-# INLINE unsafeUpd #-}
 unsafeUpd v us = unsafeUpdate_stream v (Stream.fromList us)
 
+-- | For each pair @(i,a)@ from the vector of index/value pairs, replace the
+-- vector element at position @i@ by @a@. The indices are not checked.
+--
+-- > unsafeUpdate <5,9,2,7> <(2,1),(0,3),(2,8)> = <3,9,8,7>
+--
 unsafeUpdate :: (Vector v a, Vector v (Int, a)) => v a -> v (Int, a) -> v a
 {-# INLINE unsafeUpdate #-}
 unsafeUpdate v w = unsafeUpdate_stream v (stream w)
 
+-- | For each index @i@ from the index vector and the corresponding value @a@
+-- from the update vector, replace the element of the value vector at position
+-- @i@ by @a@. The indices are not checked.
+--
+-- > unsafeUpdate_ <5,9,2,7>  <2,0,2> <1,3,8> = <3,9,8,7>
+--
+-- This function is useful for instances of 'Vector' that cannot store pairs.
+-- Otherwise, 'unsafeUpdate' is probably more convenient.
+--
+-- > unsafeUpdate_ xs is ys = unsafeUpdate xs (zip is ys)
+--
 unsafeUpdate_ :: (Vector v a, Vector v Int) => v a -> v Int -> v a -> v a
 {-# INLINE unsafeUpdate_ #-}
 unsafeUpdate_ v is w
@@ -563,31 +673,68 @@ update_stream :: Vector v a => v a -> Stream (Int,a) -> v a
 {-# INLINE update_stream #-}
 update_stream = modifyWithStream M.update
 
+-- | For each pair @(i,a)@ from the list, replace the vector element at
+-- position @i@ by @a@.
+--
+-- > <5,9,2,7> // [(2,1),(0,3),(2,8)] = <3,9,8,7>
+--
 (//) :: Vector v a => v a -> [(Int, a)] -> v a
 {-# INLINE (//) #-}
 v // us = update_stream v (Stream.fromList us)
 
+-- | For each pair @(i,a)@ from the vector of index/value pairs, replace the
+-- vector element at position @i@ by @a@.
+--
+-- > update <5,9,2,7> <(2,1),(0,3),(2,8)> = <3,9,8,7>
+--
 update :: (Vector v a, Vector v (Int, a)) => v a -> v (Int, a) -> v a
 {-# INLINE update #-}
 update v w = update_stream v (stream w)
 
-update_ :: (Vector v a, Vector v Int) => v a -> v Int -> v a -> v a
+-- | For each index @i@ from the index vector and the corresponding value @a@
+-- from the update vector, replace the element of the value vector at position
+-- @i@ by @a@.
+--
+-- > update_ <5,9,2,7>  <2,0,2> <1,3,8> = <3,9,8,7>
+--
+-- This function is useful for instances of 'Vector' that cannot store pairs.
+-- Otherwise, 'update' is probably more convenient.
+--
+-- > update_ xs is ys = update xs (zip is ys)
+--
+update_ :: (Vector v a, Vector v Int) => v a   -- ^ value vector
+                                      -> v Int -- ^ index vector
+                                      -> v a   -- ^ update vector
+                                      -> v a
 {-# INLINE update_ #-}
 update_ v is w = update_stream v (Stream.zipWith (,) (stream is) (stream w))
 
--- This somewhat non-intuitive definition ensures that the resulting vector
--- does not retain references to the original one even if it is lazy in its
--- elements. This would not be the case if we simply used
+-- | Given a vector of values @xs@ and a vector of indices @is@, yield a vector
+-- obtained by replacing each @i@ from @is@ by @xs!i@.
 --
--- backpermute v is = map (v!) is
+-- > backpermute xs is = map (v!) is
+--
+-- > backpermute <a,b,c,d> <0,3,2,3,1,0> = <a,d,c,d,b,a>
+--
 backpermute :: (Vector v a, Vector v Int) => v a -> v Int -> v a
 {-# INLINE backpermute #-}
+-- This somewhat non-intuitive definition ensures that the resulting vector
+-- does not retain references to the original one even if it is lazy in its
+-- elements. This would not be the case if we simply used map (v!)
 backpermute v is = seq v
                  $ unstream
                  $ Stream.unbox
                  $ Stream.map (indexM v)
                  $ stream is
 
+-- | Given a vector of values @xs@ and a vector of indices @is@, yield a vector
+-- obtained by replacing each @i@ from @is@ by @xs!i@. The indices are not
+-- checked.
+--
+-- > unsafeBackpermute xs is = map (unsafeIndex v) is
+--
+-- > unsafeBackpermute <a,b,c,d> <0,3,2,3,1,0> = <a,d,c,d,b,a>
+--
 unsafeBackpermute :: (Vector v a, Vector v Int) => v a -> v Int -> v a
 {-# INLINE unsafeBackpermute #-}
 unsafeBackpermute v is = seq v
@@ -596,9 +743,10 @@ unsafeBackpermute v is = seq v
                        $ Stream.map (unsafeIndexM v)
                        $ stream is
 
--- FIXME: make this fuse better, add support for recycling
+-- | Reverse a vector
 reverse :: (Vector v a) => v a -> v a
 {-# INLINE reverse #-}
+-- FIXME: make this fuse better, add support for recycling
 reverse = unstream . streamR
 
 -- Mapping
