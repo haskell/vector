@@ -129,7 +129,7 @@ module Data.Vector.Generic (
   -- ** Mutable vectors
   copy, unsafeCopy,
 
-  -- * Fusion support and utilities
+  -- * Fusion support
 
   -- ** Conversion to/from Streams
   stream, unstream, streamR, unstreamR,
@@ -137,10 +137,12 @@ module Data.Vector.Generic (
   -- ** Recycling support
   new, clone,
 
-  -- ** Utilities for defining @Eq@ and @Ord@ instances
+  -- * Utilities
+
+  -- ** Comparisons
   eq, cmp,
 
-  -- ** Utilities for defining @Data@ and @Typeable@ instances
+  -- ** @Data@ and @Typeable@
   gfoldl, dataCast, mkType
 ) where
 
@@ -895,8 +897,7 @@ zipWith6 f as bs cs ds es fs
                                 (stream es)
                                 (stream fs))
 
--- | Zip two vectors with the given function, passing it the index of each two
--- elements.
+-- | Zip two vectors with a function that also takes the elements' indices.
 izipWith :: (Vector v a, Vector v b, Vector v c)
         => (Int -> a -> b -> c) -> v a -> v b -> v c
 {-# INLINE izipWith #-}
@@ -1605,25 +1606,26 @@ clone v = v `seq` New.create (
     unsafeCopy mv v
     return mv)
 
--- Utilities for defining Eq and Ord instances
--- -----------------------------------------------
+-- Comparisons
+-- -----------
 
--- | Check if two vectors are equal. This function should not be used directly
--- as all 'Vector' instances are also instances of 'Eq'. It is only intended
--- for implementing those 'Eq' instances.
+-- | Check if two vectors are equal. All 'Vector' instances are also instances
+-- of 'Eq' and it is usually more appropriate to use those. This function is
+-- primarily intended for implementing 'Eq' instances for new vector types.
 eq :: (Vector v a, Eq a) => v a -> v a -> Bool
 {-# INLINE eq #-}
 xs `eq` ys = stream xs == stream ys
 
--- | Compare two vectors lexicographically. This function should not be used
--- directly as all 'Vector' instances are also instances of 'Eq'. It is only
--- intended for implementing those 'Eq' instances.
+-- | Compare two vectors lexicographically. All 'Vector' instances are also
+-- instances of 'Ord' and it is usually more appropriate to use those. This
+-- function is primarily intended for implementing 'Ord' instances for new
+-- vector types.
 cmp :: (Vector v a, Ord a) => v a -> v a -> Ordering
 {-# INLINE cmp #-}
 cmp xs ys = compare (stream xs) (stream ys)
 
--- Utilities for defining Data instances
--- -------------------------------------
+-- Data and Typeable
+-- -----------------
 
 -- | Generic definion of 'Data.Data.gfoldl' that views a 'Vector' as a
 -- list.
