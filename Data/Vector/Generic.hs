@@ -9,69 +9,111 @@
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Generic interface to pure vectors
+-- Generic interface to pure vectors.
 --
 
 module Data.Vector.Generic (
   -- * Immutable vectors
   Vector(..), Mutable,
 
-  -- * Length information
+  -- * Accessors
+
+  -- ** Length information
   length, null,
 
-  -- * Construction
-  empty, singleton, cons, snoc, replicate, generate, (++), force,
-
-  -- * Accessing individual elements
-  (!), head, last, indexM, headM, lastM,
+  -- ** Indexing
+  (!), head, last,
   unsafeIndex, unsafeHead, unsafeLast,
+
+  -- ** Monadic indexing
+  indexM, headM, lastM,
   unsafeIndexM, unsafeHeadM, unsafeLastM,
 
-  -- * Subvectors
+  -- ** Extracting subvectors (slicing)
   slice, init, tail, take, drop,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
 
-  -- * Permutations
-  accum, accumulate, accumulate_,
-  (//), update, update_,
-  backpermute, reverse,
-  unsafeAccum, unsafeAccumulate, unsafeAccumulate_,
-  unsafeUpd, unsafeUpdate, unsafeUpdate_,
-  unsafeBackpermute,
+  -- * Construction
 
-  -- * Mapping
+  -- ** Initialisation
+  empty, singleton, replicate, generate,
+
+  -- ** Monadic initialisation
+  replicateM, create,
+
+  -- ** Unfolding
+  unfoldr, unfoldrN,
+
+  -- ** Enumeration
+  enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
+
+  -- ** Concatenation
+  cons, snoc, (++),
+
+  -- ** Restricting memory usage
+  force,
+
+  -- * Modifying vectors
+
+  -- ** Bulk updates
+  (//), update, update_,
+  unsafeUpd, unsafeUpdate, unsafeUpdate_,
+
+  -- ** Accumulations
+  accum, accumulate, accumulate_,
+  unsafeAccum, unsafeAccumulate, unsafeAccumulate_,
+
+  -- ** Permutations 
+  reverse, backpermute, unsafeBackpermute,
+
+  -- ** Safe destructive updates
+  modify,
+
+  -- * Elementwise operations
+
+  -- ** Mapping
   map, imap, concatMap,
 
-  -- * Zipping and unzipping
+  -- ** Monadic mapping
+  mapM, mapM_, forM, forM_,
+
+  -- ** Zipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
   izipWith, izipWith3, izipWith4, izipWith5, izipWith6,
   zip, zip3, zip4, zip5, zip6,
+
+  -- ** Monadic zipping
+  zipWithM, zipWithM_,
+
+  -- ** Unzipping
   unzip, unzip3, unzip4, unzip5, unzip6,
 
-  -- * Comparisons
-  eq, cmp,
+  -- * Working with predicates
 
-  -- * Filtering
-  filter, ifilter, takeWhile, dropWhile,
+  -- ** Filtering
+  filter, ifilter, filterM,
+  takeWhile, dropWhile,
+
+  -- ** Partitioning
   partition, unstablePartition, span, break,
 
-  -- * Searching
+  -- ** Searching
   elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
 
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1, foldr', foldr1',
   ifoldl, ifoldl', ifoldr, ifoldr',
- 
-  -- * Specialised folds
+
+  -- ** Specialised folds
   all, any, and, or,
   sum, product,
   maximum, maximumBy, minimum, minimumBy,
   minIndex, minIndexBy, maxIndex, maxIndexBy,
 
-  -- * Unfolding
-  unfoldr, unfoldrN,
+  -- ** Monadic folds
+  foldM, foldM', fold1M, fold1M',
 
-  -- * Scans
+  -- * Prefix sums (scans)
   prescanl, prescanl',
   postscanl, postscanl',
   scanl, scanl', scanl1, scanl1',
@@ -79,26 +121,26 @@ module Data.Vector.Generic (
   postscanr, postscanr',
   scanr, scanr', scanr1, scanr1',
 
-  -- * Enumeration
-  enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
+  -- * Conversions
 
-  -- * Conversion to/from lists
+  -- ** Lists
   toList, fromList, fromListN,
 
-  -- * Monadic operations
-  replicateM, mapM, mapM_, forM, forM_, zipWithM, zipWithM_, filterM,
-  foldM, foldM', fold1M, fold1M',
+  -- ** Mutable vectors
+  copy, unsafeCopy,
 
-  -- * Destructive operations
-  create, modify, copy, unsafeCopy,
+  -- * Fusion support and utilities
 
-  -- * Conversion to/from Streams
+  -- ** Conversion to/from Streams
   stream, unstream, streamR, unstreamR,
 
-  -- * Recycling support
+  -- ** Recycling support
   new, clone,
 
-  -- * Utilities for defining Data instances
+  -- ** Comparisons
+  eq, cmp,
+
+  -- ** Utilities for defining Data instances
   gfoldl, dataCast, mkType
 ) where
 
@@ -306,14 +348,15 @@ infixr 5 ++
 {-# INLINE (++) #-}
 v ++ w = unstream (stream v Stream.++ stream w)
 
--- | Force a vector not to retain any extra memory. This is especially useful
--- when dealing with slices. Example:
+-- | Yields its argument but forces it not to retain any extra memory.
 --
--- > force (slice 0 2 (replicate 10000000 1))
+-- This is especially useful when dealing with slices. For example:
 --
--- Here, the slice retains the entire block of 10M elements. By forcing it, we
--- create a copy of just the elements that are in the slice and the huge block
--- can be garbage collected. 
+-- > force (slice 0 2 <huge vector>)
+--
+-- Here, the slice retains a reference to the huge vector. Forcing it creates
+-- a copy of just the elements that belong to the slice and allows the huge
+-- vector to be garbage collected.
 force :: Vector v a => v a -> v a
 {-# INLINE_STREAM force #-}
 force v = new (clone v)
@@ -379,13 +422,13 @@ unsafeLast v = unsafeIndex v (length v - 1)
 
 -- | Indexing in a monad.
 --
--- The monad allows us to be strict in the vector if we want. Suppose we
--- implement vector copying like this:
+-- The monad allows operations to be strict in the vector when necessary.
+-- Suppose vector copying is implemented like this:
 --
 -- > copy mv v = ... write mv i (v ! i) ...
 --
--- For lazy vectors, @v ! i@ would not be evaluated which means that we
--- would unnecessarily retain a reference to @v@ in each element we write.
+-- For lazy vectors, @v ! i@ would not be evaluated which means that @mv@
+-- would unnecessarily retain a reference to @v@ in each element written.
 --
 -- With 'indexM', copying can be implemented like this instead:
 --
@@ -972,12 +1015,14 @@ ifilter f = unstream
                                      . MStream.indexed)
           . stream
 
--- | Yield the longest prefix of elements satisfying the predicate.
+-- | Yield the longest prefix of elements satisfying the predicate without
+-- copying.
 takeWhile :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE takeWhile #-}
 takeWhile f = unstream . Stream.takeWhile f . stream
 
--- | Drop the longest prefix of elements that satisfy the predicate.
+-- | Drop the longest prefix of elements that satisfy the predicate without
+-- copying.
 dropWhile :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE dropWhile #-}
 dropWhile f = unstream . Stream.dropWhile f . stream
@@ -1041,13 +1086,13 @@ unstablePartition_new f (New.New p) = runST (
 -- FIXME: make span and break fusible
 
 -- | Split the vector into the longest prefix of elements that satisfy the
--- predicate and the rest.
+-- predicate and the rest without copying.
 span :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 {-# INLINE span #-}
 span f = break (not . f)
 
 -- | Split the vector into the longest prefix of elements that do not satisfy
--- the predicate and the rest.
+-- the predicate and the rest without copying.
 break :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 {-# INLINE break #-}
 break f xs = case findIndex f xs of
@@ -1501,13 +1546,14 @@ fold1M' m = Stream.fold1M' m . stream
 -- Destructive operations
 -- ----------------------
 
--- | Destructively initialise a vector.
+-- | Execute the monadic action and freeze the resulting vector.
 create :: Vector v a => (forall s. ST s (Mutable v s a)) -> v a
 {-# INLINE create #-}
 create p = new (New.create p)
 
--- | Apply a destructive operation to a vector. The operation modifies a
--- copy of the vector unless it can be safely performed in place.
+-- | Apply a destructive operation to a vector. The operation will be
+-- performed in place if it is safe to do so and will modify a copy of the
+-- vector otherwise.
 modify :: Vector v a => (forall s. Mutable v s a -> ST s ()) -> v a -> v a
 {-# INLINE modify #-}
 modify p = new . New.modify p . clone
