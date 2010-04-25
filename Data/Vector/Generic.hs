@@ -137,10 +137,10 @@ module Data.Vector.Generic (
   -- ** Recycling support
   new, clone,
 
-  -- ** Comparisons
+  -- ** Utilities for defining @Eq@ and @Ord@ instances
   eq, cmp,
 
-  -- ** Utilities for defining Data instances
+  -- ** Utilities for defining @Data@ and @Typeable@ instances
   gfoldl, dataCast, mkType
 ) where
 
@@ -180,101 +180,8 @@ import Data.Data ( Data, DataType, mkNorepType )
 
 #include "vector.h"
 
--- Fusion
--- ------
-
--- | Construct a vector from a monadic initialiser
-new :: Vector v a => New v a -> v a
-{-# INLINE_STREAM new #-}
-new m = m `seq` runST (unsafeFreeze =<< New.run m)
-
--- | Convert a vector to an initialiser which, when run, produces a copy of
--- the vector
-clone :: Vector v a => v a -> New v a
-{-# INLINE_STREAM clone #-}
-clone v = v `seq` New.create (
-  do
-    mv <- M.new (length v)
-    unsafeCopy mv v
-    return mv)
-
--- | Convert a vector to a 'Stream'
-stream :: Vector v a => v a -> Stream a
-{-# INLINE_STREAM stream #-}
-stream v = v `seq` (Stream.unfoldr get 0 `Stream.sized` Exact n)
-  where
-    n = length v
-
-    -- NOTE: the False case comes first in Core so making it the recursive one
-    -- makes the code easier to read
-    {-# INLINE get #-}
-    get i | i >= n    = Nothing
-          | otherwise = case basicUnsafeIndexM v i of Box x -> Just (x, i+1)
-
--- | Construct a vector from a 'Stream'
-unstream :: Vector v a => Stream a -> v a
-{-# INLINE unstream #-}
-unstream s = new (New.unstream s)
-
-{-# RULES
-
-"stream/unstream [Vector]" forall s.
-  stream (new (New.unstream s)) = s
-
-"New.unstream/stream [Vector]" forall v.
-  New.unstream (stream v) = clone v
-
-"clone/new [Vector]" forall p.
-  clone (new p) = p
-
-"inplace [Vector]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
-  New.unstream (inplace f (stream (new m))) = New.transform f m
-
-"uninplace [Vector]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
-  stream (new (New.transform f m)) = inplace f (stream (new m))
-
- #-}
-
--- | Convert a vector to a 'Stream', proceeding from right to left
-streamR :: Vector v a => v a -> Stream a
-{-# INLINE_STREAM streamR #-}
-streamR v = v `seq` (Stream.unfoldr get n `Stream.sized` Exact n)
-  where
-    n = length v
-
-    {-# INLINE get #-}
-    get 0 = Nothing
-    get i = let i' = i-1
-            in
-            case basicUnsafeIndexM v i' of Box x -> Just (x, i')
-
--- | Construct a vector from a 'Stream', proceeding from right to left
-unstreamR :: Vector v a => Stream a -> v a
-{-# INLINE unstreamR #-}
-unstreamR s = new (New.unstreamR s)
-
-{-# RULES
-
-"streamR/unstreamR [Vector]" forall s.
-  streamR (new (New.unstreamR s)) = s
-
-"New.unstreamR/streamR/new [Vector]" forall p.
-  New.unstreamR (streamR (new p)) = p
-
-"inplace right [Vector]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
-  New.unstreamR (inplace f (streamR (new m))) = New.transformR f m
-
-"uninplace right [Vector]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
-  streamR (new (New.transformR f m)) = inplace f (streamR (new m))
-
- #-}
-
--- Length
--- ------
+-- Length information
+-- ------------------
 
 -- | Yield the length of the vector
 length :: Vector v a => v a -> Int
@@ -300,69 +207,8 @@ null v = basicLength v == 0
 
   #-}
 
--- Construction
--- ------------
-
--- | Empty vector
-empty :: Vector v a => v a
-{-# INLINE empty #-}
-empty = unstream Stream.empty
-
--- | Vector with exactly one element
-singleton :: forall v a. Vector v a => a -> v a
-{-# INLINE singleton #-}
-singleton x = elemseq (undefined :: v a) x
-            $ unstream (Stream.singleton x)
-
--- | Vector of the given length with the same value in each position
-replicate :: forall v a. Vector v a => Int -> a -> v a
-{-# INLINE replicate #-}
-replicate n x = elemseq (undefined :: v a) x
-              $ unstream
-              $ Stream.replicate n x
-
--- | Generate a vector of the given length by applying the function to each
--- index
-generate :: Vector v a => Int -> (Int -> a) -> v a
-{-# INLINE generate #-}
-generate n f = unstream (Stream.generate n f)
-
--- | Prepend an element
-cons :: forall v a. Vector v a => a -> v a -> v a
-{-# INLINE cons #-}
-cons x v = elemseq (undefined :: v a) x
-         $ unstream
-         $ Stream.cons x
-         $ stream v
-
--- | Append an element
-snoc :: forall v a. Vector v a => v a -> a -> v a
-{-# INLINE snoc #-}
-snoc v x = elemseq (undefined :: v a) x
-         $ unstream
-         $ Stream.snoc (stream v) x
-
-infixr 5 ++
--- | Concatenate two vectors
-(++) :: Vector v a => v a -> v a -> v a
-{-# INLINE (++) #-}
-v ++ w = unstream (stream v Stream.++ stream w)
-
--- | Yields its argument but forces it not to retain any extra memory.
---
--- This is especially useful when dealing with slices. For example:
---
--- > force (slice 0 2 <huge vector>)
---
--- Here, the slice retains a reference to the huge vector. Forcing it creates
--- a copy of just the elements that belong to the slice and allows the huge
--- vector to be garbage collected.
-force :: Vector v a => v a -> v a
-{-# INLINE_STREAM force #-}
-force v = new (clone v)
-
--- Accessing individual elements
--- -----------------------------
+-- Indexing
+-- --------
 
 -- | Indexing
 (!) :: Vector v a => v a -> Int -> a
@@ -419,6 +265,9 @@ unsafeLast v = unsafeIndex v (length v - 1)
   unsafeLast (new (New.unstream s)) = Stream.last s
 
  #-}
+
+-- Monadic indexing
+-- ----------------
 
 -- | Indexing in a monad.
 --
@@ -489,8 +338,8 @@ unsafeLastM v = unsafeIndexM v (length v - 1)
 
  -}
 
--- Subarrays
--- ---------
+-- Extracting subvectors (slicing)
+-- -------------------------------
 
 -- | Yield a slice of the vector without copying it. The vector must contain
 -- at least (starting index + length) elements.
@@ -592,46 +441,222 @@ unsafeDrop n v = unsafeSlice n (length v - n) v
 
   #-}
 
--- Permutations
+-- Initialisation
+-- --------------
+
+-- | Empty vector
+empty :: Vector v a => v a
+{-# INLINE empty #-}
+empty = unstream Stream.empty
+
+-- | Vector with exactly one element
+singleton :: forall v a. Vector v a => a -> v a
+{-# INLINE singleton #-}
+singleton x = elemseq (undefined :: v a) x
+            $ unstream (Stream.singleton x)
+
+-- | Vector of the given length with the same value in each position
+replicate :: forall v a. Vector v a => Int -> a -> v a
+{-# INLINE replicate #-}
+replicate n x = elemseq (undefined :: v a) x
+              $ unstream
+              $ Stream.replicate n x
+
+-- | Generate a vector of the given length by applying the function to each
+-- index
+generate :: Vector v a => Int -> (Int -> a) -> v a
+{-# INLINE generate #-}
+generate n f = unstream (Stream.generate n f)
+
+-- Unfolding
+-- ---------
+
+-- | Unfold
+unfoldr :: Vector v a => (b -> Maybe (a, b)) -> b -> v a
+{-# INLINE unfoldr #-}
+unfoldr f = unstream . Stream.unfoldr f
+
+-- | Unfoldr at most @n@ elements.
+unfoldrN  :: Vector v a => Int -> (b -> Maybe (a, b)) -> b -> v a
+{-# INLINE unfoldrN #-}
+unfoldrN n f = unstream . Stream.unfoldrN n f
+
+-- Enumeration
+-- -----------
+
+-- | Yield a vector of the given length containing the values @x@, @x+1@ etc.
+-- This operation is usually more efficient than 'enumFromTo'.
+enumFromN :: (Vector v a, Num a) => a -> Int -> v a
+{-# INLINE enumFromN #-}
+enumFromN x n = enumFromStepN x 1 n
+
+-- | Yield a vector of the given length containing the values @x@, @x+y@,
+-- @x+y+y@ etc. This operations is usually more efficient than
+-- 'enumFromThenTo'.
+enumFromStepN :: forall v a. (Vector v a, Num a) => a -> a -> Int -> v a
+{-# INLINE enumFromStepN #-}
+enumFromStepN x y n = elemseq (undefined :: v a) x
+                    $ elemseq (undefined :: v a) y
+                    $ unstream
+                    $ Stream.enumFromStepN  x y n
+
+-- | Enumerate values from @x@ to @y@.
+--
+-- /WARNING:/ This operation can be very inefficient. If at all possible, use
+-- 'enumFromN' instead.
+enumFromTo :: (Vector v a, Enum a) => a -> a -> v a
+{-# INLINE enumFromTo #-}
+enumFromTo x y = unstream (Stream.enumFromTo x y)
+
+-- | Enumerate values from @x@ to @y@ with a specific step @z@.
+--
+-- /WARNING:/ This operation can be very inefficient. If at all possible, use
+-- 'enumFromStepN' instead.
+enumFromThenTo :: (Vector v a, Enum a) => a -> a -> a -> v a
+{-# INLINE enumFromThenTo #-}
+enumFromThenTo x y z = unstream (Stream.enumFromThenTo x y z)
+
+-- Concatenation
+-- -------------
+
+-- | Prepend an element
+cons :: forall v a. Vector v a => a -> v a -> v a
+{-# INLINE cons #-}
+cons x v = elemseq (undefined :: v a) x
+         $ unstream
+         $ Stream.cons x
+         $ stream v
+
+-- | Append an element
+snoc :: forall v a. Vector v a => v a -> a -> v a
+{-# INLINE snoc #-}
+snoc v x = elemseq (undefined :: v a) x
+         $ unstream
+         $ Stream.snoc (stream v) x
+
+infixr 5 ++
+-- | Concatenate two vectors
+(++) :: Vector v a => v a -> v a -> v a
+{-# INLINE (++) #-}
+v ++ w = unstream (stream v Stream.++ stream w)
+
+-- Monadic initialisation
+-- ----------------------
+
+-- | Perform the monadic action the given number of times and store the
+-- results in a vector.
+replicateM :: (Monad m, Vector v a) => Int -> m a -> m (v a)
+-- FIXME: specialise for ST and IO?
+{-# INLINE replicateM #-}
+replicateM n m = fromListN n `Monad.liftM` Monad.replicateM n m
+
+-- | Execute the monadic action and freeze the resulting vector.
+create :: Vector v a => (forall s. ST s (Mutable v s a)) -> v a
+{-# INLINE create #-}
+create p = new (New.create p)
+
+-- Restricting memory usage
+-- ------------------------
+
+-- | Yields its argument but forces it not to retain any extra memory.
+--
+-- This is especially useful when dealing with slices. For example:
+--
+-- > force (slice 0 2 <huge vector>)
+--
+-- Here, the slice retains a reference to the huge vector. Forcing it creates
+-- a copy of just the elements that belong to the slice and allows the huge
+-- vector to be garbage collected.
+force :: Vector v a => v a -> v a
+-- FIXME: we probably ought to inline this later as the rules still might fire
+-- otherwise
+{-# INLINE_STREAM force #-}
+force v = new (clone v)
+
+-- Bulk updates
 -- ------------
 
-unsafeAccum_stream
-  :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
-{-# INLINE unsafeAccum_stream #-}
-unsafeAccum_stream f = modifyWithStream (M.unsafeAccum f)
+-- | For each pair @(i,a)@ from the list, replace the vector element at
+-- position @i@ by @a@.
+--
+-- > <5,9,2,7> // [(2,1),(0,3),(2,8)] = <3,9,8,7>
+--
+(//) :: Vector v a => v a -> [(Int, a)] -> v a
+{-# INLINE (//) #-}
+v // us = update_stream v (Stream.fromList us)
 
--- | For each pair @(i,b)@ from the list, replace the vector element @a@ at
--- position @i@ by @f a b@ where @f@ is the given accumulating function. The
--- indices are not checked.
-unsafeAccum :: Vector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
-{-# INLINE unsafeAccum #-}
-unsafeAccum f v us = unsafeAccum_stream f v (Stream.fromList us)
+-- | For each pair @(i,a)@ from the vector of index/value pairs, replace the
+-- vector element at position @i@ by @a@.
+--
+-- > update <5,9,2,7> <(2,1),(0,3),(2,8)> = <3,9,8,7>
+--
+update :: (Vector v a, Vector v (Int, a)) => v a -> v (Int, a) -> v a
+{-# INLINE update #-}
+update v w = update_stream v (stream w)
 
--- | For each pair @(i,b)@ from the vector of pairs, replace the vector element
--- @a@ at position @i@ by @f a b@ where @f@ is the given accumulating function.
--- The indices are not checked.
-unsafeAccumulate :: (Vector v a, Vector v (Int, b))
-                => (a -> b -> a) -> v a -> v (Int,b) -> v a
-{-# INLINE unsafeAccumulate #-}
-unsafeAccumulate f v us = unsafeAccum_stream f v (stream us)
-
--- | For each index @i@ from the vector of indices (@v Int@) and the
--- corresponding value @b@ from the the vector of values to accumulate (@v b@),
--- replace the element of the initial vector (@v a@) at
--- position @i@ by @f a b@ where @f@ is the given accumulating function. The
--- indices are not checked.
+-- | For each index @i@ from the index vector and the corresponding value @a@
+-- from the update vector, replace the element of the value vector at position
+-- @i@ by @a@.
+--
+-- > update_ <5,9,2,7>  <2,0,2> <1,3,8> = <3,9,8,7>
 --
 -- This function is useful for instances of 'Vector' that cannot store pairs.
--- In other cases, 'unsafeAccumulate' is probably more convenient.
-unsafeAccumulate_ :: (Vector v a, Vector v Int, Vector v b)
-                => (a -> b -> a) -> v a -> v Int -> v b -> v a
-{-# INLINE unsafeAccumulate_ #-}
-unsafeAccumulate_ f v is xs
-  = unsafeAccum_stream f v (Stream.zipWith (,) (stream is) (stream xs))
+-- Otherwise, 'update' is probably more convenient.
+--
+-- > update_ xs is ys = update xs (zip is ys)
+--
+update_ :: (Vector v a, Vector v Int) => v a   -- ^ value vector
+                                      -> v Int -- ^ index vector
+                                      -> v a   -- ^ update vector
+                                      -> v a
+{-# INLINE update_ #-}
+update_ v is w = update_stream v (Stream.zipWith (,) (stream is) (stream w))
 
-accum_stream :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
-{-# INLINE accum_stream #-}
-accum_stream f = modifyWithStream (M.accum f)
+update_stream :: Vector v a => v a -> Stream (Int,a) -> v a
+{-# INLINE update_stream #-}
+update_stream = modifyWithStream M.update
+
+-- | For each pair @(i,a)@ from the list, replace the vector element at
+-- position @i@ by @a@. The indices are not checked. The safe version of this
+-- function is ('//').
+--
+-- > unsafeUpd <5,9,2,7> [(2,1),(0,3),(2,8)] = <3,9,8,7>
+--
+unsafeUpd :: Vector v a => v a -> [(Int, a)] -> v a
+{-# INLINE unsafeUpd #-}
+unsafeUpd v us = unsafeUpdate_stream v (Stream.fromList us)
+
+-- | For each pair @(i,a)@ from the vector of index/value pairs, replace the
+-- vector element at position @i@ by @a@. The indices are not checked.
+--
+-- > unsafeUpdate <5,9,2,7> <(2,1),(0,3),(2,8)> = <3,9,8,7>
+--
+unsafeUpdate :: (Vector v a, Vector v (Int, a)) => v a -> v (Int, a) -> v a
+{-# INLINE unsafeUpdate #-}
+unsafeUpdate v w = unsafeUpdate_stream v (stream w)
+
+-- | For each index @i@ from the index vector and the corresponding value @a@
+-- from the update vector, replace the element of the value vector at position
+-- @i@ by @a@. The indices are not checked.
+--
+-- > unsafeUpdate_ <5,9,2,7>  <2,0,2> <1,3,8> = <3,9,8,7>
+--
+-- This function is useful for instances of 'Vector' that cannot store pairs.
+-- Otherwise, 'unsafeUpdate' is probably more convenient.
+--
+-- > unsafeUpdate_ xs is ys = unsafeUpdate xs (zip is ys)
+--
+unsafeUpdate_ :: (Vector v a, Vector v Int) => v a -> v Int -> v a -> v a
+{-# INLINE unsafeUpdate_ #-}
+unsafeUpdate_ v is w
+  = unsafeUpdate_stream v (Stream.zipWith (,) (stream is) (stream w))
+
+unsafeUpdate_stream :: Vector v a => v a -> Stream (Int,a) -> v a
+{-# INLINE unsafeUpdate_stream #-}
+unsafeUpdate_stream = modifyWithStream M.unsafeUpdate
+
+-- Accumulations
+-- -------------
 
 -- | For each pair @(i,b)@ from the list, replace the vector element @a@ at
 -- position @i@ by @f a b@ where @f@ is the given accumulating function.
@@ -673,84 +698,52 @@ accumulate_ f v is xs = accum_stream f v (Stream.zipWith (,) (stream is)
                                                              (stream xs))
                                         
 
-unsafeUpdate_stream :: Vector v a => v a -> Stream (Int,a) -> v a
-{-# INLINE unsafeUpdate_stream #-}
-unsafeUpdate_stream = modifyWithStream M.unsafeUpdate
+accum_stream :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
+{-# INLINE accum_stream #-}
+accum_stream f = modifyWithStream (M.accum f)
 
--- | For each pair @(i,a)@ from the list, replace the vector element at
--- position @i@ by @a@. The indices are not checked. The safe version of this
--- function is ('//').
---
--- > unsafeUpd <5,9,2,7> [(2,1),(0,3),(2,8)] = <3,9,8,7>
---
-unsafeUpd :: Vector v a => v a -> [(Int, a)] -> v a
-{-# INLINE unsafeUpd #-}
-unsafeUpd v us = unsafeUpdate_stream v (Stream.fromList us)
+-- | For each pair @(i,b)@ from the list, replace the vector element @a@ at
+-- position @i@ by @f a b@ where @f@ is the given accumulating function. The
+-- indices are not checked.
+unsafeAccum :: Vector v a => (a -> b -> a) -> v a -> [(Int,b)] -> v a
+{-# INLINE unsafeAccum #-}
+unsafeAccum f v us = unsafeAccum_stream f v (Stream.fromList us)
 
--- | For each pair @(i,a)@ from the vector of index/value pairs, replace the
--- vector element at position @i@ by @a@. The indices are not checked.
---
--- > unsafeUpdate <5,9,2,7> <(2,1),(0,3),(2,8)> = <3,9,8,7>
---
-unsafeUpdate :: (Vector v a, Vector v (Int, a)) => v a -> v (Int, a) -> v a
-{-# INLINE unsafeUpdate #-}
-unsafeUpdate v w = unsafeUpdate_stream v (stream w)
+-- | For each pair @(i,b)@ from the vector of pairs, replace the vector element
+-- @a@ at position @i@ by @f a b@ where @f@ is the given accumulating function.
+-- The indices are not checked.
+unsafeAccumulate :: (Vector v a, Vector v (Int, b))
+                => (a -> b -> a) -> v a -> v (Int,b) -> v a
+{-# INLINE unsafeAccumulate #-}
+unsafeAccumulate f v us = unsafeAccum_stream f v (stream us)
 
--- | For each index @i@ from the index vector and the corresponding value @a@
--- from the update vector, replace the element of the value vector at position
--- @i@ by @a@. The indices are not checked.
---
--- > unsafeUpdate_ <5,9,2,7>  <2,0,2> <1,3,8> = <3,9,8,7>
+-- | For each index @i@ from the vector of indices (@v Int@) and the
+-- corresponding value @b@ from the the vector of values to accumulate (@v b@),
+-- replace the element of the initial vector (@v a@) at
+-- position @i@ by @f a b@ where @f@ is the given accumulating function. The
+-- indices are not checked.
 --
 -- This function is useful for instances of 'Vector' that cannot store pairs.
--- Otherwise, 'unsafeUpdate' is probably more convenient.
---
--- > unsafeUpdate_ xs is ys = unsafeUpdate xs (zip is ys)
---
-unsafeUpdate_ :: (Vector v a, Vector v Int) => v a -> v Int -> v a -> v a
-{-# INLINE unsafeUpdate_ #-}
-unsafeUpdate_ v is w
-  = unsafeUpdate_stream v (Stream.zipWith (,) (stream is) (stream w))
+-- In other cases, 'unsafeAccumulate' is probably more convenient.
+unsafeAccumulate_ :: (Vector v a, Vector v Int, Vector v b)
+                => (a -> b -> a) -> v a -> v Int -> v b -> v a
+{-# INLINE unsafeAccumulate_ #-}
+unsafeAccumulate_ f v is xs
+  = unsafeAccum_stream f v (Stream.zipWith (,) (stream is) (stream xs))
 
-update_stream :: Vector v a => v a -> Stream (Int,a) -> v a
-{-# INLINE update_stream #-}
-update_stream = modifyWithStream M.update
+unsafeAccum_stream
+  :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
+{-# INLINE unsafeAccum_stream #-}
+unsafeAccum_stream f = modifyWithStream (M.unsafeAccum f)
 
--- | For each pair @(i,a)@ from the list, replace the vector element at
--- position @i@ by @a@.
---
--- > <5,9,2,7> // [(2,1),(0,3),(2,8)] = <3,9,8,7>
---
-(//) :: Vector v a => v a -> [(Int, a)] -> v a
-{-# INLINE (//) #-}
-v // us = update_stream v (Stream.fromList us)
+-- Permutations
+-- ------------
 
--- | For each pair @(i,a)@ from the vector of index/value pairs, replace the
--- vector element at position @i@ by @a@.
---
--- > update <5,9,2,7> <(2,1),(0,3),(2,8)> = <3,9,8,7>
---
-update :: (Vector v a, Vector v (Int, a)) => v a -> v (Int, a) -> v a
-{-# INLINE update #-}
-update v w = update_stream v (stream w)
-
--- | For each index @i@ from the index vector and the corresponding value @a@
--- from the update vector, replace the element of the value vector at position
--- @i@ by @a@.
---
--- > update_ <5,9,2,7>  <2,0,2> <1,3,8> = <3,9,8,7>
---
--- This function is useful for instances of 'Vector' that cannot store pairs.
--- Otherwise, 'update' is probably more convenient.
---
--- > update_ xs is ys = update xs (zip is ys)
---
-update_ :: (Vector v a, Vector v Int) => v a   -- ^ value vector
-                                      -> v Int -- ^ index vector
-                                      -> v a   -- ^ update vector
-                                      -> v a
-{-# INLINE update_ #-}
-update_ v is w = update_stream v (Stream.zipWith (,) (stream is) (stream w))
+-- | Reverse a vector
+reverse :: (Vector v a) => v a -> v a
+{-# INLINE reverse #-}
+-- FIXME: make this fuse better, add support for recycling
+reverse = unstream . streamR
 
 -- | Given a vector of values @xs@ and a vector of indices @is@, yield a vector
 -- obtained by replacing each @i@ from @is@ by @xs!i@.
@@ -786,11 +779,23 @@ unsafeBackpermute v is = seq v
                        $ Stream.map (unsafeIndexM v)
                        $ stream is
 
--- | Reverse a vector
-reverse :: (Vector v a) => v a -> v a
-{-# INLINE reverse #-}
--- FIXME: make this fuse better, add support for recycling
-reverse = unstream . streamR
+-- Safe destructive updates
+-- ------------------------
+
+-- | Apply a destructive operation to a vector. The operation will be
+-- performed in place if it is safe to do so and will modify a copy of the
+-- vector otherwise.
+modify :: Vector v a => (forall s. Mutable v s a -> ST s ()) -> v a -> v a
+{-# INLINE modify #-}
+modify p = new . New.modify p . clone
+
+-- We have to make sure that this is strict in the stream but we can't seq on
+-- it while fusion is happening. Hence this ugliness.
+modifyWithStream :: Vector v a
+                 => (forall s. Mutable v s a -> Stream b -> ST s ())
+                 -> v a -> Stream b -> v a
+{-# INLINE modifyWithStream #-}
+modifyWithStream p v s = new (New.modifyWithStream p (clone v) s)
 
 -- Mapping
 -- -------
@@ -811,8 +816,36 @@ concatMap :: (Vector v a, Vector v b) => (a -> v b) -> v a -> v b
 {-# INLINE concatMap #-}
 concatMap f = unstream . Stream.concatMap (stream . f) . stream
 
--- Zipping/unzipping
--- -----------------
+-- Monadic mapping
+-- ---------------
+
+-- | Apply the monadic action to all elements of the vector, yielding a vector
+-- of results
+mapM :: (Monad m, Vector v a, Vector v b) => (a -> m b) -> v a -> m (v b)
+-- FIXME: specialise for ST and IO?
+{-# INLINE mapM #-}
+mapM f = unstreamM . Stream.mapM f . stream
+
+-- | Apply the monadic action to all elements of a vector and ignore the
+-- results
+mapM_ :: (Monad m, Vector v a) => (a -> m b) -> v a -> m ()
+{-# INLINE mapM_ #-}
+mapM_ f = Stream.mapM_ f . stream
+
+-- | Apply the monadic action to all elements of the vector, yielding a vector
+-- of results
+forM :: (Monad m, Vector v a, Vector v b) => v a -> (a -> m b) -> m (v b)
+{-# INLINE forM #-}
+forM as f = mapM f as
+
+-- | Apply the monadic action to all elements of a vector and ignore the
+-- results
+forM_ :: (Monad m, Vector v a) => v a -> (a -> m b) -> m ()
+{-# INLINE forM_ #-}
+forM_ as f = mapM_ f as
+
+-- Zipping
+-- -------
 
 -- | Zip two vectors with the given function.
 zipWith :: (Vector v a, Vector v b, Vector v c)
@@ -940,6 +973,25 @@ zip6 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e,
 {-# INLINE zip6 #-}
 zip6 = zipWith6 (,,,,,)
 
+-- Monadic zipping
+-- ---------------
+
+-- | Zip the two vectors with the monadic action and yield a vector of results
+zipWithM :: (Monad m, Vector v a, Vector v b, Vector v c)
+         => (a -> b -> m c) -> v a -> v b -> m (v c)
+-- FIXME: specialise for ST and IO?
+{-# INLINE zipWithM #-}
+zipWithM f as bs = unstreamM $ Stream.zipWithM f (stream as) (stream bs)
+
+-- | Zip the two vectors with the monadic action and ignore the results
+zipWithM_ :: (Monad m, Vector v a, Vector v b)
+          => (a -> b -> m c) -> v a -> v b -> m ()
+{-# INLINE zipWithM_ #-}
+zipWithM_ f as bs = Stream.zipWithM_ f (stream as) (stream bs)
+
+-- Unzipping
+-- ---------
+
 unzip :: (Vector v a, Vector v b, Vector v (a,b)) => v (a, b) -> (v a, v b)
 {-# INLINE unzip #-}
 unzip xs = (map fst xs, map snd xs)
@@ -981,23 +1033,6 @@ unzip6 xs = (map (\(a, b, c, d, e, f) -> a) xs,
              map (\(a, b, c, d, e, f) -> e) xs,
              map (\(a, b, c, d, e, f) -> f) xs)
 
--- Comparisons
--- -----------
-
--- | Check if two vectors are equal. This function should not be used directly
--- as all 'Vector' instances are also instances of 'Eq'. It is only intended
--- for implementing those 'Eq' instances.
-eq :: (Vector v a, Eq a) => v a -> v a -> Bool
-{-# INLINE eq #-}
-xs `eq` ys = stream xs == stream ys
-
--- | Compare two vectors lexicographically. This function should not be used
--- directly as all 'Vector' instances are also instances of 'Eq'. It is only
--- intended for implementing those 'Eq' instances.
-cmp :: (Vector v a, Ord a) => v a -> v a -> Ordering
-{-# INLINE cmp #-}
-cmp xs ys = compare (stream xs) (stream ys)
-
 -- Filtering
 -- ---------
 
@@ -1015,6 +1050,11 @@ ifilter f = unstream
                                      . MStream.indexed)
           . stream
 
+-- | Drop elements that do not satisfy the monadic predicate
+filterM :: (Monad m, Vector v a) => (a -> m Bool) -> v a -> m (v a)
+{-# INLINE filterM #-}
+filterM f = unstreamM . Stream.filterM f . stream
+
 -- | Yield the longest prefix of elements satisfying the predicate without
 -- copying.
 takeWhile :: Vector v a => (a -> Bool) -> v a -> v a
@@ -1026,6 +1066,9 @@ takeWhile f = unstream . Stream.takeWhile f . stream
 dropWhile :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE dropWhile #-}
 dropWhile f = unstream . Stream.dropWhile f . stream
+
+-- Parititioning
+-- -------------
 
 -- | Split the vector in two parts, the first one containing those elements
 -- that satisfy the predicate and the second one those that don't. The
@@ -1313,38 +1356,48 @@ minIndexBy cmp = fst . Stream.foldl1' imin . Stream.indexed . stream
                          GT -> (j,y)
                          _  -> (i,x)
 
--- Unfolding
--- ---------
+-- Monadic folds
+-- -------------
 
--- | Unfold
-unfoldr :: Vector v a => (b -> Maybe (a, b)) -> b -> v a
-{-# INLINE unfoldr #-}
-unfoldr f = unstream . Stream.unfoldr f
+-- | Monadic fold
+foldM :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m a
+{-# INLINE foldM #-}
+foldM m z = Stream.foldM m z . stream
 
--- | Unfoldr at most @n@ elements.
-unfoldrN  :: Vector v a => Int -> (b -> Maybe (a, b)) -> b -> v a
-{-# INLINE unfoldrN #-}
-unfoldrN n f = unstream . Stream.unfoldrN n f
+-- | Monadic fold over non-empty vectors
+fold1M :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m a
+{-# INLINE fold1M #-}
+fold1M m = Stream.fold1M m . stream
 
--- Scans
--- -----
+-- | Monadic fold with strict accumulator
+foldM' :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m a
+{-# INLINE foldM' #-}
+foldM' m z = Stream.foldM' m z . stream
 
--- | Prefix scan
+-- | Monad fold over non-empty vectors with strict accumulator
+fold1M' :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m a
+{-# INLINE fold1M' #-}
+fold1M' m = Stream.fold1M' m . stream
+
+-- Prefix sums (scans)
+-- -------------------
+
+-- | Prescan
 prescanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE prescanl #-}
 prescanl f z = unstream . inplace (MStream.prescanl f z) . stream
 
--- | Prefix scan with strict accumulator
+-- | Prescan with strict accumulator
 prescanl' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE prescanl' #-}
 prescanl' f z = unstream . inplace (MStream.prescanl' f z) . stream
 
--- | Suffix scan
+-- | Scan
 postscanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE postscanl #-}
 postscanl f z = unstream . inplace (MStream.postscanl f z) . stream
 
--- | Suffix scan with strict accumulator
+-- | Scan with strict accumulator
 postscanl' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE postscanl' #-}
 postscanl' f z = unstream . inplace (MStream.postscanl' f z) . stream
@@ -1369,23 +1422,22 @@ scanl1' :: Vector v a => (a -> a -> a) -> v a -> v a
 {-# INLINE scanl1' #-}
 scanl1' f = unstream . inplace (MStream.scanl1' f) . stream
 
-
--- | Prefix right-to-left scan
+-- | Right-to-left prescan
 prescanr :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
 {-# INLINE prescanr #-}
 prescanr f z = unstreamR . inplace (MStream.prescanl (flip f) z) . streamR
 
--- | Prefix right-to-left scan with strict accumulator
+-- | Right-to-left prescan with strict accumulator
 prescanr' :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
 {-# INLINE prescanr' #-}
 prescanr' f z = unstreamR . inplace (MStream.prescanl' (flip f) z) . streamR
 
--- | Suffix right-to-left scan
+-- | Right-to-left scan
 postscanr :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
 {-# INLINE postscanr #-}
 postscanr f z = unstreamR . inplace (MStream.postscanl (flip f) z) . streamR
 
--- | Suffix right-to-left scan with strict accumulator
+-- | Right-to-left scan with strict accumulator
 postscanr' :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
 {-# INLINE postscanr' #-}
 postscanr' f z = unstreamR . inplace (MStream.postscanl' (flip f) z) . streamR
@@ -1410,42 +1462,7 @@ scanr1' :: Vector v a => (a -> a -> a) -> v a -> v a
 {-# INLINE scanr1' #-}
 scanr1' f = unstreamR . inplace (MStream.scanl1' (flip f)) . streamR
 
--- Enumeration
--- -----------
-
--- | Yield a vector of the given length containing the values @x@, @x+1@ etc.
--- This operation is usually more efficient than 'enumFromTo'.
-enumFromN :: (Vector v a, Num a) => a -> Int -> v a
-{-# INLINE enumFromN #-}
-enumFromN x n = enumFromStepN x 1 n
-
--- | Yield a vector of the given length containing the values @x@, @x+y@,
--- @x+y+y@ etc. This operations is usually more efficient than
--- 'enumFromThenTo'.
-enumFromStepN :: forall v a. (Vector v a, Num a) => a -> a -> Int -> v a
-{-# INLINE enumFromStepN #-}
-enumFromStepN x y n = elemseq (undefined :: v a) x
-                    $ elemseq (undefined :: v a) y
-                    $ unstream
-                    $ Stream.enumFromStepN  x y n
-
--- | Enumerate values from @x@ to @y@.
---
--- /WARNING:/ This operation can be very inefficient. If at all possible, use
--- 'enumFromN' instead.
-enumFromTo :: (Vector v a, Enum a) => a -> a -> v a
-{-# INLINE enumFromTo #-}
-enumFromTo x y = unstream (Stream.enumFromTo x y)
-
--- | Enumerate values from @x@ to @y@ with a specific step @z@.
---
--- /WARNING:/ This operation can be very inefficient. If at all possible, use
--- 'enumFromStepN' instead.
-enumFromThenTo :: (Vector v a, Enum a) => a -> a -> a -> v a
-{-# INLINE enumFromThenTo #-}
-enumFromThenTo x y z = unstream (Stream.enumFromThenTo x y z)
-
--- Conversion to/from lists
+-- Conversions - Lists
 -- ------------------------
 
 -- | Convert a vector to a list
@@ -1465,106 +1482,17 @@ fromListN :: Vector v a => Int -> [a] -> v a
 {-# INLINE fromListN #-}
 fromListN n = unstream . Stream.fromListN n
 
-unstreamM :: (Vector v a, Monad m) => MStream m a -> m (v a)
-{-# INLINE_STREAM unstreamM #-}
-unstreamM s = do
-                xs <- MStream.toList s
-                return $ unstream $ Stream.unsafeFromList (MStream.size s) xs
+-- Conversions - Mutable vectors
+-- -----------------------------
 
--- Monadic operations
--- ------------------
-
--- FIXME: specialise various combinators for ST and IO?
-
--- | Perform the monadic action the given number of times and store the
--- results in a vector.
-replicateM :: (Monad m, Vector v a) => Int -> m a -> m (v a)
-{-# INLINE replicateM #-}
-replicateM n m = fromListN n `Monad.liftM` Monad.replicateM n m
-
--- | Apply the monadic action to all elements of the vector, yielding a vector
--- of results
-mapM :: (Monad m, Vector v a, Vector v b) => (a -> m b) -> v a -> m (v b)
-{-# INLINE mapM #-}
-mapM f = unstreamM . Stream.mapM f . stream
-
--- | Apply the monadic action to all elements of a vector and ignore the
--- results
-mapM_ :: (Monad m, Vector v a) => (a -> m b) -> v a -> m ()
-{-# INLINE mapM_ #-}
-mapM_ f = Stream.mapM_ f . stream
-
--- | Apply the monadic action to all elements of the vector, yielding a vector
--- of results
-forM :: (Monad m, Vector v a, Vector v b) => v a -> (a -> m b) -> m (v b)
-{-# INLINE forM #-}
-forM as f = mapM f as
-
--- | Apply the monadic action to all elements of a vector and ignore the
--- results
-forM_ :: (Monad m, Vector v a) => v a -> (a -> m b) -> m ()
-{-# INLINE forM_ #-}
-forM_ as f = mapM_ f as
-
--- | Zip the two vectors with the monadic action and yield a vector of results
-zipWithM :: (Monad m, Vector v a, Vector v b, Vector v c)
-         => (a -> b -> m c) -> v a -> v b -> m (v c)
-{-# INLINE zipWithM #-}
-zipWithM f as bs = unstreamM $ Stream.zipWithM f (stream as) (stream bs)
-
--- | Zip the two vectors with the monadic action and ignore the results
-zipWithM_ :: (Monad m, Vector v a, Vector v b)
-          => (a -> b -> m c) -> v a -> v b -> m ()
-{-# INLINE zipWithM_ #-}
-zipWithM_ f as bs = Stream.zipWithM_ f (stream as) (stream bs)
-
--- | Drop elements that do not satisfy the monadic predicate
-filterM :: (Monad m, Vector v a) => (a -> m Bool) -> v a -> m (v a)
-{-# INLINE filterM #-}
-filterM f = unstreamM . Stream.filterM f . stream
-
--- | Monadic fold
-foldM :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m a
-{-# INLINE foldM #-}
-foldM m z = Stream.foldM m z . stream
-
--- | Monadic fold over non-empty vectors
-fold1M :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m a
-{-# INLINE fold1M #-}
-fold1M m = Stream.fold1M m . stream
-
--- | Monadic fold with strict accumulator
-foldM' :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m a
-{-# INLINE foldM' #-}
-foldM' m z = Stream.foldM' m z . stream
-
--- | Monad fold over non-empty vectors with strict accumulator
-fold1M' :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m a
-{-# INLINE fold1M' #-}
-fold1M' m = Stream.fold1M' m . stream
-
--- Destructive operations
--- ----------------------
-
--- | Execute the monadic action and freeze the resulting vector.
-create :: Vector v a => (forall s. ST s (Mutable v s a)) -> v a
-{-# INLINE create #-}
-create p = new (New.create p)
-
--- | Apply a destructive operation to a vector. The operation will be
--- performed in place if it is safe to do so and will modify a copy of the
--- vector otherwise.
-modify :: Vector v a => (forall s. Mutable v s a -> ST s ()) -> v a -> v a
-{-# INLINE modify #-}
-modify p = new . New.modify p . clone
-
--- We have to make sure that this is strict in the stream but we can't seq on
--- it while fusion is happening. Hence this ugliness.
-modifyWithStream :: Vector v a
-                 => (forall s. Mutable v s a -> Stream b -> ST s ())
-                 -> v a -> Stream b -> v a
-{-# INLINE modifyWithStream #-}
-modifyWithStream p v s = new (New.modifyWithStream p (clone v) s)
+-- | Copy an immutable vector into a mutable one. The two vectors must have the
+-- same length.
+copy
+  :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
+{-# INLINE copy #-}
+copy dst src = BOUNDS_CHECK(check) "copy" "length mismatch"
+                                          (M.length dst == length src)
+             $ unsafeCopy dst src
 
 -- | Copy an immutable vector into a mutable one. The two vectors must have
 -- the same length. This is not checked.
@@ -1574,15 +1502,125 @@ unsafeCopy
 unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
                                          (M.length dst == length src)
                    $ (dst `seq` src `seq` basicUnsafeCopy dst src)
-           
--- | Copy an immutable vector into a mutable one. The two vectors must have the
--- same length.
-copy
-  :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
-{-# INLINE copy #-}
-copy dst src = BOUNDS_CHECK(check) "copy" "length mismatch"
-                                          (M.length dst == length src)
-             $ unsafeCopy dst src
+
+-- Conversions to/from Streams
+-- ---------------------------
+
+-- | Convert a vector to a 'Stream'
+stream :: Vector v a => v a -> Stream a
+{-# INLINE_STREAM stream #-}
+stream v = v `seq` (Stream.unfoldr get 0 `Stream.sized` Exact n)
+  where
+    n = length v
+
+    -- NOTE: the False case comes first in Core so making it the recursive one
+    -- makes the code easier to read
+    {-# INLINE get #-}
+    get i | i >= n    = Nothing
+          | otherwise = case basicUnsafeIndexM v i of Box x -> Just (x, i+1)
+
+-- | Construct a vector from a 'Stream'
+unstream :: Vector v a => Stream a -> v a
+{-# INLINE unstream #-}
+unstream s = new (New.unstream s)
+
+{-# RULES
+
+"stream/unstream [Vector]" forall s.
+  stream (new (New.unstream s)) = s
+
+"New.unstream/stream [Vector]" forall v.
+  New.unstream (stream v) = clone v
+
+"clone/new [Vector]" forall p.
+  clone (new p) = p
+
+"inplace [Vector]"
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
+  New.unstream (inplace f (stream (new m))) = New.transform f m
+
+"uninplace [Vector]"
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
+  stream (new (New.transform f m)) = inplace f (stream (new m))
+
+ #-}
+
+-- | Convert a vector to a 'Stream', proceeding from right to left
+streamR :: Vector v a => v a -> Stream a
+{-# INLINE_STREAM streamR #-}
+streamR v = v `seq` (Stream.unfoldr get n `Stream.sized` Exact n)
+  where
+    n = length v
+
+    {-# INLINE get #-}
+    get 0 = Nothing
+    get i = let i' = i-1
+            in
+            case basicUnsafeIndexM v i' of Box x -> Just (x, i')
+
+-- | Construct a vector from a 'Stream', proceeding from right to left
+unstreamR :: Vector v a => Stream a -> v a
+{-# INLINE unstreamR #-}
+unstreamR s = new (New.unstreamR s)
+
+{-# RULES
+
+"streamR/unstreamR [Vector]" forall s.
+  streamR (new (New.unstreamR s)) = s
+
+"New.unstreamR/streamR/new [Vector]" forall p.
+  New.unstreamR (streamR (new p)) = p
+
+"inplace right [Vector]"
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
+  New.unstreamR (inplace f (streamR (new m))) = New.transformR f m
+
+"uninplace right [Vector]"
+  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
+  streamR (new (New.transformR f m)) = inplace f (streamR (new m))
+
+ #-}
+
+unstreamM :: (Vector v a, Monad m) => MStream m a -> m (v a)
+{-# INLINE_STREAM unstreamM #-}
+unstreamM s = do
+                xs <- MStream.toList s
+                return $ unstream $ Stream.unsafeFromList (MStream.size s) xs
+
+-- Recycling support
+-- -----------------
+
+-- | Construct a vector from a monadic initialiser
+new :: Vector v a => New v a -> v a
+{-# INLINE_STREAM new #-}
+new m = m `seq` runST (unsafeFreeze =<< New.run m)
+
+-- | Convert a vector to an initialiser which, when run, produces a copy of
+-- the vector
+clone :: Vector v a => v a -> New v a
+{-# INLINE_STREAM clone #-}
+clone v = v `seq` New.create (
+  do
+    mv <- M.new (length v)
+    unsafeCopy mv v
+    return mv)
+
+-- Utilities for defining Eq and Ord instances
+-- -----------------------------------------------
+
+-- | Check if two vectors are equal. This function should not be used directly
+-- as all 'Vector' instances are also instances of 'Eq'. It is only intended
+-- for implementing those 'Eq' instances.
+eq :: (Vector v a, Eq a) => v a -> v a -> Bool
+{-# INLINE eq #-}
+xs `eq` ys = stream xs == stream ys
+
+-- | Compare two vectors lexicographically. This function should not be used
+-- directly as all 'Vector' instances are also instances of 'Eq'. It is only
+-- intended for implementing those 'Eq' instances.
+cmp :: (Vector v a, Ord a) => v a -> v a -> Ordering
+{-# INLINE cmp #-}
+cmp xs ys = compare (stream xs) (stream ys)
 
 -- Utilities for defining Data instances
 -- -------------------------------------
