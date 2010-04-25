@@ -246,7 +246,7 @@ length v = basicLength v
 
   #-}
 
--- | Test where a vector if empty
+-- | Test whether a vector if empty
 null :: Vector v a => v a -> Bool
 {-# INLINE_STREAM null #-}
 null v = basicLength v == 0
@@ -266,13 +266,13 @@ empty :: Vector v a => v a
 {-# INLINE empty #-}
 empty = unstream Stream.empty
 
--- | Vector with exaclty one element
+-- | Vector with exactly one element
 singleton :: forall v a. Vector v a => a -> v a
 {-# INLINE singleton #-}
 singleton x = elemseq (undefined :: v a) x
             $ unstream (Stream.singleton x)
 
--- | Vector of the given length with the given value in each position
+-- | Vector of the given length with the same value in each position
 replicate :: forall v a. Vector v a => Int -> a -> v a
 {-# INLINE replicate #-}
 replicate n x = elemseq (undefined :: v a) x
@@ -757,12 +757,13 @@ map :: (Vector v a, Vector v b) => (a -> b) -> v a -> v b
 {-# INLINE map #-}
 map f = unstream . inplace (MStream.map f) . stream
 
--- | Apply a function to every index/value pair
+-- | Apply a function to every element of a vector and its index
 imap :: (Vector v a, Vector v b) => (Int -> a -> b) -> v a -> v b
 {-# INLINE imap #-}
 imap f = unstream . inplace (MStream.map (uncurry f) . MStream.indexed)
                   . stream
 
+-- | Map a function over a vector and concatenate the results.
 concatMap :: (Vector v a, Vector v b) => (a -> v b) -> v a -> v b
 {-# INLINE concatMap #-}
 concatMap f = unstream . Stream.concatMap (stream . f) . stream
@@ -818,7 +819,8 @@ zipWith6 f as bs cs ds es fs
                                 (stream es)
                                 (stream fs))
 
--- | Zip two vectors and their indices with the given function.
+-- | Zip two vectors with the given function, passing it the index of each two
+-- elements.
 izipWith :: (Vector v a, Vector v b, Vector v c)
         => (Int -> a -> b -> c) -> v a -> v b -> v c
 {-# INLINE izipWith #-}
@@ -826,7 +828,6 @@ izipWith f xs ys = unstream
                   (Stream.zipWith (uncurry f) (Stream.indexed (stream xs))
                                                               (stream ys))
 
--- | Zip three vectors and their indices with the given function.
 izipWith3 :: (Vector v a, Vector v b, Vector v c, Vector v d)
          => (Int -> a -> b -> c -> d) -> v a -> v b -> v c -> v d
 {-# INLINE izipWith3 #-}
@@ -869,6 +870,7 @@ izipWith6 f as bs cs ds es fs
                                                           (stream es)
                                                           (stream fs))
 
+-- | Zip two vectors
 zip :: (Vector v a, Vector v b, Vector v (a,b)) => v a -> v b -> v (a, b)
 {-# INLINE zip #-}
 zip = zipWith (,)
@@ -939,10 +941,16 @@ unzip6 xs = (map (\(a, b, c, d, e, f) -> a) xs,
 -- Comparisons
 -- -----------
 
+-- | Check if two vectors are equal. This function should not be used directly
+-- as all 'Vector' instances are also instances of 'Eq'. It is only intended
+-- for implementing those 'Eq' instances.
 eq :: (Vector v a, Eq a) => v a -> v a -> Bool
 {-# INLINE eq #-}
 xs `eq` ys = stream xs == stream ys
 
+-- | Compare two vectors lexicographically. This function should not be used
+-- directly as all 'Vector' instances are also instances of 'Eq'. It is only
+-- intended for implementing those 'Eq' instances.
 cmp :: (Vector v a, Ord a) => v a -> v a -> Ordering
 {-# INLINE cmp #-}
 cmp xs ys = compare (stream xs) (stream ys)
@@ -955,8 +963,8 @@ filter :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE filter #-}
 filter f = unstream . inplace (MStream.filter f) . stream
 
--- | Drop elements that do not satisfy the predicate (applied to values and
--- their indices)
+-- | Drop elements that do not satisfy the predicate which is applied to values
+-- and their indices
 ifilter :: Vector v a => (Int -> a -> Bool) -> v a -> v a
 {-# INLINE ifilter #-}
 ifilter f = unstream
@@ -1051,13 +1059,13 @@ break f xs = case findIndex f xs of
 -- ---------
 
 infix 4 `elem`
--- | Check whether the vector contains an element
+-- | Check if the vector contains an element
 elem :: (Vector v a, Eq a) => a -> v a -> Bool
 {-# INLINE elem #-}
 elem x = Stream.elem x . stream
 
 infix 4 `notElem`
--- | Inverse of `elem`
+-- | Check if the vector does not contain an element (inverse of 'elem')
 notElem :: (Vector v a, Eq a) => a -> v a -> Bool
 {-# INLINE notElem #-}
 notElem x = Stream.notElem x . stream
@@ -1074,7 +1082,8 @@ findIndex :: Vector v a => (a -> Bool) -> v a -> Maybe Int
 {-# INLINE findIndex #-}
 findIndex f = Stream.findIndex f . stream
 
--- | Yield the indices of elements satisfying the predicate
+-- | Yield the indices of elements satisfying the predicate in ascending
+-- order.
 findIndices :: (Vector v a, Vector v Int) => (a -> Bool) -> v a -> v Int
 {-# INLINE findIndices #-}
 findIndices f = unstream
@@ -1088,7 +1097,8 @@ elemIndex :: (Vector v a, Eq a) => a -> v a -> Maybe Int
 {-# INLINE elemIndex #-}
 elemIndex x = findIndex (x==)
 
--- | Yield the indices of all occurences of the given element
+-- | Yield the indices of all occurences of the given element in ascending
+-- order.
 elemIndices :: (Vector v a, Vector v Int, Eq a) => a -> v a -> v Int
 {-# INLINE elemIndices #-}
 elemIndices x = findIndices (x==)
@@ -1162,34 +1172,43 @@ ifoldr' f z xs = Stream.foldl' (flip (uncurry f)) z
 -- Specialised folds
 -- -----------------
 
+-- | Determine if all elements satisfy the predicate.
 all :: Vector v a => (a -> Bool) -> v a -> Bool
 {-# INLINE all #-}
 all f = Stream.and . Stream.map f . stream
 
+-- | Determine if any element satisfies the predicate.
 any :: Vector v a => (a -> Bool) -> v a -> Bool
 {-# INLINE any #-}
 any f = Stream.or . Stream.map f . stream
 
+-- | Check if all elements are 'True'
 and :: Vector v Bool => v Bool -> Bool
 {-# INLINE and #-}
 and = Stream.and . stream
 
+-- | Check if any element is 'True'
 or :: Vector v Bool => v Bool -> Bool
 {-# INLINE or #-}
 or = Stream.or . stream
 
+-- | Compute the sum of the elements
 sum :: (Vector v a, Num a) => v a -> a
 {-# INLINE sum #-}
 sum = Stream.foldl' (+) 0 . stream
 
+-- | Compute the produce of the elements
 product :: (Vector v a, Num a) => v a -> a
 {-# INLINE product #-}
 product = Stream.foldl' (*) 1 . stream
 
+-- | Yield the element of the vector. The vector may not be empty.
 maximum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE maximum #-}
 maximum = Stream.foldl1' max . stream
 
+-- | Yield the maximum element of the vector according to the given comparison
+-- function. The vector may not be empty.
 maximumBy :: Vector v a => (a -> a -> Ordering) -> v a -> a
 {-# INLINE maximumBy #-}
 maximumBy cmp = Stream.foldl1' maxBy . stream
@@ -1199,10 +1218,13 @@ maximumBy cmp = Stream.foldl1' maxBy . stream
                   LT -> y
                   _  -> x
 
+-- | Yield the minimum element of the vector. The vector may not be empty.
 minimum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE minimum #-}
 minimum = Stream.foldl1' min . stream
 
+-- | Yield the minimum element of the vector according to the given comparison
+-- function. The vector may not be empty.
 minimumBy :: Vector v a => (a -> a -> Ordering) -> v a -> a
 {-# INLINE minimumBy #-}
 minimumBy cmp = Stream.foldl1' minBy . stream
@@ -1212,10 +1234,14 @@ minimumBy cmp = Stream.foldl1' minBy . stream
                   GT -> y
                   _  -> x
 
+-- | Yield the index of the maximum element of the vector. The vector may not
+-- be empty.
 maxIndex :: (Vector v a, Ord a) => v a -> Int
 {-# INLINE maxIndex #-}
 maxIndex = maxIndexBy compare
 
+-- | Yield the index of the maximum element of the vector according to the
+-- given comparison function. The vector may not be empty.
 maxIndexBy :: Vector v a => (a -> a -> Ordering) -> v a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy cmp = fst . Stream.foldl1' imax . Stream.indexed . stream
@@ -1225,10 +1251,14 @@ maxIndexBy cmp = fst . Stream.foldl1' imax . Stream.indexed . stream
                          LT -> (j,y)
                          _  -> (i,x)
 
+-- | Yield the index of the minimum element of the vector. The vector may not
+-- be empty.
 minIndex :: (Vector v a, Ord a) => v a -> Int
 {-# INLINE minIndex #-}
 minIndex = minIndexBy compare
 
+-- | Yield the index of the minimum element of the vector according to the
+-- given comparison function. The vector may not be empty.
 minIndexBy :: Vector v a => (a -> a -> Ordering) -> v a -> Int
 {-# INLINE minIndexBy #-}
 minIndexBy cmp = fst . Stream.foldl1' imin . Stream.indexed . stream
@@ -1237,7 +1267,6 @@ minIndexBy cmp = fst . Stream.foldl1' imin . Stream.indexed . stream
                        case cmp x y of
                          GT -> (j,y)
                          _  -> (i,x)
-
 
 -- Unfolding
 -- ---------
