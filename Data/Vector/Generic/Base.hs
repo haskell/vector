@@ -43,21 +43,29 @@ type family Mutable (v :: * -> *) :: * -> * -> *
 --   * 'basicUnsafeIndexM'
 --
 class MVector (Mutable v) a => Vector v a where
-  -- | Unsafely convert a mutable vector to its immutable version
+  -- | /Assume complexity: O(1)/
+  --
+  -- Unsafely convert a mutable vector to its immutable version
   -- without copying. The mutable vector may not be used after
   -- this operation.
   unsafeFreeze :: PrimMonad m => Mutable v (PrimState m) a -> m (v a)
 
-  -- | Length of the vector.
+  -- | /Assumed complexity: O(1)/
+  --
+  -- Yield the length of the vector.
   basicLength      :: v a -> Int
 
-  -- | Yield a slice of the vector without copying it. No range checks are
+  -- | /Assumed complexity: O(1)/
+  --
+  -- Yield a slice of the vector without copying it. No range checks are
   -- performed.
   basicUnsafeSlice  :: Int -- ^ starting index
                     -> Int -- ^ length
                     -> v a -> v a
 
-  -- | Yield the element at the given position in a monad. No range checks are
+  -- | /Assumed complexity: O(1)/
+  --
+  -- Yield the element at the given position in a monad. No range checks are
   -- performed.
   --
   -- The monad allows us to be strict in the vector if we want. Suppose we had
@@ -82,11 +90,16 @@ class MVector (Mutable v) a => Vector v a where
   --
   basicUnsafeIndexM  :: Monad m => v a -> Int -> m a
 
-  -- | Copy an immutable vector into a mutable one.
+  -- |  /Assumed complexity: O(n)/
+  --
+  -- Copy an immutable vector into a mutable one. The two vectors must have
+  -- the same length but this is not checked.
   --
   -- Instances of 'Vector' should redefine this method if they wish to support
   -- an efficient block copy operation.
   --
+  -- Default definition: copying basic on 'basicUnsafeIndexM' and
+  -- 'basicUnsafeWrite'.
   basicUnsafeCopy :: PrimMonad m => Mutable v (PrimState m) a -> v a -> m ()
 
   {-# INLINE basicUnsafeCopy #-}
@@ -107,6 +120,8 @@ class MVector (Mutable v) a => Vector v a where
   -- although this might result in suboptimal code.
   --
   -- > elemseq v x y = (singleton x `asTypeOf` v) `seq` y
+  --
+  -- Default defintion: @a@ is not evaluated at all
   --
   elemseq :: v a -> a -> b -> b
 
