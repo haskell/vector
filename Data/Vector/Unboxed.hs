@@ -465,13 +465,11 @@ replicateM = G.replicateM
 -- | Execute the monadic action and freeze the resulting vector.
 --
 -- @
--- create (do { v \<- 'Data.Vector.Unboxed.Mutable.new' 2; 'Data.Vector.Unboxed.Mutable.write' v 0 \'a\'; 'Data.Vector.Unboxed.Mutable.write' v 1 \'b\' }) = \<'a','b'\>
+-- create (do { v \<- new 2; write v 0 \'a\'; write v 1 \'b\' }) = \<'a','b'\>
 -- @
 create :: Unbox a => (forall s. ST s (MVector s a)) -> Vector a
 {-# INLINE create #-}
 create = G.create
-
-
 
 -- Restricting memory usage
 -- ------------------------
@@ -647,7 +645,7 @@ unsafeBackpermute = G.unsafeBackpermute
 -- vector otherwise.
 --
 -- @
--- modify (\\v -> 'Data.Vector.Unboxed.Mutable.write' v 0 \'x\') ('replicate' 3 \'a\') = \<\'x\',\'a\',\'a\'\>
+-- modify (\\v -> write v 0 \'x\') ('replicate' 3 \'a\') = \<\'x\',\'a\',\'a\'\>
 -- @
 modify :: Unbox a => (forall s. MVector s a -> ST s ()) -> Vector a -> Vector a
 {-# INLINE modify #-}
