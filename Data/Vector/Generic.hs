@@ -1631,8 +1631,8 @@ eq :: (Vector v a, Eq a) => v a -> v a -> Bool
 {-# INLINE eq #-}
 xs `eq` ys = stream xs == stream ys
 
--- | Compare two vectors lexicographically. All 'Vector' instances are also
--- instances of 'Ord' and it is usually more appropriate to use those. This
+-- | /O(n)/ Compare two vectors lexicographically. All 'Vector' instances are
+-- also instances of 'Ord' and it is usually more appropriate to use those. This
 -- function is primarily intended for implementing 'Ord' instances for new
 -- vector types.
 cmp :: (Vector v a, Ord a) => v a -> v a -> Ordering
