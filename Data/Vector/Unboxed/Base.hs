@@ -1,4 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses, TypeFamilies, FlexibleContexts #-}
+{-# OPTIONS_HADDOCK hide #-}
+
 -- |
 -- Module      : Data.Vector.Unboxed.Base
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010

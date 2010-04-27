@@ -1,5 +1,6 @@
 {-# LANGUAGE Rank2Types, MultiParamTypeClasses, FlexibleContexts,
              TypeFamilies, ScopedTypeVariables #-}
+{-# OPTIONS_HADDOCK hide #-}
 
 -- |
 -- Module      : Data.Vector.Generic.Base
