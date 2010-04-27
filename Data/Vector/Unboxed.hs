@@ -14,6 +14,26 @@
 -- In particular, unboxed vectors of pairs are represented as pairs of unboxed
 -- vectors.
 --
+-- Implementing unboxed vectors for new data types can be very easy. Here is
+-- how the library does this for 'Complex' by simply wrapping vectors of
+-- pairs.
+--
+-- @
+-- newtype instance 'MVector' s ('Complex' a) = MV_Complex ('MVector' s (a,a))
+-- newtype instance 'Vector'    ('Complex' a) = V_Complex  ('Vector'    (a,a))
+--
+-- instance ('RealFloat' a, 'Unbox' a) => 'Data.Vector.Generic.Mutable.MVector' 'MVector' ('Complex' a) where
+--   {-\# INLINE basicLength \#-}
+--   basicLength (MV_Complex v) = 'Data.Vector.Generic.Mutable.basicLength' v
+--   ...
+--
+-- instance ('RealFloat' a, 'Unbox' a) => Data.Vector.Generic.Vector 'Vector' ('Complex' a) where
+--   {-\# INLINE basicLength \#-}
+--   basicLength (V_Complex v) = Data.Vector.Generic.basicLength v
+--   ...
+--
+-- instance ('RealFloat' a, 'Unbox' a) => 'Unbox' ('Complex' a)
+-- @
 
 module Data.Vector.Unboxed (
   -- * Unboxed vectors
