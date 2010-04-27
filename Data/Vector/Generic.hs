@@ -1515,7 +1515,9 @@ fromList = unstream . Stream.fromList
 
 -- | /O(n)/ Convert the first @n@ elements of a list to a vector
 --
--- > fromListN n xs = fromList (take n xs)
+-- @
+-- fromListN n xs = 'fromList' ('take' n xs)
+-- @
 fromListN :: Vector v a => Int -> [a] -> v a
 {-# INLINE fromListN #-}
 fromListN n = unstream . Stream.fromListN n
