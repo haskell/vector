@@ -471,12 +471,21 @@ generate n f = unstream (Stream.generate n f)
 -- Unfolding
 -- ---------
 
--- | /O(n)/ Unfold
+-- | /O(n)/ Construct a vector by repeatedly applying the generator function
+-- to a seed. The generator function yields 'Just' the next element and the
+-- new seed or 'Nothing' if there are no more elements.
+--
+-- > unfoldr (\n -> if n == 0 then Nothing else Just (n,n-1)) 10
+-- >  = <10,9,8,7,6,5,4,3,2,1>
 unfoldr :: Vector v a => (b -> Maybe (a, b)) -> b -> v a
 {-# INLINE unfoldr #-}
 unfoldr f = unstream . Stream.unfoldr f
 
--- | /O(n)/ Unfold at most @n@ elements.
+-- | /O(n)/ Construct a vector with at most @n@ by repeatedly applying the
+-- generator function to the a seed. The generator function yields 'Just' the
+-- next element and the new seed or 'Nothing' if there are no more elements.
+--
+-- > unfoldrN 3 (\n -> Just (n,n-1)) 10 = <10,9,8>
 unfoldrN  :: Vector v a => Int -> (b -> Maybe (a, b)) -> b -> v a
 {-# INLINE unfoldrN #-}
 unfoldrN n f = unstream . Stream.unfoldrN n f
@@ -486,12 +495,16 @@ unfoldrN n f = unstream . Stream.unfoldrN n f
 
 -- | /O(n)/ Yield a vector of the given length containing the values @x@, @x+1@
 -- etc. This operation is usually more efficient than 'enumFromTo'.
+--
+-- > enumFromN 5 3 = <5,6,7>
 enumFromN :: (Vector v a, Num a) => a -> Int -> v a
 {-# INLINE enumFromN #-}
 enumFromN x n = enumFromStepN x 1 n
 
 -- | /O(n)/ Yield a vector of the given length containing the values @x@, @x+y@,
 -- @x+y+y@ etc. This operations is usually more efficient than 'enumFromThenTo'.
+--
+-- > enumFromStepN 1 0.1 5 = <1,1.1,1.2,1.3,1.4>
 enumFromStepN :: forall v a. (Vector v a, Num a) => a -> a -> Int -> v a
 {-# INLINE enumFromStepN #-}
 enumFromStepN x y n = elemseq (undefined :: v a) x
@@ -550,6 +563,10 @@ replicateM :: (Monad m, Vector v a) => Int -> m a -> m (v a)
 replicateM n m = fromListN n `Monad.liftM` Monad.replicateM n m
 
 -- | Execute the monadic action and freeze the resulting vector.
+--
+-- @
+-- create (do { v \<- 'M.new' 2; 'M.write' v 0 \'a\'; 'M.write' v 1 \'b\' }) = \<'a','b'\>
+-- @
 create :: Vector v a => (forall s. ST s (Mutable v s a)) -> v a
 {-# INLINE create #-}
 create p = new (New.create p)
@@ -608,8 +625,9 @@ update v w = update_stream v (stream w)
 -- This function is useful for instances of 'Vector' that cannot store pairs.
 -- Otherwise, 'update' is probably more convenient.
 --
--- > update_ xs is ys = update xs (zip is ys)
---
+-- @
+-- update_ xs is ys = 'update' xs ('zip' is ys)
+-- @
 update_ :: (Vector v a, Vector v Int)
         => v a   -- ^ initial vector (of length @m@)
         -> v Int -- ^ index vector (of length @n1@)
@@ -679,8 +697,9 @@ accumulate f v us = accum_stream f v (stream us)
 -- This function is useful for instances of 'Vector' that cannot store pairs.
 -- Otherwise, 'accumulate' is probably more convenient:
 --
--- > accumulate_ f as is bs = accumulate f as (zip is bs)
---
+-- @
+-- accumulate_ f as is bs = 'accumulate' f as ('zip' is bs)
+-- @
 accumulate_ :: (Vector v a, Vector v Int, Vector v b)
                 => (a -> b -> a) -- ^ @f@ accumulating function
                 -> v a           -- ^ initial vector (of length @m@)
@@ -729,8 +748,8 @@ reverse :: (Vector v a) => v a -> v a
 reverse = unstream . streamR
 
 -- | /O(n)/ Yield the vector obtained by replacing each element @i@ of the
--- index vector by @xs!i@. This is equivalent to @map (xs!) is@ but is often
--- much more efficient.
+-- index vector by @xs'!'i@. This is equivalent to @'map' (xs'!') is@ but is
+-- often much more efficient.
 --
 -- > backpermute <a,b,c,d> <0,3,2,3,1,0> = <a,d,c,d,b,a>
 backpermute :: (Vector v a, Vector v Int)
@@ -762,6 +781,10 @@ unsafeBackpermute v is = seq v
 -- | Apply a destructive operation to a vector. The operation will be
 -- performed in place if it is safe to do so and will modify a copy of the
 -- vector otherwise.
+--
+-- @
+-- modify (\\v -> 'M.write' v 0 \'x\') ('replicate' 3 \'a\') = \<\'x\',\'a\',\'a\'\>
+-- @
 modify :: Vector v a => (forall s. Mutable v s a -> ST s ()) -> v a -> v a
 {-# INLINE modify #-}
 modify p = new . New.modify p . clone
