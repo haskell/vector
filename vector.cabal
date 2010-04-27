@@ -86,6 +86,7 @@ Extra-Source-Files:
       benchmarks/TestData/Random.hs
       internal/GenUnboxTuple.hs
       internal/unbox-tuple-instances
+      Changelog
 
 Flag BoundsChecks
   Description: Enable bounds checking
