@@ -23,6 +23,8 @@
 --
 
 module Data.Vector (
+  -- * Boxed vectors
+  Vector, MVector,
 
   -- * Accessors
 
