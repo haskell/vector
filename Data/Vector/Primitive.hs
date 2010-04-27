@@ -13,57 +13,103 @@
 --
 
 module Data.Vector.Primitive (
+  -- * Primitive vectors
   Vector, MVector(..), Prim,
 
-  -- * Length information
+  -- * Accessors
+
+  -- ** Length information
   length, null,
 
-  -- * Construction
-  empty, singleton, cons, snoc, replicate, generate, (++), force,
-
-  -- * Accessing individual elements
-  (!), head, last, indexM, headM, lastM,
+  -- ** Indexing
+  (!), head, last,
   unsafeIndex, unsafeHead, unsafeLast,
+
+  -- ** Monadic indexing
+  indexM, headM, lastM,
   unsafeIndexM, unsafeHeadM, unsafeLastM,
 
-  -- * Subvectors
+  -- ** Extracting subvectors (slicing)
   slice, init, tail, take, drop,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
 
-  -- * Permutations
-  accum, accumulate_, (//), update_, backpermute, reverse,
-  unsafeAccum, unsafeAccumulate_,
-  unsafeUpd, unsafeUpdate_,
-  unsafeBackpermute,
+  -- * Construction
 
-  -- * Mapping
+  -- ** Initialisation
+  empty, singleton, replicate, generate,
+
+  -- ** Monadic initialisation
+  replicateM, create,
+
+  -- ** Unfolding
+  unfoldr, unfoldrN,
+
+  -- ** Enumeration
+  enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
+
+  -- ** Concatenation
+  cons, snoc, (++),
+
+  -- ** Restricting memory usage
+  force,
+
+  -- * Modifying vectors
+
+  -- ** Bulk updates
+  (//), update_,
+  unsafeUpd, unsafeUpdate_,
+
+  -- ** Accumulations
+  accum, accumulate_,
+  unsafeAccum, unsafeAccumulate_,
+
+  -- ** Permutations 
+  reverse, backpermute, unsafeBackpermute,
+
+  -- ** Safe destructive updates
+  modify,
+
+  -- * Elementwise operations
+
+  -- ** Mapping
   map, imap, concatMap,
 
-  -- * Zipping and unzipping
+  -- ** Monadic mapping
+  mapM, mapM_, forM, forM_,
+
+  -- ** Zipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
   izipWith, izipWith3, izipWith4, izipWith5, izipWith6,
 
-  -- * Filtering
-  filter, ifilter, takeWhile, dropWhile,
+  -- ** Monadic zipping
+  zipWithM, zipWithM_,
+
+  -- * Working with predicates
+
+  -- ** Filtering
+  filter, ifilter, filterM,
+  takeWhile, dropWhile,
+
+  -- ** Partitioning
   partition, unstablePartition, span, break,
 
-  -- * Searching
+  -- ** Searching
   elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
 
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1, foldr', foldr1',
   ifoldl, ifoldl', ifoldr, ifoldr',
 
-  -- * Specialised folds
+  -- ** Specialised folds
   all, any,
   sum, product,
   maximum, maximumBy, minimum, minimumBy,
   minIndex, minIndexBy, maxIndex, maxIndexBy,
 
-  -- * Unfolding
-  unfoldr, unfoldrN,
+  -- ** Monadic folds
+  foldM, foldM', fold1M, fold1M',
 
-  -- * Scans
+  -- * Prefix sums (scans)
   prescanl, prescanl',
   postscanl, postscanl',
   scanl, scanl', scanl1, scanl1',
@@ -71,18 +117,13 @@ module Data.Vector.Primitive (
   postscanr, postscanr',
   scanr, scanr', scanr1, scanr1',
 
-  -- * Enumeration
-  enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
+  -- * Conversions
 
-  -- * Conversion to/from lists
+  -- ** Lists
   toList, fromList, fromListN,
 
-  -- * Monadic operations
-  replicateM, mapM, mapM_, forM, forM_, zipWithM, zipWithM_, filterM,
-  foldM, foldM', fold1M, fold1M',
-
-  -- * Destructive operations
-  create, modify, copy, unsafeCopy
+  -- ** Mutable vectors
+  copy, unsafeCopy
 ) where
 
 import qualified Data.Vector.Generic           as G
@@ -184,248 +225,475 @@ instance (Prim a, Ord a) => Ord (Vector a) where
 -- Length
 -- ------
 
+-- | /O(1)/ Yield the length of the vector.
 length :: Prim a => Vector a -> Int
 {-# INLINE length #-}
 length = G.length
 
+-- | /O(1)/ Test whether a vector if empty
 null :: Prim a => Vector a -> Bool
 {-# INLINE null #-}
 null = G.null
 
--- Construction
--- ------------
+-- Indexing
+-- --------
 
--- | Empty vector
+-- | O(1) Indexing
+(!) :: Prim a => Vector a -> Int -> a
+{-# INLINE (!) #-}
+(!) = (G.!)
+
+-- | /O(1)/ First element
+head :: Prim a => Vector a -> a
+{-# INLINE head #-}
+head = G.head
+
+-- | /O(1)/ Last element
+last :: Prim a => Vector a -> a
+{-# INLINE last #-}
+last = G.last
+
+-- | /O(1)/ Unsafe indexing without bounds checking
+unsafeIndex :: Prim a => Vector a -> Int -> a
+{-# INLINE unsafeIndex #-}
+unsafeIndex = G.unsafeIndex
+
+-- | /O(1)/ First element without checking if the vector is empty
+unsafeHead :: Prim a => Vector a -> a
+{-# INLINE unsafeHead #-}
+unsafeHead = G.unsafeHead
+
+-- | /O(1)/ Last element without checking if the vector is empty
+unsafeLast :: Prim a => Vector a -> a
+{-# INLINE unsafeLast #-}
+unsafeLast = G.unsafeLast
+
+-- Monadic indexing
+-- ----------------
+
+-- | /O(1)/ Indexing in a monad.
+--
+-- The monad allows operations to be strict in the vector when necessary.
+-- Suppose vector copying is implemented like this:
+--
+-- > copy mv v = ... write mv i (v ! i) ...
+--
+-- For lazy vectors, @v ! i@ would not be evaluated which means that @mv@
+-- would unnecessarily retain a reference to @v@ in each element written.
+--
+-- With 'indexM', copying can be implemented like this instead:
+--
+-- > copy mv v = ... do
+-- >                   x <- indexM v i
+-- >                   write mv i x
+--
+-- Here, no references to @v@ are retained because indexing (but /not/ the
+-- elements) is evaluated eagerly.
+--
+indexM :: (Prim a, Monad m) => Vector a -> Int -> m a
+{-# INLINE indexM #-}
+indexM = G.indexM
+
+-- | /O(1)/ First element of a vector in a monad. See 'indexM' for an
+-- explanation of why this is useful.
+headM :: (Prim a, Monad m) => Vector a -> m a
+{-# INLINE headM #-}
+headM = G.headM
+
+-- | /O(1)/ Last element of a vector in a monad. See 'indexM' for an
+-- explanation of why this is useful.
+lastM :: (Prim a, Monad m) => Vector a -> m a
+{-# INLINE lastM #-}
+lastM = G.lastM
+
+-- | /O(1)/ Indexing in a monad without bounds checks. See 'indexM' for an
+-- explanation of why this is useful.
+unsafeIndexM :: (Prim a, Monad m) => Vector a -> Int -> m a
+{-# INLINE unsafeIndexM #-}
+unsafeIndexM = G.unsafeIndexM
+
+-- | /O(1)/ First element in a monad without checking for empty vectors.
+-- See 'indexM' for an explanation of why this is useful.
+unsafeHeadM :: (Prim a, Monad m) => Vector a -> m a
+{-# INLINE unsafeHeadM #-}
+unsafeHeadM = G.unsafeHeadM
+
+-- | /O(1)/ Last element in a monad without checking for empty vectors.
+-- See 'indexM' for an explanation of why this is useful.
+unsafeLastM :: (Prim a, Monad m) => Vector a -> m a
+{-# INLINE unsafeLastM #-}
+unsafeLastM = G.unsafeLastM
+
+-- Extracting subvectors (slicing)
+-- -------------------------------
+
+-- | /O(1)/ Yield a slice of the vector without copying it. The vector must
+-- contain at least @i+n@ elements.
+slice :: Prim a
+      => Int   -- ^ @i@ starting index
+      -> Int   -- ^ @n@ length
+      -> Vector a
+      -> Vector a
+{-# INLINE slice #-}
+slice = G.slice
+
+-- | /O(1)/ Yield all but the last element without copying. The vector may not
+-- be empty.
+init :: Prim a => Vector a -> Vector a
+{-# INLINE init #-}
+init = G.init
+
+-- | /O(1)/ Yield all but the first element without copying. The vector may not
+-- be empty.
+tail :: Prim a => Vector a -> Vector a
+{-# INLINE tail #-}
+tail = G.tail
+
+-- | /O(1)/ Yield at the first @n@ elements without copying. The vector may
+-- contain less than @n@ elements in which case it is returned unchanged.
+take :: Prim a => Int -> Vector a -> Vector a
+{-# INLINE take #-}
+take = G.take
+
+-- | /O(1)/ Yield all but the first @n@ elements without copying. The vector may
+-- contain less than @n@ elements in which case an empty vector is returned.
+drop :: Prim a => Int -> Vector a -> Vector a
+{-# INLINE drop #-}
+drop = G.drop
+
+-- | /O(1)/ Yield a slice of the vector without copying. The vector must
+-- contain at least @i+n@ elements but this is not checked.
+unsafeSlice :: Prim a => Int   -- ^ @i@ starting index
+                       -> Int   -- ^ @n@ length
+                       -> Vector a
+                       -> Vector a
+{-# INLINE unsafeSlice #-}
+unsafeSlice = G.unsafeSlice
+
+-- | /O(1)/ Yield all but the last element without copying. The vector may not
+-- be empty but this is not checked.
+unsafeInit :: Prim a => Vector a -> Vector a
+{-# INLINE unsafeInit #-}
+unsafeInit = G.unsafeInit
+
+-- | /O(1)/ Yield all but the first element without copying. The vector may not
+-- be empty but this is not checked.
+unsafeTail :: Prim a => Vector a -> Vector a
+{-# INLINE unsafeTail #-}
+unsafeTail = G.unsafeTail
+
+-- | /O(1)/ Yield the first @n@ elements without copying. The vector must
+-- contain at least @n@ elements but this is not checked.
+unsafeTake :: Prim a => Int -> Vector a -> Vector a
+{-# INLINE unsafeTake #-}
+unsafeTake = G.unsafeTake
+
+-- | /O(1)/ Yield all but the first @n@ elements without copying. The vector
+-- must contain at least @n@ elements but this is not checked.
+unsafeDrop :: Prim a => Int -> Vector a -> Vector a
+{-# INLINE unsafeDrop #-}
+unsafeDrop = G.unsafeDrop
+
+-- Initialisation
+-- --------------
+
+-- | /O(1)/ Empty vector
 empty :: Prim a => Vector a
 {-# INLINE empty #-}
 empty = G.empty
 
--- | Vector with exaclty one element
+-- | /O(1)/ Vector with exactly one element
 singleton :: Prim a => a -> Vector a
 {-# INLINE singleton #-}
 singleton = G.singleton
 
--- | Vector of the given length with the given value in each position
+-- | /O(n)/ Vector of the given length with the same value in each position
 replicate :: Prim a => Int -> a -> Vector a
 {-# INLINE replicate #-}
 replicate = G.replicate
 
--- | Generate a vector of the given length by applying the function to each
--- index
+-- | /O(n)/ Construct a vector of the given length by applying the function to
+-- each index
 generate :: Prim a => Int -> (Int -> a) -> Vector a
 {-# INLINE generate #-}
 generate = G.generate
 
--- | Prepend an element
+-- Unfolding
+-- ---------
+
+-- | /O(n)/ Construct a vector by repeatedly applying the generator function
+-- to a seed. The generator function yields 'Just' the next element and the
+-- new seed or 'Nothing' if there are no more elements.
+--
+-- > unfoldr (\n -> if n == 0 then Nothing else Just (n,n-1)) 10
+-- >  = <10,9,8,7,6,5,4,3,2,1>
+unfoldr :: Prim a => (b -> Maybe (a, b)) -> b -> Vector a
+{-# INLINE unfoldr #-}
+unfoldr = G.unfoldr
+
+-- | /O(n)/ Construct a vector with at most @n@ by repeatedly applying the
+-- generator function to the a seed. The generator function yields 'Just' the
+-- next element and the new seed or 'Nothing' if there are no more elements.
+--
+-- > unfoldrN 3 (\n -> Just (n,n-1)) 10 = <10,9,8>
+unfoldrN :: Prim a => Int -> (b -> Maybe (a, b)) -> b -> Vector a
+{-# INLINE unfoldrN #-}
+unfoldrN = G.unfoldrN
+
+-- Enumeration
+-- -----------
+
+-- | /O(n)/ Yield a vector of the given length containing the values @x@, @x+1@
+-- etc. This operation is usually more efficient than 'enumFromTo'.
+--
+-- > enumFromN 5 3 = <5,6,7>
+enumFromN :: (Prim a, Num a) => a -> Int -> Vector a
+{-# INLINE enumFromN #-}
+enumFromN = G.enumFromN
+
+-- | /O(n)/ Yield a vector of the given length containing the values @x@, @x+y@,
+-- @x+y+y@ etc. This operations is usually more efficient than 'enumFromThenTo'.
+--
+-- > enumFromStepN 1 0.1 5 = <1,1.1,1.2,1.3,1.4>
+enumFromStepN :: (Prim a, Num a) => a -> a -> Int -> Vector a
+{-# INLINE enumFromStepN #-}
+enumFromStepN = G.enumFromStepN
+
+-- | /O(n)/ Enumerate values from @x@ to @y@.
+--
+-- /WARNING:/ This operation can be very inefficient. If at all possible, use
+-- 'enumFromN' instead.
+enumFromTo :: (Prim a, Enum a) => a -> a -> Vector a
+{-# INLINE enumFromTo #-}
+enumFromTo = G.enumFromTo
+
+-- | /O(n)/ Enumerate values from @x@ to @y@ with a specific step @z@.
+--
+-- /WARNING:/ This operation can be very inefficient. If at all possible, use
+-- 'enumFromStepN' instead.
+enumFromThenTo :: (Prim a, Enum a) => a -> a -> a -> Vector a
+{-# INLINE enumFromThenTo #-}
+enumFromThenTo = G.enumFromThenTo
+
+-- Concatenation
+-- -------------
+
+-- | /O(n)/ Prepend an element
 cons :: Prim a => a -> Vector a -> Vector a
 {-# INLINE cons #-}
 cons = G.cons
 
--- | Append an element
+-- | /O(n)/ Append an element
 snoc :: Prim a => Vector a -> a -> Vector a
 {-# INLINE snoc #-}
 snoc = G.snoc
 
 infixr 5 ++
--- | Concatenate two vectors
+-- | /O(m+n)/ Concatenate two vectors
 (++) :: Prim a => Vector a -> Vector a -> Vector a
 {-# INLINE (++) #-}
 (++) = (G.++)
 
--- | Create a copy of a vector. Useful when dealing with slices.
+-- Monadic initialisation
+-- ----------------------
+
+-- | /O(n)/ Execute the monadic action the given number of times and store the
+-- results in a vector.
+replicateM :: (Monad m, Prim a) => Int -> m a -> m (Vector a)
+{-# INLINE replicateM #-}
+replicateM = G.replicateM
+
+-- | Execute the monadic action and freeze the resulting vector.
+--
+-- @
+-- create (do { v \<- new 2; write v 0 \'a\'; write v 1 \'b\' }) = \<'a','b'\>
+-- @
+create :: Prim a => (forall s. ST s (MVector s a)) -> Vector a
+{-# INLINE create #-}
+create = G.create
+
+-- Restricting memory usage
+-- ------------------------
+
+-- | /O(n)/ Yield the argument but force it not to retain any extra memory,
+-- possibly by copying it.
+--
+-- This is especially useful when dealing with slices. For example:
+--
+-- > force (slice 0 2 <huge vector>)
+--
+-- Here, the slice retains a reference to the huge vector. Forcing it creates
+-- a copy of just the elements that belong to the slice and allows the huge
+-- vector to be garbage collected.
 force :: Prim a => Vector a -> Vector a
 {-# INLINE force #-}
 force = G.force
 
--- Accessing individual elements
--- -----------------------------
-
--- | Indexing
-(!) :: Prim a => Vector a -> Int -> a
-{-# INLINE (!) #-}
-(!) = (G.!)
-
--- | First element
-head :: Prim a => Vector a -> a
-{-# INLINE head #-}
-head = G.head
-
--- | Last element
-last :: Prim a => Vector a -> a
-{-# INLINE last #-}
-last = G.last
-
--- | Unsafe indexing without bounds checking
-unsafeIndex :: Prim a => Vector a -> Int -> a
-{-# INLINE unsafeIndex #-}
-unsafeIndex = G.unsafeIndex
-
--- | Yield the first element of a vector without checking if the vector is
--- empty
-unsafeHead :: Prim a => Vector a -> a
-{-# INLINE unsafeHead #-}
-unsafeHead = G.unsafeHead
-
--- | Yield the last element of a vector without checking if the vector is
--- empty
-unsafeLast :: Prim a => Vector a -> a
-{-# INLINE unsafeLast #-}
-unsafeLast = G.unsafeLast
-
--- | Monadic indexing which can be strict in the vector while remaining lazy in
--- the element
-indexM :: (Prim a, Monad m) => Vector a -> Int -> m a
-{-# INLINE indexM #-}
-indexM = G.indexM
-
-headM :: (Prim a, Monad m) => Vector a -> m a
-{-# INLINE headM #-}
-headM = G.headM
-
-lastM :: (Prim a, Monad m) => Vector a -> m a
-{-# INLINE lastM #-}
-lastM = G.lastM
-
--- | Unsafe monadic indexing without bounds checks
-unsafeIndexM :: (Prim a, Monad m) => Vector a -> Int -> m a
-{-# INLINE unsafeIndexM #-}
-unsafeIndexM = G.unsafeIndexM
-
-unsafeHeadM :: (Prim a, Monad m) => Vector a -> m a
-{-# INLINE unsafeHeadM #-}
-unsafeHeadM = G.unsafeHeadM
-
-unsafeLastM :: (Prim a, Monad m) => Vector a -> m a
-{-# INLINE unsafeLastM #-}
-unsafeLastM = G.unsafeLastM
-
--- Subarrays
--- ---------
-
--- | Yield a part of the vector without copying it. Safer version of
--- 'basicUnsafeSlice'.
-slice :: Prim a => Int   -- ^ starting index
-                -> Int   -- ^ length
-                -> Vector a
-                -> Vector a
-{-# INLINE slice #-}
-slice = G.slice
-
--- | Yield all but the last element without copying.
-init :: Prim a => Vector a -> Vector a
-{-# INLINE init #-}
-init = G.init
-
--- | All but the first element (without copying).
-tail :: Prim a => Vector a -> Vector a
-{-# INLINE tail #-}
-tail = G.tail
-
--- | Yield the first @n@ elements without copying.
-take :: Prim a => Int -> Vector a -> Vector a
-{-# INLINE take #-}
-take = G.take
-
--- | Yield all but the first @n@ elements without copying.
-drop :: Prim a => Int -> Vector a -> Vector a
-{-# INLINE drop #-}
-drop = G.drop
-
--- | Unsafely yield a part of the vector without copying it and without
--- performing bounds checks.
-unsafeSlice :: Prim a => Int   -- ^ starting index
-                      -> Int   -- ^ length
-                      -> Vector a
-                      -> Vector a
-{-# INLINE unsafeSlice #-}
-unsafeSlice = G.unsafeSlice
-
-unsafeInit :: Prim a => Vector a -> Vector a
-{-# INLINE unsafeInit #-}
-unsafeInit = G.unsafeInit
-
-unsafeTail :: Prim a => Vector a -> Vector a
-{-# INLINE unsafeTail #-}
-unsafeTail = G.unsafeTail
-
-unsafeTake :: Prim a => Int -> Vector a -> Vector a
-{-# INLINE unsafeTake #-}
-unsafeTake = G.unsafeTake
-
-unsafeDrop :: Prim a => Int -> Vector a -> Vector a
-{-# INLINE unsafeDrop #-}
-unsafeDrop = G.unsafeDrop
-
--- Permutations
+-- Bulk updates
 -- ------------
 
+-- | /O(m+n)/ For each pair @(i,a)@ from the list, replace the vector
+-- element at position @i@ by @a@.
+--
+-- > <5,9,2,7> // [(2,1),(0,3),(2,8)] = <3,9,8,7>
+--
+(//) :: Prim a => Vector a   -- ^ initial vector (of length @m@)
+                -> [(Int, a)] -- ^ list of index/value pairs (of length @n@) 
+                -> Vector a
+{-# INLINE (//) #-}
+(//) = (G.//)
+
+-- | /O(m+min(n1,n2))/ For each index @i@ from the index vector and the
+-- corresponding value @a@ from the value vector, replace the element of the
+-- initial vector at position @i@ by @a@.
+--
+-- > update_ <5,9,2,7>  <2,0,2> <1,3,8> = <3,9,8,7>
+--
+update_ :: Prim a
+        => Vector a   -- ^ initial vector (of length @m@)
+        -> Vector Int -- ^ index vector (of length @n1@)
+        -> Vector a   -- ^ value vector (of length @n2@)
+        -> Vector a
+{-# INLINE update_ #-}
+update_ = G.update_
+
+-- | Same as ('//') but without bounds checking.
+unsafeUpd :: Prim a => Vector a -> [(Int, a)] -> Vector a
+{-# INLINE unsafeUpd #-}
+unsafeUpd = G.unsafeUpd
+
+-- | Same as 'update_' but without bounds checking.
+unsafeUpdate_ :: Prim a => Vector a -> Vector Int -> Vector a -> Vector a
+{-# INLINE unsafeUpdate_ #-}
+unsafeUpdate_ = G.unsafeUpdate_
+
+-- Accumulations
+-- -------------
+
+-- | /O(m+n)/ For each pair @(i,b)@ from the list, replace the vector element
+-- @a@ at position @i@ by @f a b@.
+--
+-- > accum (+) <5,9,2> [(2,4),(1,6),(0,3),(1,7)] = <5+3, 9+6+7, 2+4>
+accum :: Prim a
+      => (a -> b -> a) -- ^ accumulating function @f@
+      -> Vector a      -- ^ initial vector (of length @m@)
+      -> [(Int,b)]     -- ^ list of index/value pairs (of length @n@)
+      -> Vector a
+{-# INLINE accum #-}
+accum = G.accum
+
+-- | /O(m+min(n1,n2))/ For each index @i@ from the index vector and the
+-- corresponding value @b@ from the the value vector,
+-- replace the element of the initial vector at
+-- position @i@ by @f a b@.
+--
+-- > accumulate_ (+) <5,9,2> <2,1,0,1> <4,6,3,7> = <5+3, 9+6+7, 2+4>
+--
+accumulate_ :: (Prim a, Prim b)
+            => (a -> b -> a) -- ^ accumulating function @f@
+            -> Vector a      -- ^ initial vector (of length @m@)
+            -> Vector Int    -- ^ index vector (of length @n1@)
+            -> Vector b      -- ^ value vector (of length @n2@)
+            -> Vector a
+{-# INLINE accumulate_ #-}
+accumulate_ = G.accumulate_
+
+-- | Same as 'accum' but without bounds checking.
 unsafeAccum :: Prim a => (a -> b -> a) -> Vector a -> [(Int,b)] -> Vector a
 {-# INLINE unsafeAccum #-}
 unsafeAccum = G.unsafeAccum
 
+-- | Same as 'accumulate_' but without bounds checking.
 unsafeAccumulate_ :: (Prim a, Prim b) =>
                (a -> b -> a) -> Vector a -> Vector Int -> Vector b -> Vector a
 {-# INLINE unsafeAccumulate_ #-}
 unsafeAccumulate_ = G.unsafeAccumulate_
 
-accum :: Prim a => (a -> b -> a) -> Vector a -> [(Int,b)] -> Vector a
-{-# INLINE accum #-}
-accum = G.accum
+-- Permutations
+-- ------------
 
-accumulate_ :: (Prim a, Prim b) =>
-               (a -> b -> a) -> Vector a -> Vector Int -> Vector b -> Vector a
-{-# INLINE accumulate_ #-}
-accumulate_ = G.accumulate_
-
-unsafeUpd :: Prim a => Vector a -> [(Int, a)] -> Vector a
-{-# INLINE unsafeUpd #-}
-unsafeUpd = G.unsafeUpd
-
-unsafeUpdate_ :: Prim a => Vector a -> Vector Int -> Vector a -> Vector a
-{-# INLINE unsafeUpdate_ #-}
-unsafeUpdate_ = G.unsafeUpdate_
-
-(//) :: Prim a => Vector a -> [(Int, a)] -> Vector a
-{-# INLINE (//) #-}
-(//) = (G.//)
-
-update_ :: Prim a => Vector a -> Vector Int -> Vector a -> Vector a
-{-# INLINE update_ #-}
-update_ = G.update_
-
-backpermute :: Prim a => Vector a -> Vector Int -> Vector a
-{-# INLINE backpermute #-}
-backpermute = G.backpermute
-
-unsafeBackpermute :: Prim a => Vector a -> Vector Int -> Vector a
-{-# INLINE unsafeBackpermute #-}
-unsafeBackpermute = G.unsafeBackpermute
-
+-- | /O(n)/ Reverse a vector
 reverse :: Prim a => Vector a -> Vector a
 {-# INLINE reverse #-}
 reverse = G.reverse
 
+-- | /O(n)/ Yield the vector obtained by replacing each element @i@ of the
+-- index vector by @xs'!'i@. This is equivalent to @'map' (xs'!') is@ but is
+-- often much more efficient.
+--
+-- > backpermute <a,b,c,d> <0,3,2,3,1,0> = <a,d,c,d,b,a>
+backpermute :: Prim a => Vector a -> Vector Int -> Vector a
+{-# INLINE backpermute #-}
+backpermute = G.backpermute
+
+-- | Same as 'backpermute' but without bounds checking.
+unsafeBackpermute :: Prim a => Vector a -> Vector Int -> Vector a
+{-# INLINE unsafeBackpermute #-}
+unsafeBackpermute = G.unsafeBackpermute
+
+-- Safe destructive updates
+-- ------------------------
+
+-- | Apply a destructive operation to a vector. The operation will be
+-- performed in place if it is safe to do so and will modify a copy of the
+-- vector otherwise.
+--
+-- @
+-- modify (\\v -> write v 0 \'x\') ('replicate' 3 \'a\') = \<\'x\',\'a\',\'a\'\>
+-- @
+modify :: Prim a => (forall s. MVector s a -> ST s ()) -> Vector a -> Vector a
+{-# INLINE modify #-}
+modify = G.modify
+
 -- Mapping
 -- -------
 
--- | Map a function over a vector
+-- | /O(n)/ Map a function over a vector
 map :: (Prim a, Prim b) => (a -> b) -> Vector a -> Vector b
 {-# INLINE map #-}
 map = G.map
 
--- | Apply a function to every index/value pair
+-- | /O(n)/ Apply a function to every element of a vector and its index
 imap :: (Prim a, Prim b) => (Int -> a -> b) -> Vector a -> Vector b
 {-# INLINE imap #-}
 imap = G.imap
 
+-- | Map a function over a vector and concatenate the results.
 concatMap :: (Prim a, Prim b) => (a -> Vector b) -> Vector a -> Vector b
 {-# INLINE concatMap #-}
 concatMap = G.concatMap
 
--- Zipping/unzipping
--- -----------------
+-- Monadic mapping
+-- ---------------
 
--- | Zip two vectors with the given function.
+-- | /O(n)/ Apply the monadic action to all elements of the vector, yielding a
+-- vector of results
+mapM :: (Monad m, Prim a, Prim b) => (a -> m b) -> Vector a -> m (Vector b)
+{-# INLINE mapM #-}
+mapM = G.mapM
+
+-- | /O(n)/ Apply the monadic action to all elements of a vector and ignore the
+-- results
+mapM_ :: (Monad m, Prim a) => (a -> m b) -> Vector a -> m ()
+{-# INLINE mapM_ #-}
+mapM_ = G.mapM_
+
+-- | /O(n)/ Apply the monadic action to all elements of the vector, yielding a
+-- vector of results. Equvalent to @flip 'mapM'@.
+forM :: (Monad m, Prim a, Prim b) => Vector a -> (a -> m b) -> m (Vector b)
+{-# INLINE forM #-}
+forM = G.forM
+
+-- | /O(n)/ Apply the monadic action to all elements of a vector and ignore the
+-- results. Equivalent to @flip 'mapM_'@.
+forM_ :: (Monad m, Prim a) => Vector a -> (a -> m b) -> m ()
+{-# INLINE forM_ #-}
+forM_ = G.forM_
+
+-- Zipping
+-- -------
+
+-- | /O(min(m,n))/ Zip two vectors with the given function.
 zipWith :: (Prim a, Prim b, Prim c)
         => (a -> b -> c) -> Vector a -> Vector b -> Vector c
 {-# INLINE zipWith #-}
@@ -443,21 +711,24 @@ zipWith4 :: (Prim a, Prim b, Prim c, Prim d, Prim e)
 {-# INLINE zipWith4 #-}
 zipWith4 = G.zipWith4
 
-zipWith5 :: (Prim a, Prim b, Prim c, Prim d, Prim e, Prim f)
+zipWith5 :: (Prim a, Prim b, Prim c, Prim d, Prim e,
+             Prim f)
          => (a -> b -> c -> d -> e -> f)
          -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
          -> Vector f
 {-# INLINE zipWith5 #-}
 zipWith5 = G.zipWith5
 
-zipWith6 :: (Prim a, Prim b, Prim c, Prim d, Prim e, Prim f, Prim g)
+zipWith6 :: (Prim a, Prim b, Prim c, Prim d, Prim e,
+             Prim f, Prim g)
          => (a -> b -> c -> d -> e -> f -> g)
          -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
          -> Vector f -> Vector g
 {-# INLINE zipWith6 #-}
 zipWith6 = G.zipWith6
 
--- | Zip two vectors and their indices with the given function.
+-- | /O(min(m,n))/ Zip two vectors with a function that also takes the
+-- elements' indices.
 izipWith :: (Prim a, Prim b, Prim c)
          => (Int -> a -> b -> c) -> Vector a -> Vector b -> Vector c
 {-# INLINE izipWith #-}
@@ -476,67 +747,97 @@ izipWith4 :: (Prim a, Prim b, Prim c, Prim d, Prim e)
 {-# INLINE izipWith4 #-}
 izipWith4 = G.izipWith4
 
-izipWith5 :: (Prim a, Prim b, Prim c, Prim d, Prim e, Prim f)
+izipWith5 :: (Prim a, Prim b, Prim c, Prim d, Prim e,
+              Prim f)
           => (Int -> a -> b -> c -> d -> e -> f)
           -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
           -> Vector f
 {-# INLINE izipWith5 #-}
 izipWith5 = G.izipWith5
 
-izipWith6 :: (Prim a, Prim b, Prim c, Prim d, Prim e, Prim f, Prim g)
+izipWith6 :: (Prim a, Prim b, Prim c, Prim d, Prim e,
+              Prim f, Prim g)
           => (Int -> a -> b -> c -> d -> e -> f -> g)
           -> Vector a -> Vector b -> Vector c -> Vector d -> Vector e
           -> Vector f -> Vector g
 {-# INLINE izipWith6 #-}
 izipWith6 = G.izipWith6
 
+-- Monadic zipping
+-- ---------------
+
+-- | /O(min(m,n))/ Zip the two vectors with the monadic action and yield a
+-- vector of results
+zipWithM :: (Monad m, Prim a, Prim b, Prim c)
+         => (a -> b -> m c) -> Vector a -> Vector b -> m (Vector c)
+{-# INLINE zipWithM #-}
+zipWithM = G.zipWithM
+
+-- | /O(min(m,n))/ Zip the two vectors with the monadic action and ignore the
+-- results
+zipWithM_ :: (Monad m, Prim a, Prim b)
+          => (a -> b -> m c) -> Vector a -> Vector b -> m ()
+{-# INLINE zipWithM_ #-}
+zipWithM_ = G.zipWithM_
+
 -- Filtering
 -- ---------
 
--- | Drop elements which do not satisfy the predicate
+-- | /O(n)/ Drop elements that do not satisfy the predicate
 filter :: Prim a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE filter #-}
 filter = G.filter
 
--- | Drop elements that do not satisfy the predicate (applied to values and
--- their indices)
+-- | /O(n)/ Drop elements that do not satisfy the predicate which is applied to
+-- values and their indices
 ifilter :: Prim a => (Int -> a -> Bool) -> Vector a -> Vector a
 {-# INLINE ifilter #-}
 ifilter = G.ifilter
 
--- | Yield the longest prefix of elements satisfying the predicate.
+-- | /O(n)/ Drop elements that do not satisfy the monadic predicate
+filterM :: (Monad m, Prim a) => (a -> m Bool) -> Vector a -> m (Vector a)
+{-# INLINE filterM #-}
+filterM = G.filterM
+
+-- | /O(n)/ Yield the longest prefix of elements satisfying the predicate
+-- without copying.
 takeWhile :: Prim a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE takeWhile #-}
 takeWhile = G.takeWhile
 
--- | Drop the longest prefix of elements that satisfy the predicate.
+-- | /O(n)/ Drop the longest prefix of elements that satisfy the predicate
+-- without copying.
 dropWhile :: Prim a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE dropWhile #-}
 dropWhile = G.dropWhile
 
--- | Split the vector in two parts, the first one containing those elements
--- that satisfy the predicate and the second one those that don't. The
--- relative order of the elements is preserved at the cost of a (sometimes)
+-- Parititioning
+-- -------------
+
+-- | /O(n)/ Split the vector in two parts, the first one containing those
+-- elements that satisfy the predicate and the second one those that don't. The
+-- relative order of the elements is preserved at the cost of a sometimes
 -- reduced performance compared to 'unstablePartition'.
 partition :: Prim a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE partition #-}
 partition = G.partition
 
--- | Split the vector in two parts, the first one containing those elements
--- that satisfy the predicate and the second one those that don't. The order
--- of the elements is not preserved.
+-- | /O(n)/ Split the vector in two parts, the first one containing those
+-- elements that satisfy the predicate and the second one those that don't.
+-- The order of the elements is not preserved but the operation is often
+-- faster than 'partition'.
 unstablePartition :: Prim a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE unstablePartition #-}
 unstablePartition = G.unstablePartition
 
--- | Split the vector into the longest prefix of elements that satisfy the
--- predicate and the rest.
+-- | /O(n)/ Split the vector into the longest prefix of elements that satisfy
+-- the predicate and the rest without copying.
 span :: Prim a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE span #-}
 span = G.span
 
--- | Split the vector into the longest prefix of elements that do not satisfy
--- the predicate and the rest.
+-- | /O(n)/ Split the vector into the longest prefix of elements that do not
+-- satisfy the predicate and the rest without copying.
 break :: Prim a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE break #-}
 break = G.break
@@ -545,41 +846,44 @@ break = G.break
 -- ---------
 
 infix 4 `elem`
--- | Check whether the vector contains an element
+-- | /O(n)/ Check if the vector contains an element
 elem :: (Prim a, Eq a) => a -> Vector a -> Bool
 {-# INLINE elem #-}
 elem = G.elem
 
 infix 4 `notElem`
--- | Inverse of `elem`
+-- | /O(n)/ Check if the vector does not contain an element (inverse of 'elem')
 notElem :: (Prim a, Eq a) => a -> Vector a -> Bool
 {-# INLINE notElem #-}
 notElem = G.notElem
 
--- | Yield 'Just' the first element matching the predicate or 'Nothing' if no
--- such element exists.
+-- | /O(n)/ Yield 'Just' the first element matching the predicate or 'Nothing'
+-- if no such element exists.
 find :: Prim a => (a -> Bool) -> Vector a -> Maybe a
 {-# INLINE find #-}
 find = G.find
 
--- | Yield 'Just' the index of the first element matching the predicate or
--- 'Nothing' if no such element exists.
+-- | /O(n)/ Yield 'Just' the index of the first element matching the predicate
+-- or 'Nothing' if no such element exists.
 findIndex :: Prim a => (a -> Bool) -> Vector a -> Maybe Int
 {-# INLINE findIndex #-}
 findIndex = G.findIndex
 
--- | Yield the indices of elements satisfying the predicate
+-- | /O(n)/ Yield the indices of elements satisfying the predicate in ascending
+-- order.
 findIndices :: Prim a => (a -> Bool) -> Vector a -> Vector Int
 {-# INLINE findIndices #-}
 findIndices = G.findIndices
 
--- | Yield 'Just' the index of the first occurence of the given element or
--- 'Nothing' if the vector does not contain the element
+-- | /O(n)/ Yield 'Just' the index of the first occurence of the given element or
+-- 'Nothing' if the vector does not contain the element. This is a specialised
+-- version of 'findIndex'.
 elemIndex :: (Prim a, Eq a) => a -> Vector a -> Maybe Int
 {-# INLINE elemIndex #-}
 elemIndex = G.elemIndex
 
--- | Yield the indices of all occurences of the given element
+-- | /O(n)/ Yield the indices of all occurences of the given element in
+-- ascending order. This is a specialised version of 'findIndices'.
 elemIndices :: (Prim a, Eq a) => a -> Vector a -> Vector Int
 {-# INLINE elemIndices #-}
 elemIndices = G.elemIndices
@@ -587,64 +891,64 @@ elemIndices = G.elemIndices
 -- Folding
 -- -------
 
--- | Left fold
+-- | /O(n)/ Left fold
 foldl :: Prim b => (a -> b -> a) -> a -> Vector b -> a
 {-# INLINE foldl #-}
 foldl = G.foldl
 
--- | Lefgt fold on non-empty vectors
+-- | /O(n)/ Left fold on non-empty vectors
 foldl1 :: Prim a => (a -> a -> a) -> Vector a -> a
 {-# INLINE foldl1 #-}
 foldl1 = G.foldl1
 
--- | Left fold with strict accumulator
+-- | /O(n)/ Left fold with strict accumulator
 foldl' :: Prim b => (a -> b -> a) -> a -> Vector b -> a
 {-# INLINE foldl' #-}
 foldl' = G.foldl'
 
--- | Left fold on non-empty vectors with strict accumulator
+-- | /O(n)/ Left fold on non-empty vectors with strict accumulator
 foldl1' :: Prim a => (a -> a -> a) -> Vector a -> a
 {-# INLINE foldl1' #-}
 foldl1' = G.foldl1'
 
--- | Right fold
+-- | /O(n)/ Right fold
 foldr :: Prim a => (a -> b -> b) -> b -> Vector a -> b
 {-# INLINE foldr #-}
 foldr = G.foldr
 
--- | Right fold on non-empty vectors
+-- | /O(n)/ Right fold on non-empty vectors
 foldr1 :: Prim a => (a -> a -> a) -> Vector a -> a
 {-# INLINE foldr1 #-}
 foldr1 = G.foldr1
 
--- | Right fold with a strict accumulator
+-- | /O(n)/ Right fold with a strict accumulator
 foldr' :: Prim a => (a -> b -> b) -> b -> Vector a -> b
 {-# INLINE foldr' #-}
 foldr' = G.foldr'
 
--- | Right fold on non-empty vectors with strict accumulator
+-- | /O(n)/ Right fold on non-empty vectors with strict accumulator
 foldr1' :: Prim a => (a -> a -> a) -> Vector a -> a
 {-# INLINE foldr1' #-}
 foldr1' = G.foldr1'
 
--- | Left fold (function applied to each element and its index)
+-- | /O(n)/ Left fold (function applied to each element and its index)
 ifoldl :: Prim b => (a -> Int -> b -> a) -> a -> Vector b -> a
 {-# INLINE ifoldl #-}
 ifoldl = G.ifoldl
 
--- | Left fold with strict accumulator (function applied to each element and
--- its index)
+-- | /O(n)/ Left fold with strict accumulator (function applied to each element
+-- and its index)
 ifoldl' :: Prim b => (a -> Int -> b -> a) -> a -> Vector b -> a
 {-# INLINE ifoldl' #-}
 ifoldl' = G.ifoldl'
 
--- | Right fold (function applied to each element and its index)
+-- | /O(n)/ Right fold (function applied to each element and its index)
 ifoldr :: Prim a => (Int -> a -> b -> b) -> b -> Vector a -> b
 {-# INLINE ifoldr #-}
 ifoldr = G.ifoldr
 
--- | Right fold with strict accumulator (function applied to each element and
--- its index)
+-- | /O(n)/ Right fold with strict accumulator (function applied to each
+-- element and its index)
 ifoldr' :: Prim a => (Int -> a -> b -> b) -> b -> Vector a -> b
 {-# INLINE ifoldr' #-}
 ifoldr' = G.ifoldr'
@@ -652,308 +956,248 @@ ifoldr' = G.ifoldr'
 -- Specialised folds
 -- -----------------
 
+-- | /O(n)/ Check if all elements satisfy the predicate.
 all :: Prim a => (a -> Bool) -> Vector a -> Bool
 {-# INLINE all #-}
 all = G.all
 
+-- | /O(n)/ Check if any element satisfies the predicate.
 any :: Prim a => (a -> Bool) -> Vector a -> Bool
 {-# INLINE any #-}
 any = G.any
 
+-- | /O(n)/ Compute the sum of the elements
 sum :: (Prim a, Num a) => Vector a -> a
 {-# INLINE sum #-}
 sum = G.sum
 
+-- | /O(n)/ Compute the produce of the elements
 product :: (Prim a, Num a) => Vector a -> a
 {-# INLINE product #-}
 product = G.product
 
+-- | /O(n)/ Yield the maximum element of the vector. The vector may not be
+-- empty.
 maximum :: (Prim a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
 maximum = G.maximum
 
+-- | /O(n)/ Yield the maximum element of the vector according to the given
+-- comparison function. The vector may not be empty.
 maximumBy :: Prim a => (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE maximumBy #-}
 maximumBy = G.maximumBy
 
+-- | /O(n)/ Yield the minimum element of the vector. The vector may not be
+-- empty.
 minimum :: (Prim a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum
 
+-- | /O(n)/ Yield the minimum element of the vector according to the given
+-- comparison function. The vector may not be empty.
 minimumBy :: Prim a => (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE minimumBy #-}
 minimumBy = G.minimumBy
 
+-- | /O(n)/ Yield the index of the maximum element of the vector. The vector
+-- may not be empty.
 maxIndex :: (Prim a, Ord a) => Vector a -> Int
 {-# INLINE maxIndex #-}
 maxIndex = G.maxIndex
 
+-- | /O(n)/ Yield the index of the maximum element of the vector according to
+-- the given comparison function. The vector may not be empty.
 maxIndexBy :: Prim a => (a -> a -> Ordering) -> Vector a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy = G.maxIndexBy
 
+-- | /O(n)/ Yield the index of the minimum element of the vector. The vector
+-- may not be empty.
 minIndex :: (Prim a, Ord a) => Vector a -> Int
 {-# INLINE minIndex #-}
 minIndex = G.minIndex
 
+-- | /O(n)/ Yield the index of the minimum element of the vector according to
+-- the given comparison function. The vector may not be empty.
 minIndexBy :: Prim a => (a -> a -> Ordering) -> Vector a -> Int
 {-# INLINE minIndexBy #-}
 minIndexBy = G.minIndexBy
 
--- Unfolding
--- ---------
+-- Monadic folds
+-- -------------
 
--- | The 'unfoldr' function is a \`dual\' to 'foldr': while 'foldr'
--- reduces a vector to a summary value, 'unfoldr' builds a list from
--- a seed value.  The function takes the element and returns 'Nothing'
--- if it is done generating the vector or returns 'Just' @(a,b)@, in which
--- case, @a@ is a prepended to the vector and @b@ is used as the next
--- element in a recursive call.
---
--- A simple use of unfoldr:
---
--- > unfoldr (\b -> if b == 0 then Nothing else Just (b, b-1)) 10
--- >  [10,9,8,7,6,5,4,3,2,1]
---
-unfoldr :: Prim a => (b -> Maybe (a, b)) -> b -> Vector a
-{-# INLINE unfoldr #-}
-unfoldr = G.unfoldr
-
--- | Unfold at most @n@ elements
-unfoldrN :: Prim a => Int -> (b -> Maybe (a, b)) -> b -> Vector a
-{-# INLINE unfoldrN #-}
-unfoldrN = G.unfoldrN
-
--- Scans
--- -----
-
--- | Prefix scan
-prescanl :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
-{-# INLINE prescanl #-}
-prescanl = G.prescanl
-
--- | Prefix scan with strict accumulator
-prescanl' :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
-{-# INLINE prescanl' #-}
-prescanl' = G.prescanl'
-
--- | Suffix scan
-postscanl :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
-{-# INLINE postscanl #-}
-postscanl = G.postscanl
-
--- | Suffix scan with strict accumulator
-postscanl' :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
-{-# INLINE postscanl' #-}
-postscanl' = G.postscanl'
-
--- | Haskell-style scan
-scanl :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
-{-# INLINE scanl #-}
-scanl = G.scanl
-
--- | Haskell-style scan with strict accumulator
-scanl' :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
-{-# INLINE scanl' #-}
-scanl' = G.scanl'
-
--- | Scan over a non-empty 'Vector'
-scanl1 :: Prim a => (a -> a -> a) -> Vector a -> Vector a
-{-# INLINE scanl1 #-}
-scanl1 = G.scanl1
-
--- | Scan over a non-empty 'Vector' with a strict accumulator
-scanl1' :: Prim a => (a -> a -> a) -> Vector a -> Vector a
-{-# INLINE scanl1' #-}
-scanl1' = G.scanl1'
-
-
--- | Prefix right-to-left scan
-prescanr :: (Prim a, Prim b) => (a -> b -> b) -> b -> Vector a -> Vector b
-{-# INLINE prescanr #-}
-prescanr = G.prescanr
-
--- | Prefix right-to-left scan with strict accumulator
-prescanr' :: (Prim a, Prim b) => (a -> b -> b) -> b -> Vector a -> Vector b
-{-# INLINE prescanr' #-}
-prescanr' = G.prescanr'
-
--- | Suffix right-to-left scan
-postscanr :: (Prim a, Prim b) => (a -> b -> b) -> b -> Vector a -> Vector b
-{-# INLINE postscanr #-}
-postscanr = G.postscanr
-
--- | Suffix right-to-left scan with strict accumulator
-postscanr' :: (Prim a, Prim b) => (a -> b -> b) -> b -> Vector a -> Vector b
-{-# INLINE postscanr' #-}
-postscanr' = G.postscanr'
-
--- | Haskell-style right-to-left scan
-scanr :: (Prim a, Prim b) => (a -> b -> b) -> b -> Vector a -> Vector b
-{-# INLINE scanr #-}
-scanr = G.scanr
-
--- | Haskell-style right-to-left scan with strict accumulator
-scanr' :: (Prim a, Prim b) => (a -> b -> b) -> b -> Vector a -> Vector b
-{-# INLINE scanr' #-}
-scanr' = G.scanr'
-
--- | Right-to-left scan over a non-empty vector
-scanr1 :: Prim a => (a -> a -> a) -> Vector a -> Vector a
-{-# INLINE scanr1 #-}
-scanr1 = G.scanr1
-
--- | Right-to-left scan over a non-empty vector with a strict accumulator
-scanr1' :: Prim a => (a -> a -> a) -> Vector a -> Vector a
-{-# INLINE scanr1' #-}
-scanr1' = G.scanr1'
-
--- Enumeration
--- -----------
-
--- | Yield a vector of the given length containing the values @x@, @x+1@ etc.
--- This operation is usually more efficient than 'enumFromTo'.
-enumFromN :: (Prim a, Num a) => a -> Int -> Vector a
-{-# INLINE enumFromN #-}
-enumFromN = G.enumFromN
-
--- | Yield a vector of the given length containing the values @x@, @x+y@,
--- @x+y+y@ etc. This operations is usually more efficient than
--- 'enumFromThenTo'.
-enumFromStepN :: (Prim a, Num a) => a -> a -> Int -> Vector a
-{-# INLINE enumFromStepN #-}
-enumFromStepN = G.enumFromStepN
-
--- | Enumerate values from @x@ to @y@.
---
--- /WARNING:/ This operation can be very inefficient. If at all possible, use
--- 'enumFromN' instead.
-enumFromTo :: (Prim a, Enum a) => a -> a -> Vector a
-{-# INLINE enumFromTo #-}
-enumFromTo = G.enumFromTo
-
--- | Enumerate values from @x@ to @y@ with a specific step @z@.
---
--- /WARNING:/ This operation can be very inefficient. If at all possible, use
--- 'enumFromStepN' instead.
-enumFromThenTo :: (Prim a, Enum a) => a -> a -> a -> Vector a
-{-# INLINE enumFromThenTo #-}
-enumFromThenTo = G.enumFromThenTo
-
--- Conversion to/from lists
--- ------------------------
-
--- | Convert a vector to a list
-toList :: Prim a => Vector a -> [a]
-{-# INLINE toList #-}
-toList = G.toList
-
--- | Convert a list to a vector
-fromList :: Prim a => [a] -> Vector a
-{-# INLINE fromList #-}
-fromList = G.fromList
-
--- | Convert the first @n@ elements of a list to a vector
---
--- > fromListN n xs = fromList (take n xs)
-fromListN :: Prim a => Int -> [a] -> Vector a
-{-# INLINE fromListN #-}
-fromListN = G.fromListN
-
--- Monadic operations
--- ------------------
-
--- | Perform the monadic action the given number of times and store the
--- results in a vector.
-replicateM :: (Monad m, Prim a) => Int -> m a -> m (Vector a)
-{-# INLINE replicateM #-}
-replicateM = G.replicateM
-
--- | Apply the monadic action to all elements of the vector, yielding a vector
--- of results
-mapM :: (Monad m, Prim a, Prim b) => (a -> m b) -> Vector a -> m (Vector b)
-{-# INLINE mapM #-}
-mapM = G.mapM
-
--- | Apply the monadic action to all elements of a vector and ignore the
--- results
-mapM_ :: (Monad m, Prim a) => (a -> m b) -> Vector a -> m ()
-{-# INLINE mapM_ #-}
-mapM_ = G.mapM_
-
--- | Apply the monadic action to all elements of the vector, yielding a vector
--- of results
-forM :: (Monad m, Prim a, Prim b) => Vector a -> (a -> m b) -> m (Vector b)
-{-# INLINE forM #-}
-forM = G.forM
-
--- | Apply the monadic action to all elements of a vector and ignore the
--- results
-forM_ :: (Monad m, Prim a) => Vector a -> (a -> m b) -> m ()
-{-# INLINE forM_ #-}
-forM_ = G.forM_
-
--- | Zip the two vectors with the monadic action and yield a vector of results
-zipWithM :: (Monad m, Prim a, Prim b, Prim c)
-         => (a -> b -> m c) -> Vector a -> Vector b -> m (Vector c)
-{-# INLINE zipWithM #-}
-zipWithM = G.zipWithM
-
--- | Zip the two vectors with the monadic action and ignore the results
-zipWithM_ :: (Monad m, Prim a, Prim b)
-          => (a -> b -> m c) -> Vector a -> Vector b -> m ()
-{-# INLINE zipWithM_ #-}
-zipWithM_ = G.zipWithM_
-
--- | Drop elements that do not satisfy the monadic predicate
-filterM :: (Monad m, Prim a) => (a -> m Bool) -> Vector a -> m (Vector a)
-{-# INLINE filterM #-}
-filterM = G.filterM
-
--- | Monadic fold
+-- | /O(n)/ Monadic fold
 foldM :: (Monad m, Prim b) => (a -> b -> m a) -> a -> Vector b -> m a
 {-# INLINE foldM #-}
 foldM = G.foldM
 
--- | Monadic fold over non-empty vectors
+-- | /O(n)/ Monadic fold over non-empty vectors
 fold1M :: (Monad m, Prim a) => (a -> a -> m a) -> Vector a -> m a
 {-# INLINE fold1M #-}
 fold1M = G.fold1M
 
--- | Monadic fold with strict accumulator
+-- | /O(n)/ Monadic fold with strict accumulator
 foldM' :: (Monad m, Prim b) => (a -> b -> m a) -> a -> Vector b -> m a
 {-# INLINE foldM' #-}
 foldM' = G.foldM'
 
--- | Monad fold over non-empty vectors with strict accumulator
+-- | /O(n)/ Monad fold over non-empty vectors with strict accumulator
 fold1M' :: (Monad m, Prim a) => (a -> a -> m a) -> Vector a -> m a
 {-# INLINE fold1M' #-}
 fold1M' = G.fold1M'
 
--- Destructive operations
--- ----------------------
+-- Prefix sums (scans)
+-- -------------------
 
--- | Destructively initialise a vector.
-create :: Prim a => (forall s. ST s (MVector s a)) -> Vector a
-{-# INLINE create #-}
-create = G.create
+-- | /O(n)/ Prescan
+--
+-- @
+-- prescanl f z = 'init' . 'scanl' f z
+-- @
+--
+-- Example: @prescanl (+) 0 \<1,2,3,4\> = \<0,1,3,6\>@
+--
+prescanl :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE prescanl #-}
+prescanl = G.prescanl
 
--- | Apply a destructive operation to a vector. The operation is applied to a
--- copy of the vector unless it can be safely performed in place.
-modify :: Prim a => (forall s. MVector s a -> ST s ()) -> Vector a -> Vector a
-{-# INLINE modify #-}
-modify = G.modify
+-- | /O(n)/ Prescan with strict accumulator
+prescanl' :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE prescanl' #-}
+prescanl' = G.prescanl'
 
--- | Copy an immutable vector into a mutable one. The two vectors must have
--- the same length. This is not checked.
+-- | /O(n)/ Scan
+--
+-- @
+-- postscanl f z = 'tail' . 'scanl' f z
+-- @
+--
+-- Example: @postscanl (+) 0 \<1,2,3,4\> = \<1,3,6,10\>@
+--
+postscanl :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE postscanl #-}
+postscanl = G.postscanl
+
+-- | /O(n)/ Scan with strict accumulator
+postscanl' :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE postscanl' #-}
+postscanl' = G.postscanl'
+
+-- | /O(n)/ Haskell-style scan
+--
+-- > scanl f z <x1,...,xn> = <y1,...,y(n+1)>
+-- >   where y1 = z
+-- >         yi = f y(i-1) x(i-1)
+--
+-- Example: @scanl (+) 0 \<1,2,3,4\> = \<0,1,3,6,10\>@
+-- 
+scanl :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE scanl #-}
+scanl = G.scanl
+
+-- | /O(n)/ Haskell-style scan with strict accumulator
+scanl' :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE scanl' #-}
+scanl' = G.scanl'
+
+-- | /O(n)/ Scan over a non-empty vector
+--
+-- > scanl f <x1,...,xn> = <y1,...,yn>
+-- >   where y1 = x1
+-- >         yi = f y(i-1) xi
+--
+scanl1 :: Prim a => (a -> a -> a) -> Vector a -> Vector a
+{-# INLINE scanl1 #-}
+scanl1 = G.scanl1
+
+-- | /O(n)/ Scan over a non-empty vector with a strict accumulator
+scanl1' :: Prim a => (a -> a -> a) -> Vector a -> Vector a
+{-# INLINE scanl1' #-}
+scanl1' = G.scanl1'
+
+-- | /O(n)/ Right-to-left prescan
+--
+-- @
+-- prescanr f z = 'reverse' . 'prescanl' (flip f) z . 'reverse'
+-- @
+--
+prescanr :: (Prim a, Prim b) => (a -> b -> b) -> b -> Vector a -> Vector b
+{-# INLINE prescanr #-}
+prescanr = G.prescanr
+
+-- | /O(n)/ Right-to-left prescan with strict accumulator
+prescanr' :: (Prim a, Prim b) => (a -> b -> b) -> b -> Vector a -> Vector b
+{-# INLINE prescanr' #-}
+prescanr' = G.prescanr'
+
+-- | /O(n)/ Right-to-left scan
+postscanr :: (Prim a, Prim b) => (a -> b -> b) -> b -> Vector a -> Vector b
+{-# INLINE postscanr #-}
+postscanr = G.postscanr
+
+-- | /O(n)/ Right-to-left scan with strict accumulator
+postscanr' :: (Prim a, Prim b) => (a -> b -> b) -> b -> Vector a -> Vector b
+{-# INLINE postscanr' #-}
+postscanr' = G.postscanr'
+
+-- | /O(n)/ Right-to-left Haskell-style scan
+scanr :: (Prim a, Prim b) => (a -> b -> b) -> b -> Vector a -> Vector b
+{-# INLINE scanr #-}
+scanr = G.scanr
+
+-- | /O(n)/ Right-to-left Haskell-style scan with strict accumulator
+scanr' :: (Prim a, Prim b) => (a -> b -> b) -> b -> Vector a -> Vector b
+{-# INLINE scanr' #-}
+scanr' = G.scanr'
+
+-- | /O(n)/ Right-to-left scan over a non-empty vector
+scanr1 :: Prim a => (a -> a -> a) -> Vector a -> Vector a
+{-# INLINE scanr1 #-}
+scanr1 = G.scanr1
+
+-- | /O(n)/ Right-to-left scan over a non-empty vector with a strict
+-- accumulator
+scanr1' :: Prim a => (a -> a -> a) -> Vector a -> Vector a
+{-# INLINE scanr1' #-}
+scanr1' = G.scanr1'
+
+-- Conversions - Lists
+-- ------------------------
+
+-- | /O(n)/ Convert a vector to a list
+toList :: Prim a => Vector a -> [a]
+{-# INLINE toList #-}
+toList = G.toList
+
+-- | /O(n)/ Convert a list to a vector
+fromList :: Prim a => [a] -> Vector a
+{-# INLINE fromList #-}
+fromList = G.fromList
+
+-- | /O(n)/ Convert the first @n@ elements of a list to a vector
+--
+-- @
+-- fromListN n xs = 'fromList' ('take' n xs)
+-- @
+fromListN :: Prim a => Int -> [a] -> Vector a
+{-# INLINE fromListN #-}
+fromListN = G.fromListN
+
+-- Conversions - Mutable vectors
+-- -----------------------------
+
+-- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
+-- have the same length.
 unsafeCopy
   :: (Prim a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE unsafeCopy #-}
 unsafeCopy = G.unsafeCopy
            
--- | Copy an immutable vector into a mutable one. The two vectors must have the
--- same length.
+-- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
+-- have the same length. This is not checked.
 copy :: (Prim a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE copy #-}
 copy = G.copy
+
 
