@@ -1,3 +1,7 @@
+Changes 0.6 - 0.6.0.1
+
+  * Improved documentation
+
 Changes 0.5 - 0.6
 
   * More efficient representation of Storable vectors
