@@ -91,17 +91,20 @@ instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
         . G.elemseq (undefined :: Vector b) b
 #endif
 #ifdef DEFINE_MUTABLE
+-- | /O(1)/ Zip 2 vectors
 zip :: (Unbox a, Unbox b) => MVector s a ->
                              MVector s b -> MVector s (a, b)
 {-# INLINE_STREAM zip #-}
 zip as bs = MV_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
   where len = length as `min` length bs
+-- | /O(1)/ Unzip 2 vectors
 unzip :: (Unbox a, Unbox b) => MVector s (a, b) -> (MVector s a,
                                                     MVector s b)
 {-# INLINE unzip #-}
 unzip (MV_2 n_ as bs) = (as, bs)
 #endif
 #ifdef DEFINE_IMMUTABLE
+-- | /O(1)/ Zip 2 vectors
 zip :: (Unbox a, Unbox b) => Vector a -> Vector b -> Vector (a, b)
 {-# INLINE_STREAM zip #-}
 zip as bs = V_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
@@ -110,6 +113,7 @@ zip as bs = V_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
   G.stream (zip as bs) = Stream.zipWith (,) (G.stream as)
                                             (G.stream bs)
   #-}
+-- | /O(1)/ Unzip 2 vectors
 unzip :: (Unbox a, Unbox b) => Vector (a, b) -> (Vector a,
                                                  Vector b)
 {-# INLINE unzip #-}
@@ -229,6 +233,7 @@ instance (Unbox a,
         . G.elemseq (undefined :: Vector c) c
 #endif
 #ifdef DEFINE_MUTABLE
+-- | /O(1)/ Zip 3 vectors
 zip3 :: (Unbox a, Unbox b, Unbox c) => MVector s a ->
                                        MVector s b ->
                                        MVector s c -> MVector s (a, b, c)
@@ -237,6 +242,7 @@ zip3 as bs cs = MV_3 len (unsafeSlice 0 len as)
                          (unsafeSlice 0 len bs)
                          (unsafeSlice 0 len cs)
   where len = length as `min` length bs `min` length cs
+-- | /O(1)/ Unzip 3 vectors
 unzip3 :: (Unbox a,
            Unbox b,
            Unbox c) => MVector s (a, b, c) -> (MVector s a,
@@ -246,6 +252,7 @@ unzip3 :: (Unbox a,
 unzip3 (MV_3 n_ as bs cs) = (as, bs, cs)
 #endif
 #ifdef DEFINE_IMMUTABLE
+-- | /O(1)/ Zip 3 vectors
 zip3 :: (Unbox a, Unbox b, Unbox c) => Vector a ->
                                        Vector b ->
                                        Vector c -> Vector (a, b, c)
@@ -259,6 +266,7 @@ zip3 as bs cs = V_3 len (unsafeSlice 0 len as)
                                                    (G.stream bs)
                                                    (G.stream cs)
   #-}
+-- | /O(1)/ Unzip 3 vectors
 unzip3 :: (Unbox a,
            Unbox b,
            Unbox c) => Vector (a, b, c) -> (Vector a, Vector b, Vector c)
@@ -404,6 +412,7 @@ instance (Unbox a,
         . G.elemseq (undefined :: Vector d) d
 #endif
 #ifdef DEFINE_MUTABLE
+-- | /O(1)/ Zip 4 vectors
 zip4 :: (Unbox a, Unbox b, Unbox c, Unbox d) => MVector s a ->
                                                 MVector s b ->
                                                 MVector s c ->
@@ -415,6 +424,7 @@ zip4 as bs cs ds = MV_4 len (unsafeSlice 0 len as)
                             (unsafeSlice 0 len ds)
   where
     len = length as `min` length bs `min` length cs `min` length ds
+-- | /O(1)/ Unzip 4 vectors
 unzip4 :: (Unbox a,
            Unbox b,
            Unbox c,
@@ -426,6 +436,7 @@ unzip4 :: (Unbox a,
 unzip4 (MV_4 n_ as bs cs ds) = (as, bs, cs, ds)
 #endif
 #ifdef DEFINE_IMMUTABLE
+-- | /O(1)/ Zip 4 vectors
 zip4 :: (Unbox a, Unbox b, Unbox c, Unbox d) => Vector a ->
                                                 Vector b ->
                                                 Vector c ->
@@ -443,6 +454,7 @@ zip4 as bs cs ds = V_4 len (unsafeSlice 0 len as)
                                                         (G.stream cs)
                                                         (G.stream ds)
   #-}
+-- | /O(1)/ Unzip 4 vectors
 unzip4 :: (Unbox a,
            Unbox b,
            Unbox c,
@@ -621,6 +633,7 @@ instance (Unbox a,
         . G.elemseq (undefined :: Vector e) e
 #endif
 #ifdef DEFINE_MUTABLE
+-- | /O(1)/ Zip 5 vectors
 zip5 :: (Unbox a,
          Unbox b,
          Unbox c,
@@ -642,6 +655,7 @@ zip5 as bs cs ds es = MV_5 len (unsafeSlice 0 len as)
           length cs `min`
           length ds `min`
           length es
+-- | /O(1)/ Unzip 5 vectors
 unzip5 :: (Unbox a,
            Unbox b,
            Unbox c,
@@ -655,6 +669,7 @@ unzip5 :: (Unbox a,
 unzip5 (MV_5 n_ as bs cs ds es) = (as, bs, cs, ds, es)
 #endif
 #ifdef DEFINE_IMMUTABLE
+-- | /O(1)/ Zip 5 vectors
 zip5 :: (Unbox a,
          Unbox b,
          Unbox c,
@@ -687,6 +702,7 @@ zip5 as bs cs ds es = V_5 len (unsafeSlice 0 len as)
                                                  (G.stream ds)
                                                  (G.stream es)
   #-}
+-- | /O(1)/ Unzip 5 vectors
 unzip5 :: (Unbox a,
            Unbox b,
            Unbox c,
@@ -890,6 +906,7 @@ instance (Unbox a,
         . G.elemseq (undefined :: Vector f) f
 #endif
 #ifdef DEFINE_MUTABLE
+-- | /O(1)/ Zip 6 vectors
 zip6 :: (Unbox a,
          Unbox b,
          Unbox c,
@@ -915,6 +932,7 @@ zip6 as bs cs ds es fs = MV_6 len (unsafeSlice 0 len as)
           length ds `min`
           length es `min`
           length fs
+-- | /O(1)/ Unzip 6 vectors
 unzip6 :: (Unbox a,
            Unbox b,
            Unbox c,
@@ -930,6 +948,7 @@ unzip6 :: (Unbox a,
 unzip6 (MV_6 n_ as bs cs ds es fs) = (as, bs, cs, ds, es, fs)
 #endif
 #ifdef DEFINE_IMMUTABLE
+-- | /O(1)/ Zip 6 vectors
 zip6 :: (Unbox a,
          Unbox b,
          Unbox c,
@@ -968,6 +987,7 @@ zip6 as bs cs ds es fs = V_6 len (unsafeSlice 0 len as)
                                                    (G.stream es)
                                                    (G.stream fs)
   #-}
+-- | /O(1)/ Unzip 6 vectors
 unzip6 :: (Unbox a,
            Unbox b,
            Unbox c,

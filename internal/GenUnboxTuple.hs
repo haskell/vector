@@ -52,7 +52,8 @@ generate n =
 
 
     define_zip ty c
-      = sep [name <+> text "::"
+      = sep [text "-- | /O(1)/ Zip" <+> int n <+> text "vectors"
+            ,name <+> text "::"
                   <+> vtuple [text "Unbox" <+> v | v <- vars]
                   <+> text "=>"
                   <+> sep (punctuate (text " ->") [text ty <+> v | v <- vars])
@@ -92,7 +93,8 @@ generate n =
        
 
     define_unzip ty c
-      = sep [name <+> text "::"
+      = sep [text "-- | /O(1)/ Unzip" <+> int n <+> text "vectors"
+            ,name <+> text "::"
                   <+> vtuple [text "Unbox" <+> v | v <- vars]
                   <+> text "=>"
                   <+> text ty <+> tuple vars
