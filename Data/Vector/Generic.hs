@@ -343,8 +343,8 @@ unsafeLastM v = unsafeIndexM v (length v - 1)
 
 -- | /O(1)/ Yield a slice of the vector without copying it. The vector must
 -- contain at least @i+n@ elements.
-slice :: Vector v a => Int   -- ^ @i@, starting index
-                    -> Int   -- ^ @n@, length
+slice :: Vector v a => Int   -- ^ @i@ starting index
+                    -> Int   -- ^ @n@ length
                     -> v a
                     -> v a
 {-# INLINE_STREAM slice #-}
@@ -555,7 +555,7 @@ v ++ w = unstream (stream v Stream.++ stream w)
 -- Monadic initialisation
 -- ----------------------
 
--- | /O(n)/ Perform the monadic action the given number of times and store the
+-- | /O(n)/ Execute the monadic action the given number of times and store the
 -- results in a vector.
 replicateM :: (Monad m, Vector v a) => Int -> m a -> m (v a)
 -- FIXME: specialise for ST and IO?
@@ -668,7 +668,7 @@ unsafeUpdate_stream = modifyWithStream M.unsafeUpdate
 --
 -- > accum (+) <5,9,2> [(2,4),(1,6),(0,3),(1,7)] = <5+3, 9+6+7, 2+4>
 accum :: Vector v a
-      => (a -> b -> a) -- ^ @f@ accumulating function
+      => (a -> b -> a) -- ^ accumulating function @f@
       -> v a           -- ^ initial vector (of length @m@)
       -> [(Int,b)]     -- ^ list of index/value pairs (of length @n@)
       -> v a
@@ -680,7 +680,7 @@ accum f v us = accum_stream f v (Stream.fromList us)
 --
 -- > accumulate (+) <5,9,2> <(2,4),(1,6),(0,3),(1,7)> = <5+3, 9+6+7, 2+4>
 accumulate :: (Vector v a, Vector v (Int, b))
-           => (a -> b -> a) -- ^ @f@ accumulating function
+           => (a -> b -> a) -- ^ accumulating function @f@
            -> v a           -- ^ initial vector (of length @m@)
            -> v (Int,b)     -- ^ vector of index/value pairs (of length @n@)
            -> v a
@@ -701,7 +701,7 @@ accumulate f v us = accum_stream f v (stream us)
 -- accumulate_ f as is bs = 'accumulate' f as ('zip' is bs)
 -- @
 accumulate_ :: (Vector v a, Vector v Int, Vector v b)
-                => (a -> b -> a) -- ^ @f@ accumulating function
+                => (a -> b -> a) -- ^ accumulating function @f@
                 -> v a           -- ^ initial vector (of length @m@)
                 -> v Int         -- ^ index vector (of length @n1@)
                 -> v b           -- ^ value vector (of length @n2@)
@@ -833,13 +833,13 @@ mapM_ :: (Monad m, Vector v a) => (a -> m b) -> v a -> m ()
 mapM_ f = Stream.mapM_ f . stream
 
 -- | /O(n)/ Apply the monadic action to all elements of the vector, yielding a
--- vector of results. Equvalent to @flip mapM@.
+-- vector of results. Equvalent to @flip 'mapM'@.
 forM :: (Monad m, Vector v a, Vector v b) => v a -> (a -> m b) -> m (v b)
 {-# INLINE forM #-}
 forM as f = mapM f as
 
 -- | /O(n)/ Apply the monadic action to all elements of a vector and ignore the
--- results. Equivalent to @flip mapM_@.
+-- results. Equivalent to @flip 'mapM_'@.
 forM_ :: (Monad m, Vector v a) => v a -> (a -> m b) -> m ()
 {-# INLINE forM_ #-}
 forM_ as f = mapM_ f as
