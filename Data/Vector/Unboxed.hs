@@ -9,7 +9,10 @@
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- Adaptive unboxed vectors
+-- Adaptive unboxed vectors. The implementation is based on type families
+-- and picks an efficient, specialised representation for every element type.
+-- In particular, unboxed vectors of pairs are represented as pairs of unboxed
+-- vectors.
 --
 
 module Data.Vector.Unboxed (

@@ -9,7 +9,10 @@
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Unboxed vectors of primitive types.
+-- Unboxed vectors of primitive types. The use of this module is not
+-- recommended except in very special cases. Adaptive unboxed vectors defined
+-- in "Data.Vector.Unboxed" are significantly more flexible at no performance
+-- cost.
 --
 
 module Data.Vector.Primitive (
