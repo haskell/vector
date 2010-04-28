@@ -363,6 +363,124 @@ null :: MVector v a => v s a -> Bool
 null v = length v == 0
 
 
+-- Accessing individual elements
+-- -----------------------------
+
+-- | Yield the element at the given position.
+read :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
+{-# INLINE read #-}
+read v i = BOUNDS_CHECK(checkIndex) "read" i (length v)
+         $ unsafeRead v i
+
+-- | Replace the element at the given position.
+write :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m ()
+{-# INLINE write #-}
+write v i x = BOUNDS_CHECK(checkIndex) "write" i (length v)
+            $ unsafeWrite v i x
+
+-- | Swap the elements at the given positions.
+swap :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> Int -> m ()
+{-# INLINE swap #-}
+swap v i j = BOUNDS_CHECK(checkIndex) "swap" i (length v)
+           $ BOUNDS_CHECK(checkIndex) "swap" j (length v)
+           $ unsafeSwap v i j
+
+-- | Replace the element at the give position and return the old element.
+exchange :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m a
+{-# INLINE exchange #-}
+exchange v i x = BOUNDS_CHECK(checkIndex) "exchange" i (length v)
+               $ unsafeExchange v i x
+
+-- | Yield the element at the given position. No bounds checks are performed.
+unsafeRead :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
+{-# INLINE unsafeRead #-}
+unsafeRead v i = UNSAFE_CHECK(checkIndex) "unsafeRead" i (length v)
+               $ basicUnsafeRead v i
+
+-- | Replace the element at the given position. No bounds checks are performed.
+unsafeWrite :: (PrimMonad m, MVector v a)
+                                => v (PrimState m) a -> Int -> a -> m ()
+{-# INLINE unsafeWrite #-}
+unsafeWrite v i x = UNSAFE_CHECK(checkIndex) "unsafeWrite" i (length v)
+                  $ basicUnsafeWrite v i x
+
+-- | Swap the elements at the given positions. No bounds checks are performed.
+unsafeSwap :: (PrimMonad m, MVector v a)
+                => v (PrimState m) a -> Int -> Int -> m ()
+{-# INLINE unsafeSwap #-}
+unsafeSwap v i j = UNSAFE_CHECK(checkIndex) "unsafeSwap" i (length v)
+                 $ UNSAFE_CHECK(checkIndex) "unsafeSwap" j (length v)
+                 $ do
+                     x <- unsafeRead v i
+                     y <- unsafeRead v j
+                     unsafeWrite v i y
+                     unsafeWrite v j x
+
+-- | Replace the element at the give position and return the old element. No
+-- bounds checks are performed.
+unsafeExchange :: (PrimMonad m, MVector v a)
+                                => v (PrimState m) a -> Int -> a -> m a
+{-# INLINE unsafeExchange #-}
+unsafeExchange v i x = UNSAFE_CHECK(checkIndex) "unsafeExchange" i (length v)
+                     $ do
+                         y <- unsafeRead v i
+                         unsafeWrite v i x
+                         return y
+
+-- Subvectors
+-- ----------
+
+-- | Yield a part of the mutable vector without copying it.
+slice :: MVector v a => Int -> Int -> v s a -> v s a
+{-# INLINE slice #-}
+slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
+            $ unsafeSlice i n v
+
+take :: MVector v a => Int -> v s a -> v s a
+{-# INLINE take #-}
+take n v = unsafeSlice 0 (min (max n 0) (length v)) v
+
+drop :: MVector v a => Int -> v s a -> v s a
+{-# INLINE drop #-}
+drop n v = unsafeSlice (min m n') (max 0 (m - n')) v
+  where
+    n' = max n 0
+    m  = length v
+
+init :: MVector v a => v s a -> v s a
+{-# INLINE init #-}
+init v = slice 0 (length v - 1) v
+
+tail :: MVector v a => v s a -> v s a
+{-# INLINE tail #-}
+tail v = slice 1 (length v - 1) v
+
+-- | Yield a part of the mutable vector without copying it. No bounds checks
+-- are performed.
+unsafeSlice :: MVector v a => Int  -- ^ starting index
+                           -> Int  -- ^ length of the slice
+                           -> v s a
+                           -> v s a
+{-# INLINE unsafeSlice #-}
+unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
+                  $ basicUnsafeSlice i n v
+
+unsafeInit :: MVector v a => v s a -> v s a
+{-# INLINE unsafeInit #-}
+unsafeInit v = unsafeSlice 0 (length v - 1) v
+
+unsafeTail :: MVector v a => v s a -> v s a
+{-# INLINE unsafeTail #-}
+unsafeTail v = unsafeSlice 1 (length v - 1) v
+
+unsafeTake :: MVector v a => Int -> v s a -> v s a
+{-# INLINE unsafeTake #-}
+unsafeTake n v = unsafeSlice 0 n v
+
+unsafeDrop :: MVector v a => Int -> v s a -> v s a
+{-# INLINE unsafeDrop #-}
+unsafeDrop n v = unsafeSlice n (length v - n) v
+
 -- Construction
 -- ------------
 
@@ -445,70 +563,6 @@ unsafeGrowFront v by = UNSAFE_CHECK(checkLength) "unsafeGrowFront" by
                          basicUnsafeCopy (basicUnsafeSlice by n v') v
                          return v'
 
--- Accessing individual elements
--- -----------------------------
-
--- | Yield the element at the given position.
-read :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
-{-# INLINE read #-}
-read v i = BOUNDS_CHECK(checkIndex) "read" i (length v)
-         $ unsafeRead v i
-
--- | Replace the element at the given position.
-write :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m ()
-{-# INLINE write #-}
-write v i x = BOUNDS_CHECK(checkIndex) "write" i (length v)
-            $ unsafeWrite v i x
-
--- | Swap the elements at the given positions.
-swap :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> Int -> m ()
-{-# INLINE swap #-}
-swap v i j = BOUNDS_CHECK(checkIndex) "swap" i (length v)
-           $ BOUNDS_CHECK(checkIndex) "swap" j (length v)
-           $ unsafeSwap v i j
-
--- | Replace the element at the give position and return the old element.
-exchange :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m a
-{-# INLINE exchange #-}
-exchange v i x = BOUNDS_CHECK(checkIndex) "exchange" i (length v)
-               $ unsafeExchange v i x
-
--- | Yield the element at the given position. No bounds checks are performed.
-unsafeRead :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
-{-# INLINE unsafeRead #-}
-unsafeRead v i = UNSAFE_CHECK(checkIndex) "unsafeRead" i (length v)
-               $ basicUnsafeRead v i
-
--- | Replace the element at the given position. No bounds checks are performed.
-unsafeWrite :: (PrimMonad m, MVector v a)
-                                => v (PrimState m) a -> Int -> a -> m ()
-{-# INLINE unsafeWrite #-}
-unsafeWrite v i x = UNSAFE_CHECK(checkIndex) "unsafeWrite" i (length v)
-                  $ basicUnsafeWrite v i x
-
--- | Swap the elements at the given positions. No bounds checks are performed.
-unsafeSwap :: (PrimMonad m, MVector v a)
-                => v (PrimState m) a -> Int -> Int -> m ()
-{-# INLINE unsafeSwap #-}
-unsafeSwap v i j = UNSAFE_CHECK(checkIndex) "unsafeSwap" i (length v)
-                 $ UNSAFE_CHECK(checkIndex) "unsafeSwap" j (length v)
-                 $ do
-                     x <- unsafeRead v i
-                     y <- unsafeRead v j
-                     unsafeWrite v i y
-                     unsafeWrite v j x
-
--- | Replace the element at the give position and return the old element. No
--- bounds checks are performed.
-unsafeExchange :: (PrimMonad m, MVector v a)
-                                => v (PrimState m) a -> Int -> a -> m a
-{-# INLINE unsafeExchange #-}
-unsafeExchange v i x = UNSAFE_CHECK(checkIndex) "unsafeExchange" i (length v)
-                     $ do
-                         y <- unsafeRead v i
-                         unsafeWrite v i x
-                         return y
-
 -- Block operations
 -- ----------------
 
@@ -546,59 +600,6 @@ unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
                                          (not (dst `overlaps` src))
                    $ (dst `seq` src `seq` basicUnsafeCopy dst src)
 
--- Subvectors
--- ----------
-
--- | Yield a part of the mutable vector without copying it.
-slice :: MVector v a => Int -> Int -> v s a -> v s a
-{-# INLINE slice #-}
-slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
-            $ unsafeSlice i n v
-
-take :: MVector v a => Int -> v s a -> v s a
-{-# INLINE take #-}
-take n v = unsafeSlice 0 (min (max n 0) (length v)) v
-
-drop :: MVector v a => Int -> v s a -> v s a
-{-# INLINE drop #-}
-drop n v = unsafeSlice (min m n') (max 0 (m - n')) v
-  where
-    n' = max n 0
-    m  = length v
-
-init :: MVector v a => v s a -> v s a
-{-# INLINE init #-}
-init v = slice 0 (length v - 1) v
-
-tail :: MVector v a => v s a -> v s a
-{-# INLINE tail #-}
-tail v = slice 1 (length v - 1) v
-
--- | Yield a part of the mutable vector without copying it. No bounds checks
--- are performed.
-unsafeSlice :: MVector v a => Int  -- ^ starting index
-                           -> Int  -- ^ length of the slice
-                           -> v s a
-                           -> v s a
-{-# INLINE unsafeSlice #-}
-unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
-                  $ basicUnsafeSlice i n v
-
-unsafeInit :: MVector v a => v s a -> v s a
-{-# INLINE unsafeInit #-}
-unsafeInit v = unsafeSlice 0 (length v - 1) v
-
-unsafeTail :: MVector v a => v s a -> v s a
-{-# INLINE unsafeTail #-}
-unsafeTail v = unsafeSlice 1 (length v - 1) v
-
-unsafeTake :: MVector v a => Int -> v s a -> v s a
-{-# INLINE unsafeTake #-}
-unsafeTake n v = unsafeSlice 0 n v
-
-unsafeDrop :: MVector v a => Int -> v s a -> v s a
-{-# INLINE unsafeDrop #-}
-unsafeDrop n v = unsafeSlice n (length v - n) v
 
 -- Permutations
 -- ------------
