@@ -155,7 +155,7 @@ import qualified Data.Vector.Generic.New as New
 import           Data.Vector.Generic.New ( New )
 
 import qualified Data.Vector.Fusion.Stream as Stream
-import           Data.Vector.Fusion.Stream ( Stream, MStream, inplace )
+import           Data.Vector.Fusion.Stream ( Stream, MStream, inplace, liftStream )
 import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
 import           Data.Vector.Fusion.Util
@@ -324,19 +324,27 @@ unsafeLastM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_STREAM unsafeLastM #-}
 unsafeLastM v = unsafeIndexM v (length v - 1)
 
--- FIXME: the rhs of these rules are lazy in the stream which is WRONG
-{- RULES
+{-# RULES
 
-"indexM/unstream [Vector]" forall v i s.
-  indexM (new' v (New.unstream s)) i = return (s Stream.!! i)
+"indexM/unstream [Vector]" forall s i.
+  indexM (new (New.unstream s)) i = liftStream s MStream.!! i
 
-"headM/unstream [Vector]" forall v s.
-  headM (new' v (New.unstream s)) = return (Stream.head s)
+"headM/unstream [Vector]" forall s.
+  headM (new (New.unstream s)) = MStream.head (liftStream s)
 
-"lastM/unstream [Vector]" forall v s.
-  lastM (new' v (New.unstream s)) = return (Stream.last s)
+"lastM/unstream [Vector]" forall s.
+  lastM (new (New.unstream s)) = MStream.last (liftStream s)
 
- -}
+"unsafeIndexM/unstream [Vector]" forall s i.
+  unsafeIndexM (new (New.unstream s)) i = liftStream s MStream.!! i
+
+"unsafeHeadM/unstream [Vector]" forall s.
+  unsafeHeadM (new (New.unstream s)) = MStream.head (liftStream s)
+
+"unsafeLastM/unstream [Vector]" forall s.
+  unsafeLastM (new (New.unstream s)) = MStream.last (liftStream s)
+
+  #-}
 
 -- Extracting subvectors (slicing)
 -- -------------------------------
