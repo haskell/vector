@@ -161,6 +161,8 @@ import qualified Prelude
 import Data.Typeable ( Typeable )
 import Data.Data     ( Data(..) )
 
+import Data.Monoid   ( Monoid(..) )
+
 -- | Unboxed vectors of primitive types
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
@@ -227,6 +229,16 @@ instance (Prim a, Ord a) => Ord (Vector a) where
 
   {-# INLINE (>=) #-}
   xs >= ys = Stream.cmp (G.stream xs) (G.stream ys) /= LT
+
+instance Prim a => Monoid (Vector a) where
+  {-# INLINE mempty #-}
+  mempty = empty
+
+  {-# INLINE mappend #-}
+  mappend = (++)
+
+  {-# INLINE mconcat #-}
+  mconcat = concat
 
 -- Length
 -- ------

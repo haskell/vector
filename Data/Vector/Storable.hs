@@ -164,6 +164,8 @@ import qualified Prelude
 import Data.Typeable ( Typeable )
 import Data.Data     ( Data(..) )
 
+import Data.Monoid   ( Monoid(..) )
+
 #include "vector.h"
 
 -- | 'Storable'-based vectors
@@ -259,6 +261,15 @@ foreign import ccall unsafe "string.h memcmp" memcmp
  #-}
 -}
 
+instance Storable a => Monoid (Vector a) where
+  {-# INLINE mempty #-}
+  mempty = empty
+
+  {-# INLINE mappend #-}
+  mappend = (++)
+
+  {-# INLINE mconcat #-}
+  mconcat = concat
 
 -- Length
 -- ------

@@ -171,6 +171,8 @@ import qualified Prelude
 import Data.Typeable ( Typeable )
 import Data.Data     ( Data(..) )
 
+import Data.Monoid   ( Monoid(..) )
+
 -- | Boxed vectors, supporting efficient slicing.
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
@@ -227,6 +229,16 @@ instance Ord a => Ord (Vector a) where
 
   {-# INLINE (>=) #-}
   xs >= ys = Stream.cmp (G.stream xs) (G.stream ys) /= LT
+
+instance Monoid (Vector a) where
+  {-# INLINE mempty #-}
+  mempty = empty
+
+  {-# INLINE mappend #-}
+  mappend = (++)
+
+  {-# INLINE mconcat #-}
+  mconcat = concat
 
 -- Length information
 -- ------------------

@@ -178,6 +178,8 @@ import Prelude hiding ( length, null,
                         mapM, mapM_ )
 import qualified Prelude
 
+import Data.Monoid   ( Monoid(..) )
+
 #include "vector.h"
 
 -- See http://trac.haskell.org/vector/ticket/12
@@ -204,6 +206,16 @@ instance (Unbox a, Ord a) => Ord (Vector a) where
 
   {-# INLINE (>=) #-}
   xs >= ys = Stream.cmp (G.stream xs) (G.stream ys) /= LT
+
+instance Unbox a => Monoid (Vector a) where
+  {-# INLINE mempty #-}
+  mempty = empty
+
+  {-# INLINE mappend #-}
+  mappend = (++)
+
+  {-# INLINE mconcat #-}
+  mconcat = concat
 
 instance (Show a, Unbox a) => Show (Vector a) where
     show = (Prelude.++ " :: Data.Vector.Unboxed.Vector") . ("fromList " Prelude.++) . show . toList
