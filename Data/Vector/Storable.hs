@@ -240,27 +240,6 @@ instance (Storable a, Ord a) => Ord (Vector a) where
   {-# INLINE (>=) #-}
   xs >= ys = Stream.cmp (G.stream xs) (G.stream ys) /= LT
 
-{-
-eq_memcmp :: forall a. Storable a => Vector a -> Vector a -> Bool
-{-# INLINE_STREAM eq_memcmp #-}
-eq_memcmp (Vector i m p) (Vector j n q)
-  = m == n && inlinePerformIO
-              (withForeignPtr p $ \p' ->
-               withForeignPtr q $ \q' ->
-               return $
-               memcmp (p' `plusPtr` i) (q' `plusPtr` j)
-                      (fromIntegral $ sizeOf (undefined :: a) * m) == 0)
-
-foreign import ccall unsafe "string.h memcmp" memcmp
-        :: Ptr a -> Ptr a -> CSize -> CInt
-
-{-# RULES
-
-"(==) [Vector.Storable Int]"
-  G.eq = eq_memcmp :: Vector Int -> Vector Int -> Bool
- #-}
--}
-
 instance Storable a => Monoid (Vector a) where
   {-# INLINE mempty #-}
   mempty = empty
