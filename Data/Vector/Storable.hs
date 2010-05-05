@@ -48,7 +48,7 @@ module Data.Vector.Storable (
   enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- ** Concatenation
-  cons, snoc, (++),
+  cons, snoc, (++), concat,
 
   -- ** Restricting memory usage
   force,
@@ -143,7 +143,7 @@ import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
 
 import Prelude hiding ( length, null,
-                        replicate, (++),
+                        replicate, (++), concat,
                         head, last,
                         init, tail, take, drop, reverse,
                         map, concatMap,
@@ -528,6 +528,11 @@ infixr 5 ++
 (++) :: Storable a => Vector a -> Vector a -> Vector a
 {-# INLINE (++) #-}
 (++) = (G.++)
+
+-- | /O(n)/ Concatenate all vectors in the list
+concat :: Storable a => [Vector a] -> Vector a
+{-# INLINE concat #-}
+concat = G.concat
 
 -- Monadic initialisation
 -- ----------------------

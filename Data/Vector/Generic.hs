@@ -48,7 +48,7 @@ module Data.Vector.Generic (
   enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- ** Concatenation
-  cons, snoc, (++),
+  cons, snoc, (++), concat,
 
   -- ** Restricting memory usage
   force,
@@ -165,10 +165,10 @@ import Control.Monad.Primitive
 import qualified Control.Monad as Monad
 import qualified Data.List as List
 import Prelude hiding ( length, null,
-                        replicate, (++),
+                        replicate, (++), concat,
                         head, last,
                         init, tail, take, drop, reverse,
-                        map, concatMap,
+                        map, concat, concatMap,
                         zipWith, zipWith3, zip, zip3, unzip, unzip3,
                         filter, takeWhile, dropWhile, span, break,
                         elem, notElem,
@@ -561,6 +561,11 @@ infixr 5 ++
 {-# INLINE (++) #-}
 v ++ w = unstream (stream v Stream.++ stream w)
 
+-- | /O(n)/ Concatenate all vectors in the list
+concat :: Vector v a => [v a] -> v a
+{-# INLINE concat #-}
+concat vs = create (thawMany vs)
+
 -- Monadic initialisation
 -- ----------------------
 
@@ -823,7 +828,9 @@ imap f = unstream . inplace (MStream.map (uncurry f) . MStream.indexed)
 -- | Map a function over a vector and concatenate the results.
 concatMap :: (Vector v a, Vector v b) => (a -> v b) -> v a -> v b
 {-# INLINE concatMap #-}
-concatMap f = unstream . Stream.concatMap (stream . f) . stream
+-- NOTE: We can't fuse concatMap anyway so don't pretend we do.
+-- concatMap f = unstream . Stream.concatMap (stream . f) . stream
+concatMap f = concat . Stream.toList . Stream.map f . stream
 
 -- Monadic mapping
 -- ---------------
