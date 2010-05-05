@@ -126,6 +126,9 @@ module Data.Vector.Generic (
   -- ** Lists
   toList, fromList, fromListN,
 
+  -- ** Different vector types
+  convert,
+
   -- ** Mutable vectors
   thaw, thawMany, copy, unsafeCopy,
 
@@ -1537,6 +1540,14 @@ fromList = unstream . Stream.fromList
 fromListN :: Vector v a => Int -> [a] -> v a
 {-# INLINE fromListN #-}
 fromListN n = unstream . Stream.fromListN n
+
+-- Conversions - Immutable vectors
+-- -------------------------------
+
+-- | /O(n)/ Convert different vector types
+convert :: (Vector v a, Vector w a) => v a -> w a
+{-# INLINE convert #-}
+convert = unstream . stream
 
 -- Conversions - Mutable vectors
 -- -----------------------------

@@ -125,6 +125,9 @@ module Data.Vector.Primitive (
   -- ** Lists
   toList, fromList, fromListN,
 
+  -- ** Other vector types
+  G.convert,
+
   -- ** Mutable vectors
   thaw, thawMany, copy, unsafeCopy
 ) where
