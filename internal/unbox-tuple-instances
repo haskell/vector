@@ -23,11 +23,11 @@ instance (Unbox a, Unbox b) => M.MVector MVector (a, b) where
           as <- M.basicUnsafeNew n_
           bs <- M.basicUnsafeNew n_
           return $ MV_2 n_ as bs
-  {-# INLINE basicUnsafeNewWith  #-}
-  basicUnsafeNewWith n_ (a, b)
+  {-# INLINE basicUnsafeReplicate  #-}
+  basicUnsafeReplicate n_ (a, b)
       = do
-          as <- M.basicUnsafeNewWith n_ a
-          bs <- M.basicUnsafeNewWith n_ b
+          as <- M.basicUnsafeReplicate n_ a
+          bs <- M.basicUnsafeReplicate n_ b
           return $ MV_2 n_ as bs
   {-# INLINE basicUnsafeRead  #-}
   basicUnsafeRead (MV_2 n_ as bs) i_
@@ -151,12 +151,12 @@ instance (Unbox a,
           bs <- M.basicUnsafeNew n_
           cs <- M.basicUnsafeNew n_
           return $ MV_3 n_ as bs cs
-  {-# INLINE basicUnsafeNewWith  #-}
-  basicUnsafeNewWith n_ (a, b, c)
+  {-# INLINE basicUnsafeReplicate  #-}
+  basicUnsafeReplicate n_ (a, b, c)
       = do
-          as <- M.basicUnsafeNewWith n_ a
-          bs <- M.basicUnsafeNewWith n_ b
-          cs <- M.basicUnsafeNewWith n_ c
+          as <- M.basicUnsafeReplicate n_ a
+          bs <- M.basicUnsafeReplicate n_ b
+          cs <- M.basicUnsafeReplicate n_ c
           return $ MV_3 n_ as bs cs
   {-# INLINE basicUnsafeRead  #-}
   basicUnsafeRead (MV_3 n_ as bs cs) i_
@@ -311,13 +311,13 @@ instance (Unbox a,
           cs <- M.basicUnsafeNew n_
           ds <- M.basicUnsafeNew n_
           return $ MV_4 n_ as bs cs ds
-  {-# INLINE basicUnsafeNewWith  #-}
-  basicUnsafeNewWith n_ (a, b, c, d)
+  {-# INLINE basicUnsafeReplicate  #-}
+  basicUnsafeReplicate n_ (a, b, c, d)
       = do
-          as <- M.basicUnsafeNewWith n_ a
-          bs <- M.basicUnsafeNewWith n_ b
-          cs <- M.basicUnsafeNewWith n_ c
-          ds <- M.basicUnsafeNewWith n_ d
+          as <- M.basicUnsafeReplicate n_ a
+          bs <- M.basicUnsafeReplicate n_ b
+          cs <- M.basicUnsafeReplicate n_ c
+          ds <- M.basicUnsafeReplicate n_ d
           return $ MV_4 n_ as bs cs ds
   {-# INLINE basicUnsafeRead  #-}
   basicUnsafeRead (MV_4 n_ as bs cs ds) i_
@@ -517,14 +517,14 @@ instance (Unbox a,
           ds <- M.basicUnsafeNew n_
           es <- M.basicUnsafeNew n_
           return $ MV_5 n_ as bs cs ds es
-  {-# INLINE basicUnsafeNewWith  #-}
-  basicUnsafeNewWith n_ (a, b, c, d, e)
+  {-# INLINE basicUnsafeReplicate  #-}
+  basicUnsafeReplicate n_ (a, b, c, d, e)
       = do
-          as <- M.basicUnsafeNewWith n_ a
-          bs <- M.basicUnsafeNewWith n_ b
-          cs <- M.basicUnsafeNewWith n_ c
-          ds <- M.basicUnsafeNewWith n_ d
-          es <- M.basicUnsafeNewWith n_ e
+          as <- M.basicUnsafeReplicate n_ a
+          bs <- M.basicUnsafeReplicate n_ b
+          cs <- M.basicUnsafeReplicate n_ c
+          ds <- M.basicUnsafeReplicate n_ d
+          es <- M.basicUnsafeReplicate n_ e
           return $ MV_5 n_ as bs cs ds es
   {-# INLINE basicUnsafeRead  #-}
   basicUnsafeRead (MV_5 n_ as bs cs ds es) i_
@@ -775,15 +775,15 @@ instance (Unbox a,
           es <- M.basicUnsafeNew n_
           fs <- M.basicUnsafeNew n_
           return $ MV_6 n_ as bs cs ds es fs
-  {-# INLINE basicUnsafeNewWith  #-}
-  basicUnsafeNewWith n_ (a, b, c, d, e, f)
+  {-# INLINE basicUnsafeReplicate  #-}
+  basicUnsafeReplicate n_ (a, b, c, d, e, f)
       = do
-          as <- M.basicUnsafeNewWith n_ a
-          bs <- M.basicUnsafeNewWith n_ b
-          cs <- M.basicUnsafeNewWith n_ c
-          ds <- M.basicUnsafeNewWith n_ d
-          es <- M.basicUnsafeNewWith n_ e
-          fs <- M.basicUnsafeNewWith n_ f
+          as <- M.basicUnsafeReplicate n_ a
+          bs <- M.basicUnsafeReplicate n_ b
+          cs <- M.basicUnsafeReplicate n_ c
+          ds <- M.basicUnsafeReplicate n_ d
+          es <- M.basicUnsafeReplicate n_ e
+          fs <- M.basicUnsafeReplicate n_ f
           return $ MV_6 n_ as bs cs ds es fs
   {-# INLINE basicUnsafeRead  #-}
   basicUnsafeRead (MV_6 n_ as bs cs ds es fs) i_

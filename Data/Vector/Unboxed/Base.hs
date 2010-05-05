@@ -135,7 +135,7 @@ instance M.MVector MVector ty where {                                   \
 ; {-# INLINE basicUnsafeSlice #-}                                       \
 ; {-# INLINE basicOverlaps #-}                                          \
 ; {-# INLINE basicUnsafeNew #-}                                         \
-; {-# INLINE basicUnsafeNewWith #-}                                     \
+; {-# INLINE basicUnsafeReplicate #-}                                   \
 ; {-# INLINE basicUnsafeRead #-}                                        \
 ; {-# INLINE basicUnsafeWrite #-}                                       \
 ; {-# INLINE basicClear #-}                                             \
@@ -146,7 +146,7 @@ instance M.MVector MVector ty where {                                   \
 ; basicUnsafeSlice i n (con v) = con $ M.basicUnsafeSlice i n v         \
 ; basicOverlaps (con v1) (con v2) = M.basicOverlaps v1 v2               \
 ; basicUnsafeNew n = con `liftM` M.basicUnsafeNew n                     \
-; basicUnsafeNewWith n x = con `liftM` M.basicUnsafeNewWith n x         \
+; basicUnsafeReplicate n x = con `liftM` M.basicUnsafeReplicate n x     \
 ; basicUnsafeRead (con v) i = M.basicUnsafeRead v i                     \
 ; basicUnsafeWrite (con v) i x = M.basicUnsafeWrite v i x               \
 ; basicClear (con v) = M.basicClear v                                   \
@@ -273,7 +273,7 @@ instance M.MVector MVector Bool where
   {-# INLINE basicUnsafeSlice #-}
   {-# INLINE basicOverlaps #-}
   {-# INLINE basicUnsafeNew #-}
-  {-# INLINE basicUnsafeNewWith #-}
+  {-# INLINE basicUnsafeReplicate #-}
   {-# INLINE basicUnsafeRead #-}
   {-# INLINE basicUnsafeWrite #-}
   {-# INLINE basicClear #-}
@@ -284,7 +284,7 @@ instance M.MVector MVector Bool where
   basicUnsafeSlice i n (MV_Bool v) = MV_Bool $ M.basicUnsafeSlice i n v
   basicOverlaps (MV_Bool v1) (MV_Bool v2) = M.basicOverlaps v1 v2
   basicUnsafeNew n = MV_Bool `liftM` M.basicUnsafeNew n
-  basicUnsafeNewWith n x = MV_Bool `liftM` M.basicUnsafeNewWith n (fromBool x)
+  basicUnsafeReplicate n x = MV_Bool `liftM` M.basicUnsafeReplicate n (fromBool x)
   basicUnsafeRead (MV_Bool v) i = toBool `liftM` M.basicUnsafeRead v i
   basicUnsafeWrite (MV_Bool v) i x = M.basicUnsafeWrite v i (fromBool x)
   basicClear (MV_Bool v) = M.basicClear v
@@ -319,7 +319,7 @@ instance (RealFloat a, Unbox a) => M.MVector MVector (Complex a) where
   {-# INLINE basicUnsafeSlice #-}
   {-# INLINE basicOverlaps #-}
   {-# INLINE basicUnsafeNew #-}
-  {-# INLINE basicUnsafeNewWith #-}
+  {-# INLINE basicUnsafeReplicate #-}
   {-# INLINE basicUnsafeRead #-}
   {-# INLINE basicUnsafeWrite #-}
   {-# INLINE basicClear #-}
@@ -330,7 +330,7 @@ instance (RealFloat a, Unbox a) => M.MVector MVector (Complex a) where
   basicUnsafeSlice i n (MV_Complex v) = MV_Complex $ M.basicUnsafeSlice i n v
   basicOverlaps (MV_Complex v1) (MV_Complex v2) = M.basicOverlaps v1 v2
   basicUnsafeNew n = MV_Complex `liftM` M.basicUnsafeNew n
-  basicUnsafeNewWith n (x :+ y) = MV_Complex `liftM` M.basicUnsafeNewWith n (x,y)
+  basicUnsafeReplicate n (x :+ y) = MV_Complex `liftM` M.basicUnsafeReplicate n (x,y)
   basicUnsafeRead (MV_Complex v) i = uncurry (:+) `liftM` M.basicUnsafeRead v i
   basicUnsafeWrite (MV_Complex v) i (x :+ y) = M.basicUnsafeWrite v i (x,y)
   basicClear (MV_Complex v) = M.basicClear v

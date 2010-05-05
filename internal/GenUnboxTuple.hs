@@ -135,7 +135,7 @@ generate n =
          mk_do [v <+> text "<-" <+> qM rec <+> var 'n' | v <- varss]
                $ text "return $" <+> con "MV" <+> var 'n' <+> sep varss)
 
-    gen_unsafeNewWith rec
+    gen_unsafeReplicate rec
       = (var 'n' <+> tuple vars,
          mk_do [vs <+> text "<-" <+> qM rec <+> var 'n' <+> v
                         | v  <- vars | vs <- varss]
@@ -206,7 +206,7 @@ generate n =
                       ,("basicUnsafeSlice",       gen_unsafeSlice "M" "MV")
                       ,("basicOverlaps",          gen_overlaps)
                       ,("basicUnsafeNew",         gen_unsafeNew)
-                      ,("basicUnsafeNewWith",     gen_unsafeNewWith)
+                      ,("basicUnsafeReplicate",   gen_unsafeReplicate)
                       ,("basicUnsafeRead",        gen_unsafeRead)
                       ,("basicUnsafeWrite",       gen_unsafeWrite)
                       ,("basicClear",             gen_clear)
