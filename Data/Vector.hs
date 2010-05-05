@@ -137,7 +137,7 @@ module Data.Vector (
   toList, fromList, fromListN,
 
   -- ** Mutable vectors
-  copy, unsafeCopy
+  thaw, thawMany, copy, unsafeCopy
 ) where
 
 import qualified Data.Vector.Generic as G
@@ -1276,6 +1276,17 @@ fromListN = G.fromListN
 
 -- Conversions - Mutable vectors
 -- -----------------------------
+
+-- | /O(n)/ Yield a mutable copy of the immutable vector.
+thaw :: PrimMonad m => Vector a -> m (MVector (PrimState m) a)
+{-# INLINE thaw #-}
+thaw = G.thaw
+
+-- | /O(n)/ Yield a mutable vector containing copies of each vector in the
+-- list.
+thawMany :: PrimMonad m => [Vector a] -> m (MVector (PrimState m) a)
+{-# INLINE thawMany #-}
+thawMany = G.thawMany
 
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length.

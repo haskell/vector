@@ -127,7 +127,7 @@ module Data.Vector.Generic (
   toList, fromList, fromListN,
 
   -- ** Mutable vectors
-  copy, unsafeCopy,
+  thaw, thawMany, copy, unsafeCopy,
 
   -- * Fusion support
 
@@ -163,6 +163,7 @@ import           Data.Vector.Fusion.Util
 import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
 import qualified Control.Monad as Monad
+import qualified Data.List as List
 import Prelude hiding ( length, null,
                         replicate, (++),
                         head, last,
@@ -1532,6 +1533,35 @@ fromListN n = unstream . Stream.fromListN n
 
 -- Conversions - Mutable vectors
 -- -----------------------------
+
+-- | /O(n)/ Yield a mutable copy of the immutable vector.
+thaw :: (PrimMonad m, Vector v a) => v a -> m (Mutable v (PrimState m) a)
+{-# INLINE_STREAM thaw #-}
+thaw v = do
+           mv <- M.unsafeNew (length v)
+           unsafeCopy mv v
+           return mv
+
+-- | /O(n)/ Yield a mutable vector containing copies of each vector in the
+-- list.
+thawMany :: (PrimMonad m, Vector v a) => [v a] -> m (Mutable v (PrimState m) a)
+{-# INLINE_STREAM thawMany #-}
+-- FIXME: add rule for (stream (new (New.create (thawMany vs))))
+-- NOTE: We don't try to consume the list lazily as this wouldn't significantly
+-- change the space requirements anyway.
+thawMany vs = do
+                mv <- M.new n
+                thaw_loop mv vs
+                return mv
+  where
+    n = List.foldl' (\k v -> k + length v) 0 vs
+
+    thaw_loop mv [] = mv `seq` return ()
+    thaw_loop mv (v:vs)
+      = do
+          let n = length v
+          unsafeCopy (M.unsafeTake n mv) v
+          thaw_loop (M.unsafeDrop n mv) vs
 
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length.
