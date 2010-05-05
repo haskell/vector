@@ -19,7 +19,7 @@ module Data.Vector.Generic.Mutable (
   length, overlaps, new, newWith, read, write, swap, clear, set, copy, grow,
 
   slice, take, drop, init, tail,
-  unsafeSlice, unsafeInit, unsafeTail,
+  unsafeSlice, unsafeTake, unsafeDrop, unsafeInit, unsafeTail,
 
   -- * Unsafe operations
   unsafeNew, unsafeNewWith, unsafeRead, unsafeWrite, unsafeSwap,
