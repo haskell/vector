@@ -16,13 +16,37 @@ module Data.Vector.Primitive.Mutable (
   -- * Mutable vectors of primitive types
   MVector(..), IOVector, STVector, Prim,
 
-  -- * Operations on mutable vectors
-  length, overlaps, slice, new, replicate, read, write, swap,
-  clear, set, copy, grow,
+  -- * Accessors
 
-  -- * Unsafe operations
-  unsafeSlice, unsafeNew, unsafeRead, unsafeWrite, unsafeSwap,
-  unsafeCopy, unsafeGrow,
+  -- ** Length information
+  length, null,
+
+  -- ** Extracting subvectors
+  slice, init, tail, take, drop,
+  unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
+
+  -- ** Overlapping
+  overlaps,
+
+  -- * Construction
+
+  -- ** Initialisation
+  new, unsafeNew, replicate,
+
+  -- ** Growing
+  grow, unsafeGrow,
+
+  -- ** Restricting memory usage
+  clear,
+
+  -- * Accessing individual elements
+  read, write, swap,
+  unsafeRead, unsafeWrite, unsafeSwap,
+
+  -- * Modifying vectors
+
+  -- ** Filling and copying
+  set, copy, unsafeCopy,
 
   -- * Deprecated operations
   newWith, unsafeNewWith
@@ -34,7 +58,8 @@ import           Data.Primitive ( Prim, sizeOf )
 import           Control.Monad.Primitive
 import           Control.Monad ( liftM )
 
-import Prelude hiding( length, replicate, read )
+import Prelude hiding ( length, null, replicate, reverse, map, read,
+                        take, drop, init, tail )
 
 import Data.Typeable ( Typeable )
 
@@ -77,45 +102,105 @@ instance Prim a => G.MVector MVector a where
     where
       sz = sizeOf (undefined :: a)
 
+-- Length information
+-- ------------------
+
+-- | Length of the mutable vector.
+length :: Prim a => MVector s a -> Int
+{-# INLINE length #-}
+length = G.length
+
+-- | Check whether the vector is empty
+null :: Prim a => MVector s a -> Bool
+{-# INLINE null #-}
+null = G.null
+
+-- Extracting subvectors
+-- ---------------------
+
+-- | Yield a part of the mutable vector without copying it.
+slice :: Prim a => Int -> Int -> MVector s a -> MVector s a
+{-# INLINE slice #-}
+slice = G.slice
+
+take :: Prim a => Int -> MVector s a -> MVector s a
+{-# INLINE take #-}
+take = G.take
+
+drop :: Prim a => Int -> MVector s a -> MVector s a
+{-# INLINE drop #-}
+drop = G.drop
+
+init :: Prim a => MVector s a -> MVector s a
+{-# INLINE init #-}
+init = G.init
+
+tail :: Prim a => MVector s a -> MVector s a
+{-# INLINE tail #-}
+tail = G.tail
+
 -- | Yield a part of the mutable vector without copying it. No bounds checks
 -- are performed.
-unsafeSlice :: Prim a => Int  -- ^ starting index
-                      -> Int  -- ^ length of the slice
-                      -> MVector s a   
-                      -> MVector s a
+unsafeSlice :: Prim a
+            => Int  -- ^ starting index
+            -> Int  -- ^ length of the slice
+            -> MVector s a
+            -> MVector s a
 {-# INLINE unsafeSlice #-}
 unsafeSlice = G.unsafeSlice
 
+unsafeTake :: Prim a => Int -> MVector s a -> MVector s a
+{-# INLINE unsafeTake #-}
+unsafeTake = G.unsafeTake
+
+unsafeDrop :: Prim a => Int -> MVector s a -> MVector s a
+{-# INLINE unsafeDrop #-}
+unsafeDrop = G.unsafeDrop
+
+unsafeInit :: Prim a => MVector s a -> MVector s a
+{-# INLINE unsafeInit #-}
+unsafeInit = G.unsafeInit
+
+unsafeTail :: Prim a => MVector s a -> MVector s a
+{-# INLINE unsafeTail #-}
+unsafeTail = G.unsafeTail
+
+-- Overlapping
+-- -----------
+
+-- Check whether two vectors overlap.
+overlaps :: Prim a => MVector s a -> MVector s a -> Bool
+{-# INLINE overlaps #-}
+overlaps = G.overlaps
+
+-- Initialisation
+-- --------------
+
+-- | Create a mutable vector of the given length.
+new :: (PrimMonad m, Prim a) => Int -> m (MVector (PrimState m) a)
+{-# INLINE new #-}
+new = G.new
 
 -- | Create a mutable vector of the given length. The length is not checked.
 unsafeNew :: (PrimMonad m, Prim a) => Int -> m (MVector (PrimState m) a)
 {-# INLINE unsafeNew #-}
 unsafeNew = G.unsafeNew
 
--- | Yield the element at the given position. No bounds checks are performed.
-unsafeRead :: (PrimMonad m, Prim a) => MVector (PrimState m) a -> Int -> m a
-{-# INLINE unsafeRead #-}
-unsafeRead = G.unsafeRead
+-- | Create a mutable vector of the given length (0 if the length is negative)
+-- and fill it with an initial value.
+replicate :: (PrimMonad m, Prim a) => Int -> a -> m (MVector (PrimState m) a)
+{-# INLINE replicate #-}
+replicate = G.replicate
 
--- | Replace the element at the given position. No bounds checks are performed.
-unsafeWrite :: (PrimMonad m, Prim a)
-                                => MVector (PrimState m) a -> Int -> a -> m ()
-{-# INLINE unsafeWrite #-}
-unsafeWrite = G.unsafeWrite
+-- Growing
+-- -------
 
--- | Swap the elements at the given positions. No bounds checks are performed.
-unsafeSwap :: (PrimMonad m, Prim a)
-                => MVector (PrimState m) a -> Int -> Int -> m ()
-{-# INLINE unsafeSwap #-}
-unsafeSwap = G.unsafeSwap
-
--- | Copy a vector. The two vectors must have the same length and may not
--- overlap. This is not checked.
-unsafeCopy :: (PrimMonad m, Prim a) => MVector (PrimState m) a   -- ^ target
-                                    -> MVector (PrimState m) a   -- ^ source
-                                    -> m ()
-{-# INLINE unsafeCopy #-}
-unsafeCopy = G.unsafeCopy
+-- | Grow a vector by the given number of elements. The number must be
+-- positive.
+grow :: (PrimMonad m, Prim a)  
+              => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
+{-# INLINE grow #-}
+grow = G.grow
 
 -- | Grow a vector by the given number of elements. The number must be
 -- positive but this is not checked.
@@ -124,31 +209,17 @@ unsafeGrow :: (PrimMonad m, Prim a)
 {-# INLINE unsafeGrow #-}
 unsafeGrow = G.unsafeGrow
 
--- | Length of the mutable vector.
-length :: Prim a => MVector s a -> Int
-{-# INLINE length #-}
-length = G.length
+-- Restricting memory usage
+-- ------------------------
 
--- Check whether two vectors overlap.
-overlaps :: Prim a => MVector s a -> MVector s a -> Bool
-{-# INLINE overlaps #-}
-overlaps = G.overlaps
+-- | Reset all elements of the vector to some undefined value, clearing all
+-- references to external objects. This is usually a noop for unboxed vectors. 
+clear :: (PrimMonad m, Prim a) => MVector (PrimState m) a -> m ()
+{-# INLINE clear #-}
+clear = G.clear
 
--- | Yield a part of the mutable vector without copying it.
-slice :: Prim a => Int -> Int -> MVector s a -> MVector s a
-{-# INLINE slice #-}
-slice = G.slice
-
--- | Create a mutable vector of the given length.
-new :: (PrimMonad m, Prim a) => Int -> m (MVector (PrimState m) a)
-{-# INLINE new #-}
-new = G.new
-
--- | Create a mutable vector of the given length (0 if the length is negative)
--- and fill it with an initial value.
-replicate :: (PrimMonad m, Prim a) => Int -> a -> m (MVector (PrimState m) a)
-{-# INLINE replicate #-}
-replicate = G.replicate
+-- Accessing individual elements
+-- -----------------------------
 
 -- | Yield the element at the given position.
 read :: (PrimMonad m, Prim a) => MVector (PrimState m) a -> Int -> m a
@@ -161,16 +232,30 @@ write :: (PrimMonad m, Prim a) => MVector (PrimState m) a -> Int -> a -> m ()
 write = G.write
 
 -- | Swap the elements at the given positions.
-swap :: (PrimMonad m, Prim a)
-                => MVector (PrimState m) a -> Int -> Int -> m ()
+swap :: (PrimMonad m, Prim a) => MVector (PrimState m) a -> Int -> Int -> m ()
 {-# INLINE swap #-}
 swap = G.swap
 
--- | Reset all elements of the vector to some undefined value, clearing all
--- references to external objects. This is usually a noop for unboxed vectors. 
-clear :: (PrimMonad m, Prim a) => MVector (PrimState m) a -> m ()
-{-# INLINE clear #-}
-clear = G.clear
+
+-- | Yield the element at the given position. No bounds checks are performed.
+unsafeRead :: (PrimMonad m, Prim a) => MVector (PrimState m) a -> Int -> m a
+{-# INLINE unsafeRead #-}
+unsafeRead = G.unsafeRead
+
+-- | Replace the element at the given position. No bounds checks are performed.
+unsafeWrite
+    :: (PrimMonad m, Prim a) =>  MVector (PrimState m) a -> Int -> a -> m ()
+{-# INLINE unsafeWrite #-}
+unsafeWrite = G.unsafeWrite
+
+-- | Swap the elements at the given positions. No bounds checks are performed.
+unsafeSwap
+    :: (PrimMonad m, Prim a) => MVector (PrimState m) a -> Int -> Int -> m ()
+{-# INLINE unsafeSwap #-}
+unsafeSwap = G.unsafeSwap
+
+-- Filling and copying
+-- -------------------
 
 -- | Set all elements of the vector to the given value.
 set :: (PrimMonad m, Prim a) => MVector (PrimState m) a -> a -> m ()
@@ -179,18 +264,22 @@ set = G.set
 
 -- | Copy a vector. The two vectors must have the same length and may not
 -- overlap.
-copy :: (PrimMonad m, Prim a)
-                => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
+copy :: (PrimMonad m, Prim a) 
+                 => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
 {-# INLINE copy #-}
 copy = G.copy
 
--- | Grow a vector by the given number of elements. The number must be
--- positive.
-grow :: (PrimMonad m, Prim a)
-              => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
-{-# INLINE grow #-}
-grow = G.grow
+-- | Copy a vector. The two vectors must have the same length and may not
+-- overlap. This is not checked.
+unsafeCopy :: (PrimMonad m, Prim a)
+           => MVector (PrimState m) a   -- ^ target
+           -> MVector (PrimState m) a   -- ^ source
+           -> m ()
+{-# INLINE unsafeCopy #-}
+unsafeCopy = G.unsafeCopy
 
+-- Deprecated functions
+-- --------------------
 
 -- | /DEPRECATED/ Use 'replicate' instead
 newWith :: (PrimMonad m, Prim a) => Int -> a -> m (MVector (PrimState m) a)
