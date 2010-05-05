@@ -16,13 +16,13 @@ module Data.Vector.Generic.Mutable (
   MVector(..),
 
   -- * Operations on mutable vectors
-  length, overlaps, new, newWith, read, write, swap, clear, set, copy, grow,
+  length, overlaps, new, replicate, read, write, swap, clear, set, copy, grow,
 
   slice, take, drop, init, tail,
   unsafeSlice, unsafeTake, unsafeDrop, unsafeInit, unsafeTail,
 
   -- * Unsafe operations
-  unsafeNew, unsafeNewWith, unsafeRead, unsafeWrite, unsafeSwap,
+  unsafeNew, unsafeRead, unsafeWrite, unsafeSwap,
   unsafeCopy, unsafeGrow,
 
   -- * Internal operations
@@ -31,17 +31,21 @@ module Data.Vector.Generic.Mutable (
   transform, transformR,
   fill, fillR,
   unsafeAccum, accum, unsafeUpdate, update, reverse,
-  unstablePartition, unstablePartitionStream, partitionStream
+  unstablePartition, unstablePartitionStream, partitionStream,
+
+  -- * Deprecated operations
+  newWith, unsafeNewWith
 ) where
 
 import qualified Data.Vector.Fusion.Stream      as Stream
 import           Data.Vector.Fusion.Stream      ( Stream, MStream )
 import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
+import           Data.Vector.Fusion.Util        ( delay_inline )
 
 import Control.Monad.Primitive ( PrimMonad, PrimState )
 
-import Prelude hiding ( length, reverse, map, read,
+import Prelude hiding ( length, replicate, reverse, map, read,
                         take, drop, init, tail )
 
 #include "vector.h"
@@ -70,8 +74,8 @@ class MVector v a where
 
   -- | Create a mutable vector of the given length and fill it with an
   -- initial value. This method should not be called directly, use
-  -- 'unsafeNewWith' instead.
-  basicUnsafeNewWith :: PrimMonad m => Int -> a -> m (v (PrimState m) a)
+  -- 'replicate' instead.
+  basicUnsafeReplicate :: PrimMonad m => Int -> a -> m (v (PrimState m) a)
 
   -- | Yield the element at the given position. This method should not be
   -- called directly, use 'unsafeRead' instead.
@@ -100,6 +104,12 @@ class MVector v a where
   -- called directly, use 'unsafeGrow' instead.
   basicUnsafeGrow  :: PrimMonad m => v (PrimState m) a -> Int
                                                        -> m (v (PrimState m) a)
+
+  -- | /DEPRECATED/ in favour of 'basicUnsafeReplicate'
+  basicUnsafeNewWith :: PrimMonad m => Int -> a -> m (v (PrimState m) a)
+
+  {-# INLINE basicUnsafeReplicate #-}
+  basicUnsafeReplicate = basicUnsafeNewWith
 
   {-# INLINE basicUnsafeNewWith #-}
   basicUnsafeNewWith n x
@@ -140,6 +150,8 @@ class MVector v a where
         return v'
     where
       n = basicLength v
+
+{-# DEPRECATED basicUnsafeNewWith "define and use basicUnsafeReplicate instead" #-}
 
 -- ------------------
 -- Internal functions
@@ -490,26 +502,29 @@ new :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
 new n = BOUNDS_CHECK(checkLength) "new" n
       $ unsafeNew n
 
--- | Create a mutable vector of the given length and fill it with an
--- initial value.
-newWith :: (PrimMonad m, MVector v a) => Int -> a -> m (v (PrimState m) a)
-{-# INLINE newWith #-}
-newWith n x = BOUNDS_CHECK(checkLength) "newWith" n
-            $ unsafeNewWith n x
-
 -- | Create a mutable vector of the given length. The length is not checked.
 unsafeNew :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
 {-# INLINE unsafeNew #-}
 unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n
             $ basicUnsafeNew n
 
--- | Create a mutable vector of the given length and fill it with an
--- initial value. The length is not checked.
+-- | Create a mutable vector of the given length (0 if the length is negative)
+-- and fill it with an initial value.
+replicate :: (PrimMonad m, MVector v a) => Int -> a -> m (v (PrimState m) a)
+{-# INLINE replicate #-}
+replicate n x = basicUnsafeReplicate (delay_inline max 0 n) x
+
+-- | /DEPRECATED/ Use 'replicate' instead
+newWith :: (PrimMonad m, MVector v a) => Int -> a -> m (v (PrimState m) a)
+{-# INLINE newWith #-}
+newWith = replicate
+
+-- | /DEPRECATED/ Use 'replicate' instead
 unsafeNewWith :: (PrimMonad m, MVector v a) => Int -> a -> m (v (PrimState m) a)
 {-# INLINE unsafeNewWith #-}
-unsafeNewWith n x = UNSAFE_CHECK(checkLength) "unsafeNewWith" n
-                  $ basicUnsafeNewWith n x
+unsafeNewWith = replicate
 
+{-# DEPRECATED newWith, unsafeNewWith "Use replicate instead" #-}
 
 -- Growing
 -- -------

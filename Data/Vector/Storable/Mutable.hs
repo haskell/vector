@@ -17,15 +17,18 @@ module Data.Vector.Storable.Mutable(
   MVector(..), IOVector, STVector, Storable,
 
   -- * Operations on mutable vectors
-  length, overlaps, slice, new, newWith, read, write, swap,
+  length, overlaps, slice, new, replicate, read, write, swap,
   clear, set, copy, grow,
 
   -- * Unsafe operations
-  unsafeSlice, unsafeNew, unsafeNewWith, unsafeRead, unsafeWrite, unsafeSwap,
+  unsafeSlice, unsafeNew, unsafeRead, unsafeWrite, unsafeSwap,
   unsafeCopy, unsafeGrow,
 
   -- * Accessing the underlying memory
-  unsafeFromForeignPtr, unsafeToForeignPtr, unsafeWith
+  unsafeFromForeignPtr, unsafeToForeignPtr, unsafeWith,
+
+  -- * Deprecated operations
+  newWith, unsafeNewWith
 ) where
 
 import qualified Data.Vector.Generic.Mutable as G
@@ -39,7 +42,7 @@ import Foreign.C.Types ( CInt )
 
 import Control.Monad.Primitive
 
-import Prelude hiding( length, read )
+import Prelude hiding( length, replicate, read )
 
 import Data.Typeable ( Typeable )
 
@@ -131,13 +134,6 @@ unsafeNew :: (PrimMonad m, Storable a) => Int -> m (MVector (PrimState m) a)
 {-# INLINE unsafeNew #-}
 unsafeNew = G.unsafeNew
 
--- | Create a mutable vector of the given length and fill it with an
--- initial value. The length is not checked.
-unsafeNewWith :: (PrimMonad m, Storable a)
-                                => Int -> a -> m (MVector (PrimState m) a)
-{-# INLINE unsafeNewWith #-}
-unsafeNewWith = G.unsafeNewWith
-
 -- | Yield the element at the given position. No bounds checks are performed.
 unsafeRead :: (PrimMonad m, Storable a)
                                 => MVector (PrimState m) a -> Int -> m a
@@ -192,11 +188,11 @@ new :: (PrimMonad m, Storable a) => Int -> m (MVector (PrimState m) a)
 {-# INLINE new #-}
 new = G.new
 
--- | Create a mutable vector of the given length and fill it with an
--- initial value.
-newWith :: (PrimMonad m, Storable a) => Int -> a -> m (MVector (PrimState m) a)
-{-# INLINE newWith #-}
-newWith = G.newWith
+-- | Create a mutable vector of the given length (0 if the length is negative)
+-- and fill it with an initial value.
+replicate :: (PrimMonad m, Storable a) => Int -> a -> m (MVector (PrimState m) a)
+{-# INLINE replicate #-}
+replicate = G.replicate
 
 -- | Yield the element at the given position.
 read :: (PrimMonad m, Storable a) => MVector (PrimState m) a -> Int -> m a
@@ -239,4 +235,17 @@ grow :: (PrimMonad m, Storable a)
               => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE grow #-}
 grow = G.grow
+
+
+-- | /DEPRECATED/ Use 'replicate' instead
+newWith :: (PrimMonad m, Storable a) => Int -> a -> m (MVector (PrimState m) a)
+{-# INLINE newWith #-}
+newWith = G.replicate
+
+-- | /DEPRECATED/ Use 'replicate' instead
+unsafeNewWith :: (PrimMonad m, Storable a) => Int -> a -> m (MVector (PrimState m) a)
+{-# INLINE unsafeNewWith #-}
+unsafeNewWith = G.replicate
+
+{-# DEPRECATED newWith, unsafeNewWith "Use replicate instead" #-}
 

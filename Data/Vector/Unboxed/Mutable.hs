@@ -15,21 +15,24 @@ module Data.Vector.Unboxed.Mutable (
   MVector(..), IOVector, STVector, Unbox,
 
   -- * Operations on mutable vectors
-  length, overlaps, slice, new, newWith, read, write, swap,
+  length, overlaps, slice, new, replicate, read, write, swap,
   clear, set, copy, grow,
   zip, zip3, zip4, zip5, zip6,
   unzip, unzip3, unzip4, unzip5, unzip6,
 
   -- * Unsafe operations
-  unsafeSlice, unsafeNew, unsafeNewWith, unsafeRead, unsafeWrite, unsafeSwap,
-  unsafeCopy, unsafeGrow
+  unsafeSlice, unsafeNew, unsafeRead, unsafeWrite, unsafeSwap,
+  unsafeCopy, unsafeGrow,
+
+  -- * Deprecated operations
+  newWith, unsafeNewWith
 ) where
 
 import Data.Vector.Unboxed.Base
 import qualified Data.Vector.Generic.Mutable as G
 import Control.Monad.Primitive
 
-import Prelude hiding ( zip, zip3, unzip, unzip3, length, read )
+import Prelude hiding ( zip, zip3, unzip, unzip3, length, replicate, read )
 
 #include "vector.h"
 
@@ -46,13 +49,6 @@ unsafeSlice = G.unsafeSlice
 unsafeNew :: (PrimMonad m, Unbox a) => Int -> m (MVector (PrimState m) a)
 {-# INLINE unsafeNew #-}
 unsafeNew = G.unsafeNew
-
--- | Create a mutable vector of the given length and fill it with an
--- initial value. The length is not checked.
-unsafeNewWith :: (PrimMonad m, Unbox a)
-                                => Int -> a -> m (MVector (PrimState m) a)
-{-# INLINE unsafeNewWith #-}
-unsafeNewWith = G.unsafeNewWith
 
 -- | Yield the element at the given position. No bounds checks are performed.
 unsafeRead :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> Int -> m a
@@ -108,9 +104,9 @@ new = G.new
 
 -- | Create a mutable vector of the given length and fill it with an
 -- initial value.
-newWith :: (PrimMonad m, Unbox a) => Int -> a -> m (MVector (PrimState m) a)
-{-# INLINE newWith #-}
-newWith = G.newWith
+replicate :: (PrimMonad m, Unbox a) => Int -> a -> m (MVector (PrimState m) a)
+{-# INLINE replicate #-}
+replicate = G.replicate
 
 -- | Yield the element at the given position.
 read :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> Int -> m a
@@ -152,6 +148,20 @@ grow :: (PrimMonad m, Unbox a)
               => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE grow #-}
 grow = G.grow
+
+
+-- | /DEPRECATED/ Use 'replicate' instead
+newWith :: (PrimMonad m, Unbox a) => Int -> a -> m (MVector (PrimState m) a)
+{-# INLINE newWith #-}
+newWith = G.replicate
+
+-- | /DEPRECATED/ Use 'replicate' instead
+unsafeNewWith :: (PrimMonad m, Unbox a) => Int -> a -> m (MVector (PrimState m) a)
+{-# INLINE unsafeNewWith #-}
+unsafeNewWith = G.replicate
+
+{-# DEPRECATED newWith, unsafeNewWith "Use replicate instead" #-}
+
 
 #define DEFINE_MUTABLE
 #include "unbox-tuple-instances"
