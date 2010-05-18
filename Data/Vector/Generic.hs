@@ -130,7 +130,7 @@ module Data.Vector.Generic (
   convert,
 
   -- ** Mutable vectors
-  thaw, thawMany, copy, unsafeCopy,
+  thaw, copy, unsafeCopy,
 
   -- * Fusion support
 
@@ -1574,6 +1574,7 @@ thaw v = do
            unsafeCopy mv v
            return mv
 
+{-
 -- | /O(n)/ Yield a mutable vector containing copies of each vector in the
 -- list.
 thawMany :: (PrimMonad m, Vector v a) => [v a] -> m (Mutable v (PrimState m) a)
@@ -1594,6 +1595,7 @@ thawMany vs = do
           let n = length v
           unsafeCopy (M.unsafeTake n mv) v
           thaw_loop (M.unsafeDrop n mv) vs
+-}
 
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length.

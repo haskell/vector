@@ -153,7 +153,7 @@ module Data.Vector.Unboxed (
   G.convert,
 
   -- ** Mutable vectors
-  thaw, thawMany, copy, unsafeCopy
+  thaw, copy, unsafeCopy
 ) where
 
 import Data.Vector.Unboxed.Base
@@ -1246,12 +1246,6 @@ fromListN = G.fromListN
 thaw :: (Unbox a, PrimMonad m) => Vector a -> m (MVector (PrimState m) a)
 {-# INLINE thaw #-}
 thaw = G.thaw
-
--- | /O(n)/ Yield a mutable vector containing copies of each vector in the
--- list.
-thawMany :: (Unbox a, PrimMonad m) => [Vector a] -> m (MVector (PrimState m) a)
-{-# INLINE thawMany #-}
-thawMany = G.thawMany
 
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length.
