@@ -567,7 +567,21 @@ v ++ w = unstream (stream v Stream.++ stream w)
 -- | /O(n)/ Concatenate all vectors in the list
 concat :: Vector v a => [v a] -> v a
 {-# INLINE concat #-}
-concat vs = create (thawMany vs)
+-- concat vs = create (thawMany vs)
+concat vs = unstream (Stream.flatten mk step (Exact n) (Stream.fromList vs))
+  where
+    n = List.foldl' (\k v -> k + length v) 0 vs
+
+    {-# INLINE_INNER step #-}
+    step (v,i,k)
+      | i < k = case unsafeIndexM v i of
+                  Box x -> Stream.Yield x (v,i+1,k)
+      | otherwise = Stream.Done
+
+    {-# INLINE mk #-}
+    mk v = let k = length v
+           in
+           k `seq` (v,0,k)
 
 -- Monadic initialisation
 -- ----------------------

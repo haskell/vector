@@ -31,7 +31,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   slice, init, tail, take, drop,
 
   -- * Mapping
-  map, mapM, mapM_, trans, unbox, concatMap,
+  map, mapM, mapM_, trans, unbox, concatMap, flatten,
   
   -- * Zipping
   indexed, indexedR, zipWithM_,
@@ -930,6 +930,30 @@ concatMapM f (Stream step s _) = Stream concatMap_go (Left s) Unknown
             Yield b inner_s' -> return $ Yield b (Right (Stream inner_step inner_s' sz, s))
             Skip    inner_s' -> return $ Skip (Right (Stream inner_step inner_s' sz, s))
             Done             -> return $ Skip (Left s)
+
+-- | Create a 'Stream' of values from a 'Stream' of streamable things
+flatten :: Monad m => (a -> m s) -> (s -> m (Step s b)) -> Size
+                   -> Stream m a -> Stream m b
+{-# INLINE_STREAM flatten #-}
+flatten mk istep sz (Stream ostep t _) = Stream step (Left t) sz
+  where
+    {-# INLINE_INNER step #-}
+    step (Left t) = do
+                      r <- ostep t
+                      case r of
+                        Yield a t' -> do
+                                        s <- mk a
+                                        return $ Skip (Right (s,t'))
+                        Skip    t' -> return $ Skip (Left t')
+                        Done       -> return $ Done
+
+    
+    step (Right (s,t)) = do
+                           r <- istep s
+                           case r of
+                             Yield x s' -> return $ Yield x (Right (s',t))
+                             Skip    s' -> return $ Skip    (Right (s',t))
+                             Done       -> return $ Skip    (Left t)
 
 -- Unfolding
 -- ---------

@@ -35,7 +35,7 @@ module Data.Vector.Fusion.Stream (
   slice, init, tail, take, drop,
 
   -- * Mapping
-  map, concatMap, unbox,
+  map, concatMap, flatten, unbox,
   
   -- * Zipping
   indexed, indexedR,
@@ -613,4 +613,8 @@ unsafeFromList :: Size -> [a] -> Stream a
 {-# INLINE unsafeFromList #-}
 unsafeFromList = M.unsafeFromList
 
+-- | Create a 'Stream' of values from a 'Stream' of streamable things
+flatten :: (a -> s) -> (s -> Step s b) -> Size -> Stream a -> Stream b
+{-# INLINE_STREAM flatten #-}
+flatten mk istep sz = M.flatten (return . mk) (return . istep) sz . liftStream
 
