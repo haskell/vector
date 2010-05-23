@@ -1621,7 +1621,7 @@ unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
 -- | /O(1)/ Convert a vector to a 'Stream'
 stream :: Vector v a => v a -> Stream a
 {-# INLINE_STREAM stream #-}
-stream v = v `seq` (Stream.unfoldr get 0 `Stream.sized` Exact n)
+stream v = v `seq` n `seq` (Stream.unfoldr get 0 `Stream.sized` Exact n)
   where
     n = length v
 
