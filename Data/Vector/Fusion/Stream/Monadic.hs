@@ -1165,7 +1165,8 @@ scanl1M' f (Stream step s sz) = Stream step' (s, Nothing) sz
 -- @x+y+y@ etc.
 enumFromStepN :: (Num a, Monad m) => a -> a -> Int -> Stream m a
 {-# INLINE_STREAM enumFromStepN #-}
-enumFromStepN x y n = n `seq` Stream step (x,n) (Exact (delay_inline max n 0))
+enumFromStepN x y n = x `seq` y `seq` n `seq`
+                      Stream step (x,n) (Exact (delay_inline max n 0))
   where
     {-# INLINE_INNER step #-}
     step (x,n) | n > 0     = return $ Yield x (x+y,n-1)
@@ -1185,7 +1186,7 @@ enumFromTo x y = fromList [x .. y]
 -- FIXME: add "too large" test for Int
 enumFromTo_small :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo_small #-}
-enumFromTo_small x y = Stream step x (Exact n)
+enumFromTo_small x y = x `seq` y `seq` Stream step x (Exact n)
   where
     n = delay_inline max (fromIntegral y - fromIntegral x + 1) 0
 
@@ -1237,7 +1238,7 @@ enumFromTo_small x y = Stream step x (Exact n)
 
 enumFromTo_int :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo_int #-}
-enumFromTo_int x y = Stream step x (Exact (len x y))
+enumFromTo_int x y = x `seq` y `seq` Stream step x (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len x y | x > y     = 0
@@ -1272,7 +1273,7 @@ enumFromTo_int x y = Stream step x (Exact (len x y))
 
 enumFromTo_big_word :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo_big_word #-}
-enumFromTo_big_word x y = Stream step x (Exact (len x y))
+enumFromTo_big_word x y = x `seq` y `seq` Stream step x (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len x y | x > y     = 0
@@ -1312,7 +1313,7 @@ enumFromTo_big_word x y = Stream step x (Exact (len x y))
 -- FIXME: the "too large" test is totally wrong
 enumFromTo_big_int :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo_big_int #-}
-enumFromTo_big_int x y = Stream step x (Exact (len x y))
+enumFromTo_big_int x y = x `seq` y `seq` Stream step x (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len x y | x > y     = 0
@@ -1339,7 +1340,7 @@ enumFromTo_big_int x y = Stream step x (Exact (len x y))
 
 enumFromTo_char :: Monad m => Char -> Char -> Stream m Char
 {-# INLINE_STREAM enumFromTo_char #-}
-enumFromTo_char x y = Stream step xn (Exact n)
+enumFromTo_char x y = x `seq` y `seq` Stream step xn (Exact n)
   where
     xn = ord x
     yn = ord y
@@ -1364,7 +1365,7 @@ enumFromTo_char x y = Stream step xn (Exact n)
 
 enumFromTo_double :: (Monad m, Ord a, RealFrac a) => a -> a -> Stream m a
 {-# INLINE_STREAM enumFromTo_double #-}
-enumFromTo_double n m = Stream step n (Max (len n m))
+enumFromTo_double n m = n `seq` m `seq` Stream step n (Max (len n m))
   where
     lim = m + 1/2 -- important to float out
 
