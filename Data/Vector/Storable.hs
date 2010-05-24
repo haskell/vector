@@ -126,7 +126,7 @@ module Data.Vector.Storable (
   G.convert,
 
   -- ** Mutable vectors
-  thaw, copy, unsafeCopy,
+  unsafeFreeze, thaw, copy, unsafeCopy,
 
   -- * Raw pointers
   unsafeFromForeignPtr, unsafeToForeignPtr, unsafeWith
@@ -190,8 +190,8 @@ instance (Data a, Storable a) => Data (Vector a) where
 type instance G.Mutable Vector = MVector
 
 instance Storable a => G.Vector Vector a where
-  {-# INLINE unsafeFreeze #-}
-  unsafeFreeze (MVector p n fp) = return $ Vector p n fp
+  {-# INLINE basicUnsafeFreeze #-}
+  basicUnsafeFreeze (MVector p n fp) = return $ Vector p n fp
 
   {-# INLINE basicLength #-}
   basicLength (Vector _ n _) = n
@@ -1229,6 +1229,13 @@ fromListN = G.fromListN
 
 -- Conversions - Mutable vectors
 -- -----------------------------
+
+-- | /O(1)/ Unsafe convert a mutable vector to an immutable one without
+-- copying. The mutable vector may not be used after this operation.
+unsafeFreeze
+        :: (Storable a, PrimMonad m) => MVector (PrimState m) a -> m (Vector a)
+{-# INLINE unsafeFreeze #-}
+unsafeFreeze = G.unsafeFreeze
 
 -- | /O(n)/ Yield a mutable copy of the immutable vector.
 thaw :: (Storable a, PrimMonad m) => Vector a -> m (MVector (PrimState m) a)

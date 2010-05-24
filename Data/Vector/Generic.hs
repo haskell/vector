@@ -130,7 +130,7 @@ module Data.Vector.Generic (
   convert,
 
   -- ** Mutable vectors
-  thaw, copy, unsafeCopy,
+  unsafeFreeze, thaw, copy, unsafeCopy,
 
   -- * Fusion support
 
@@ -1583,6 +1583,13 @@ convert = unstream . stream
 
 -- Conversions - Mutable vectors
 -- -----------------------------
+
+-- | /O(1)/ Unsafe convert a mutable vector to an immutable one without
+-- copying. The mutable vector may not be used after this operation.
+unsafeFreeze
+  :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m (v a)
+{-# INLINE unsafeFreeze #-}
+unsafeFreeze = basicUnsafeFreeze
 
 -- | /O(n)/ Yield a mutable copy of the immutable vector.
 thaw :: (PrimMonad m, Vector v a) => v a -> m (Mutable v (PrimState m) a)

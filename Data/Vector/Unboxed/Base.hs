@@ -106,8 +106,8 @@ instance M.MVector MVector () where
   basicUnsafeGrow (MV_Unit n) m = return $ MV_Unit (n+m)
 
 instance G.Vector Vector () where
-  {-# INLINE unsafeFreeze #-}
-  unsafeFreeze (MV_Unit n) = return $ V_Unit n
+  {-# INLINE basicUnsafeFreeze #-}
+  basicUnsafeFreeze (MV_Unit n) = return $ V_Unit n
 
   {-# INLINE basicLength #-}
   basicLength (V_Unit n) = n
@@ -156,12 +156,12 @@ instance M.MVector MVector ty where {                                   \
 
 #define primVector(ty,con,mcon)                                         \
 instance G.Vector Vector ty where {                                     \
-  {-# INLINE unsafeFreeze #-}                                           \
+  {-# INLINE basicUnsafeFreeze #-}                                      \
 ; {-# INLINE basicLength #-}                                            \
 ; {-# INLINE basicUnsafeSlice #-}                                       \
 ; {-# INLINE basicUnsafeIndexM #-}                                      \
 ; {-# INLINE elemseq #-}                                                \
-; unsafeFreeze (mcon v) = con `liftM` G.unsafeFreeze v                  \
+; basicUnsafeFreeze (mcon v) = con `liftM` G.basicUnsafeFreeze v        \
 ; basicLength (con v) = G.basicLength v                                 \
 ; basicUnsafeSlice i n (con v) = con $ G.basicUnsafeSlice i n v         \
 ; basicUnsafeIndexM (con v) i = G.basicUnsafeIndexM v i                 \
@@ -293,12 +293,12 @@ instance M.MVector MVector Bool where
   basicUnsafeGrow (MV_Bool v) n = MV_Bool `liftM` M.basicUnsafeGrow v n
 
 instance G.Vector Vector Bool where
-  {-# INLINE unsafeFreeze #-}
+  {-# INLINE basicUnsafeFreeze #-}
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
   {-# INLINE basicUnsafeIndexM #-}
   {-# INLINE elemseq #-}
-  unsafeFreeze (MV_Bool v) = V_Bool `liftM` G.unsafeFreeze v
+  basicUnsafeFreeze (MV_Bool v) = V_Bool `liftM` G.basicUnsafeFreeze v
   basicLength (V_Bool v) = G.basicLength v
   basicUnsafeSlice i n (V_Bool v) = V_Bool $ G.basicUnsafeSlice i n v
   basicUnsafeIndexM (V_Bool v) i = toBool `liftM` G.basicUnsafeIndexM v i
@@ -339,12 +339,12 @@ instance (RealFloat a, Unbox a) => M.MVector MVector (Complex a) where
   basicUnsafeGrow (MV_Complex v) n = MV_Complex `liftM` M.basicUnsafeGrow v n
 
 instance (RealFloat a, Unbox a) => G.Vector Vector (Complex a) where
-  {-# INLINE unsafeFreeze #-}
+  {-# INLINE basicUnsafeFreeze #-}
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
   {-# INLINE basicUnsafeIndexM #-}
   {-# INLINE elemseq #-}
-  unsafeFreeze (MV_Complex v) = V_Complex `liftM` G.unsafeFreeze v
+  basicUnsafeFreeze (MV_Complex v) = V_Complex `liftM` G.basicUnsafeFreeze v
   basicLength (V_Complex v) = G.basicLength v
   basicUnsafeSlice i n (V_Complex v) = V_Complex $ G.basicUnsafeSlice i n v
   basicUnsafeIndexM (V_Complex v) i

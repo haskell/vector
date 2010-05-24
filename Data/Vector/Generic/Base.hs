@@ -49,7 +49,7 @@ class MVector (Mutable v) a => Vector v a where
   -- Unsafely convert a mutable vector to its immutable version
   -- without copying. The mutable vector may not be used after
   -- this operation.
-  unsafeFreeze :: PrimMonad m => Mutable v (PrimState m) a -> m (v a)
+  basicUnsafeFreeze :: PrimMonad m => Mutable v (PrimState m) a -> m (v a)
 
   -- | /Assumed complexity: O(1)/
   --

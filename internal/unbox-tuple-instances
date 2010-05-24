@@ -62,11 +62,11 @@ instance (Unbox a, Unbox b) => M.MVector MVector (a, b) where
           bs' <- M.basicUnsafeGrow bs m_
           return $ MV_2 (m_+n_) as' bs'
 instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
-  {-# INLINE unsafeFreeze  #-}
-  unsafeFreeze (MV_2 n_ as bs)
+  {-# INLINE basicUnsafeFreeze  #-}
+  basicUnsafeFreeze (MV_2 n_ as bs)
       = do
-          as' <- G.unsafeFreeze as
-          bs' <- G.unsafeFreeze bs
+          as' <- G.basicUnsafeFreeze as
+          bs' <- G.basicUnsafeFreeze bs
           return $ V_2 n_ as' bs'
   {-# INLINE basicLength  #-}
   basicLength (V_2 n_ as bs) = n_
@@ -199,12 +199,12 @@ instance (Unbox a,
 instance (Unbox a,
           Unbox b,
           Unbox c) => G.Vector Vector (a, b, c) where
-  {-# INLINE unsafeFreeze  #-}
-  unsafeFreeze (MV_3 n_ as bs cs)
+  {-# INLINE basicUnsafeFreeze  #-}
+  basicUnsafeFreeze (MV_3 n_ as bs cs)
       = do
-          as' <- G.unsafeFreeze as
-          bs' <- G.unsafeFreeze bs
-          cs' <- G.unsafeFreeze cs
+          as' <- G.basicUnsafeFreeze as
+          bs' <- G.basicUnsafeFreeze bs
+          cs' <- G.basicUnsafeFreeze cs
           return $ V_3 n_ as' bs' cs'
   {-# INLINE basicLength  #-}
   basicLength (V_3 n_ as bs cs) = n_
@@ -370,13 +370,13 @@ instance (Unbox a,
           Unbox b,
           Unbox c,
           Unbox d) => G.Vector Vector (a, b, c, d) where
-  {-# INLINE unsafeFreeze  #-}
-  unsafeFreeze (MV_4 n_ as bs cs ds)
+  {-# INLINE basicUnsafeFreeze  #-}
+  basicUnsafeFreeze (MV_4 n_ as bs cs ds)
       = do
-          as' <- G.unsafeFreeze as
-          bs' <- G.unsafeFreeze bs
-          cs' <- G.unsafeFreeze cs
-          ds' <- G.unsafeFreeze ds
+          as' <- G.basicUnsafeFreeze as
+          bs' <- G.basicUnsafeFreeze bs
+          cs' <- G.basicUnsafeFreeze cs
+          ds' <- G.basicUnsafeFreeze ds
           return $ V_4 n_ as' bs' cs' ds'
   {-# INLINE basicLength  #-}
   basicLength (V_4 n_ as bs cs ds) = n_
@@ -585,14 +585,14 @@ instance (Unbox a,
           Unbox c,
           Unbox d,
           Unbox e) => G.Vector Vector (a, b, c, d, e) where
-  {-# INLINE unsafeFreeze  #-}
-  unsafeFreeze (MV_5 n_ as bs cs ds es)
+  {-# INLINE basicUnsafeFreeze  #-}
+  basicUnsafeFreeze (MV_5 n_ as bs cs ds es)
       = do
-          as' <- G.unsafeFreeze as
-          bs' <- G.unsafeFreeze bs
-          cs' <- G.unsafeFreeze cs
-          ds' <- G.unsafeFreeze ds
-          es' <- G.unsafeFreeze es
+          as' <- G.basicUnsafeFreeze as
+          bs' <- G.basicUnsafeFreeze bs
+          cs' <- G.basicUnsafeFreeze cs
+          ds' <- G.basicUnsafeFreeze ds
+          es' <- G.basicUnsafeFreeze es
           return $ V_5 n_ as' bs' cs' ds' es'
   {-# INLINE basicLength  #-}
   basicLength (V_5 n_ as bs cs ds es) = n_
@@ -852,15 +852,15 @@ instance (Unbox a,
           Unbox d,
           Unbox e,
           Unbox f) => G.Vector Vector (a, b, c, d, e, f) where
-  {-# INLINE unsafeFreeze  #-}
-  unsafeFreeze (MV_6 n_ as bs cs ds es fs)
+  {-# INLINE basicUnsafeFreeze  #-}
+  basicUnsafeFreeze (MV_6 n_ as bs cs ds es fs)
       = do
-          as' <- G.unsafeFreeze as
-          bs' <- G.unsafeFreeze bs
-          cs' <- G.unsafeFreeze cs
-          ds' <- G.unsafeFreeze ds
-          es' <- G.unsafeFreeze es
-          fs' <- G.unsafeFreeze fs
+          as' <- G.basicUnsafeFreeze as
+          bs' <- G.basicUnsafeFreeze bs
+          cs' <- G.basicUnsafeFreeze cs
+          ds' <- G.basicUnsafeFreeze ds
+          es' <- G.basicUnsafeFreeze es
+          fs' <- G.basicUnsafeFreeze fs
           return $ V_6 n_ as' bs' cs' ds' es' fs'
   {-# INLINE basicLength  #-}
   basicLength (V_6 n_ as bs cs ds es fs) = n_

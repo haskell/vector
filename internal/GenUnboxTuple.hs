@@ -214,7 +214,7 @@ generate n =
                       ,("basicUnsafeCopy",        gen_unsafeCopy "MV" qM)
                       ,("basicUnsafeGrow",        gen_unsafeGrow)]
 
-    methods_Vector  = [("unsafeFreeze",           gen_unsafeFreeze)
+    methods_Vector  = [("basicUnsafeFreeze",      gen_unsafeFreeze)
                       ,("basicLength",            gen_length "V")
                       ,("basicUnsafeSlice",       gen_unsafeSlice "G" "V")
                       ,("basicUnsafeIndexM",      gen_basicUnsafeIndexM)

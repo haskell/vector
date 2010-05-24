@@ -153,7 +153,7 @@ module Data.Vector.Unboxed (
   G.convert,
 
   -- ** Mutable vectors
-  thaw, copy, unsafeCopy
+  unsafeFreeze, thaw, copy, unsafeCopy
 ) where
 
 import Data.Vector.Unboxed.Base
@@ -1241,6 +1241,12 @@ fromListN = G.fromListN
 
 -- Conversions - Mutable vectors
 -- -----------------------------
+
+-- | /O(1)/ Unsafe convert a mutable vector to an immutable one without
+-- copying. The mutable vector may not be used after this operation.
+unsafeFreeze :: (Unbox a, PrimMonad m) => MVector (PrimState m) a -> m (Vector a)
+{-# INLINE unsafeFreeze #-}
+unsafeFreeze = G.unsafeFreeze
 
 -- | /O(n)/ Yield a mutable copy of the immutable vector.
 thaw :: (Unbox a, PrimMonad m) => Vector a -> m (MVector (PrimState m) a)

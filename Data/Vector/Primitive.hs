@@ -129,7 +129,7 @@ module Data.Vector.Primitive (
   G.convert,
 
   -- ** Mutable vectors
-  thaw, copy, unsafeCopy
+  unsafeFreeze, thaw, copy, unsafeCopy
 ) where
 
 import qualified Data.Vector.Generic           as G
@@ -183,8 +183,8 @@ instance (Data a, Prim a) => Data (Vector a) where
 type instance G.Mutable Vector = MVector
 
 instance Prim a => G.Vector Vector a where
-  {-# INLINE unsafeFreeze #-}
-  unsafeFreeze (MVector i n marr)
+  {-# INLINE basicUnsafeFreeze #-}
+  basicUnsafeFreeze (MVector i n marr)
     = Vector i n `liftM` unsafeFreezeByteArray marr
 
   {-# INLINE basicLength #-}
@@ -1209,6 +1209,12 @@ fromListN = G.fromListN
 
 -- Conversions - Mutable vectors
 -- -----------------------------
+
+-- | /O(1)/ Unsafe convert a mutable vector to an immutable one without
+-- copying. The mutable vector may not be used after this operation.
+unsafeFreeze :: (Prim a, PrimMonad m) => MVector (PrimState m) a -> m (Vector a)
+{-# INLINE unsafeFreeze #-}
+unsafeFreeze = G.unsafeFreeze
 
 -- | /O(n)/ Yield a mutable copy of the immutable vector.
 thaw :: (Prim a, PrimMonad m) => Vector a -> m (MVector (PrimState m) a)
