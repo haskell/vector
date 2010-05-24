@@ -1253,14 +1253,14 @@ thaw :: (Storable a, PrimMonad m) => Vector a -> m (MVector (PrimState m) a)
 thaw = G.thaw
 
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
--- have the same length.
+-- have the same length. This is not checked.
 unsafeCopy
   :: (Storable a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE unsafeCopy #-}
 unsafeCopy = G.unsafeCopy
            
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
--- have the same length. This is not checked.
+-- have the same length.
 copy :: (Storable a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE copy #-}
 copy = G.copy
