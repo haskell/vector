@@ -1,4 +1,4 @@
-{-# LANGUAGE ExistentialQuantification, Rank2Types #-}
+{-# LANGUAGE ExistentialQuantification, Rank2Types, BangPatterns #-}
 
 -- |
 -- Module      : Data.Vector.Fusion.Stream.Monadic
@@ -223,7 +223,7 @@ head :: Monad m => Stream m a -> m a
 {-# INLINE_STREAM head #-}
 head (Stream step s _) = head_loop SPEC s
   where
-    head_loop SPEC s
+    head_loop !sPEC s
       = do
           r <- step s
           case r of
@@ -238,7 +238,7 @@ last :: Monad m => Stream m a -> m a
 {-# INLINE_STREAM last #-}
 last (Stream step s _) = last_loop0 SPEC s
   where
-    last_loop0 SPEC s
+    last_loop0 !sPEC s
       = do
           r <- step s
           case r of
@@ -246,7 +246,7 @@ last (Stream step s _) = last_loop0 SPEC s
             Skip    s' -> last_loop0 SPEC   s'
             Done       -> BOUNDS_ERROR(emptyStream) "last"
 
-    last_loop1 SPEC x s
+    last_loop1 !sPEC x s
       = do
           r <- step s
           case r of
@@ -260,7 +260,7 @@ last (Stream step s _) = last_loop0 SPEC s
 Stream step s _ !! i | i < 0     = BOUNDS_ERROR(error) "!!" "negative index"
                      | otherwise = index_loop SPEC s i
   where
-    index_loop SPEC s i
+    index_loop !sPEC s i
       = i `seq`
         do
           r <- step s
@@ -387,7 +387,7 @@ consume :: Monad m => Stream m a -> m ()
 {-# INLINE_STREAM consume #-}
 consume (Stream step s _) = consume_loop SPEC s
   where
-    consume_loop SPEC s
+    consume_loop !sPEC s
       = do
           r <- step s
           case r of
@@ -677,7 +677,7 @@ elem :: (Monad m, Eq a) => a -> Stream m a -> m Bool
 {-# INLINE_STREAM elem #-}
 elem x (Stream step s _) = elem_loop SPEC s
   where
-    elem_loop SPEC s
+    elem_loop !sPEC s
       = do
           r <- step s
           case r of
@@ -704,7 +704,7 @@ findM :: Monad m => (a -> m Bool) -> Stream m a -> m (Maybe a)
 {-# INLINE_STREAM findM #-}
 findM f (Stream step s _) = find_loop SPEC s
   where
-    find_loop SPEC s
+    find_loop !sPEC s
       = do
           r <- step s
           case r of
@@ -727,7 +727,7 @@ findIndexM :: Monad m => (a -> m Bool) -> Stream m a -> m (Maybe Int)
 {-# INLINE_STREAM findIndexM #-}
 findIndexM f (Stream step s _) = findIndex_loop SPEC s 0
   where
-    findIndex_loop SPEC s i
+    findIndex_loop !sPEC s i
       = do
           r <- step s
           case r of
@@ -751,7 +751,7 @@ foldlM :: Monad m => (a -> b -> m a) -> a -> Stream m b -> m a
 {-# INLINE_STREAM foldlM #-}
 foldlM m z (Stream step s _) = foldlM_loop SPEC z s
   where
-    foldlM_loop SPEC z s
+    foldlM_loop !sPEC z s
       = do
           r <- step s
           case r of
@@ -774,7 +774,7 @@ foldl1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_STREAM foldl1M #-}
 foldl1M f (Stream step s sz) = foldl1M_loop SPEC s
   where
-    foldl1M_loop SPEC s
+    foldl1M_loop !sPEC s
       = do
           r <- step s
           case r of
@@ -797,7 +797,7 @@ foldlM' :: Monad m => (a -> b -> m a) -> a -> Stream m b -> m a
 {-# INLINE_STREAM foldlM' #-}
 foldlM' m z (Stream step s _) = foldlM'_loop SPEC z s
   where
-    foldlM'_loop SPEC z s
+    foldlM'_loop !sPEC z s
       = z `seq`
         do
           r <- step s
@@ -822,7 +822,7 @@ foldl1M' :: Monad m => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_STREAM foldl1M' #-}
 foldl1M' f (Stream step s sz) = foldl1M'_loop SPEC s
   where
-    foldl1M'_loop SPEC s
+    foldl1M'_loop !sPEC s
       = do
           r <- step s
           case r of
@@ -845,7 +845,7 @@ foldrM :: Monad m => (a -> b -> m b) -> b -> Stream m a -> m b
 {-# INLINE_STREAM foldrM #-}
 foldrM f z (Stream step s _) = foldrM_loop SPEC s
   where
-    foldrM_loop SPEC s
+    foldrM_loop !sPEC s
       = do
           r <- step s
           case r of
@@ -863,7 +863,7 @@ foldr1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_STREAM foldr1M #-}
 foldr1M f (Stream step s _) = foldr1M_loop0 SPEC s
   where
-    foldr1M_loop0 SPEC s
+    foldr1M_loop0 !sPEC s
       = do
           r <- step s
           case r of
@@ -871,7 +871,7 @@ foldr1M f (Stream step s _) = foldr1M_loop0 SPEC s
             Skip    s' -> foldr1M_loop0 SPEC   s'
             Done       -> BOUNDS_ERROR(emptyStream) "foldr1M"
 
-    foldr1M_loop1 SPEC x s
+    foldr1M_loop1 !sPEC x s
       = do
           r <- step s
           case r of
@@ -886,7 +886,7 @@ and :: Monad m => Stream m Bool -> m Bool
 {-# INLINE_STREAM and #-}
 and (Stream step s _) = and_loop SPEC s
   where
-    and_loop SPEC s
+    and_loop !sPEC s
       = do
           r <- step s
           case r of
@@ -899,7 +899,7 @@ or :: Monad m => Stream m Bool -> m Bool
 {-# INLINE_STREAM or #-}
 or (Stream step s _) = or_loop SPEC s
   where
-    or_loop SPEC s
+    or_loop !sPEC s
       = do
           r <- step s
           case r of
