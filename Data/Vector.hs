@@ -140,7 +140,7 @@ module Data.Vector (
   G.convert,
 
   -- ** Mutable vectors
-  unsafeFreeze, thaw, copy, unsafeCopy
+  unsafeFreeze, unsafeThaw, thaw, copy, unsafeCopy
 ) where
 
 import qualified Data.Vector.Generic as G
@@ -1306,6 +1306,12 @@ fromListN = G.fromListN
 unsafeFreeze :: PrimMonad m => MVector (PrimState m) a -> m (Vector a)
 {-# INLINE unsafeFreeze #-}
 unsafeFreeze = G.unsafeFreeze
+
+-- | /O(1)/ Unsafely convert an immutable vector to a mutable one without
+-- copying. The immutable vector may not be used after this operation.
+unsafeThaw :: PrimMonad m => Vector a -> m (MVector (PrimState m) a)
+{-# INLINE unsafeThaw #-}
+unsafeThaw = G.unsafeThaw
 
 -- | /O(n)/ Yield a mutable copy of the immutable vector.
 thaw :: PrimMonad m => Vector a -> m (MVector (PrimState m) a)

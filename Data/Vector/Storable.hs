@@ -126,7 +126,7 @@ module Data.Vector.Storable (
   G.convert,
 
   -- ** Mutable vectors
-  unsafeFreeze, thaw, copy, unsafeCopy,
+  unsafeFreeze, unsafeThaw, thaw, copy, unsafeCopy,
 
   -- * Raw pointers
   unsafeFromForeignPtr, unsafeToForeignPtr, unsafeWith
@@ -1239,6 +1239,13 @@ unsafeFreeze
         :: (Storable a, PrimMonad m) => MVector (PrimState m) a -> m (Vector a)
 {-# INLINE unsafeFreeze #-}
 unsafeFreeze = G.unsafeFreeze
+
+-- | /O(1)/ Unsafely convert an immutable vector to a mutable one without
+-- copying. The immutable vector may not be used after this operation.
+unsafeThaw
+        :: (Storable a, PrimMonad m) => Vector a -> m (MVector (PrimState m) a)
+{-# INLINE unsafeThaw #-}
+unsafeThaw = G.unsafeThaw
 
 -- | /O(n)/ Yield a mutable copy of the immutable vector.
 thaw :: (Storable a, PrimMonad m) => Vector a -> m (MVector (PrimState m) a)
