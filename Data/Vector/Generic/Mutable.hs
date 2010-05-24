@@ -144,9 +144,9 @@ class MVector v a where
   basicClear _ = return ()
 
   {-# INLINE basicSet #-}
-  basicSet v x = do_set 0
+  basicSet !v x = do_set 0
     where
-      n = basicLength v
+      !n = basicLength v
 
       do_set i | i < n = do
                            basicUnsafeWrite v i x
@@ -154,9 +154,9 @@ class MVector v a where
                 | otherwise = return ()
 
   {-# INLINE basicUnsafeCopy #-}
-  basicUnsafeCopy dst src = do_copy 0
+  basicUnsafeCopy !dst !src = do_copy 0
     where
-      n = basicLength src
+      !n = basicLength src
 
       do_copy i | i < n = do
                             x <- basicUnsafeRead src i

@@ -1,5 +1,5 @@
 {-# LANGUAGE Rank2Types, MultiParamTypeClasses, FlexibleContexts,
-             TypeFamilies, ScopedTypeVariables #-}
+             TypeFamilies, ScopedTypeVariables, BangPatterns #-}
 {-# OPTIONS_HADDOCK hide #-}
 
 -- |
@@ -104,9 +104,9 @@ class MVector (Mutable v) a => Vector v a where
   basicUnsafeCopy :: PrimMonad m => Mutable v (PrimState m) a -> v a -> m ()
 
   {-# INLINE basicUnsafeCopy #-}
-  basicUnsafeCopy dst src = do_copy 0
+  basicUnsafeCopy !dst !src = do_copy 0
     where
-      n = basicLength src
+      !n = basicLength src
 
       do_copy i | i < n = do
                             x <- basicUnsafeIndexM src i
