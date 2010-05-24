@@ -35,7 +35,7 @@ type family Mutable (v :: * -> *) :: * -> * -> *
 --
 -- Minimum complete implementation:
 --
---   * 'unsafeFreeze'
+--   * 'basicUnsafeFreeze'
 --
 --   * 'basicLength'
 --
@@ -44,7 +44,7 @@ type family Mutable (v :: * -> *) :: * -> * -> *
 --   * 'basicUnsafeIndexM'
 --
 class MVector (Mutable v) a => Vector v a where
-  -- | /Assume complexity: O(1)/
+  -- | /Assumed complexity: O(1)/
   --
   -- Unsafely convert a mutable vector to its immutable version
   -- without copying. The mutable vector may not be used after
