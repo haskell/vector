@@ -29,7 +29,7 @@ module Data.Vector.Unboxed.Mutable (
   -- * Construction
 
   -- ** Initialisation
-  new, unsafeNew, replicate,
+  new, unsafeNew, replicate, clone,
 
   -- ** Growing
   grow, unsafeGrow,
@@ -154,6 +154,12 @@ unsafeNew = G.unsafeNew
 replicate :: (PrimMonad m, Unbox a) => Int -> a -> m (MVector (PrimState m) a)
 {-# INLINE replicate #-}
 replicate = G.replicate
+
+-- | Create a copy of a mutable vector.
+clone :: (PrimMonad m, Unbox a)
+      => MVector (PrimState m) a -> m (MVector (PrimState m) a)
+{-# INLINE clone #-}
+clone = G.clone
 
 -- Growing
 -- -------

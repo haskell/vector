@@ -30,7 +30,7 @@ module Data.Vector.Generic.Mutable (
   -- * Construction
 
   -- ** Initialisation
-  new, unsafeNew, replicate,
+  new, unsafeNew, replicate, clone,
 
   -- ** Growing
   grow, unsafeGrow,
@@ -473,6 +473,14 @@ unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n
 replicate :: (PrimMonad m, MVector v a) => Int -> a -> m (v (PrimState m) a)
 {-# INLINE replicate #-}
 replicate n x = basicUnsafeReplicate (delay_inline max 0 n) x
+
+-- | Create a copy of a mutable vector.
+clone :: (PrimMonad m, MVector v a) => v (PrimState m) a -> m (v (PrimState m) a)
+{-# INLINE clone #-}
+clone v = do
+            v' <- unsafeNew (length v)
+            unsafeCopy v' v
+            return v'
 
 -- Growing
 -- -------
