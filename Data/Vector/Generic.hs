@@ -1660,7 +1660,7 @@ unstream s = new (New.unstream s)
 -- | /O(1)/ Convert a vector to a 'Stream', proceeding from right to left
 streamR :: Vector v a => v a -> Stream a
 {-# INLINE_STREAM streamR #-}
-streamR v = v `seq` (Stream.unfoldr get n `Stream.sized` Exact n)
+streamR v = v `seq` n `seq` (Stream.unfoldr get n `Stream.sized` Exact n)
   where
     n = length v
 
