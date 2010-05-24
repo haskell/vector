@@ -68,6 +68,12 @@ instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
           as' <- G.basicUnsafeFreeze as
           bs' <- G.basicUnsafeFreeze bs
           return $ V_2 n_ as' bs'
+  {-# INLINE basicUnsafeThaw  #-}
+  basicUnsafeThaw (V_2 n_ as bs)
+      = do
+          as' <- G.basicUnsafeThaw as
+          bs' <- G.basicUnsafeThaw bs
+          return $ MV_2 n_ as' bs'
   {-# INLINE basicLength  #-}
   basicLength (V_2 n_ as bs) = n_
   {-# INLINE basicUnsafeSlice  #-}
@@ -206,6 +212,13 @@ instance (Unbox a,
           bs' <- G.basicUnsafeFreeze bs
           cs' <- G.basicUnsafeFreeze cs
           return $ V_3 n_ as' bs' cs'
+  {-# INLINE basicUnsafeThaw  #-}
+  basicUnsafeThaw (V_3 n_ as bs cs)
+      = do
+          as' <- G.basicUnsafeThaw as
+          bs' <- G.basicUnsafeThaw bs
+          cs' <- G.basicUnsafeThaw cs
+          return $ MV_3 n_ as' bs' cs'
   {-# INLINE basicLength  #-}
   basicLength (V_3 n_ as bs cs) = n_
   {-# INLINE basicUnsafeSlice  #-}
@@ -378,6 +391,14 @@ instance (Unbox a,
           cs' <- G.basicUnsafeFreeze cs
           ds' <- G.basicUnsafeFreeze ds
           return $ V_4 n_ as' bs' cs' ds'
+  {-# INLINE basicUnsafeThaw  #-}
+  basicUnsafeThaw (V_4 n_ as bs cs ds)
+      = do
+          as' <- G.basicUnsafeThaw as
+          bs' <- G.basicUnsafeThaw bs
+          cs' <- G.basicUnsafeThaw cs
+          ds' <- G.basicUnsafeThaw ds
+          return $ MV_4 n_ as' bs' cs' ds'
   {-# INLINE basicLength  #-}
   basicLength (V_4 n_ as bs cs ds) = n_
   {-# INLINE basicUnsafeSlice  #-}
@@ -594,6 +615,15 @@ instance (Unbox a,
           ds' <- G.basicUnsafeFreeze ds
           es' <- G.basicUnsafeFreeze es
           return $ V_5 n_ as' bs' cs' ds' es'
+  {-# INLINE basicUnsafeThaw  #-}
+  basicUnsafeThaw (V_5 n_ as bs cs ds es)
+      = do
+          as' <- G.basicUnsafeThaw as
+          bs' <- G.basicUnsafeThaw bs
+          cs' <- G.basicUnsafeThaw cs
+          ds' <- G.basicUnsafeThaw ds
+          es' <- G.basicUnsafeThaw es
+          return $ MV_5 n_ as' bs' cs' ds' es'
   {-# INLINE basicLength  #-}
   basicLength (V_5 n_ as bs cs ds es) = n_
   {-# INLINE basicUnsafeSlice  #-}
@@ -862,6 +892,16 @@ instance (Unbox a,
           es' <- G.basicUnsafeFreeze es
           fs' <- G.basicUnsafeFreeze fs
           return $ V_6 n_ as' bs' cs' ds' es' fs'
+  {-# INLINE basicUnsafeThaw  #-}
+  basicUnsafeThaw (V_6 n_ as bs cs ds es fs)
+      = do
+          as' <- G.basicUnsafeThaw as
+          bs' <- G.basicUnsafeThaw bs
+          cs' <- G.basicUnsafeThaw cs
+          ds' <- G.basicUnsafeThaw ds
+          es' <- G.basicUnsafeThaw es
+          fs' <- G.basicUnsafeThaw fs
+          return $ MV_6 n_ as' bs' cs' ds' es' fs'
   {-# INLINE basicLength  #-}
   basicLength (V_6 n_ as bs cs ds es fs) = n_
   {-# INLINE basicUnsafeSlice  #-}

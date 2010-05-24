@@ -178,6 +178,12 @@ generate n =
                $ text "return $" <+> con "V" <+> var 'n'
                                  <+> sep [vs <> char '\'' | vs <- varss])
 
+    gen_unsafeThaw rec
+      = (pat "V",
+         mk_do [vs <> char '\'' <+> text "<-" <+> qG rec <+> vs | vs <- varss]
+               $ text "return $" <+> con "MV" <+> var 'n'
+                                 <+> sep [vs <> char '\'' | vs <- varss])
+
     gen_basicUnsafeIndexM rec
       = (pat "V" <+> var 'i',
          mk_do [v <+> text "<-" <+> qG rec <+> vs <+> var 'i'
@@ -215,6 +221,7 @@ generate n =
                       ,("basicUnsafeGrow",        gen_unsafeGrow)]
 
     methods_Vector  = [("basicUnsafeFreeze",      gen_unsafeFreeze)
+                      ,("basicUnsafeThaw",        gen_unsafeThaw)
                       ,("basicLength",            gen_length "V")
                       ,("basicUnsafeSlice",       gen_unsafeSlice "G" "V")
                       ,("basicUnsafeIndexM",      gen_basicUnsafeIndexM)

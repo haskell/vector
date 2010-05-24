@@ -37,6 +37,8 @@ type family Mutable (v :: * -> *) :: * -> * -> *
 --
 --   * 'basicUnsafeFreeze'
 --
+--   * 'basicUnsafeThaw'
+--
 --   * 'basicLength'
 --
 --   * 'basicUnsafeSlice'
@@ -50,6 +52,12 @@ class MVector (Mutable v) a => Vector v a where
   -- without copying. The mutable vector may not be used after
   -- this operation.
   basicUnsafeFreeze :: PrimMonad m => Mutable v (PrimState m) a -> m (v a)
+
+  -- | /Assumed complexity: O(1)/
+  --
+  -- Unsafely convert an immutable vector to its mutable version without
+  -- copying. The immutable vector may not be used after this operation.
+  basicUnsafeThaw :: PrimMonad m => v a -> m (Mutable v (PrimState m) a)
 
   -- | /Assumed complexity: O(1)/
   --

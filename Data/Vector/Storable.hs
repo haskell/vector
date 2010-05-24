@@ -193,6 +193,9 @@ instance Storable a => G.Vector Vector a where
   {-# INLINE basicUnsafeFreeze #-}
   basicUnsafeFreeze (MVector p n fp) = return $ Vector p n fp
 
+  {-# INLINE basicUnsafeThaw #-}
+  basicUnsafeThaw (Vector p n fp) = return $ MVector p n fp
+
   {-# INLINE basicLength #-}
   basicLength (Vector _ n _) = n
 

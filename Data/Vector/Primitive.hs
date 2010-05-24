@@ -187,6 +187,10 @@ instance Prim a => G.Vector Vector a where
   basicUnsafeFreeze (MVector i n marr)
     = Vector i n `liftM` unsafeFreezeByteArray marr
 
+  {-# INLINE basicUnsafeThaw #-}
+  basicUnsafeThaw (Vector i n arr)
+    = MVector i n `liftM` unsafeThawByteArray arr
+
   {-# INLINE basicLength #-}
   basicLength (Vector _ n _) = n
 
