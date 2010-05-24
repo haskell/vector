@@ -792,19 +792,37 @@ backpermute :: (Vector v a, Vector v Int)
 -- does not retain references to the original one even if it is lazy in its
 -- elements. This would not be the case if we simply used map (v!)
 backpermute v is = seq v
+                 $ seq n
                  $ unstream
                  $ Stream.unbox
-                 $ Stream.map (indexM v)
+                 $ Stream.map index
                  $ stream is
+  where
+    n = length v
+
+    {-# INLINE index #-}
+    -- NOTE: we do it this way to avoid triggering LiberateCase on n in
+    -- polymorphic code
+    index i = BOUNDS_CHECK(checkIndex) "backpermute" i n
+            $ basicUnsafeIndexM v i
 
 -- | Same as 'backpermute' but without bounds checking.
 unsafeBackpermute :: (Vector v a, Vector v Int) => v a -> v Int -> v a
 {-# INLINE unsafeBackpermute #-}
 unsafeBackpermute v is = seq v
+                       $ seq n
                        $ unstream
                        $ Stream.unbox
-                       $ Stream.map (unsafeIndexM v)
+                       $ Stream.map index
                        $ stream is
+  where
+    n = length v
+
+    {-# INLINE index #-}
+    -- NOTE: we do it this way to avoid triggering LiberateCase on n in
+    -- polymorphic code
+    index i = UNSAFE_CHECK(checkIndex) "unsafeBackpermute" i n
+            $ basicUnsafeIndexM v i
 
 -- Safe destructive updates
 -- ------------------------
