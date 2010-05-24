@@ -129,7 +129,7 @@ module Data.Vector.Primitive (
   G.convert,
 
   -- ** Mutable vectors
-  unsafeFreeze, unsafeThaw, thaw, copy, unsafeCopy
+  freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy
 ) where
 
 import qualified Data.Vector.Generic           as G
@@ -1230,6 +1230,11 @@ unsafeThaw = G.unsafeThaw
 thaw :: (Prim a, PrimMonad m) => Vector a -> m (MVector (PrimState m) a)
 {-# INLINE thaw #-}
 thaw = G.thaw
+
+-- | /O(n)/ Yield an immutable copy of the mutable vector.
+freeze :: (Prim a, PrimMonad m) => MVector (PrimState m) a -> m (Vector a)
+{-# INLINE freeze #-}
+freeze = G.freeze
 
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length. This is not checked.

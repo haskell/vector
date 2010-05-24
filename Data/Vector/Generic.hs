@@ -130,7 +130,7 @@ module Data.Vector.Generic (
   convert,
 
   -- ** Mutable vectors
-  unsafeFreeze, unsafeThaw, thaw, copy, unsafeCopy,
+  freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
 
   -- * Fusion support
 
@@ -1605,6 +1605,11 @@ thaw v = do
            mv <- M.unsafeNew (length v)
            unsafeCopy mv v
            return mv
+
+-- | /O(n)/ Yield an immutable copy of the mutable vector.
+freeze :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m (v a)
+{-# INLINE freeze #-}
+freeze mv = unsafeFreeze =<< M.clone mv
 
 {-
 -- | /O(n)/ Yield a mutable vector containing copies of each vector in the
