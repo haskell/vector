@@ -546,7 +546,8 @@ replicateM = G.replicateM
 -- @
 create :: Storable a => (forall s. ST s (MVector s a)) -> Vector a
 {-# INLINE create #-}
-create = G.create
+-- NOTE: eta-expanded due to http://hackage.haskell.org/trac/ghc/ticket/4120
+create p = G.create p
 
 -- Restricting memory usage
 -- ------------------------
