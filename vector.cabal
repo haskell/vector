@@ -38,6 +38,10 @@ Description:
         .
         * <http://trac.haskell.org/vector>
         .
+        Changes since version 0.6.0.1
+        .
+        * Workaround for GHC bug #4120
+        .
         Changes since version 0.6
         .
         * Improved documentation
