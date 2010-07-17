@@ -1,5 +1,5 @@
 Name:           vector-benchmarks
-Version:        0.6.0.1
+Version:        0.7
 License:        BSD3
 License-File:   LICENSE
 Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
@@ -13,8 +13,8 @@ Executable algorithms
 
   Build-Depends: base >= 2 && < 5, array,
                  criterion >= 0.5 && < 0.6,
-                 mwc-random >= 0.5 && < 0.6,
-                 vector == 0.6.0.1
+                 mwc-random >= 0.5 && < 0.8,
+                 vector == 0.7
 
   if impl(ghc<6.13)
     Ghc-Options: -finline-if-enough-args
