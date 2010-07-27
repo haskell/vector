@@ -25,7 +25,7 @@ module Data.Vector.Primitive (
   length, null,
 
   -- ** Indexing
-  (!), head, last,
+  (!), (!?), head, last,
   unsafeIndex, unsafeHead, unsafeLast,
 
   -- ** Monadic indexing
@@ -264,6 +264,11 @@ null = G.null
 (!) :: Prim a => Vector a -> Int -> a
 {-# INLINE (!) #-}
 (!) = (G.!)
+
+-- | O(1) Safe indexing
+(!?) :: Prim a => Vector a -> Int -> Maybe a
+{-# INLINE (!?) #-}
+(!?) = (G.!?)
 
 -- | /O(1)/ First element
 head :: Prim a => Vector a -> a

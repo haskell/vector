@@ -22,7 +22,7 @@ module Data.Vector.Storable (
   length, null,
 
   -- ** Indexing
-  (!), head, last,
+  (!), (!?), head, last,
   unsafeIndex, unsafeHead, unsafeLast,
 
   -- ** Monadic indexing
@@ -273,6 +273,11 @@ null = G.null
 (!) :: Storable a => Vector a -> Int -> a
 {-# INLINE (!) #-}
 (!) = (G.!)
+
+-- | O(1) Safe indexing
+(!?) :: Storable a => Vector a -> Int -> Maybe a
+{-# INLINE (!?) #-}
+(!?) = (G.!?)
 
 -- | /O(1)/ First element
 head :: Storable a => Vector a -> a

@@ -32,7 +32,7 @@ module Data.Vector (
   length, null,
 
   -- ** Indexing
-  (!), head, last,
+  (!), (!?), head, last,
   unsafeIndex, unsafeHead, unsafeLast,
 
   -- ** Monadic indexing
@@ -264,6 +264,11 @@ null = G.null
 (!) :: Vector a -> Int -> a
 {-# INLINE (!) #-}
 (!) = (G.!)
+
+-- | O(1) Safe indexing
+(!?) :: Vector a -> Int -> Maybe a
+{-# INLINE (!?) #-}
+(!?) = (G.!?)
 
 -- | /O(1)/ First element
 head :: Vector a -> a

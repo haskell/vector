@@ -45,7 +45,7 @@ module Data.Vector.Unboxed (
   length, null,
 
   -- ** Indexing
-  (!), head, last,
+  (!), (!?), head, last,
   unsafeIndex, unsafeHead, unsafeLast,
 
   -- ** Monadic indexing
@@ -240,6 +240,11 @@ null = G.null
 (!) :: Unbox a => Vector a -> Int -> a
 {-# INLINE (!) #-}
 (!) = (G.!)
+
+-- | O(1) Safe indexing
+(!?) :: Unbox a => Vector a -> Int -> Maybe a
+{-# INLINE (!?) #-}
+(!?) = (G.!?)
 
 -- | /O(1)/ First element
 head :: Unbox a => Vector a -> a

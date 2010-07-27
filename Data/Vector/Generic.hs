@@ -22,7 +22,7 @@ module Data.Vector.Generic (
   length, null,
 
   -- ** Indexing
-  (!), head, last,
+  (!), (!?), head, last,
   unsafeIndex, unsafeHead, unsafeLast,
 
   -- ** Monadic indexing
@@ -221,6 +221,12 @@ null v = basicLength v == 0
 {-# INLINE_STREAM (!) #-}
 v ! i = BOUNDS_CHECK(checkIndex) "(!)" i (length v)
       $ unId (basicUnsafeIndexM v i)
+
+-- | O(1) Safe indexing
+(!?) :: Vector v a => v a -> Int -> Maybe a
+{-# INLINE_STREAM (!?) #-}
+v !? i | i < 0 || i >= length v = Nothing
+       | otherwise              = Just $ unsafeIndex v i
 
 -- | /O(1)/ First element
 head :: Vector v a => v a -> a
