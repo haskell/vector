@@ -30,7 +30,7 @@ distance p q = (p `minusPtr` q) `quotInt` sizeOf (undefined :: a)
 ptrToOffset :: Storable a => ForeignPtr a -> Ptr a -> Int
 {-# INLINE ptrToOffset #-}
 ptrToOffset fp q = unsafeInlineIO
-                 $ withForeignPtr fp $ \p -> return (distance p q)
+                 $ withForeignPtr fp $ \p -> return (distance q p)
 
 offsetToPtr :: Storable a => ForeignPtr a -> Int -> Ptr a
 {-# INLINE offsetToPtr #-}
