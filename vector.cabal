@@ -38,27 +38,23 @@ Description:
         .
         * <http://trac.haskell.org/vector>
         .
-        Changes since version 0.6.0.1
+        Changes in version 0.7
         .
-        * Workaround for GHC bug #4120
+        * New functions for freezing, copying and thawing vectors: @freeze@,
+          @thaw@, @unsafeThaw@ and @clone@
         .
-        Changes since version 0.6
+        * @newWith@ and @newUnsafeWith@ on mutable vectors replaced by
+          @replicate@
         .
-        * Improved documentation
+        * New function: @concat@
         .
-        Changes since version 0.5
+        * New function for safe indexing: @(!?)@
         .
-        * More efficient representation of @Storable@ vectors
+        * @Monoid@ instances for all vector types
         .
-        * Block copy operations used when possible
+        * Significant recycling and fusion improvements
         .
-        * @Typeable@ and @Data@ instances
-        .
-        * Monadic combinators (@replicateM@, @mapM@ etc.)
-        .
-        * Better support for recycling (see @create@ and @modify@)
-        .
-        * Performance improvements
+        * Bug fixes
         .
 
 Cabal-Version:  >= 1.2.3
