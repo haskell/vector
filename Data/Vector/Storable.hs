@@ -685,7 +685,7 @@ unsafeBackpermute = G.unsafeBackpermute
 -- @
 modify :: Storable a => (forall s. MVector s a -> ST s ()) -> Vector a -> Vector a
 {-# INLINE modify #-}
-modify = G.modify
+modify p = G.modify p
 
 -- Mapping
 -- -------

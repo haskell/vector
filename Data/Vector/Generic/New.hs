@@ -37,7 +37,7 @@ data New v a = New (forall s. ST s (Mutable v s a))
 
 create :: (forall s. ST s (Mutable v s a)) -> New v a
 {-# INLINE create #-}
-create = New
+create p = New p
 
 run :: New v a -> ST s (Mutable v s a)
 {-# INLINE run #-}
