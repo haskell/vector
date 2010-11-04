@@ -92,14 +92,14 @@ import Prelude hiding ( length, null,
 import Data.Int  ( Int8, Int16, Int32, Int64 )
 import Data.Word ( Word8, Word16, Word32, Word, Word64 )
 
-#if __GLASGOW_HASKELL__ >= 613
-import SpecConstr ( SpecConstrAnnotation(..) )
+#if __GLASGOW_HASKELL__ >= 700
+import GHC.Exts ( SpecConstrAnnotation(..) )
 #endif
 
 #include "vector.h"
 
 data SPEC = SPEC | SPEC2
-#if __GLASGOW_HASKELL__ >= 613
+#if __GLASGOW_HASKELL__ >= 700
 {-# ANN type SPEC ForceSpecConstr #-}
 #endif
 
