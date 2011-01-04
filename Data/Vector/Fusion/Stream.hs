@@ -55,7 +55,7 @@ module Data.Vector.Fusion.Stream (
   and, or,
 
   -- * Unfolding
-  unfoldr, unfoldrN,
+  unfoldr, unfoldrN, iterate,
 
   -- * Scans
   prescanl, prescanl',
@@ -90,6 +90,7 @@ import Prelude hiding ( length, null,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         and, or,
+                        iterate,
                         scanl, scanl1,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_ )
@@ -417,6 +418,11 @@ unfoldr = M.unfoldr
 unfoldrN :: Int -> (s -> Maybe (a, s)) -> s -> Stream a
 {-# INLINE unfoldrN #-}
 unfoldrN = M.unfoldrN
+
+-- | Apply function n-1 times to value. Zeroth element is original value.
+iterate :: Int -> (a -> a) -> a -> Stream a
+{-# INLINE iterate #-}
+iterate = M.iterate
 
 -- Scans
 -- -----

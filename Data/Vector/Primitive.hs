@@ -39,7 +39,7 @@ module Data.Vector.Primitive (
   -- * Construction
 
   -- ** Initialisation
-  empty, singleton, replicate, generate,
+  empty, singleton, replicate, generate, iterate,
 
   -- ** Monadic initialisation
   replicateM, generateM, create,
@@ -152,7 +152,7 @@ import Prelude hiding ( length, null,
                         filter, takeWhile, dropWhile, span, break,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
-                        all, any, sum, product, minimum, maximum,
+                        all, any, sum, product, minimum, maximum, iterate,
                         scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_ )
@@ -453,6 +453,11 @@ replicate = G.replicate
 generate :: Prim a => Int -> (Int -> a) -> Vector a
 {-# INLINE generate #-}
 generate = G.generate
+
+-- | /O(n)/ Apply function n times to value. Zeroth element is original value.
+iterate :: Prim a => Int -> (a -> a) -> a -> Vector a
+{-# INLINE iterate #-}
+iterate = G.iterate
 
 -- Unfolding
 -- ---------
