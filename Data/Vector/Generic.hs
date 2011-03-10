@@ -71,6 +71,9 @@ module Data.Vector.Generic (
 
   -- * Elementwise operations
 
+  -- ** Indexing
+  indexed,
+
   -- ** Mapping
   map, imap, concatMap,
 
@@ -873,6 +876,14 @@ modifyWithStream :: Vector v a
                  -> v a -> Stream b -> v a
 {-# INLINE modifyWithStream #-}
 modifyWithStream p v s = new (New.modifyWithStream p (clone v) s)
+
+-- Indexing
+-- --------
+
+-- | /O(n)/ Pair each element in a vector with its index
+indexed :: (Vector v a, Vector v (Int,a)) => v a -> v (Int,a)
+{-# INLINE indexed #-}
+indexed = unstream . inplace MStream.indexed . stream
 
 -- Mapping
 -- -------

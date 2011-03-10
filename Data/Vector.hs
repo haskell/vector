@@ -81,6 +81,9 @@ module Data.Vector (
 
   -- * Elementwise operations
 
+  -- ** Indexing
+  indexed,
+
   -- ** Mapping
   map, imap, concatMap,
 
@@ -727,6 +730,14 @@ unsafeBackpermute = G.unsafeBackpermute
 modify :: (forall s. MVector s a -> ST s ()) -> Vector a -> Vector a
 {-# INLINE modify #-}
 modify p = G.modify p
+
+-- Indexing
+-- --------
+
+-- | /O(n)/ Pair each element in a vector with its index
+indexed :: Vector a -> Vector (Int,a)
+{-# INLINE indexed #-}
+indexed = G.indexed
 
 -- Mapping
 -- -------
