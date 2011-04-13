@@ -381,7 +381,7 @@ tail :: Vector v a => v a -> v a
 {-# INLINE_STREAM tail #-}
 tail v = slice 1 (length v - 1) v
 
--- | /O(1)/ Yield at the first @n@ elements without copying. The vector may
+-- | /O(1)/ Yield the first @n@ elements without copying. The vector may
 -- contain less than @n@ elements in which case it is returned unchanged.
 take :: Vector v a => Int -> v a -> v a
 {-# INLINE_STREAM take #-}
