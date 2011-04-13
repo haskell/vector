@@ -182,9 +182,17 @@ import Prelude hiding ( length, null,
                         mapM, mapM_ )
 
 import Data.Typeable ( Typeable1, gcast1 )
-import Data.Data ( Data, DataType, mkNorepType )
 
 #include "vector.h"
+
+import Data.Data ( Data, DataType )
+#if MIN_VERSION_base(4,2,0)
+import Data.Data ( mkNoRepType )
+#else
+import Data.Data ( mkNorepType )
+mkNoRepType :: String -> DataType
+mkNoRepType = mkNorepType
+#endif
 
 -- Length information
 -- ------------------
@@ -1794,7 +1802,7 @@ gfoldl f z v = z fromList `f` toList v
 
 mkType :: String -> DataType
 {-# INLINE mkType #-}
-mkType = mkNorepType
+mkType = mkNoRepType
 
 dataCast :: (Vector v a, Data a, Typeable1 v, Typeable1 t)
          => (forall d. Data  d => c (t d)) -> Maybe  (c (v a))
