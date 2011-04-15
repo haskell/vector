@@ -48,7 +48,7 @@ module Data.Vector.Unboxed.Mutable (
   -- * Modifying vectors
 
   -- ** Filling and copying
-  set, copy, unsafeCopy,
+  set, copy, move, unsafeCopy, unsafeMove,
 
   -- * Deprecated operations
   newWith, unsafeNewWith
@@ -250,6 +250,32 @@ unsafeCopy :: (PrimMonad m, Unbox a)
            -> m ()
 {-# INLINE unsafeCopy #-}
 unsafeCopy = G.unsafeCopy
+
+-- | Move the contents of a vector. The two vectors must have the same
+-- length.
+-- 
+-- If the vectors do not overlap, then this is equivalent to 'copy'.
+-- Otherwise, the copying is performed as if the source vector were
+-- copied to a temporary vector and then the temporary vector was copied
+-- to the target vector.
+move :: (PrimMonad m, Unbox a)
+                 => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
+{-# INLINE move #-}
+move = G.move
+
+-- | Move the contents of a vector. The two vectors must have the same
+-- length, but this is not checked.
+-- 
+-- If the vectors do not overlap, then this is equivalent to 'unsafeCopy'.
+-- Otherwise, the copying is performed as if the source vector were
+-- copied to a temporary vector and then the temporary vector was copied
+-- to the target vector.
+unsafeMove :: (PrimMonad m, Unbox a)
+                          => MVector (PrimState m) a   -- ^ target
+                          -> MVector (PrimState m) a   -- ^ source
+                          -> m ()
+{-# INLINE unsafeMove #-}
+unsafeMove = G.unsafeMove
 
 -- Deprecated functions
 -- --------------------

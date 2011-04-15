@@ -27,7 +27,7 @@ Executable "vector-tests"
               TypeFamilies,
               TemplateHaskell
 
-  Build-Depends: base >= 4 && < 5, template-haskell, vector == 0.7,
+  Build-Depends: base >= 4 && < 5, template-haskell, vector == 0.6.0.1,
                  random,
                  QuickCheck >= 2, test-framework, test-framework-quickcheck2
 

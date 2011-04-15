@@ -45,7 +45,7 @@ module Data.Vector.Generic.Mutable (
   -- * Modifying vectors
 
   -- ** Filling and copying
-  set, copy, unsafeCopy,
+  set, copy, move, unsafeCopy, unsafeMove,
 
   -- * Internal operations
   unstream, unstreamR,
@@ -122,6 +122,12 @@ class MVector v a where
                                   -> v (PrimState m) a   -- ^ source
                                   -> m ()
 
+  -- | Move the contents of a vector. The two vectors may overlap. This method
+  -- should not be called directly, use 'unsafeMove' instead.
+  basicUnsafeMove  :: PrimMonad m => v (PrimState m) a   -- ^ target
+                                  -> v (PrimState m) a   -- ^ source
+                                  -> m ()
+
   -- | Grow a vector by the given number of elements. This method should not be
   -- called directly, use 'unsafeGrow' instead.
   basicUnsafeGrow  :: PrimMonad m => v (PrimState m) a -> Int
@@ -163,6 +169,13 @@ class MVector v a where
                             basicUnsafeWrite dst i x
                             do_copy (i+1)
                 | otherwise = return ()
+  
+  {-# INLINE basicUnsafeMove #-}
+  basicUnsafeMove !dst !src
+    | basicOverlaps dst src = do
+        srcCopy <- clone src
+        basicUnsafeCopy dst srcCopy
+    | otherwise = basicUnsafeCopy dst src
 
   {-# INLINE basicUnsafeGrow #-}
   basicUnsafeGrow v by
@@ -636,6 +649,20 @@ copy dst src = BOUNDS_CHECK(check) "copy" "overlapping vectors"
                                           (length dst == length src)
              $ unsafeCopy dst src
 
+-- | Move the contents of a vector. The two vectors must have the same
+-- length.
+-- 
+-- If the vectors do not overlap, then this is equivalent to 'copy'.
+-- Otherwise, the copying is performed as if the source vector were
+-- copied to a temporary vector and then the temporary vector was copied
+-- to the target vector.
+move :: (PrimMonad m, MVector v a)
+                => v (PrimState m) a -> v (PrimState m) a -> m ()
+{-# INLINE move #-}
+move dst src = BOUNDS_CHECK(check) "move" "length mismatch"
+                                          (length dst == length src)
+             $ unsafeMove dst src
+
 -- | Copy a vector. The two vectors must have the same length and may not
 -- overlap. This is not checked.
 unsafeCopy :: (PrimMonad m, MVector v a) => v (PrimState m) a   -- ^ target
@@ -648,6 +675,20 @@ unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
                                          (not (dst `overlaps` src))
                    $ (dst `seq` src `seq` basicUnsafeCopy dst src)
 
+-- | Move the contents of a vector. The two vectors must have the same
+-- length, but this is not checked.
+-- 
+-- If the vectors do not overlap, then this is equivalent to 'unsafeCopy'.
+-- Otherwise, the copying is performed as if the source vector were
+-- copied to a temporary vector and then the temporary vector was copied
+-- to the target vector.
+unsafeMove :: (PrimMonad m, MVector v a) => v (PrimState m) a   -- ^ target
+                                         -> v (PrimState m) a   -- ^ source
+                                         -> m ()
+{-# INLINE unsafeMove #-}
+unsafeMove dst src = UNSAFE_CHECK(check) "unsafeMove" "length mismatch"
+                                         (length dst == length src)
+                   $ (dst `seq` src `seq` basicUnsafeMove dst src)
 
 -- Permutations
 -- ------------

@@ -55,6 +55,11 @@ instance (Unbox a, Unbox b) => M.MVector MVector (a, b) where
       = do
           M.basicUnsafeCopy as1 as2
           M.basicUnsafeCopy bs1 bs2
+  {-# INLINE basicUnsafeMove  #-}
+  basicUnsafeMove (MV_2 n_1 as1 bs1) (MV_2 n_2 as2 bs2)
+      = do
+          M.basicUnsafeMove as1 as2
+          M.basicUnsafeMove bs1 bs2
   {-# INLINE basicUnsafeGrow  #-}
   basicUnsafeGrow (MV_2 n_ as bs) m_
       = do
@@ -195,6 +200,12 @@ instance (Unbox a,
           M.basicUnsafeCopy as1 as2
           M.basicUnsafeCopy bs1 bs2
           M.basicUnsafeCopy cs1 cs2
+  {-# INLINE basicUnsafeMove  #-}
+  basicUnsafeMove (MV_3 n_1 as1 bs1 cs1) (MV_3 n_2 as2 bs2 cs2)
+      = do
+          M.basicUnsafeMove as1 as2
+          M.basicUnsafeMove bs1 bs2
+          M.basicUnsafeMove cs1 cs2
   {-# INLINE basicUnsafeGrow  #-}
   basicUnsafeGrow (MV_3 n_ as bs cs) m_
       = do
@@ -371,6 +382,16 @@ instance (Unbox a,
           M.basicUnsafeCopy bs1 bs2
           M.basicUnsafeCopy cs1 cs2
           M.basicUnsafeCopy ds1 ds2
+  {-# INLINE basicUnsafeMove  #-}
+  basicUnsafeMove (MV_4 n_1 as1 bs1 cs1 ds1) (MV_4 n_2 as2
+                                                       bs2
+                                                       cs2
+                                                       ds2)
+      = do
+          M.basicUnsafeMove as1 as2
+          M.basicUnsafeMove bs1 bs2
+          M.basicUnsafeMove cs1 cs2
+          M.basicUnsafeMove ds1 ds2
   {-# INLINE basicUnsafeGrow  #-}
   basicUnsafeGrow (MV_4 n_ as bs cs ds) m_
       = do

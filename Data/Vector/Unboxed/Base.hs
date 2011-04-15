@@ -155,6 +155,7 @@ instance M.MVector MVector ty where {                                   \
 ; basicClear (con v) = M.basicClear v                                   \
 ; basicSet (con v) x = M.basicSet v x                                   \
 ; basicUnsafeCopy (con v1) (con v2) = M.basicUnsafeCopy v1 v2           \
+; basicUnsafeMove (con v1) (con v2) = M.basicUnsafeMove v1 v2           \
 ; basicUnsafeGrow (con v) n = con `liftM` M.basicUnsafeGrow v n }
 
 #define primVector(ty,con,mcon)                                         \
@@ -295,6 +296,7 @@ instance M.MVector MVector Bool where
   basicClear (MV_Bool v) = M.basicClear v
   basicSet (MV_Bool v) x = M.basicSet v (fromBool x)
   basicUnsafeCopy (MV_Bool v1) (MV_Bool v2) = M.basicUnsafeCopy v1 v2
+  basicUnsafeMove (MV_Bool v1) (MV_Bool v2) = M.basicUnsafeMove v1 v2
   basicUnsafeGrow (MV_Bool v) n = MV_Bool `liftM` M.basicUnsafeGrow v n
 
 instance G.Vector Vector Bool where
@@ -343,6 +345,7 @@ instance (RealFloat a, Unbox a) => M.MVector MVector (Complex a) where
   basicClear (MV_Complex v) = M.basicClear v
   basicSet (MV_Complex v) (x :+ y) = M.basicSet v (x,y)
   basicUnsafeCopy (MV_Complex v1) (MV_Complex v2) = M.basicUnsafeCopy v1 v2
+  basicUnsafeMove (MV_Complex v1) (MV_Complex v2) = M.basicUnsafeMove v1 v2
   basicUnsafeGrow (MV_Complex v) n = MV_Complex `liftM` M.basicUnsafeGrow v n
 
 instance (RealFloat a, Unbox a) => G.Vector Vector (Complex a) where

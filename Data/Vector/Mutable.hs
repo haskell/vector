@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, BangPatterns #-}
 
 -- |
 -- Module      : Data.Vector.Mutable
@@ -46,12 +46,13 @@ module Data.Vector.Mutable (
   -- * Modifying vectors
 
   -- ** Filling and copying
-  set, copy, unsafeCopy,
+  set, copy, move, unsafeCopy, unsafeMove,
 
   -- * Deprecated operations
   newWith, unsafeNewWith
 ) where
 
+import           Control.Monad (when)
 import qualified Data.Vector.Generic.Mutable as G
 import           Data.Primitive.Array
 import           Control.Monad.Primitive
@@ -103,9 +104,69 @@ instance G.MVector MVector a where
 
   {-# INLINE basicUnsafeWrite #-}
   basicUnsafeWrite (MVector i n arr) j x = writeArray arr (i+j) x
+  
+  basicUnsafeMove dst@(MVector iDst n arrDst) src@(MVector iSrc _ arrSrc)
+    = case n of
+        0 -> return ()
+        1 -> readArray arrSrc iSrc >>= writeArray arrDst iDst
+        2 -> do
+               x <- readArray arrSrc iSrc
+               y <- readArray arrSrc (iSrc + 1)
+               writeArray arrDst iDst x
+               writeArray arrDst (iDst + 1) y
+        _
+          | overlaps dst src
+             -> case compare iDst iSrc of
+                  LT -> moveBackwards arrDst iDst iSrc n
+                  EQ -> return ()
+                  GT | (iDst - iSrc) * 2 < n
+                        -> moveForwardsLargeOverlap arrDst iDst iSrc n
+                     | otherwise
+                        -> moveForwardsSmallOverlap arrDst iDst iSrc n
+          | otherwise -> G.basicUnsafeCopy dst src
 
   {-# INLINE basicClear #-}
   basicClear v = G.set v uninitialised
+
+{-# INLINE moveBackwards #-}
+moveBackwards :: PrimMonad m => MutableArray (PrimState m) a -> Int -> Int -> Int -> m ()
+moveBackwards !arr !dstOff !srcOff !len =
+  INTERNAL_CHECK(check) "moveBackwards" "not a backwards move" (dstOff < srcOff)
+  $ loopM len $ \ i -> readArray arr (srcOff + i) >>= writeArray arr (dstOff + i)
+
+{-# INLINE moveForwardsSmallOverlap #-}
+-- Performs a move when dstOff > srcOff, optimized for when the overlap of the intervals is small.
+moveForwardsSmallOverlap :: PrimMonad m => MutableArray (PrimState m) a -> Int -> Int -> Int -> m ()
+moveForwardsSmallOverlap !arr !dstOff !srcOff !len =
+  INTERNAL_CHECK(check) "moveForwardsSmallOverlap" "not a forward move" (dstOff > srcOff)
+  $ do
+      tmp <- newArray overlap uninitialised
+      loopM overlap $ \ i -> readArray arr (dstOff + i) >>= writeArray tmp i
+      loopM nonOverlap $ \ i -> readArray arr (srcOff + i) >>= writeArray arr (dstOff + i)
+      loopM overlap $ \ i -> readArray tmp i >>= writeArray arr (dstOff + nonOverlap + i)
+  where nonOverlap = dstOff - srcOff; overlap = len - nonOverlap
+
+-- Performs a move when dstOff > srcOff, optimized for when the overlap of the intervals is large.
+moveForwardsLargeOverlap :: PrimMonad m => MutableArray (PrimState m) a -> Int -> Int -> Int -> m ()
+moveForwardsLargeOverlap !arr !dstOff !srcOff !len =
+  INTERNAL_CHECK(check) "moveForwardsLargeOverlap" "not a forward move" (dstOff > srcOff)
+  $ do
+      queue <- newArray nonOverlap uninitialised
+      loopM nonOverlap $ \ i -> readArray arr (srcOff + i) >>= writeArray queue i
+      let mov !i !qTop = when (i < dstOff + len) $ do
+            x <- readArray arr i
+            y <- readArray queue qTop
+            writeArray arr i y
+            writeArray queue qTop x
+            mov (i+1) (if qTop + 1 >= nonOverlap then 0 else qTop + 1)
+      mov dstOff 0
+  where nonOverlap = dstOff - srcOff
+
+{-# INLINE loopM #-}
+loopM :: Monad m => Int -> (Int -> m a) -> m ()
+loopM !n k = let
+  go i = when (i < n) (k i >> go (i+1))
+  in go 0
 
 uninitialised :: a
 uninitialised = error "Data.Vector.Mutable: uninitialised element"
@@ -290,6 +351,31 @@ unsafeCopy :: PrimMonad m => MVector (PrimState m) a   -- ^ target
                           -> m ()
 {-# INLINE unsafeCopy #-}
 unsafeCopy = G.unsafeCopy
+
+-- | Move the contents of a vector. The two vectors must have the same
+-- length.
+-- 
+-- If the vectors do not overlap, then this is equivalent to 'copy'.
+-- Otherwise, the copying is performed as if the source vector were
+-- copied to a temporary vector and then the temporary vector was copied
+-- to the target vector.
+move :: PrimMonad m
+                 => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
+{-# INLINE move #-}
+move = G.move
+
+-- | Move the contents of a vector. The two vectors must have the same
+-- length, but this is not checked.
+-- 
+-- If the vectors do not overlap, then this is equivalent to 'unsafeCopy'.
+-- Otherwise, the copying is performed as if the source vector were
+-- copied to a temporary vector and then the temporary vector was copied
+-- to the target vector.
+unsafeMove :: PrimMonad m => MVector (PrimState m) a   -- ^ target
+                          -> MVector (PrimState m) a   -- ^ source
+                          -> m ()
+{-# INLINE unsafeMove #-}
+unsafeMove = G.unsafeMove
 
 -- Deprecated functions
 -- --------------------

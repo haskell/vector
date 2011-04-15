@@ -46,7 +46,7 @@ module Data.Vector.Storable.Mutable(
   -- * Modifying vectors
 
   -- ** Filling and copying
-  set, copy, unsafeCopy,
+  set, copy, move, unsafeCopy, unsafeMove,
 
   -- * Raw pointers
   unsafeFromForeignPtr, unsafeToForeignPtr, unsafeWith,
@@ -66,7 +66,7 @@ import GHC.ForeignPtr (mallocPlainForeignPtrBytes)
 #endif
 
 import Foreign.Ptr
-import Foreign.Marshal.Array ( advancePtr, copyArray )
+import Foreign.Marshal.Array ( advancePtr, copyArray, moveArray )
 import Foreign.C.Types ( CInt )
 
 import Control.Monad.Primitive
@@ -124,6 +124,13 @@ instance Storable a => G.MVector MVector a where
     $ withForeignPtr fp $ \_ ->
       withForeignPtr fq $ \_ ->
       copyArray p q n
+  
+  {-# INLINE basicUnsafeMove #-}
+  basicUnsafeMove (MVector p n fp) (MVector q _ fq)
+    = unsafePrimToPrim
+    $ withForeignPtr fp $ \_ ->
+      withForeignPtr fq $ \_ ->
+      moveArray p q n
 
 {-# INLINE mallocVector #-}
 mallocVector :: Storable a => Int -> IO (ForeignPtr a)
@@ -324,6 +331,32 @@ unsafeCopy :: (PrimMonad m, Storable a)
            -> m ()
 {-# INLINE unsafeCopy #-}
 unsafeCopy = G.unsafeCopy
+
+-- | Move the contents of a vector. The two vectors must have the same
+-- length.
+-- 
+-- If the vectors do not overlap, then this is equivalent to 'copy'.
+-- Otherwise, the copying is performed as if the source vector were
+-- copied to a temporary vector and then the temporary vector was copied
+-- to the target vector.
+move :: (PrimMonad m, Storable a)
+                 => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
+{-# INLINE move #-}
+move = G.move
+
+-- | Move the contents of a vector. The two vectors must have the same
+-- length, but this is not checked.
+-- 
+-- If the vectors do not overlap, then this is equivalent to 'unsafeCopy'.
+-- Otherwise, the copying is performed as if the source vector were
+-- copied to a temporary vector and then the temporary vector was copied
+-- to the target vector.
+unsafeMove :: (PrimMonad m, Storable a)
+                          => MVector (PrimState m) a   -- ^ target
+                          -> MVector (PrimState m) a   -- ^ source
+                          -> m ()
+{-# INLINE unsafeMove #-}
+unsafeMove = G.unsafeMove
 
 -- Raw pointers
 -- ------------
