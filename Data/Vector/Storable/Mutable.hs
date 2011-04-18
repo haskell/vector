@@ -60,6 +60,11 @@ import Data.Vector.Storable.Internal
 
 import Foreign.Storable
 import Foreign.ForeignPtr
+
+#if __GLASGOW_HASKELL__ >= 605
+import GHC.ForeignPtr (mallocPlainForeignPtrBytes)
+#endif
+
 import Foreign.Ptr
 import Foreign.Marshal.Array ( advancePtr, copyArray )
 import Foreign.C.Types ( CInt )
@@ -100,7 +105,7 @@ instance Storable a => G.MVector MVector a where
   basicUnsafeNew n
     = unsafePrimToPrim
     $ do
-        fp <- mallocForeignPtrArray n
+        fp <- mallocVector n
         withForeignPtr fp $ \p -> return $ MVector p n fp
 
   {-# INLINE basicUnsafeRead #-}
@@ -119,6 +124,18 @@ instance Storable a => G.MVector MVector a where
     $ withForeignPtr fp $ \_ ->
       withForeignPtr fq $ \_ ->
       copyArray p q n
+
+{-# INLINE mallocVector #-}
+mallocVector :: Storable a => Int -> IO (ForeignPtr a)
+mallocVector =
+#if __GLASGOW_HASKELL__ >= 605
+    doMalloc undefined
+        where
+          doMalloc :: Storable b => b -> Int -> IO (ForeignPtr b)
+          doMalloc dummy size = mallocPlainForeignPtrBytes (size * sizeOf dummy)
+#else
+    mallocForeignPtrArray
+#endif
 
 -- Length information
 -- ------------------
