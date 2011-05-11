@@ -164,6 +164,11 @@ generate n =
          mk_do [q rec <+> vs <> char '1' <+> vs <> char '2' | vs <- varss]
                empty)
 
+    gen_unsafeMove rec
+      = (patn "MV" 1 <+> patn "MV" 2,
+         mk_do [qM rec <+> vs <> char '1' <+> vs <> char '2' | vs <- varss]
+               empty)
+
     gen_unsafeGrow rec
       = (pat "MV" <+> var 'm',
          mk_do [vs <> char '\'' <+> text "<-"
@@ -218,6 +223,7 @@ generate n =
                       ,("basicClear",             gen_clear)
                       ,("basicSet",               gen_set)
                       ,("basicUnsafeCopy",        gen_unsafeCopy "MV" qM)
+                      ,("basicUnsafeMove",        gen_unsafeMove)
                       ,("basicUnsafeGrow",        gen_unsafeGrow)]
 
     methods_Vector  = [("basicUnsafeFreeze",      gen_unsafeFreeze)

@@ -613,6 +613,18 @@ instance (Unbox a,
           M.basicUnsafeCopy cs1 cs2
           M.basicUnsafeCopy ds1 ds2
           M.basicUnsafeCopy es1 es2
+  {-# INLINE basicUnsafeMove  #-}
+  basicUnsafeMove (MV_5 n_1 as1 bs1 cs1 ds1 es1) (MV_5 n_2 as2
+                                                           bs2
+                                                           cs2
+                                                           ds2
+                                                           es2)
+      = do
+          M.basicUnsafeMove as1 as2
+          M.basicUnsafeMove bs1 bs2
+          M.basicUnsafeMove cs1 cs2
+          M.basicUnsafeMove ds1 ds2
+          M.basicUnsafeMove es1 es2
   {-# INLINE basicUnsafeGrow  #-}
   basicUnsafeGrow (MV_5 n_ as bs cs ds es) m_
       = do
@@ -887,6 +899,20 @@ instance (Unbox a,
           M.basicUnsafeCopy ds1 ds2
           M.basicUnsafeCopy es1 es2
           M.basicUnsafeCopy fs1 fs2
+  {-# INLINE basicUnsafeMove  #-}
+  basicUnsafeMove (MV_6 n_1 as1 bs1 cs1 ds1 es1 fs1) (MV_6 n_2 as2
+                                                               bs2
+                                                               cs2
+                                                               ds2
+                                                               es2
+                                                               fs2)
+      = do
+          M.basicUnsafeMove as1 as2
+          M.basicUnsafeMove bs1 bs2
+          M.basicUnsafeMove cs1 cs2
+          M.basicUnsafeMove ds1 ds2
+          M.basicUnsafeMove es1 es2
+          M.basicUnsafeMove fs1 fs2
   {-# INLINE basicUnsafeGrow  #-}
   basicUnsafeGrow (MV_6 n_ as bs cs ds es fs) m_
       = do
