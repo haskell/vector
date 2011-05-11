@@ -1,10 +1,10 @@
 Name:           vector
-Version:        0.7.0.1
+Version:        0.7.1
 License:        BSD3
 License-File:   LICENSE
 Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
 Maintainer:     Roman Leshchinskiy <rl@cse.unsw.edu.au>
-Copyright:      (c) Roman Leshchinskiy 2008-2010
+Copyright:      (c) Roman Leshchinskiy 2008-2011
 Homepage:       http://code.haskell.org/vector
 Bug-Reports:    http://trac.haskell.org/vector
 Category:       Data, Data Structures
@@ -37,6 +37,15 @@ Description:
         requests.
         .
         * <http://trac.haskell.org/vector>
+        .
+        Changes in version 0.7.1
+        .
+        * New functions for copying potentially overlapping arrays: @move@,
+          @unsafeMove@ (contributed by Louis Wasserman)
+        .
+        * New function: @splitAt@ (contributed by Bas van Dijk)
+        .
+        * Efficiency improvements (with contributions by Bas van Dijk)
         .
         Changes in version 0.7.0.1
         .

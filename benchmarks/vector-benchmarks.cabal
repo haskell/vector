@@ -1,10 +1,10 @@
 Name:           vector-benchmarks
-Version:        0.7.0.1
+Version:        0.7.1
 License:        BSD3
 License-File:   LICENSE
 Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
 Maintainer:     Roman Leshchinskiy <rl@cse.unsw.edu.au>
-Copyright:      (c) Roman Leshchinskiy 2010
+Copyright:      (c) Roman Leshchinskiy 2010-2011
 Cabal-Version:  >= 1.2
 Build-Type:     Simple
 
@@ -14,7 +14,7 @@ Executable algorithms
   Build-Depends: base >= 2 && < 5, array,
                  criterion >= 0.5 && < 0.6,
                  mwc-random >= 0.5 && < 0.9,
-                 vector == 0.7.0.1
+                 vector == 0.7.1
 
   if impl(ghc<6.13)
     Ghc-Options: -finline-if-enough-args -fno-method-sharing
