@@ -22,7 +22,7 @@ module Data.Vector.Storable.Mutable(
   length, null,
 
   -- ** Extracting subvectors
-  slice, init, tail, take, drop,
+  slice, init, tail, take, drop, splitAt,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
 
   -- ** Overlapping
@@ -67,7 +67,7 @@ import Foreign.C.Types ( CInt )
 import Control.Monad.Primitive
 
 import Prelude hiding ( length, null, replicate, reverse, map, read,
-                        take, drop, init, tail )
+                        take, drop, splitAt, init, tail )
 
 import Data.Typeable ( Typeable )
 
@@ -148,6 +148,10 @@ take = G.take
 drop :: Storable a => Int -> MVector s a -> MVector s a
 {-# INLINE drop #-}
 drop = G.drop
+
+splitAt :: Storable a => Int -> MVector s a -> (MVector s a, MVector s a)
+{-# INLINE splitAt #-}
+splitAt = G.splitAt
 
 init :: Storable a => MVector s a -> MVector s a
 {-# INLINE init #-}

@@ -21,7 +21,7 @@ module Data.Vector.Generic.Mutable (
   length, null,
 
   -- ** Extracting subvectors
-  slice, init, tail, take, drop,
+  slice, init, tail, take, drop, splitAt,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
 
   -- ** Overlapping
@@ -68,7 +68,7 @@ import           Data.Vector.Fusion.Util        ( delay_inline )
 import Control.Monad.Primitive ( PrimMonad, PrimState )
 
 import Prelude hiding ( length, null, replicate, reverse, map, read,
-                        take, drop, init, tail )
+                        take, drop, splitAt, init, tail )
 
 #include "vector.h"
 
@@ -410,6 +410,16 @@ drop n v = unsafeSlice (min m n') (max 0 (m - n')) v
   where
     n' = max n 0
     m  = length v
+
+{-# INLINE splitAt #-}
+splitAt :: MVector v a => Int -> v s a -> (v s a, v s a)
+splitAt n v = ( unsafeSlice 0 m v
+              , unsafeSlice m (max 0 (len - n')) v
+              )
+    where
+      m   = min n' len
+      n'  = max n 0
+      len = length v
 
 init :: MVector v a => v s a -> v s a
 {-# INLINE init #-}

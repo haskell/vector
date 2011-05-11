@@ -20,7 +20,7 @@ module Data.Vector.Unboxed.Mutable (
   length, null,
 
   -- ** Extracting subvectors
-  slice, init, tail, take, drop,
+  slice, init, tail, take, drop, splitAt,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
 
   -- ** Overlapping
@@ -60,7 +60,7 @@ import qualified Data.Vector.Generic.Mutable as G
 import Control.Monad.Primitive
 
 import Prelude hiding ( length, null, replicate, reverse, map, read,
-                        take, drop, init, tail,
+                        take, drop, splitAt, init, tail,
                         zip, zip3, unzip, unzip3 )
 
 #include "vector.h"
@@ -93,6 +93,10 @@ take = G.take
 drop :: Unbox a => Int -> MVector s a -> MVector s a
 {-# INLINE drop #-}
 drop = G.drop
+
+splitAt :: Unbox a => Int -> MVector s a -> (MVector s a, MVector s a)
+{-# INLINE splitAt #-}
+splitAt = G.splitAt
 
 init :: Unbox a => MVector s a -> MVector s a
 {-# INLINE init #-}

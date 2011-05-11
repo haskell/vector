@@ -22,7 +22,7 @@ module Data.Vector.Primitive.Mutable (
   length, null,
 
   -- ** Extracting subvectors
-  slice, init, tail, take, drop,
+  slice, init, tail, take, drop, splitAt,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
 
   -- ** Overlapping
@@ -59,7 +59,7 @@ import           Control.Monad.Primitive
 import           Control.Monad ( liftM )
 
 import Prelude hiding ( length, null, replicate, reverse, map, read,
-                        take, drop, init, tail )
+                        take, drop, splitAt, init, tail )
 
 import Data.Typeable ( Typeable )
 
@@ -130,6 +130,10 @@ take = G.take
 drop :: Prim a => Int -> MVector s a -> MVector s a
 {-# INLINE drop #-}
 drop = G.drop
+
+splitAt :: Prim a => Int -> MVector s a -> (MVector s a, MVector s a)
+{-# INLINE splitAt #-}
+splitAt = G.splitAt
 
 init :: Prim a => MVector s a -> MVector s a
 {-# INLINE init #-}

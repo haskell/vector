@@ -33,7 +33,7 @@ module Data.Vector.Primitive (
   unsafeIndexM, unsafeHeadM, unsafeLastM,
 
   -- ** Extracting subvectors (slicing)
-  slice, init, tail, take, drop,
+  slice, init, tail, take, drop, splitAt,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
 
   -- * Construction
@@ -145,7 +145,7 @@ import Control.Monad.Primitive
 import Prelude hiding ( length, null,
                         replicate, (++), concat,
                         head, last,
-                        init, tail, take, drop, reverse,
+                        init, tail, take, drop, splitAt, reverse,
                         map, concatMap,
                         zipWith, zipWith3, zip, zip3, unzip, unzip3,
                         filter, takeWhile, dropWhile, span, break,
@@ -387,6 +387,14 @@ take = G.take
 drop :: Prim a => Int -> Vector a -> Vector a
 {-# INLINE drop #-}
 drop = G.drop
+
+-- | /O(1)/ Yield the first @n@ elements paired with the remainder without copying.
+--
+-- Note that @'splitAt' n v@ is equivalent to @('take' n v, 'drop' n v)@
+-- but slightly more efficient.
+{-# INLINE splitAt #-}
+splitAt :: Prim a => Int -> Vector a -> (Vector a, Vector a)
+splitAt = G.splitAt
 
 -- | /O(1)/ Yield a slice of the vector without copying. The vector must
 -- contain at least @i+n@ elements but this is not checked.

@@ -30,7 +30,7 @@ module Data.Vector.Generic (
   unsafeIndexM, unsafeHeadM, unsafeLastM,
 
   -- ** Extracting subvectors (slicing)
-  slice, init, tail, take, drop,
+  slice, init, tail, take, drop, splitAt,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
 
   -- * Construction
@@ -170,7 +170,7 @@ import qualified Data.List as List
 import Prelude hiding ( length, null,
                         replicate, (++), concat,
                         head, last,
-                        init, tail, take, drop, reverse,
+                        init, tail, take, drop, splitAt, reverse,
                         map, concat, concatMap,
                         zipWith, zipWith3, zip, zip3, unzip, unzip3,
                         filter, takeWhile, dropWhile, span, break,
@@ -404,6 +404,20 @@ drop n v = unsafeSlice (delay_inline min n' len)
                        (delay_inline max 0 (len - n')) v
   where n' = max n 0
         len = length v
+
+-- | /O(1)/ Yield the first @n@ elements paired with the remainder without copying.
+--
+-- Note that @'splitAt' n v@ is equivalent to @('take' n v, 'drop' n v)@
+-- but slightly more efficient.
+{-# INLINE_STREAM splitAt #-}
+splitAt :: Vector v a => Int -> v a -> (v a, v a)
+splitAt n v = ( unsafeSlice 0 m v
+              , unsafeSlice m (delay_inline max 0 (len - n')) v
+              )
+    where
+      m   = delay_inline min n' len
+      n'  = max n 0
+      len = length v
 
 -- | /O(1)/ Yield a slice of the vector without copying. The vector must
 -- contain at least @i+n@ elements but this is not checked.
