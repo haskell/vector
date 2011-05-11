@@ -883,7 +883,7 @@ modifyWithStream p v s = new (New.modifyWithStream p (clone v) s)
 -- | /O(n)/ Pair each element in a vector with its index
 indexed :: (Vector v a, Vector v (Int,a)) => v a -> v (Int,a)
 {-# INLINE indexed #-}
-indexed = unstream . inplace MStream.indexed . stream
+indexed = unstream . Stream.indexed . stream
 
 -- Mapping
 -- -------
