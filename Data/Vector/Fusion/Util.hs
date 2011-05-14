@@ -13,7 +13,7 @@
 module Data.Vector.Fusion.Util (
   Id(..), Box(..),
 
-  delay_inline
+  delay_inline, delayed_min
 ) where
 
 -- | Identity monad
@@ -41,4 +41,8 @@ delay_inline :: (a -> b) -> a -> b
 {-# INLINE [0] delay_inline #-}
 delay_inline f = f
 
+-- | `min` inlined in phase 0
+delayed_min :: Int -> Int -> Int
+{-# INLINE [0] delayed_min #-}
+delayed_min m n = min m n
 
