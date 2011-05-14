@@ -107,7 +107,7 @@ zip :: (Unbox a, Unbox b) => MVector s a ->
                              MVector s b -> MVector s (a, b)
 {-# INLINE_STREAM zip #-}
 zip as bs = MV_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
-  where len = length as `min` length bs
+  where len = length as `delayed_min` length bs
 -- | /O(1)/ Unzip 2 vectors
 unzip :: (Unbox a, Unbox b) => MVector s (a, b) -> (MVector s a,
                                                     MVector s b)
@@ -119,7 +119,7 @@ unzip (MV_2 n_ as bs) = (as, bs)
 zip :: (Unbox a, Unbox b) => Vector a -> Vector b -> Vector (a, b)
 {-# INLINE_STREAM zip #-}
 zip as bs = V_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
-  where len = length as `min` length bs
+  where len = length as `delayed_min` length bs
 {-# RULES "stream/zip [Vector.Unboxed]" forall as bs .
   G.stream (zip as bs) = Stream.zipWith (,) (G.stream as)
                                             (G.stream bs)
@@ -265,7 +265,8 @@ zip3 :: (Unbox a, Unbox b, Unbox c) => MVector s a ->
 zip3 as bs cs = MV_3 len (unsafeSlice 0 len as)
                          (unsafeSlice 0 len bs)
                          (unsafeSlice 0 len cs)
-  where len = length as `min` length bs `min` length cs
+  where
+    len = length as `delayed_min` length bs `delayed_min` length cs
 -- | /O(1)/ Unzip 3 vectors
 unzip3 :: (Unbox a,
            Unbox b,
@@ -284,7 +285,8 @@ zip3 :: (Unbox a, Unbox b, Unbox c) => Vector a ->
 zip3 as bs cs = V_3 len (unsafeSlice 0 len as)
                         (unsafeSlice 0 len bs)
                         (unsafeSlice 0 len cs)
-  where len = length as `min` length bs `min` length cs
+  where
+    len = length as `delayed_min` length bs `delayed_min` length cs
 {-# RULES "stream/zip3 [Vector.Unboxed]" forall as bs cs .
   G.stream (zip3 as bs cs) = Stream.zipWith3 (, ,) (G.stream as)
                                                    (G.stream bs)
@@ -465,7 +467,10 @@ zip4 as bs cs ds = MV_4 len (unsafeSlice 0 len as)
                             (unsafeSlice 0 len cs)
                             (unsafeSlice 0 len ds)
   where
-    len = length as `min` length bs `min` length cs `min` length ds
+    len = length as `delayed_min`
+          length bs `delayed_min`
+          length cs `delayed_min`
+          length ds
 -- | /O(1)/ Unzip 4 vectors
 unzip4 :: (Unbox a,
            Unbox b,
@@ -489,7 +494,10 @@ zip4 as bs cs ds = V_4 len (unsafeSlice 0 len as)
                            (unsafeSlice 0 len cs)
                            (unsafeSlice 0 len ds)
   where
-    len = length as `min` length bs `min` length cs `min` length ds
+    len = length as `delayed_min`
+          length bs `delayed_min`
+          length cs `delayed_min`
+          length ds
 {-# RULES "stream/zip4 [Vector.Unboxed]" forall as bs cs ds .
   G.stream (zip4 as bs cs ds) = Stream.zipWith4 (, , ,) (G.stream as)
                                                         (G.stream bs)
@@ -713,10 +721,10 @@ zip5 as bs cs ds es = MV_5 len (unsafeSlice 0 len as)
                                (unsafeSlice 0 len ds)
                                (unsafeSlice 0 len es)
   where
-    len = length as `min`
-          length bs `min`
-          length cs `min`
-          length ds `min`
+    len = length as `delayed_min`
+          length bs `delayed_min`
+          length cs `delayed_min`
+          length ds `delayed_min`
           length es
 -- | /O(1)/ Unzip 5 vectors
 unzip5 :: (Unbox a,
@@ -749,10 +757,10 @@ zip5 as bs cs ds es = V_5 len (unsafeSlice 0 len as)
                               (unsafeSlice 0 len ds)
                               (unsafeSlice 0 len es)
   where
-    len = length as `min`
-          length bs `min`
-          length cs `min`
-          length ds `min`
+    len = length as `delayed_min`
+          length bs `delayed_min`
+          length cs `delayed_min`
+          length ds `delayed_min`
           length es
 {-# RULES "stream/zip5 [Vector.Unboxed]" forall as bs cs ds es .
   G.stream (zip5 as
@@ -1013,11 +1021,11 @@ zip6 as bs cs ds es fs = MV_6 len (unsafeSlice 0 len as)
                                   (unsafeSlice 0 len es)
                                   (unsafeSlice 0 len fs)
   where
-    len = length as `min`
-          length bs `min`
-          length cs `min`
-          length ds `min`
-          length es `min`
+    len = length as `delayed_min`
+          length bs `delayed_min`
+          length cs `delayed_min`
+          length ds `delayed_min`
+          length es `delayed_min`
           length fs
 -- | /O(1)/ Unzip 6 vectors
 unzip6 :: (Unbox a,
@@ -1055,11 +1063,11 @@ zip6 as bs cs ds es fs = V_6 len (unsafeSlice 0 len as)
                                  (unsafeSlice 0 len es)
                                  (unsafeSlice 0 len fs)
   where
-    len = length as `min`
-          length bs `min`
-          length cs `min`
-          length ds `min`
-          length es `min`
+    len = length as `delayed_min`
+          length bs `delayed_min`
+          length cs `delayed_min`
+          length ds `delayed_min`
+          length es `delayed_min`
           length fs
 {-# RULES "stream/zip6 [Vector.Unboxed]" forall as bs cs ds es fs .
   G.stream (zip6 as

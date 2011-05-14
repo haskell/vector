@@ -57,6 +57,7 @@ module Data.Vector.Unboxed.Mutable (
 
 import Data.Vector.Unboxed.Base
 import qualified Data.Vector.Generic.Mutable as G
+import Data.Vector.Fusion.Util ( delayed_min )
 import Control.Monad.Primitive
 
 import Prelude hiding ( length, null, replicate, reverse, map, read,

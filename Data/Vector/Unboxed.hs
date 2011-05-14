@@ -162,6 +162,7 @@ module Data.Vector.Unboxed (
 import Data.Vector.Unboxed.Base
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Fusion.Stream as Stream
+import Data.Vector.Fusion.Util ( delayed_min )
 
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive

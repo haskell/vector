@@ -71,7 +71,7 @@ generate n =
              ,nest 2 $ hang (text "where")
                             2
                      $ text "len ="
-                       <+> sep (punctuate (text " `min`")
+                       <+> sep (punctuate (text " `delayed_min`")
                                           [text "length" <+> vs | vs <- varss])
              ]
       where
