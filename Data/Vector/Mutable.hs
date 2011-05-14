@@ -31,7 +31,7 @@ module Data.Vector.Mutable (
   -- * Construction
 
   -- ** Initialisation
-  new, unsafeNew, replicate, clone,
+  new, unsafeNew, replicate, replicateM, clone,
 
   -- ** Growing
   grow, unsafeGrow,
@@ -263,6 +263,12 @@ unsafeNew = G.unsafeNew
 replicate :: PrimMonad m => Int -> a -> m (MVector (PrimState m) a)
 {-# INLINE replicate #-}
 replicate = G.replicate
+
+-- | Create a mutable vector of the given length (0 if the length is negative)
+-- and fill it with values produced by repeatedly executing the monadic action.
+replicateM :: PrimMonad m => Int -> m a -> m (MVector (PrimState m) a)
+{-# INLINE replicateM #-}
+replicateM = G.replicateM
 
 -- | Create a copy of a mutable vector.
 clone :: PrimMonad m => MVector (PrimState m) a -> m (MVector (PrimState m) a)

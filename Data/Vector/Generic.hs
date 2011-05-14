@@ -39,7 +39,7 @@ module Data.Vector.Generic (
   empty, singleton, replicate, generate,
 
   -- ** Monadic initialisation
-  replicateM, create,
+  replicateM, replicatePrimM, create,
 
   -- ** Unfolding
   unfoldr, unfoldrN,
@@ -619,10 +619,36 @@ concat vs = unstream (Stream.flatten mk step (Exact n) (Stream.fromList vs))
 
 -- | /O(n)/ Execute the monadic action the given number of times and store the
 -- results in a vector.
+--
+-- /NOTE:/ This function is inefficient because it has to be implemented via
+-- lists. It is specialised to 'replicatePrimM' for 'IO' and 'ST' but
+-- in general, it is better to use the latter directly.
 replicateM :: (Monad m, Vector v a) => Int -> m a -> m (v a)
--- FIXME: specialise for ST and IO?
 {-# INLINE replicateM #-}
 replicateM n m = fromListN n `Monad.liftM` Monad.replicateM n m
+
+-- | /O(n)/ Execute the monadic action the given number of times and store the
+-- results in a vector. This function is significantly more efficient that
+-- 'replicateM' but supports only primitive monads (i.e., 'IO' and 'ST').
+replicatePrimM :: (PrimMonad m, Vector v a) => Int -> m a -> m (v a)
+{-# INLINE replicatePrimM #-}
+replicatePrimM n m = M.replicateM n m >>= unsafeFreeze
+
+-- FIXME: the next two functions are only necessary for the specialisations
+replicatePrimM_IO :: Vector v a => Int -> IO a -> IO (v a)
+{-# INLINE replicatePrimM_IO #-}
+replicatePrimM_IO = replicatePrimM
+
+replicatePrimM_ST :: Vector v a => Int -> ST s a -> ST s (v a)
+{-# INLINE replicatePrimM_ST #-}
+replicatePrimM_ST = replicatePrimM
+
+{-# RULES
+
+"replicateM(IO)" replicateM = replicatePrimM_IO
+"replicateM(ST)" replicateM = replicatePrimM_ST
+
+ #-}
 
 -- | Execute the monadic action and freeze the resulting vector.
 --

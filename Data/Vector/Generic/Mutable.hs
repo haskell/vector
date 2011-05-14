@@ -30,7 +30,7 @@ module Data.Vector.Generic.Mutable (
   -- * Construction
 
   -- ** Initialisation
-  new, unsafeNew, replicate, clone,
+  new, unsafeNew, replicate, replicateM, clone,
 
   -- ** Growing
   grow, unsafeGrow,
@@ -496,6 +496,12 @@ unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n
 replicate :: (PrimMonad m, MVector v a) => Int -> a -> m (v (PrimState m) a)
 {-# INLINE replicate #-}
 replicate n x = basicUnsafeReplicate (delay_inline max 0 n) x
+
+-- | Create a mutable vector of the given length (0 if the length is negative)
+-- and fill it with values produced by repeatedly executing the monadic action.
+replicateM :: (PrimMonad m, MVector v a) => Int -> m a -> m (v (PrimState m) a)
+{-# INLINE replicateM #-}
+replicateM n m = munstream (MStream.replicateM n m)
 
 -- | Create a copy of a mutable vector.
 clone :: (PrimMonad m, MVector v a) => v (PrimState m) a -> m (v (PrimState m) a)

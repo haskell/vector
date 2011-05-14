@@ -62,7 +62,7 @@ module Data.Vector.Unboxed (
   empty, singleton, replicate, generate,
 
   -- ** Monadic initialisation
-  replicateM, create,
+  replicateM, replicatePrimM, create,
 
   -- ** Unfolding
   unfoldr, unfoldrN,
@@ -518,9 +518,20 @@ concat = G.concat
 
 -- | /O(n)/ Execute the monadic action the given number of times and store the
 -- results in a vector.
+--
+-- /NOTE:/ This function is inefficient because it has to be implemented via
+-- lists. It is specialised to 'replicatePrimM' for 'IO' and 'ST' but
+-- in general, it is better to use the latter directly.
 replicateM :: (Monad m, Unbox a) => Int -> m a -> m (Vector a)
 {-# INLINE replicateM #-}
 replicateM = G.replicateM
+
+-- | /O(n)/ Execute the monadic action the given number of times and store the
+-- results in a vector. This function is significantly more efficient that
+-- 'replicateM' but supports only primitive monads (i.e., 'IO' and 'ST').
+replicatePrimM :: (PrimMonad m, Unbox a) => Int -> m a -> m (Vector a)
+{-# INLINE replicatePrimM #-}
+replicatePrimM = G.replicatePrimM
 
 -- | Execute the monadic action and freeze the resulting vector.
 --
