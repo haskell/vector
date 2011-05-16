@@ -127,6 +127,9 @@ module Data.Vector (
   foldM, foldM', fold1M, fold1M',
   foldM_, foldM'_, fold1M_, fold1M'_,
 
+  -- ** Monadic sequencing
+  sequence, sequence_,
+
   -- * Prefix sums (scans)
   prescanl, prescanl',
   postscanl, postscanl',
@@ -168,7 +171,7 @@ import Prelude hiding ( length, null,
                         all, any, and, or, sum, product, minimum, maximum,
                         scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo,
-                        mapM, mapM_ )
+                        mapM, mapM_, sequence, sequence_ )
 
 import qualified Prelude
 
@@ -1207,6 +1210,19 @@ foldM'_ = G.foldM'_
 fold1M'_ :: Monad m => (a -> a -> m a) -> Vector a -> m ()
 {-# INLINE fold1M'_ #-}
 fold1M'_ = G.fold1M'_
+
+-- Monadic sequencing
+-- ------------------
+
+-- | Evaluate each action and collect the results
+sequence :: Monad m => Vector (m a) -> m (Vector a)
+{-# INLINE sequence #-}
+sequence = G.sequence
+
+-- | Evaluate each action and discard the results
+sequence_ :: Monad m => Vector (m a) -> m ()
+{-# INLINE sequence_ #-}
+sequence_ = G.sequence_
 
 -- Prefix sums (scans)
 -- -------------------

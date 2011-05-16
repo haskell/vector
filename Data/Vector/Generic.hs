@@ -117,6 +117,9 @@ module Data.Vector.Generic (
   foldM, foldM', fold1M, fold1M',
   foldM_, foldM'_, fold1M_, fold1M'_,
 
+  -- ** Monadic sequencing
+  sequence, sequence_,
+
   -- * Prefix sums (scans)
   prescanl, prescanl',
   postscanl, postscanl',
@@ -183,7 +186,7 @@ import Prelude hiding ( length, null,
                         all, any, and, or, sum, product, maximum, minimum,
                         scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo,
-                        mapM, mapM_ )
+                        mapM, mapM_, sequence, sequence_ )
 
 import Data.Typeable ( Typeable1, gcast1 )
 
@@ -1498,6 +1501,19 @@ foldM'_ m z = discard . Stream.foldM' m z . stream
 fold1M'_ :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m ()
 {-# INLINE fold1M'_ #-}
 fold1M'_ m = discard . Stream.fold1M' m . stream
+
+-- Monadic sequencing
+-- ------------------
+
+-- | Evaluate each action and collect the results
+sequence :: (Monad m, Vector v a, Vector v (m a)) => v (m a) -> m (v a)
+{-# INLINE sequence #-}
+sequence = mapM id
+
+-- | Evaluate each action and discard the results
+sequence_ :: (Monad m, Vector v (m a)) => v (m a) -> m ()
+{-# INLINE sequence_ #-}
+sequence_ = mapM_ id
 
 -- Prefix sums (scans)
 -- -------------------
