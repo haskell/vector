@@ -39,7 +39,7 @@ module Data.Vector.Generic (
   empty, singleton, replicate, generate,
 
   -- ** Monadic initialisation
-  replicateM, create,
+  replicateM, generateM, create,
 
   -- ** Unfolding
   unfoldr, unfoldrN,
@@ -626,6 +626,12 @@ concat vs = unstream (Stream.flatten mk step (Exact n) (Stream.fromList vs))
 replicateM :: (Monad m, Vector v a) => Int -> m a -> m (v a)
 {-# INLINE replicateM #-}
 replicateM n m = unstreamM (MStream.replicateM n m)
+
+-- | /O(n)/ Construct a vector of the given length by applying the monadic
+-- action to each index
+generateM :: (Monad m, Vector v a) => Int -> (Int -> m a) -> m (v a)
+{-# INLINE generateM #-}
+generateM n f = unstreamM (MStream.generateM n f)
 
 -- | Execute the monadic action and freeze the resulting vector.
 --

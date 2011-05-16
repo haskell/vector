@@ -49,7 +49,7 @@ module Data.Vector (
   empty, singleton, replicate, generate,
 
   -- ** Monadic initialisation
-  replicateM, create,
+  replicateM, generateM, create,
 
   -- ** Unfolding
   unfoldr, unfoldrN,
@@ -548,6 +548,12 @@ concat = G.concat
 replicateM :: Monad m => Int -> m a -> m (Vector a)
 {-# INLINE replicateM #-}
 replicateM = G.replicateM
+
+-- | /O(n)/ Construct a vector of the given length by applying the monadic
+-- action to each index
+generateM :: Monad m => Int -> (Int -> m a) -> m (Vector a)
+{-# INLINE generateM #-}
+generateM = G.generateM
 
 -- | Execute the monadic action and freeze the resulting vector.
 --
