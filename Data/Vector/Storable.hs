@@ -1102,7 +1102,7 @@ foldM' :: (Monad m, Storable b) => (a -> b -> m a) -> a -> Vector b -> m a
 {-# INLINE foldM' #-}
 foldM' = G.foldM'
 
--- | /O(n)/ Monad fold over non-empty vectors with strict accumulator
+-- | /O(n)/ Monadic fold over non-empty vectors with strict accumulator
 fold1M' :: (Monad m, Storable a) => (a -> a -> m a) -> Vector a -> m a
 {-# INLINE fold1M' #-}
 fold1M' = G.fold1M'

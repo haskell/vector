@@ -1468,7 +1468,7 @@ foldM' :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m a
 {-# INLINE foldM' #-}
 foldM' m z = Stream.foldM' m z . stream
 
--- | /O(n)/ Monad fold over non-empty vectors with strict accumulator
+-- | /O(n)/ Monadic fold over non-empty vectors with strict accumulator
 fold1M' :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m a
 {-# INLINE fold1M' #-}
 fold1M' m = Stream.fold1M' m . stream
