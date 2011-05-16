@@ -45,6 +45,11 @@ Description:
         .
         * New function: @splitAt@ (contributed by Bas van Dijk)
         .
+        * New monadic operations: @generateM@, @sequence@, @foldfM_@ and
+          variants
+        .
+        * Specialisations of various monadic operations for primitive monads
+        .
         * Efficiency improvements (with contributions by Bas van Dijk)
         .
         Changes in version 0.7.0.1
