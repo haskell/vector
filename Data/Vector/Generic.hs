@@ -39,7 +39,7 @@ module Data.Vector.Generic (
   empty, singleton, replicate, generate,
 
   -- ** Monadic initialisation
-  replicateM, replicatePrimM, create,
+  replicateM, create,
 
   -- ** Unfolding
   unfoldr, unfoldrN,
@@ -619,36 +619,9 @@ concat vs = unstream (Stream.flatten mk step (Exact n) (Stream.fromList vs))
 
 -- | /O(n)/ Execute the monadic action the given number of times and store the
 -- results in a vector.
---
--- /NOTE:/ This function is inefficient because it has to be implemented via
--- lists. It is specialised to 'replicatePrimM' for 'IO' and 'ST' but
--- in general, it is better to use the latter directly.
 replicateM :: (Monad m, Vector v a) => Int -> m a -> m (v a)
 {-# INLINE replicateM #-}
-replicateM n m = fromListN n `Monad.liftM` Monad.replicateM n m
-
--- | /O(n)/ Execute the monadic action the given number of times and store the
--- results in a vector. This function is significantly more efficient that
--- 'replicateM' but supports only primitive monads (i.e., 'IO' and 'ST').
-replicatePrimM :: (PrimMonad m, Vector v a) => Int -> m a -> m (v a)
-{-# INLINE replicatePrimM #-}
-replicatePrimM n m = M.replicateM n m >>= unsafeFreeze
-
--- FIXME: the next two functions are only necessary for the specialisations
-replicatePrimM_IO :: Vector v a => Int -> IO a -> IO (v a)
-{-# INLINE replicatePrimM_IO #-}
-replicatePrimM_IO = replicatePrimM
-
-replicatePrimM_ST :: Vector v a => Int -> ST s a -> ST s (v a)
-{-# INLINE replicatePrimM_ST #-}
-replicatePrimM_ST = replicatePrimM
-
-{-# RULES
-
-"replicateM(IO)" replicateM = replicatePrimM_IO
-"replicateM(ST)" replicateM = replicatePrimM_ST
-
- #-}
+replicateM n m = unstreamM (MStream.replicateM n m)
 
 -- | Execute the monadic action and freeze the resulting vector.
 --
@@ -938,7 +911,6 @@ concatMap f = concat . Stream.toList . Stream.map f . stream
 -- | /O(n)/ Apply the monadic action to all elements of the vector, yielding a
 -- vector of results
 mapM :: (Monad m, Vector v a, Vector v b) => (a -> m b) -> v a -> m (v b)
--- FIXME: specialise for ST and IO?
 {-# INLINE mapM #-}
 mapM f = unstreamM . Stream.mapM f . stream
 
@@ -1795,11 +1767,32 @@ unstreamR s = new (New.unstreamR s)
 
  #-}
 
-unstreamM :: (Vector v a, Monad m) => MStream m a -> m (v a)
+unstreamM :: (Monad m, Vector v a) => MStream m a -> m (v a)
 {-# INLINE_STREAM unstreamM #-}
 unstreamM s = do
                 xs <- MStream.toList s
                 return $ unstream $ Stream.unsafeFromList (MStream.size s) xs
+
+unstreamPrimM :: (PrimMonad m, Vector v a) => MStream m a -> m (v a)
+{-# INLINE_STREAM unstreamPrimM #-}
+unstreamPrimM s = M.munstream s >>= unsafeFreeze
+
+-- FIXME: the next two functions are only necessary for the specialisations
+unstreamPrimM_IO :: Vector v a => MStream IO a -> IO (v a)
+{-# INLINE unstreamPrimM_IO #-}
+unstreamPrimM_IO = unstreamPrimM
+
+unstreamPrimM_ST :: Vector v a => MStream (ST s) a -> ST s (v a)
+{-# INLINE unstreamPrimM_ST #-}
+unstreamPrimM_ST = unstreamPrimM
+
+{-# RULES
+
+"unstreamM[IO]" unstreamM = unstreamPrimM_IO
+"unstreamM[ST]" unstreamM = unstreamPrimM_ST
+
+ #-}
+
 
 -- Recycling support
 -- -----------------
