@@ -115,6 +115,7 @@ module Data.Vector.Generic (
 
   -- ** Monadic folds
   foldM, foldM', fold1M, fold1M',
+  foldM_, foldM'_, fold1M_, fold1M'_,
 
   -- * Prefix sums (scans)
   prescanl, prescanl',
@@ -1472,6 +1473,31 @@ foldM' m z = Stream.foldM' m z . stream
 fold1M' :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m a
 {-# INLINE fold1M' #-}
 fold1M' m = Stream.fold1M' m . stream
+
+discard :: Monad m => m a -> m ()
+{-# INLINE discard #-}
+discard m = m >> return ()
+
+-- | /O(n)/ Monadic fold that discards the result
+foldM_ :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m ()
+{-# INLINE foldM_ #-}
+foldM_ m z = discard . Stream.foldM m z . stream
+
+-- | /O(n)/ Monadic fold over non-empty vectors that discards the result
+fold1M_ :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m ()
+{-# INLINE fold1M_ #-}
+fold1M_ m = discard . Stream.fold1M m . stream
+
+-- | /O(n)/ Monadic fold with strict accumulator that discards the result
+foldM'_ :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m ()
+{-# INLINE foldM'_ #-}
+foldM'_ m z = discard . Stream.foldM' m z . stream
+
+-- | /O(n)/ Monad fold over non-empty vectors with strict accumulator
+-- that discards the result
+fold1M'_ :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m ()
+{-# INLINE fold1M'_ #-}
+fold1M'_ m = discard . Stream.fold1M' m . stream
 
 -- Prefix sums (scans)
 -- -------------------

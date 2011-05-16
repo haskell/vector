@@ -125,6 +125,7 @@ module Data.Vector (
 
   -- ** Monadic folds
   foldM, foldM', fold1M, fold1M',
+  foldM_, foldM'_, fold1M_, fold1M'_,
 
   -- * Prefix sums (scans)
   prescanl, prescanl',
@@ -1185,6 +1186,27 @@ foldM' = G.foldM'
 fold1M' :: Monad m => (a -> a -> m a) -> Vector a -> m a
 {-# INLINE fold1M' #-}
 fold1M' = G.fold1M'
+
+-- | /O(n)/ Monadic fold that discards the result
+foldM_ :: Monad m => (a -> b -> m a) -> a -> Vector b -> m ()
+{-# INLINE foldM_ #-}
+foldM_ = G.foldM_
+
+-- | /O(n)/ Monadic fold over non-empty vectors that discards the result
+fold1M_ :: Monad m => (a -> a -> m a) -> Vector a -> m ()
+{-# INLINE fold1M_ #-}
+fold1M_ = G.fold1M_
+
+-- | /O(n)/ Monadic fold with strict accumulator that discards the result
+foldM'_ :: Monad m => (a -> b -> m a) -> a -> Vector b -> m ()
+{-# INLINE foldM'_ #-}
+foldM'_ = G.foldM'_
+
+-- | /O(n)/ Monadic fold over non-empty vectors with strict accumulator
+-- that discards the result
+fold1M'_ :: Monad m => (a -> a -> m a) -> Vector a -> m ()
+{-# INLINE fold1M'_ #-}
+fold1M'_ = G.fold1M'_
 
 -- Prefix sums (scans)
 -- -------------------
