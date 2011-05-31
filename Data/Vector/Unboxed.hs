@@ -59,7 +59,7 @@ module Data.Vector.Unboxed (
   -- * Construction
 
   -- ** Initialisation
-  empty, singleton, replicate, generate, iterate,
+  empty, singleton, replicate, generate, iterateN,
 
   -- ** Monadic initialisation
   replicateM, generateM, create,
@@ -177,7 +177,7 @@ import Prelude hiding ( length, null,
                         filter, takeWhile, dropWhile, span, break,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
-                        all, any, and, or, sum, product, minimum, maximum, iterate,
+                        all, any, and, or, sum, product, minimum, maximum,
                         scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_ )
@@ -434,9 +434,9 @@ generate :: Unbox a => Int -> (Int -> a) -> Vector a
 generate = G.generate
 
 -- | /O(n)/ Apply function n times to value. Zeroth element is original value.
-iterate :: Unbox a => Int -> (a -> a) -> a -> Vector a
-{-# INLINE iterate #-}
-iterate = G.iterate
+iterateN :: Unbox a => Int -> (a -> a) -> a -> Vector a
+{-# INLINE iterateN #-}
+iterateN = G.iterateN
 
 -- Unfolding
 -- ---------

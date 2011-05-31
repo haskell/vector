@@ -36,7 +36,7 @@ module Data.Vector.Generic (
   -- * Construction
 
   -- ** Initialisation
-  empty, singleton, replicate, generate, iterate,
+  empty, singleton, replicate, generate, iterateN,
 
   -- ** Monadic initialisation
   replicateM, generateM, create,
@@ -183,7 +183,7 @@ import Prelude hiding ( length, null,
                         filter, takeWhile, dropWhile, span, break,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
-                        all, any, and, or, sum, product, maximum, minimum, iterate,
+                        all, any, and, or, sum, product, maximum, minimum,
                         scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_, sequence, sequence_ )
@@ -516,9 +516,9 @@ generate :: Vector v a => Int -> (Int -> a) -> v a
 generate n f = unstream (Stream.generate n f)
 
 -- | /O(n)/ Apply function n times to value. Zeroth element is original value.
-iterate :: Vector v a => Int -> (a -> a) -> a -> v a
-{-# INLINE iterate #-}
-iterate n f x = unstream (Stream.iterate n f x)
+iterateN :: Vector v a => Int -> (a -> a) -> a -> v a
+{-# INLINE iterateN #-}
+iterateN n f x = unstream (Stream.iterateN n f x)
 
 -- Unfolding
 -- ---------

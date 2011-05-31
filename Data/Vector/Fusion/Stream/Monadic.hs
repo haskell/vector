@@ -56,7 +56,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   -- * Unfolding
   unfoldr, unfoldrM,
   unfoldrN, unfoldrNM,
-  iterate, iterateM,
+  iterateN, iterateNM,
 
   -- * Scans
   prescanl, prescanlM, prescanl', prescanlM',
@@ -87,7 +87,6 @@ import Prelude hiding ( length, null,
                         elem, notElem,
                         foldl, foldl1, foldr, foldr1,
                         and, or,
-                        iterate,
                         scanl, scanl1,
                         enumFromTo, enumFromThenTo )
 
@@ -996,9 +995,9 @@ unfoldrNM n f s = Stream step (s,n) (Max (delay_inline max n 0))
                              ) (f s)
 
 -- | Apply monadic function n times to value. Zeroth element is original value.
-iterateM :: Monad m => Int -> (a -> m a) -> a -> Stream m a
-{-# INLINE_STREAM iterateM #-}
-iterateM n f x0 = Stream step (x0,n) (Exact (delay_inline max n 0))
+iterateNM :: Monad m => Int -> (a -> m a) -> a -> Stream m a
+{-# INLINE_STREAM iterateNM #-}
+iterateNM n f x0 = Stream step (x0,n) (Exact (delay_inline max n 0))
   where
     {-# INLINE_INNER step #-}
     step (x,i) | i <= 0    = return Done
@@ -1007,9 +1006,9 @@ iterateM n f x0 = Stream step (x0,n) (Exact (delay_inline max n 0))
                                 return $ Yield a (a,i-1)
 
 -- | Apply function n times to value. Zeroth element is original value.
-iterate :: Monad m => Int -> (a -> a) -> a -> Stream m a
-{-# INLINE_STREAM iterate #-}
-iterate n f x0 = iterateM n (return . f) x0
+iterateN :: Monad m => Int -> (a -> a) -> a -> Stream m a
+{-# INLINE_STREAM iterateN #-}
+iterateN n f x0 = iterateNM n (return . f) x0
 
 -- Scans
 -- -----
