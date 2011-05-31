@@ -43,6 +43,8 @@ Description:
         * New functions for copying potentially overlapping arrays: @move@,
           @unsafeMove@ (contributed by Louis Wasserman)
         .
+        * New function: @iterateN@ (contributed by Alexey Khudyakov)
+        .
         * New function: @splitAt@ (contributed by Bas van Dijk)
         .
         * New monadic operations: @generateM@, @sequence@, @foldfM_@ and
