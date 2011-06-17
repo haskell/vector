@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TypeFamilies, Rank2Types #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TypeFamilies, Rank2Types, ScopedTypeVariables #-}
 
 -- |
 -- Module      : Data.Vector.Storable
@@ -124,7 +124,7 @@ module Data.Vector.Storable (
   toList, fromList, fromListN,
 
   -- ** Other vector types
-  G.convert,
+  G.convert, unsafeCast,
 
   -- ** Mutable vectors
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
@@ -1276,6 +1276,24 @@ fromList = G.fromList
 fromListN :: Storable a => Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
 fromListN = G.fromListN
+
+-- Conversions - Unsafe casts
+-- --------------------------
+
+-- | /O(1)/ Unsafely cast a vector from one element type to another.
+-- The operation just changes the type of the underlying pointer and does not
+-- modify the elements.
+--
+-- The resulting vector contains as many elements as can fit into the
+-- underlying memory block.
+--
+unsafeCast :: forall a b. (Storable a, Storable b) => Vector a -> Vector b
+{-# INLINE unsafeCast #-}
+unsafeCast (Vector p n fp)
+  = Vector (castPtr p)
+           ((n * sizeOf (undefined :: a)) `div` sizeOf (undefined :: b))
+           (castForeignPtr fp)
+
 
 -- Conversions - Mutable vectors
 -- -----------------------------

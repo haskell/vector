@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables #-}
 
 -- |
 -- Module      : Data.Vector.Storable.Mutable
@@ -47,6 +47,9 @@ module Data.Vector.Storable.Mutable(
 
   -- ** Filling and copying
   set, copy, move, unsafeCopy, unsafeMove,
+
+  -- * Unsafe conversions
+  unsafeCast,
 
   -- * Raw pointers
   unsafeFromForeignPtr, unsafeToForeignPtr, unsafeWith,
@@ -363,6 +366,24 @@ unsafeMove :: (PrimMonad m, Storable a)
                           -> m ()
 {-# INLINE unsafeMove #-}
 unsafeMove = G.unsafeMove
+
+-- Unsafe conversions
+-- ------------------
+
+-- | /O(1)/ Unsafely cast a mutable vector from one element type to another.
+-- The operation just changes the type of the underlying pointer and does not
+-- modify the elements.
+--
+-- The resulting vector contains as many elements as can fit into the
+-- underlying memory block.
+--
+unsafeCast :: forall a b s.
+              (Storable a, Storable b) => MVector s a -> MVector s b
+{-# INLINE unsafeCast #-}
+unsafeCast (MVector p n fp)
+  = MVector (castPtr p)
+            ((n * sizeOf (undefined :: a)) `div` sizeOf (undefined :: b))
+            (castForeignPtr fp)
 
 -- Raw pointers
 -- ------------
