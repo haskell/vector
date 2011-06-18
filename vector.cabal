@@ -40,21 +40,19 @@ Description:
         .
         Changes in version 0.7.1
         .
-        * New functions for copying potentially overlapping arrays: @move@,
-          @unsafeMove@ (contributed by Louis Wasserman)
-        .
-        * New function: @iterateN@ (contributed by Alexey Khudyakov)
-        .
-        * New function: @splitAt@ (contributed by Bas van Dijk)
+        * New functions: @iterateN@, @splitAt@
         .
         * New monadic operations: @generateM@, @sequence@, @foldM_@ and
           variants
         .
+        * New functions for copying potentially overlapping arrays: @move@,
+          @unsafeMove@
+        .
         * Specialisations of various monadic operations for primitive monads
         .
-        * Unsafe casts for Storable vectors (contributed by Bas van Dijk)
+        * Unsafe casts for Storable vectors
         .
-        * Efficiency improvements (with contributions by Bas van Dijk)
+        * Efficiency improvements
         .
         Changes in version 0.7.0.1
         .
