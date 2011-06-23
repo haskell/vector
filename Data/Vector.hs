@@ -251,6 +251,10 @@ instance Monoid (Vector a) where
   {-# INLINE mconcat #-}
   mconcat = concat
 
+instance Functor Vector where
+  {-# INLINE fmap #-}
+  fmap = G.map
+
 -- Length information
 -- ------------------
 
