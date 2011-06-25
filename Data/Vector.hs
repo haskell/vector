@@ -155,7 +155,7 @@ import           Data.Vector.Mutable  ( MVector(..) )
 import           Data.Primitive.Array
 import qualified Data.Vector.Fusion.Stream as Stream
 
-import Control.Monad ( liftM )
+import Control.Monad ( liftM, ap )
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
 
@@ -179,6 +179,9 @@ import Data.Typeable ( Typeable )
 import Data.Data     ( Data(..) )
 
 import Data.Monoid   ( Monoid(..) )
+import qualified Control.Applicative as Applicative
+import qualified Data.Foldable as Foldable
+import qualified Data.Traversable as Traversable
 
 -- | Boxed vectors, supporting efficient slicing.
 data Vector a = Vector {-# UNPACK #-} !Int
@@ -253,7 +256,51 @@ instance Monoid (Vector a) where
 
 instance Functor Vector where
   {-# INLINE fmap #-}
-  fmap = G.map
+  fmap = map
+
+instance Monad Vector where
+  {-# INLINE return #-}
+  return = singleton
+
+  {-# INLINE (>>=) #-}
+  (>>=) = flip concatMap
+
+instance Applicative.Applicative Vector where
+  {-# INLINE pure #-}
+  pure = singleton
+
+  {-# INLINE (<*>) #-}
+  (<*>) = ap
+
+instance Applicative.Alternative Vector where
+  {-# INLINE empty #-}
+  empty = empty
+
+  {-# INLINE (<|>) #-}
+  (<|>) = (++)
+
+instance Foldable.Foldable Vector where
+  {-# INLINE foldr #-}
+  foldr = foldr
+
+  {-# INLINE foldl #-}
+  foldl = foldl
+  
+  {-# INLINE foldr1 #-}
+  foldr1 = foldr1
+
+  {-# INLINE foldl1 #-}
+  foldl1 = foldl1
+
+instance Traversable.Traversable Vector where
+  {-# INLINE traverse #-}
+  traverse f xs = fromList Applicative.<$> Traversable.traverse f (toList xs)
+
+  {-# INLINE mapM #-}
+  mapM = mapM
+
+  {-# INLINE sequence #-}
+  sequence = sequence
 
 -- Length information
 -- ------------------
