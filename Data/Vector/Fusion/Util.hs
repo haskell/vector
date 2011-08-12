@@ -1,3 +1,6 @@
+#if __GLASGOW_HASKELL__ >= 701
+{-# LANGUAGE Safe #-}
+#endif
 -- |
 -- Module      : Data.Vector.Fusion.Util
 -- Copyright   : (c) Roman Leshchinskiy 2009

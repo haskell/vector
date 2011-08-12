@@ -1,3 +1,6 @@
+#if __GLASGOW_HASKELL__ >= 701
+{-# LANGUAGE Safe #-}
+#endif
 -- |
 -- Module      : Data.Vector.Fusion.Stream.Size
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
