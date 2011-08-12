@@ -38,6 +38,10 @@ Description:
         .
         * <http://trac.haskell.org/vector>
         .
+        Changes in version 0.7.2
+        .
+        * Safe Haskell support (contributed by David Terei)
+        .
         Changes in version 0.7.1
         .
         * New functions: @iterateN@, @splitAt@
