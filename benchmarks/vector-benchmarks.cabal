@@ -13,7 +13,7 @@ Executable algorithms
 
   Build-Depends: base >= 2 && < 5, array,
                  criterion >= 0.5 && < 0.6,
-                 mwc-random >= 0.5 && < 0.9,
+                 mwc-random >= 0.5 && < 0.11,
                  vector == 0.7.2
 
   if impl(ghc<6.13)
