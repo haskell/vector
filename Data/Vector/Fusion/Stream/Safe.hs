@@ -80,4 +80,5 @@ module Data.Vector.Fusion.Stream.Safe (
 ) where
 
 import Data.Vector.Fusion.Stream
+import Prelude ()
 

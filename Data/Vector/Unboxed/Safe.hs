@@ -159,5 +159,7 @@ module Data.Vector.Unboxed.Safe (
   freeze, thaw, copy
 ) where
 
-import Data.Vector.Unboxed.Safe
+import Data.Vector.Unboxed
+import qualified Data.Vector.Generic as G
+import Prelude ()
 

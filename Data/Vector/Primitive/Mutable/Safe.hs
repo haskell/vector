@@ -54,4 +54,5 @@ module Data.Vector.Primitive.Mutable.Safe (
 ) where
 
 import Data.Vector.Primitive.Mutable
+import Prelude ()
 

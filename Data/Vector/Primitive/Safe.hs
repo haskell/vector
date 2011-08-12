@@ -131,4 +131,6 @@ module Data.Vector.Primitive.Safe (
 ) where
 
 import Data.Vector.Primitive
+import qualified Data.Vector.Generic as G
+import Prelude ()
 

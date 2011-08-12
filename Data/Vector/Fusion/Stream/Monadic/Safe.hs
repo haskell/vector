@@ -76,4 +76,5 @@ module Data.Vector.Fusion.Stream.Monadic.Safe (
 ) where
 
 import Data.Vector.Fusion.Stream.Monadic
+import Prelude ()
 

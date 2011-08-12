@@ -133,15 +133,22 @@ Library
         Data.Vector.Fusion.Util
         Data.Vector.Fusion.Stream.Size
         Data.Vector.Fusion.Stream.Monadic
+        Data.Vector.Fusion.Stream.Monadic.Safe
         Data.Vector.Fusion.Stream
+        Data.Vector.Fusion.Stream.Safe
 
         Data.Vector.Generic.Mutable
+        Data.Vector.Generic.Mutable.Safe
         Data.Vector.Generic.Base
         Data.Vector.Generic.New
+        Data.Vector.Generic.New.Safe
         Data.Vector.Generic
+        Data.Vector.Generic.Safe
 
         Data.Vector.Primitive.Mutable
+        Data.Vector.Primitive.Mutable.Safe
         Data.Vector.Primitive
+        Data.Vector.Primitive.Safe
 
         Data.Vector.Storable.Internal
         Data.Vector.Storable.Mutable
@@ -149,10 +156,14 @@ Library
 
         Data.Vector.Unboxed.Base
         Data.Vector.Unboxed.Mutable
+        Data.Vector.Unboxed.Mutable.Safe
         Data.Vector.Unboxed
+        Data.Vector.Unboxed.Safe
 
         Data.Vector.Mutable
+        Data.Vector.Mutable.Safe
         Data.Vector
+        Data.Vector.Safe
 
   Include-Dirs:
         include, internal

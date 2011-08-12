@@ -62,4 +62,5 @@ module Data.Vector.Generic.Mutable.Safe (
 ) where
 
 import Data.Vector.Generic.Mutable
+import Prelude ()
 

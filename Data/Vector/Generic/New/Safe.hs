@@ -23,4 +23,5 @@ module Data.Vector.Generic.New.Safe (
 ) where
 
 import Data.Vector.Generic.New
+import Prelude ()
 

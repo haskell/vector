@@ -155,4 +155,5 @@ module Data.Vector.Generic.Safe (
 ) where
 
 import Data.Vector.Generic
+import Prelude ()
 
