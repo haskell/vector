@@ -104,6 +104,10 @@ instance G.MVector MVector a where
 
   {-# INLINE basicUnsafeWrite #-}
   basicUnsafeWrite (MVector i n arr) j x = writeArray arr (i+j) x
+
+  {-# INLINE basicUnsafeCopy #-}
+  basicUnsafeCopy (MVector i n dst) (MVector j _ src)
+    = copyMutableArray src j dst i n
   
   basicUnsafeMove dst@(MVector iDst n arrDst) src@(MVector iSrc _ arrSrc)
     = case n of

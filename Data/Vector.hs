@@ -219,6 +219,10 @@ instance G.Vector Vector a where
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (Vector i _ arr) j = indexArrayM arr (i+j)
 
+  {-# INLINE basicUnsafeCopy #-}
+  basicUnsafeCopy (MVector i n dst) (Vector j _ src)
+    = copyArray src j dst i n
+
 -- See http://trac.haskell.org/vector/ticket/12
 instance Eq a => Eq (Vector a) where
   {-# INLINE (==) #-}
