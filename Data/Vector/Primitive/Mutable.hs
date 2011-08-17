@@ -98,13 +98,13 @@ instance Prim a => G.MVector MVector a where
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MVector i n dst) (MVector j _ src)
-    = memcpyByteArray dst (i * sz) src (j * sz) (n * sz)
+    = copyMutableByteArray src (j*sz) dst (i*sz) (n*sz)
     where
       sz = sizeOf (undefined :: a)
   
   {-# INLINE basicUnsafeMove #-}
   basicUnsafeMove (MVector i n dst) (MVector j _ src)
-    = memmoveByteArray dst (i * sz) src (j * sz) (n * sz)
+    = moveByteArray src (j*sz) dst (i*sz) (n * sz)
     where
       sz = sizeOf (undefined :: a)
 

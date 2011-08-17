@@ -203,7 +203,7 @@ instance Prim a => G.Vector Vector a where
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MVector i n dst) (Vector j _ src)
-    = memcpyByteArray' dst (i * sz) src (j * sz) (n * sz)
+    = copyByteArray src (j*sz) dst (i*sz) (n*sz)
     where
       sz = sizeOf (undefined :: a)
 
