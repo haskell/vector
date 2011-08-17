@@ -53,10 +53,7 @@ module Data.Vector.Generic.Mutable (
   transform, transformR,
   fill, fillR,
   unsafeAccum, accum, unsafeUpdate, update, reverse,
-  unstablePartition, unstablePartitionStream, partitionStream,
-
-  -- * Deprecated operations
-  newWith, unsafeNewWith
+  unstablePartition, unstablePartitionStream, partitionStream
 ) where
 
 import qualified Data.Vector.Fusion.Stream      as Stream
@@ -133,14 +130,8 @@ class MVector v a where
   basicUnsafeGrow  :: PrimMonad m => v (PrimState m) a -> Int
                                                        -> m (v (PrimState m) a)
 
-  -- | /DEPRECATED/ in favour of 'basicUnsafeReplicate'
-  basicUnsafeNewWith :: PrimMonad m => Int -> a -> m (v (PrimState m) a)
-
   {-# INLINE basicUnsafeReplicate #-}
-  basicUnsafeReplicate = basicUnsafeNewWith
-
-  {-# INLINE basicUnsafeNewWith #-}
-  basicUnsafeNewWith n x
+  basicUnsafeReplicate n x
     = do
         v <- basicUnsafeNew n
         basicSet v x
@@ -185,8 +176,6 @@ class MVector v a where
         return v'
     where
       n = basicLength v
-
-{-# DEPRECATED basicUnsafeNewWith "define and use basicUnsafeReplicate instead" #-}
 
 -- ------------------
 -- Internal functions
@@ -872,19 +861,4 @@ partitionUnknown f s
       | otherwise = do
                       v2' <- unsafeAppend1 v2 i2 x
                       return (v1, i1, v2', i2+1)
-
--- Deprecated functions
--- --------------------
-
--- | /DEPRECATED/ Use 'replicate' instead
-newWith :: (PrimMonad m, MVector v a) => Int -> a -> m (v (PrimState m) a)
-{-# INLINE newWith #-}
-newWith = replicate
-
--- | /DEPRECATED/ Use 'replicate' instead
-unsafeNewWith :: (PrimMonad m, MVector v a) => Int -> a -> m (v (PrimState m) a)
-{-# INLINE unsafeNewWith #-}
-unsafeNewWith = replicate
-
-{-# DEPRECATED newWith, unsafeNewWith "Use replicate instead" #-}
 

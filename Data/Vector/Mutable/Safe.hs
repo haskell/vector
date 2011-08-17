@@ -48,10 +48,7 @@ module Data.Vector.Mutable.Safe (
   -- * Modifying vectors
 
   -- ** Filling and copying
-  set, copy, move,
-
-  -- * Deprecated operations
-  newWith
+  set, copy, move
 ) where
 
 import Data.Vector.Mutable

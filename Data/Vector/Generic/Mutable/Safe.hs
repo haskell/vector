@@ -55,10 +55,7 @@ module Data.Vector.Generic.Mutable.Safe (
   transform, transformR,
   fill, fillR,
   accum, update, reverse,
-  unstablePartition, unstablePartitionStream, partitionStream,
-
-  -- * Deprecated operations
-  newWith
+  unstablePartition, unstablePartitionStream, partitionStream
 ) where
 
 import Data.Vector.Generic.Mutable

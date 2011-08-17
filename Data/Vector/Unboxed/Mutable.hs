@@ -48,11 +48,7 @@ module Data.Vector.Unboxed.Mutable (
   -- * Modifying vectors
 
   -- ** Filling and copying
-  set, copy, move, unsafeCopy, unsafeMove,
-
-  -- * Deprecated operations
-  newWith, unsafeNewWith
-
+  set, copy, move, unsafeCopy, unsafeMove
 ) where
 
 import Data.Vector.Unboxed.Base
@@ -283,21 +279,6 @@ unsafeMove :: (PrimMonad m, Unbox a)
                           -> m ()
 {-# INLINE unsafeMove #-}
 unsafeMove = G.unsafeMove
-
--- Deprecated functions
--- --------------------
-
--- | /DEPRECATED/ Use 'replicate' instead
-newWith :: (PrimMonad m, Unbox a) => Int -> a -> m (MVector (PrimState m) a)
-{-# INLINE newWith #-}
-newWith = G.replicate
-
--- | /DEPRECATED/ Use 'replicate' instead
-unsafeNewWith :: (PrimMonad m, Unbox a) => Int -> a -> m (MVector (PrimState m) a)
-{-# INLINE unsafeNewWith #-}
-unsafeNewWith = G.replicate
-
-{-# DEPRECATED newWith, unsafeNewWith "Use replicate instead" #-}
 
 #define DEFINE_MUTABLE
 #include "unbox-tuple-instances"

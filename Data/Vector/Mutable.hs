@@ -46,10 +46,7 @@ module Data.Vector.Mutable (
   -- * Modifying vectors
 
   -- ** Filling and copying
-  set, copy, move, unsafeCopy, unsafeMove,
-
-  -- * Deprecated operations
-  newWith, unsafeNewWith
+  set, copy, move, unsafeCopy, unsafeMove
 ) where
 
 import           Control.Monad (when)
@@ -386,19 +383,4 @@ unsafeMove :: PrimMonad m => MVector (PrimState m) a   -- ^ target
                           -> m ()
 {-# INLINE unsafeMove #-}
 unsafeMove = G.unsafeMove
-
--- Deprecated functions
--- --------------------
-
--- | /DEPRECATED/ Use 'replicate' instead
-newWith :: PrimMonad m => Int -> a -> m (MVector (PrimState m) a)
-{-# INLINE newWith #-}
-newWith = G.replicate
-
--- | /DEPRECATED/ Use 'replicate' instead
-unsafeNewWith :: PrimMonad m => Int -> a -> m (MVector (PrimState m) a)
-{-# INLINE unsafeNewWith #-}
-unsafeNewWith = G.replicate
-
-{-# DEPRECATED newWith, unsafeNewWith "Use replicate instead" #-}
 

@@ -52,10 +52,7 @@ module Data.Vector.Storable.Mutable(
   unsafeCast,
 
   -- * Raw pointers
-  unsafeFromForeignPtr, unsafeToForeignPtr, unsafeWith,
-
-  -- * Deprecated operations
-  newWith, unsafeNewWith
+  unsafeFromForeignPtr, unsafeToForeignPtr, unsafeWith
 ) where
 
 import qualified Data.Vector.Generic.Mutable as G
@@ -412,19 +409,4 @@ unsafeToForeignPtr (MVector p n fp) = (fp, ptrToOffset fp p, n)
 unsafeWith :: Storable a => IOVector a -> (Ptr a -> IO b) -> IO b
 {-# INLINE unsafeWith #-}
 unsafeWith (MVector p n fp) m = withForeignPtr fp $ \_ -> m p
-
--- Deprecated functions
--- --------------------
-
--- | /DEPRECATED/ Use 'replicate' instead
-newWith :: (PrimMonad m, Storable a) => Int -> a -> m (MVector (PrimState m) a)
-{-# INLINE newWith #-}
-newWith = G.replicate
-
--- | /DEPRECATED/ Use 'replicate' instead
-unsafeNewWith :: (PrimMonad m, Storable a) => Int -> a -> m (MVector (PrimState m) a)
-{-# INLINE unsafeNewWith #-}
-unsafeNewWith = G.replicate
-
-{-# DEPRECATED newWith, unsafeNewWith "Use replicate instead" #-}
 
