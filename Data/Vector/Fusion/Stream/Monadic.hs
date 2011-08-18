@@ -255,6 +255,7 @@ last (Stream step s _) = last_loop0 SPEC s
             Skip    s' -> last_loop1 SPEC x s'
             Done       -> return x
 
+infixl 9 !!
 -- | Element at the given position
 (!!) :: Monad m => Stream m a -> Int -> m a
 {-# INLINE (!!) #-}

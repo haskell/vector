@@ -231,6 +231,7 @@ null v = basicLength v == 0
 -- Indexing
 -- --------
 
+infixl 9 !
 -- | O(1) Indexing
 (!) :: Vector v a => v a -> Int -> a
 {-# INLINE_STREAM (!) #-}

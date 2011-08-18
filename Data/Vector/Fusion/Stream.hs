@@ -199,6 +199,7 @@ last :: Stream a -> a
 {-# INLINE last #-}
 last = unId . M.last
 
+infixl 9 !!
 -- | Element at the given position
 (!!) :: Stream a -> Int -> a
 {-# INLINE (!!) #-}
