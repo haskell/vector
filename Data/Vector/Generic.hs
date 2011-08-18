@@ -1815,6 +1815,12 @@ unstreamR s = new (New.unstreamR s)
 "New.unstreamR/streamR/new [Vector]" forall p.
   New.unstreamR (streamR (new p)) = p
 
+"New.unstream/streamR/new [Vector]" forall p.
+  New.unstream (streamR (new p)) = New.modify M.reverse p
+
+"New.unstreamR/stream/new [Vector]" forall p.
+  New.unstreamR (stream (new p)) = New.modify M.reverse p
+
 "inplace right [Vector]"
   forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
   New.unstreamR (inplace f (streamR (new m))) = New.transformR f m
