@@ -237,6 +237,7 @@ null v = basicLength v == 0
 v ! i = BOUNDS_CHECK(checkIndex) "(!)" i (length v)
       $ unId (basicUnsafeIndexM v i)
 
+infixl 9 !?
 -- | O(1) Safe indexing
 (!?) :: Vector v a => v a -> Int -> Maybe a
 {-# INLINE_STREAM (!?) #-}
@@ -273,6 +274,9 @@ unsafeLast v = unsafeIndex v (length v - 1)
 
 "(!)/unstream [Vector]" forall i s.
   new (New.unstream s) ! i = s Stream.!! i
+
+"(!?)/unstream [Vector]" forall i s.
+  new (New.unstream s) !? i = s Stream.!? i
 
 "head/unstream [Vector]" forall s.
   head (new (New.unstream s)) = Stream.head s

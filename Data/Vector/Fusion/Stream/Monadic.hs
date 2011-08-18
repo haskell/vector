@@ -25,7 +25,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   empty, singleton, cons, snoc, replicate, replicateM, generate, generateM, (++),
 
   -- * Accessing elements
-  head, last, (!!),
+  head, last, (!!), (!?),
 
   -- * Substreams
   slice, init, tail, take, drop,
@@ -270,6 +270,22 @@ Stream step s _ !! i | i < 0     = BOUNDS_ERROR(error) "!!" "negative index"
                        | otherwise -> index_loop SPEC s' (i-1)
             Skip    s'             -> index_loop SPEC s' i
             Done                   -> BOUNDS_ERROR(emptyStream) "!!"
+
+infixl 9 !?
+-- | Element at the given position or 'Nothing' if out of bounds
+(!?) :: Monad m => Stream m a -> Int -> m (Maybe a)
+{-# INLINE (!?) #-}
+Stream step s _ !? i = index_loop SPEC s i
+  where
+    index_loop !sPEC s i
+      = i `seq`
+        do
+          r <- step s
+          case r of
+            Yield x s' | i == 0    -> return (Just x)
+                       | otherwise -> index_loop SPEC s' (i-1)
+            Skip    s'             -> index_loop SPEC s' i
+            Done                   -> return Nothing
 
 -- Substreams
 -- ----------

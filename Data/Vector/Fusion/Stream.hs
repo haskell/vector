@@ -29,7 +29,7 @@ module Data.Vector.Fusion.Stream (
   empty, singleton, cons, snoc, replicate, generate, (++),
 
   -- * Accessing individual elements
-  head, last, (!!),
+  head, last, (!!), (!?),
 
   -- * Substreams
   slice, init, tail, take, drop,
@@ -203,6 +203,12 @@ last = unId . M.last
 (!!) :: Stream a -> Int -> a
 {-# INLINE (!!) #-}
 s !! i = unId (s M.!! i)
+
+infixl 9 !?
+-- | Element at the given position or 'Nothing' if out of bounds
+(!?) :: Stream a -> Int -> Maybe a
+{-# INLINE (!?) #-}
+s !? i = unId (s M.!? i)
 
 -- Substreams
 -- ----------
