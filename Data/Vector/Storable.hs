@@ -170,8 +170,7 @@ import Data.Monoid   ( Monoid(..) )
 #include "vector.h"
 
 -- | 'Storable'-based vectors
-data Vector a = Vector {-# UNPACK #-} !(Ptr a)
-                       {-# UNPACK #-} !Int
+data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !(ForeignPtr a)
         deriving ( Typeable )
 
@@ -192,28 +191,28 @@ type instance G.Mutable Vector = MVector
 
 instance Storable a => G.Vector Vector a where
   {-# INLINE basicUnsafeFreeze #-}
-  basicUnsafeFreeze (MVector p n fp) = return $ Vector p n fp
+  basicUnsafeFreeze (MVector n fp) = return $ Vector n fp
 
   {-# INLINE basicUnsafeThaw #-}
-  basicUnsafeThaw (Vector p n fp) = return $ MVector p n fp
+  basicUnsafeThaw (Vector n fp) = return $ MVector n fp
 
   {-# INLINE basicLength #-}
-  basicLength (Vector _ n _) = n
+  basicLength (Vector n _) = n
 
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice i n (Vector p _ fp) = Vector (p `advancePtr` i) n fp
+  basicUnsafeSlice i n (Vector _ fp) = Vector n (updPtr (`advancePtr` i) fp)
 
   {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM (Vector p _ fp) i = return
-                                      . unsafeInlineIO
-                                      $ withForeignPtr fp $ \_ ->
-                                        peekElemOff p i
+  basicUnsafeIndexM (Vector _ fp) i = return
+                                    . unsafeInlineIO
+                                    $ withForeignPtr fp $ \p ->
+                                      peekElemOff p i
 
   {-# INLINE basicUnsafeCopy #-}
-  basicUnsafeCopy (MVector p n fp) (Vector q _ fq)
+  basicUnsafeCopy (MVector n fp) (Vector _ fq)
     = unsafePrimToPrim
-    $ withForeignPtr fp $ \_ ->
-      withForeignPtr fq $ \_ ->
+    $ withForeignPtr fp $ \p ->
+      withForeignPtr fq $ \q ->
       copyArray p q n
 
   {-# INLINE elemseq #-}
@@ -1289,9 +1288,8 @@ fromListN = G.fromListN
 --
 unsafeCast :: forall a b. (Storable a, Storable b) => Vector a -> Vector b
 {-# INLINE unsafeCast #-}
-unsafeCast (Vector p n fp)
-  = Vector (castPtr p)
-           ((n * sizeOf (undefined :: a)) `div` sizeOf (undefined :: b))
+unsafeCast (Vector n fp)
+  = Vector ((n * sizeOf (undefined :: a)) `div` sizeOf (undefined :: b))
            (castForeignPtr fp)
 
 
@@ -1346,18 +1344,18 @@ unsafeFromForeignPtr :: Storable a
                      -> Int             -- ^ length
                      -> Vector a
 {-# INLINE unsafeFromForeignPtr #-}
-unsafeFromForeignPtr fp i n = Vector (offsetToPtr fp i) n fp
+unsafeFromForeignPtr fp i n = Vector n (updPtr (`advancePtr` i) fp)
 
 -- | /O(1)/ Yield the underlying 'ForeignPtr' together with the offset to the
 -- data and its length. The data may not be modified through the 'ForeignPtr'.
 unsafeToForeignPtr :: Storable a => Vector a -> (ForeignPtr a, Int, Int)
 {-# INLINE unsafeToForeignPtr #-}
-unsafeToForeignPtr (Vector p n fp) = (fp, ptrToOffset fp p, n)
+unsafeToForeignPtr (Vector n fp) = (fp, 0, n)
 
 -- | Pass a pointer to the vector's data to the IO action. The data may not be
 -- modified through the 'Ptr.
 unsafeWith :: Storable a => Vector a -> (Ptr a -> IO b) -> IO b
 {-# INLINE unsafeWith #-}
-unsafeWith (Vector p n fp) m = withForeignPtr fp $ \_ -> m p
+unsafeWith (Vector n fp) = withForeignPtr fp
 
 
