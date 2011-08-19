@@ -141,14 +141,19 @@ class MVector v a where
   basicClear _ = return ()
 
   {-# INLINE basicSet #-}
-  basicSet !v x = do_set 0
+  basicSet !v x
+    | n == 0    = return ()
+    | otherwise = do
+                    basicUnsafeWrite v 0 x
+                    do_set 1
     where
       !n = basicLength v
 
-      do_set i | i < n = do
-                           basicUnsafeWrite v i x
-                           do_set (i+1)
-                | otherwise = return ()
+      do_set i | 2*i < n = do basicUnsafeCopy (basicUnsafeSlice i i v)
+                                              (basicUnsafeSlice 0 i v)
+                              do_set (2*i)
+               | otherwise = basicUnsafeCopy (basicUnsafeSlice i (n-i) v)
+                                             (basicUnsafeSlice 0 (n-i) v)
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy !dst !src = do_copy 0
