@@ -114,8 +114,9 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_postscanr, 'prop_postscanr',
         'prop_scanr, 'prop_scanr', 'prop_scanr1, 'prop_scanr1',
 
-        'prop_concatMap {- ,
+        'prop_concatMap, {- ,
         'prop_unfoldr -}
+        'prop_constructN, 'prop_constructrN
     ])
   where
     -- Prelude
@@ -305,6 +306,19 @@ testPolymorphicFunctions _ = $(testProperties [
          = (\n f a -> V.unfoldr (limitUnfolds f) (a, n))
            `eq` (\n f a -> unfoldr (limitUnfolds f) (a, n))
 
+    prop_constructN  = \f -> forAll (choose (0,20)) $ \n -> unP prop n f
+      where
+        prop :: P (Int -> (v a -> a) -> v a) = V.constructN `eq` constructN []
+
+        constructN xs 0 _ = xs
+        constructN xs n f = constructN (xs ++ [f xs]) (n-1) f
+
+    prop_constructrN  = \f -> forAll (choose (0,20)) $ \n -> unP prop n f
+      where
+        prop :: P (Int -> (v a -> a) -> v a) = V.constructrN `eq` constructrN []
+
+        constructrN xs 0 _ = xs
+        constructrN xs n f = constructrN (f xs : xs) (n-1) f
 
 testTuplyFunctions:: forall a v. (COMMON_CONTEXT(a, v), VECTOR_CONTEXT((a, a), v), VECTOR_CONTEXT((a, a, a), v)) => v a -> [Test]
 testTuplyFunctions _ = $(testProperties ['prop_zip, 'prop_zip3, 'prop_unzip, 'prop_unzip3])
