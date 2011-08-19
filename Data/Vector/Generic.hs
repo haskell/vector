@@ -1,5 +1,5 @@
 {-# LANGUAGE Rank2Types, MultiParamTypeClasses, FlexibleContexts,
-             TypeFamilies, ScopedTypeVariables #-}
+             TypeFamilies, ScopedTypeVariables, BangPatterns #-}
 -- |
 -- Module      : Data.Vector.Generic
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -43,6 +43,7 @@ module Data.Vector.Generic (
 
   -- ** Unfolding
   unfoldr, unfoldrN,
+  constructN, constructrN,
 
   -- ** Enumeration
   enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
@@ -235,8 +236,8 @@ infixl 9 !
 -- | O(1) Indexing
 (!) :: Vector v a => v a -> Int -> a
 {-# INLINE_STREAM (!) #-}
-v ! i = BOUNDS_CHECK(checkIndex) "(!)" i (length v)
-      $ unId (basicUnsafeIndexM v i)
+(!) v i = BOUNDS_CHECK(checkIndex) "(!)" i (length v)
+        $ unId (basicUnsafeIndexM v i)
 
 infixl 9 !?
 -- | O(1) Safe indexing
@@ -546,6 +547,64 @@ unfoldr f = unstream . Stream.unfoldr f
 unfoldrN  :: Vector v a => Int -> (b -> Maybe (a, b)) -> b -> v a
 {-# INLINE unfoldrN #-}
 unfoldrN n f = unstream . Stream.unfoldrN n f
+
+-- | /O(n)/ Construct a vector with @n@ elements by repeatedly applying the
+-- generator function to the already constructed part of the vector.
+--
+-- > constructN 3 f = let a = f <> ; b = f <a> ; c = f <a,b> in f <a,b,c>
+--
+constructN :: forall v a. Vector v a => Int -> (v a -> a) -> v a
+{-# INLINE constructN #-}
+-- NOTE: We *CANNOT* wrap this in New and then fuse because the elements
+-- might contain references to the immutable vector!
+constructN !n f = runST (
+  do
+    v  <- M.new n
+    v' <- unsafeFreeze v
+    fill v' 0
+  )
+  where
+    fill :: forall s. v a -> Int -> ST s (v a)
+    fill !v i | i < n = let x = f (unsafeTake i v)
+                        in
+                        elemseq v x $
+                        do
+                          v'  <- unsafeThaw v
+                          M.unsafeWrite v' i x
+                          v'' <- unsafeFreeze v'
+                          fill v'' (i+1)
+
+    fill v i = return v
+
+-- | /O(n)/ Construct a vector with @n@ elements from right to left by
+-- repeatedly applying the generator function to the already constructed part
+-- of the vector.
+--
+-- > constructrN 3 f = let a = f <> ; b = f<a> ; c = f <b,a> in f <c,b,a>
+--
+constructrN :: forall v a. Vector v a => Int -> (v a -> a) -> v a
+{-# INLINE constructrN #-}
+-- NOTE: We *CANNOT* wrap this in New and then fuse because the elements
+-- might contain references to the immutable vector!
+constructrN !n f = runST (
+  do
+    v  <- n `seq` M.new n
+    v' <- unsafeFreeze v
+    fill v' 0
+  )
+  where
+    fill :: forall s. v a -> Int -> ST s (v a)
+    fill !v i | i < n = let x = f (unsafeSlice (n-i) i v)
+                        in
+                        elemseq v x $
+                        do
+                          v'  <- unsafeThaw v
+                          M.unsafeWrite v' (n-i-1) x
+                          v'' <- unsafeFreeze v'
+                          fill v'' (i+1)
+
+    fill v i = return v
+
 
 -- Enumeration
 -- -----------

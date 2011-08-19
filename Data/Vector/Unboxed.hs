@@ -66,6 +66,7 @@ module Data.Vector.Unboxed (
 
   -- ** Unfolding
   unfoldr, unfoldrN,
+  constructN, constructrN,
 
   -- ** Enumeration
   enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
@@ -459,6 +460,25 @@ unfoldr = G.unfoldr
 unfoldrN :: Unbox a => Int -> (b -> Maybe (a, b)) -> b -> Vector a
 {-# INLINE unfoldrN #-}
 unfoldrN = G.unfoldrN
+
+-- | /O(n)/ Construct a vector with @n@ elements by repeatedly applying the
+-- generator function to the already constructed part of the vector.
+--
+-- > constructN 3 f = let a = f <> ; b = f <a> ; c = f <a,b> in f <a,b,c>
+--
+constructN :: Unbox a => Int -> (Vector a -> a) -> Vector a
+{-# INLINE constructN #-}
+constructN = G.constructN
+
+-- | /O(n)/ Construct a vector with @n@ elements from right to left by
+-- repeatedly applying the generator function to the already constructed part
+-- of the vector.
+--
+-- > constructrN 3 f = let a = f <> ; b = f<a> ; c = f <b,a> in f <c,b,a>
+--
+constructrN :: Unbox a => Int -> (Vector a -> a) -> Vector a
+{-# INLINE constructrN #-}
+constructrN = G.constructrN
 
 -- Enumeration
 -- -----------
