@@ -13,7 +13,7 @@
 --
 
 module Data.Vector.Generic.New (
-  New(..), create, run, apply, modify, modifyWithStream,
+  New(..), create, run, runPrim, apply, modify, modifyWithStream,
   unstream, transform, unstreamR, transformR,
   slice, init, tail, take, drop,
   unsafeSlice, unsafeInit, unsafeTail
@@ -27,6 +27,7 @@ import           Data.Vector.Generic.Base ( Vector, Mutable )
 import           Data.Vector.Fusion.Stream ( Stream, MStream )
 import qualified Data.Vector.Fusion.Stream as Stream
 
+import Control.Monad.Primitive
 import Control.Monad.ST ( ST )
 import Control.Monad  ( liftM )
 import Prelude hiding ( init, tail, take, drop, reverse, map, filter )
@@ -42,6 +43,10 @@ create p = New p
 run :: New v a -> ST s (Mutable v s a)
 {-# INLINE run #-}
 run (New p) = p
+
+runPrim :: PrimMonad m => New v a -> m (Mutable v (PrimState m) a)
+{-# INLINE runPrim #-}
+runPrim (New p) = primToPrim p
 
 apply :: (forall s. Mutable v s a -> Mutable v s a) -> New v a -> New v a
 {-# INLINE apply #-}
