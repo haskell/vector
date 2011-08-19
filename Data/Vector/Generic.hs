@@ -1686,11 +1686,15 @@ unsafeFreeze
 {-# INLINE unsafeFreeze #-}
 unsafeFreeze = basicUnsafeFreeze
 
+-- | /O(n)/ Yield an immutable copy of the mutable vector.
+freeze :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m (v a)
+{-# INLINE freeze #-}
+freeze mv = unsafeFreeze =<< M.clone mv
 
 -- | /O(1)/ Unsafely convert an immutable vector to a mutable one without
 -- copying. The immutable vector may not be used after this operation.
 unsafeThaw :: (PrimMonad m, Vector v a) => v a -> m (Mutable v (PrimState m) a)
-{-# INLINE unsafeThaw #-}
+{-# INLINE_STREAM unsafeThaw #-}
 unsafeThaw = basicUnsafeThaw
 
 -- | /O(n)/ Yield a mutable copy of the immutable vector.
@@ -1701,10 +1705,15 @@ thaw v = do
            unsafeCopy mv v
            return mv
 
--- | /O(n)/ Yield an immutable copy of the mutable vector.
-freeze :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m (v a)
-{-# INLINE freeze #-}
-freeze mv = unsafeFreeze =<< M.clone mv
+{-# RULES
+
+"unsafeThaw/new [Vector]" forall p.
+  unsafeThaw (new p) = New.runPrim p
+
+"thaw/new [Vector]" forall p.
+  thaw (new p) = New.runPrim p
+
+  #-}
 
 {-
 -- | /O(n)/ Yield a mutable vector containing copies of each vector in the
