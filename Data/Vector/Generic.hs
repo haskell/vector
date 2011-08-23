@@ -166,7 +166,7 @@ import qualified Data.Vector.Generic.New as New
 import           Data.Vector.Generic.New ( New )
 
 import qualified Data.Vector.Fusion.Stream as Stream
-import           Data.Vector.Fusion.Stream ( Stream, MStream, inplace, liftStream )
+import           Data.Vector.Fusion.Stream ( Stream, MStream, Step(..), inplace, liftStream )
 import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
 import           Data.Vector.Fusion.Util
@@ -671,7 +671,6 @@ v ++ w = unstream (stream v Stream.++ stream w)
 -- | /O(n)/ Concatenate all vectors in the list
 concat :: Vector v a => [v a] -> v a
 {-# INLINE concat #-}
--- concat vs = create (thawMany vs)
 concat vs = unstream (Stream.flatten mk step (Exact n) (Stream.fromList vs))
   where
     n = List.foldl' (\k v -> k + length v) 0 vs
@@ -981,8 +980,28 @@ imap f = unstream . inplace (MStream.map (uncurry f) . MStream.indexed)
 concatMap :: (Vector v a, Vector v b) => (a -> v b) -> v a -> v b
 {-# INLINE concatMap #-}
 -- NOTE: We can't fuse concatMap anyway so don't pretend we do.
+-- This seems to be slightly slower
+-- concatMap f = concat . Stream.toList . Stream.map f . stream
+
+-- Slowest
 -- concatMap f = unstream . Stream.concatMap (stream . f) . stream
-concatMap f = concat . Stream.toList . Stream.map f . stream
+
+-- Seems to be fastest
+concatMap f = unstream
+            . Stream.flatten mk step Unknown
+            . stream
+  where
+    {-# INLINE_INNER step #-}
+    step (v,i,k)
+      | i < k = case unsafeIndexM v i of
+                  Box x -> Stream.Yield x (v,i+1,k)
+      | otherwise = Stream.Done
+
+    {-# INLINE mk #-}
+    mk x = let v = f x
+               k = length v
+           in
+           k `seq` (v,0,k)
 
 -- Monadic mapping
 -- ---------------
