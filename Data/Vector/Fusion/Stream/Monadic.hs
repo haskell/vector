@@ -374,7 +374,6 @@ drop n (Stream step s sz) = Stream step' (s, Just n) (sz - Exact n)
                              Done       -> Done
                            ) (step s)
                      
-
 -- Mapping
 -- -------
 
@@ -961,7 +960,7 @@ flatten mk istep sz (Stream ostep t _) = Stream step (Left t) sz
                       case r of
                         Yield a t' -> do
                                         s <- mk a
-                                        return $ Skip (Right (s,t'))
+                                        s `seq` return (Skip (Right (s,t')))
                         Skip    t' -> return $ Skip (Left t')
                         Done       -> return $ Done
 
