@@ -14,8 +14,13 @@ Description:
 Cabal-Version:  >= 1.2
 Build-Type:     Simple
 
-Executable "vector-tests"
+
+Executable "vector-tests-O0"
   Main-Is:  Main.hs
+
+  Build-Depends: base >= 4 && < 5, template-haskell, vector == 0.7.2,
+                 random,
+                 QuickCheck >= 2, test-framework, test-framework-quickcheck2
 
   Extensions: CPP,
               ScopedTypeVariables,
@@ -31,8 +36,15 @@ Executable "vector-tests"
                  random,
                  QuickCheck >= 2, test-framework, test-framework-quickcheck2
 
-  -- Don't let fusion occur or GHC will make our tests less informative in some cases :-)
-  Ghc-Options: -O0
-  
-  -- It's good practice to show all warnings, but since this is just test code let's ignore type sigs
+  Extensions: CPP,
+              ScopedTypeVariables,
+              PatternGuards,
+              MultiParamTypeClasses,
+              FlexibleContexts,
+              Rank2Types,
+              TypeSynonymInstances,
+              TypeFamilies,
+              TemplateHaskell
+
+  Ghc-Options: -O2
   Ghc-Options: -Wall -fno-warn-orphans -fno-warn-missing-signatures -rtsopts -threaded
