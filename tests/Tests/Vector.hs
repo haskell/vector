@@ -82,7 +82,7 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_length, 'prop_null,
 
         -- Indexing (FIXME)
-        'prop_index, {- 'prop_safeIndex, -} 'prop_head, 'prop_last,
+        'prop_index, 'prop_safeIndex, 'prop_head, 'prop_last,
         'prop_unsafeIndex, 'prop_unsafeHead, 'prop_unsafeLast,
 
         -- Monadic indexing (FIXME)
@@ -91,13 +91,13 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Subvectors (FIXME)
         'prop_slice, 'prop_init, 'prop_tail, 'prop_take, 'prop_drop,
-        {- 'prop_splitAt, -}
+        'prop_splitAt,
         {- 'prop_unsafeSlice, 'prop_unsafeInit, 'prop_unsafeTail,
         'prop_unsafeTake, 'prop_unsafeDrop, -}
 
         -- Initialisation (FIXME)
         'prop_empty, 'prop_singleton, 'prop_replicate,
-        'prop_generate, {- 'prop_iterateN, -}
+        'prop_generate, 'prop_iterateN,
 
         -- Monadic initialisation (FIXME)
         {- 'prop_replicateM, 'prop_generateM, 'prop_create, -}
@@ -110,7 +110,7 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Concatenation (FIXME)
         'prop_cons, 'prop_snoc, 'prop_append,
-        {- 'prop_concat, -}
+        'prop_concat,
 
         -- Restricting memory usage
         'prop_force, 
@@ -128,7 +128,7 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Permutations
         'prop_reverse, 'prop_backpermute,
-        {- 'prop_unsafeBackpermute, #-}
+        {- 'prop_unsafeBackpermute, -}
 
         -- Elementwise indexing
         {- 'prop_indexed, -}
@@ -170,7 +170,8 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Specialised folds
         'prop_all, 'prop_any,
-        {- ... -}
+        {- 'prop_maximumBy, 'prop_minimumBy,
+        'prop_maxIndexBy, 'prop_minIndexBy, -}
 
         -- Monadic folds
         {- ... -}
@@ -201,9 +202,12 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_cons      :: P (a -> v a -> v a) = V.cons `eq` (:)
     prop_snoc      :: P (v a -> a -> v a) = V.snoc `eq` snoc
     prop_append    :: P (v a -> v a -> v a) = (V.++) `eq` (++)
+    prop_concat    :: P ([v a] -> v a) = V.concat `eq` concat
     prop_force     :: P (v a -> v a)        = V.force `eq` id
     prop_generate  :: P (Int -> (Int -> a) -> v a)
               = (\n _ -> n < 1000) ===> V.generate `eq` generate
+    prop_iterateN  :: P (Int -> (a -> a) -> a -> v a)
+              = (\n _ _ -> n < 1000) ===> V.iterateN `eq` (\n f -> take n . iterate f)
 
     prop_head      :: P (v a -> a) = not . V.null ===> V.head `eq` head
     prop_last      :: P (v a -> a) = not . V.null ===> V.last `eq` last
@@ -213,6 +217,11 @@ testPolymorphicFunctions _ = $(testProperties [
                         unP prop xs i
       where
         prop :: P (v a -> Int -> a) = (V.!) `eq` (!!)
+    prop_safeIndex :: P (v a -> Int -> Maybe a) = (V.!?) `eq` fn
+      where
+        fn xs i = case drop i xs of
+                    x:_ | i >= 0 -> Just x
+                    _            -> Nothing
     prop_unsafeHead  :: P (v a -> a) = not . V.null ===> V.unsafeHead `eq` head
     prop_unsafeLast  :: P (v a -> a) = not . V.null ===> V.unsafeLast `eq` last
     prop_unsafeIndex  = \xs ->
@@ -233,6 +242,7 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_init :: P (v a -> v a) = not . V.null ===> V.init `eq` init
     prop_take :: P (Int -> v a -> v a) = V.take `eq` take
     prop_drop :: P (Int -> v a -> v a) = V.drop `eq` drop
+    prop_splitAt :: P (Int -> v a -> (v a, v a)) = V.splitAt `eq` splitAt
 
     prop_accum = \f xs ->
                  forAll (index_value_pairs (V.length xs)) $ \ps ->
