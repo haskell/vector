@@ -78,45 +78,114 @@ testPolymorphicFunctions :: forall a v. (COMMON_CONTEXT(a, v), VECTOR_CONTEXT(In
 testPolymorphicFunctions _ = $(testProperties [
         'prop_eq,
 
+        -- Length information
         'prop_length, 'prop_null,
 
-        'prop_empty, 'prop_singleton, 'prop_replicate,
-        'prop_cons, 'prop_snoc, 'prop_append, 'prop_force, 'prop_generate,
+        -- Indexing (FIXME)
+        'prop_index, {- 'prop_safeIndex, -} 'prop_head, 'prop_last,
+        'prop_unsafeIndex, 'prop_unsafeHead, 'prop_unsafeLast,
 
-        'prop_head, 'prop_last, 'prop_index,
-        'prop_unsafeHead, 'prop_unsafeLast, 'prop_unsafeIndex,
+        -- Monadic indexing (FIXME)
+        {- 'prop_indexM, 'prop_headM, 'prop_lastM,
+        'prop_unsafeIndexM, 'prop_unsafeHeadM, 'prop_unsafeLastM, -}
 
+        -- Subvectors (FIXME)
         'prop_slice, 'prop_init, 'prop_tail, 'prop_take, 'prop_drop,
+        {- 'prop_splitAt, -}
+        {- 'prop_unsafeSlice, 'prop_unsafeInit, 'prop_unsafeTail,
+        'prop_unsafeTake, 'prop_unsafeDrop, -}
 
-        'prop_accum, 'prop_upd, 'prop_backpermute, 'prop_reverse,
+        -- Initialisation (FIXME)
+        'prop_empty, 'prop_singleton, 'prop_replicate,
+        'prop_generate, {- 'prop_iterateN, -}
 
-        'prop_map, 'prop_zipWith, 'prop_zipWith3,
-        'prop_imap, 'prop_izipWith, 'prop_izipWith3,
+        -- Monadic initialisation (FIXME)
+        {- 'prop_replicateM, 'prop_generateM, 'prop_create, -}
 
-        'prop_filter, 'prop_ifilter, 'prop_takeWhile, 'prop_dropWhile,
-        'prop_partition, 'prop_span, 'prop_break,
+        -- Unfolding (FIXME)
+        {- 'prop_unfoldr, prop_unfoldrN, -}
+        'prop_constructN, 'prop_constructrN,
 
+        -- Enumeration? (FIXME?)
+
+        -- Concatenation (FIXME)
+        'prop_cons, 'prop_snoc, 'prop_append,
+        {- 'prop_concat, -}
+
+        -- Restricting memory usage
+        'prop_force, 
+
+
+        -- Bulk updates (FIXME)
+        'prop_upd,
+        {- 'prop_update, 'prop_update_,
+        'prop_unsafeUpd, 'prop_unsafeUpdate, 'prop_unsafeUpdate_, -}
+
+        -- Accumulations (FIXME)
+        'prop_accum,
+        {- 'prop_accumulate, 'prop_accumulate_,
+        'prop_unsafeAccum, 'prop_unsafeAccumulate, 'prop_unsafeAccumulate_, -}
+
+        -- Permutations
+        'prop_reverse, 'prop_backpermute,
+        {- 'prop_unsafeBackpermute, #-}
+
+        -- Elementwise indexing
+        {- 'prop_indexed, -}
+
+        -- Mapping
+        'prop_map, 'prop_imap, 'prop_concatMap,
+
+        -- Monadic mapping
+        {- 'prop_mapM, 'prop_mapM_, 'prop_forM, 'prop_forM_, -}
+
+        -- Zipping
+        'prop_zipWith, 'prop_zipWith3, {- ... -}
+        'prop_izipWith, 'prop_izipWith3, {- ... -}
+        {- 'prop_zip, ... -}
+
+        -- Monadic zipping
+        {- 'prop_zipWithM, 'prop_zipWithM_, -}
+
+        -- Unzipping
+        {- 'prop_unzip, ... -}
+
+        -- Filtering
+        'prop_filter, 'prop_ifilter, {- prop_filterM, -}
+        'prop_takeWhile, 'prop_dropWhile,
+
+        -- Paritioning
+        'prop_partition, {- 'prop_unstablePartition, -}
+        'prop_span, 'prop_break,
+
+        -- Searching
         'prop_elem, 'prop_notElem,
         'prop_find, 'prop_findIndex, 'prop_findIndices,
         'prop_elemIndex, 'prop_elemIndices,
 
+        -- Folding
         'prop_foldl, 'prop_foldl1, 'prop_foldl', 'prop_foldl1',
         'prop_foldr, 'prop_foldr1, 'prop_foldr', 'prop_foldr1',
         'prop_ifoldl, 'prop_ifoldl', 'prop_ifoldr, 'prop_ifoldr',
 
+        -- Specialised folds
         'prop_all, 'prop_any,
+        {- ... -}
 
+        -- Monadic folds
+        {- ... -}
+
+        -- Monadic sequencing
+        {- ... -}
+
+        -- Scans
         'prop_prescanl, 'prop_prescanl',
         'prop_postscanl, 'prop_postscanl',
         'prop_scanl, 'prop_scanl', 'prop_scanl1, 'prop_scanl1',
 
         'prop_prescanr, 'prop_prescanr',
         'prop_postscanr, 'prop_postscanr',
-        'prop_scanr, 'prop_scanr', 'prop_scanr1, 'prop_scanr1',
-
-        'prop_concatMap, {- ,
-        'prop_unfoldr -}
-        'prop_constructN, 'prop_constructrN
+        'prop_scanr, 'prop_scanr', 'prop_scanr1, 'prop_scanr1'
     ])
   where
     -- Prelude
