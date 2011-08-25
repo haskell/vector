@@ -40,12 +40,18 @@ Description:
         .
         Changes in version 0.7.2
         .
+        * New functions: @constructN@, @constructrN@
+        .
         * Safe Haskell support (contributed by David Terei)
         .
         * Functor, Monad, Applicative, Alternative, Foldable and Traversable
           instances for boxed vectors
         .
         * Support for GHC 7.2 array copying primitives
+        .
+        * Performance improvements
+        .
+        * New fixities for @(!)@
         .
         Changes in version 0.7.1
         .
