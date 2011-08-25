@@ -45,7 +45,8 @@ Description:
         * Safe Haskell support (contributed by David Terei)
         .
         * Functor, Monad, Applicative, Alternative, Foldable and Traversable
-          instances for boxed vectors
+          instances for boxed vectors (WARNING: they tend to be slow and are
+          only provided for completeness)
         .
         * Support for GHC 7.2 array copying primitives
         .
