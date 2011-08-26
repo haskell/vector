@@ -1,5 +1,5 @@
 Name:           vector
-Version:        0.7.2
+Version:        0.8
 License:        BSD3
 License-File:   LICENSE
 Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
@@ -38,7 +38,7 @@ Description:
         .
         * <http://trac.haskell.org/vector>
         .
-        Changes in version 0.7.2
+        Changes in version 0.8
         .
         * New functions: @constructN@, @constructrN@
         .
@@ -57,46 +57,6 @@ Description:
         * Read instances for all immutable vector types
         .
         * Performance improvements
-        .
-        Changes in version 0.7.1
-        .
-        * New functions: @iterateN@, @splitAt@
-        .
-        * New monadic operations: @generateM@, @sequence@, @foldM_@ and
-          variants
-        .
-        * New functions for copying potentially overlapping arrays: @move@,
-          @unsafeMove@
-        .
-        * Specialisations of various monadic operations for primitive monads
-        .
-        * Unsafe casts for Storable vectors
-        .
-        * Efficiency improvements
-        .
-        Changes in version 0.7.0.1
-        .
-        * Dependency on package ghc removed
-        .
-        Changes in version 0.7
-        .
-        * New functions for freezing, copying and thawing vectors: @freeze@,
-          @thaw@, @unsafeThaw@ and @clone@
-        .
-        * @newWith@ and @newUnsafeWith@ on mutable vectors replaced by
-          @replicate@
-        .
-        * New function: @concat@
-        .
-        * New function for safe indexing: @(!?)@
-        .
-        * @Monoid@ instances for all vector types
-        .
-        * Significant recycling and fusion improvements
-        .
-        * Bug fixes
-        .
-        * Support for GHC 7.0
         .
 
 Cabal-Version:  >= 1.2.3
