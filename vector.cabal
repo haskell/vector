@@ -42,17 +42,21 @@ Description:
         .
         * New functions: @constructN@, @constructrN@
         .
+        * Support for GHC 7.2 array copying primitives
+        .
+        * New fixity for @(!)@
+        .
         * Safe Haskell support (contributed by David Terei)
         .
         * Functor, Monad, Applicative, Alternative, Foldable and Traversable
           instances for boxed vectors (WARNING: they tend to be slow and are
           only provided for completeness)
         .
-        * Support for GHC 7.2 array copying primitives
+        * Show instances for immutable vectors follow containers conventions
+        .
+        * Read instances for all immutable vector types
         .
         * Performance improvements
-        .
-        * New fixities for @(!)@
         .
         Changes in version 0.7.1
         .
