@@ -184,6 +184,8 @@ import Prelude hiding ( length, null,
                         mapM, mapM_ )
 import qualified Prelude
 
+import Text.Read     ( Read(..), readListPrecDefault )
+
 import Data.Monoid   ( Monoid(..) )
 
 #include "vector.h"
@@ -224,7 +226,11 @@ instance Unbox a => Monoid (Vector a) where
   mconcat = concat
 
 instance (Show a, Unbox a) => Show (Vector a) where
-    show = (Prelude.++ " :: Data.Vector.Unboxed.Vector") . ("fromList " Prelude.++) . show . toList
+  showsPrec = G.showsPrec
+
+instance (Read a, Unbox a) => Read (Vector a) where
+  readPrec = G.readPrec
+  readListPrec = readListPrecDefault
 
 -- Length information
 -- ------------------

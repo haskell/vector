@@ -165,6 +165,7 @@ import qualified Prelude
 
 import Data.Typeable ( Typeable )
 import Data.Data     ( Data(..) )
+import Text.Read     ( Read(..), readListPrecDefault )
 
 import Data.Monoid   ( Monoid(..) )
 
@@ -176,10 +177,11 @@ data Vector a = Vector {-# UNPACK #-} !Int
         deriving ( Typeable )
 
 instance (Show a, Storable a) => Show (Vector a) where
-  show = (Prelude.++ " :: Data.Vector.Storable.Vector")
-       . ("fromList " Prelude.++)
-       . show
-       . toList
+  showsPrec = G.showsPrec
+
+instance (Read a, Storable a) => Read (Vector a) where
+  readPrec = G.readPrec
+  readListPrec = readListPrecDefault
 
 instance (Data a, Storable a) => Data (Vector a) where
   gfoldl       = G.gfoldl

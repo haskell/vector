@@ -153,6 +153,9 @@ module Data.Vector.Generic (
   -- ** Comparisons
   eq, cmp,
 
+  -- ** Show and Read
+  showsPrec, readPrec,
+
   -- ** @Data@ and @Typeable@
   gfoldl, dataCast, mkType
 ) where
@@ -187,8 +190,10 @@ import Prelude hiding ( length, null,
                         all, any, and, or, sum, product, maximum, minimum,
                         scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo,
-                        mapM, mapM_, sequence, sequence_ )
+                        mapM, mapM_, sequence, sequence_,
+                        showsPrec )
 
+import qualified Text.Read as Read
 import Data.Typeable ( Typeable1, gcast1 )
 
 #include "vector.h"
@@ -1981,6 +1986,22 @@ xs `eq` ys = stream xs == stream ys
 cmp :: (Vector v a, Ord a) => v a -> v a -> Ordering
 {-# INLINE cmp #-}
 cmp xs ys = compare (stream xs) (stream ys)
+
+-- Show
+-- ----
+
+-- | Generic definition of 'Prelude.showsPrec'
+showsPrec :: (Vector v a, Show a) => Int -> v a -> ShowS
+{-# INLINE showsPrec #-}
+showsPrec p v = showParen (p > 10) $ showString "fromList " . shows (toList v)
+
+-- | Generic definition of 'Text.Read.readPrec'
+readPrec :: (Vector v a, Read a) => Read.ReadPrec (v a)
+{-# INLINE readPrec #-}
+readPrec = Read.parens $ Read.prec 10 $ do
+  Read.Ident "fromList" <- Read.lexP
+  xs <- Read.readPrec
+  return (fromList xs)
 
 -- Data and Typeable
 -- -----------------
