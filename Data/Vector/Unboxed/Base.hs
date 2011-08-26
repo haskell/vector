@@ -29,7 +29,13 @@ import Data.Word ( Word, Word8, Word16, Word32, Word64 )
 import Data.Int  ( Int8, Int16, Int32, Int64 )
 import Data.Complex
 
-import Data.Typeable ( Typeable1(..), Typeable2(..), mkTyConApp, mkTyCon )
+import Data.Typeable ( Typeable1(..), Typeable2(..), mkTyConApp,
+#if MIN_VERSION_base(4,4,0)
+                       mkTyCon3
+#else
+                       mkTyCon
+#endif
+                     )
 import Data.Data     ( Data(..) )
 
 #include "vector.h"
@@ -48,20 +54,23 @@ class (G.Vector Vector a, M.MVector MVector a) => Unbox a
 -- Data and Typeable
 -- -----------------
 
-vectorTy :: String
-vectorTy = "Data.Vector.Unboxed.Vector"
+#if MIN_VERSION_base(4,4,0)
+vectorTyCon = mkTyCon3 "vector"
+#else
+vectorTyCon m s = mkTyCon $ m ++ "." ++ s
+#endif
 
 instance Typeable1 Vector where
-  typeOf1 _ = mkTyConApp (mkTyCon vectorTy) []
+  typeOf1 _ = mkTyConApp (vectorTyCon "Data.Vector.Unboxed" "Vector") []
 
 instance Typeable2 MVector where
-  typeOf2 _ = mkTyConApp (mkTyCon "Data.Vector.Unboxed.Mutable.MVector") []
+  typeOf2 _ = mkTyConApp (vectorTyCon "Data.Vector.Unboxed.Mutable" "MVector") []
 
 instance (Data a, Unbox a) => Data (Vector a) where
   gfoldl       = G.gfoldl
   toConstr _   = error "toConstr"
   gunfold _ _  = error "gunfold"
-  dataTypeOf _ = G.mkType vectorTy
+  dataTypeOf _ = G.mkType "Data.Vector.Unboxed.Vector"
   dataCast1    = G.dataCast
 
 -- ----
