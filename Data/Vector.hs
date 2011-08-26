@@ -10,7 +10,7 @@
 -- Portability : non-portable
 -- 
 -- A library for boxed vectors (that is, polymorphic arrays capable of
--- holding any Haskell value). The vectors come in two flavors:
+-- holding any Haskell value). The vectors come in two flavours:
 --
 --  * mutable
 --
@@ -19,7 +19,7 @@
 -- and support a rich interface of both list-like operations, and bulk
 -- array operations.
 --
--- For unboxed arrays, use the 'Data.Vector.Unboxed' interface.
+-- For unboxed arrays, use "Data.Vector.Unboxed"
 --
 
 module Data.Vector (
