@@ -11,9 +11,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Mutable boxed vectors.
---
--- Safe API only.
+-- Safe interface to "Data.Vector.Mutable"
 --
 
 module Data.Vector.Mutable.Safe (

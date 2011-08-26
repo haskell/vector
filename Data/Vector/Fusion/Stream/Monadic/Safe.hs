@@ -11,9 +11,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- Monadic stream combinators.
---
--- Safe API only.
+-- Safe interface to "Data.Vector.Fusion.Stream.Monadic"
 --
 
 module Data.Vector.Fusion.Stream.Monadic.Safe (

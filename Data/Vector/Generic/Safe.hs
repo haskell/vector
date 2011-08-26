@@ -10,9 +10,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Generic interface to pure vectors.
---
--- Safe API only.
+-- Safe interface to "Data.Vector.Generic"
 --
 
 module Data.Vector.Generic.Safe (

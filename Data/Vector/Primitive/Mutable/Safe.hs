@@ -10,9 +10,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Mutable primitive vectors.
---
--- Safe API only.
+-- Safe interface to "Data.Vector.Primitive.Mutable"
 --
 
 module Data.Vector.Primitive.Mutable.Safe (

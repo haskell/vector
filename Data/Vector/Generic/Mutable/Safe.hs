@@ -10,9 +10,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Generic interface to mutable vectors
---
--- Safe API only.
+-- Safe interface to "Data.Vector.Generic.Mutable"
 --
 
 module Data.Vector.Generic.Mutable.Safe (

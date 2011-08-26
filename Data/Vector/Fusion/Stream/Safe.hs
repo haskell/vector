@@ -11,9 +11,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Streams for stream fusion.
---
--- Safe API only.
+-- Safe interface to "Data.Vector.Fusion.Stream"
 --
 
 module Data.Vector.Fusion.Stream.Safe (

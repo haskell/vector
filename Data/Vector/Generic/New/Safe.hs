@@ -11,9 +11,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Purely functional interface to initialisation of mutable vectors
---
--- Safe API only.
+-- Safe interface to "Data.Vector.Generic.New"
 --
 
 module Data.Vector.Generic.New.Safe (

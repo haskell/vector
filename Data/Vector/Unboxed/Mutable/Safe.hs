@@ -10,9 +10,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- Mutable adaptive unboxed vectors.
---
--- Safe API only.
+-- Safe interface to "Data.Vector.Unboxed.Mutable"
 --
 
 module Data.Vector.Unboxed.Mutable.Safe (
