@@ -18,7 +18,7 @@ Build-Type:     Simple
 Executable "vector-tests-O0"
   Main-Is:  Main.hs
 
-  Build-Depends: base >= 4 && < 5, template-haskell, vector == 0.7.2,
+  Build-Depends: base >= 4 && < 5, template-haskell, vector == 0.8,
                  random,
                  QuickCheck >= 2, test-framework, test-framework-quickcheck2
 
@@ -53,4 +53,5 @@ Executable "vector-tests-O2"
               TemplateHaskell
 
   Ghc-Options: -O2
-  Ghc-Options: -Wall -fno-warn-orphans -fno-warn-missing-signatures -rtsopts -threaded
+  Ghc-Options: -Wall -fno-warn-orphans -fno-warn-missing-signatures
+
