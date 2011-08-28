@@ -48,6 +48,7 @@ module Data.Vector.Generic.Mutable (
   set, copy, move, unsafeCopy, unsafeMove,
 
   -- * Internal operations
+  mstream, mstreamR,
   unstream, unstreamR,
   munstream, munstreamR,
   transform, transformR,
