@@ -104,7 +104,7 @@ instance G.MVector MVector a where
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MVector i n dst) (MVector j _ src)
-    = copyMutableArray src j dst i n
+    = copyMutableArray dst i src j n
   
   basicUnsafeMove dst@(MVector iDst n arrDst) src@(MVector iSrc _ arrSrc)
     = case n of

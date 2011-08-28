@@ -227,7 +227,7 @@ instance G.Vector Vector a where
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MVector i n dst) (Vector j _ src)
-    = copyArray src j dst i n
+    = copyArray dst i src j n
 
 -- See http://trac.haskell.org/vector/ticket/12
 instance Eq a => Eq (Vector a) where
