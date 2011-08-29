@@ -17,6 +17,8 @@ import Test.Framework.Providers.QuickCheck2
 
 import Text.Show.Functions ()
 import Data.List
+import Data.Monoid
+import qualified Control.Applicative as Applicative
 import System.Random       (Random)
 
 #define COMMON_CONTEXT(a, v) \
@@ -449,7 +451,45 @@ testEnumFunctions _ = $(testProperties
                | otherwise = (i-d*2, i+d*100)
           where
             d = abs (j-i)
-                          
+
+testMonoidFunctions :: forall a v. (COMMON_CONTEXT(a, v), Monoid (v a)) => v a -> [Test]
+testMonoidFunctions _ = $(testProperties
+  [ 'prop_mempty, 'prop_mappend, 'prop_mconcat ])
+  where
+    prop_mempty  :: P (v a)               = mempty `eq` mempty
+    prop_mappend :: P (v a -> v a -> v a) = mappend `eq` mappend
+    prop_mconcat :: P ([v a] -> v a)      = mconcat `eq` mconcat
+
+testFunctorFunctions :: forall a v. (COMMON_CONTEXT(a, v), Functor v) => v a -> [Test]
+testFunctorFunctions _ = $(testProperties
+  [ 'prop_fmap ])
+  where
+    prop_fmap :: P ((a -> a) -> v a -> v a) = fmap `eq` fmap
+
+testMonadFunctions :: forall a v. (COMMON_CONTEXT(a, v), Monad v) => v a -> [Test]
+testMonadFunctions _ = $(testProperties
+  [ 'prop_return, 'prop_bind ])
+  where
+    prop_return :: P (a -> v a) = return `eq` return
+    prop_bind   :: P (v a -> (a -> v a) -> v a) = (>>=) `eq` (>>=)
+
+testApplicativeFunctions :: forall a v. (COMMON_CONTEXT(a, v), V.Vector v (a -> a), Applicative.Applicative v) => v a -> [Test]
+testApplicativeFunctions _ = $(testProperties
+  [ 'prop_applicative_pure, 'prop_applicative_appl ])
+  where
+    prop_applicative_pure :: P (a -> v a)
+      = Applicative.pure `eq` Applicative.pure
+    prop_applicative_appl :: [a -> a] -> P (v a -> v a)
+      = \fs -> (Applicative.<*>) (V.fromList fs) `eq` (Applicative.<*>) fs
+
+testAlternativeFunctions :: forall a v. (COMMON_CONTEXT(a, v), Applicative.Alternative v) => v a -> [Test]
+testAlternativeFunctions _ = $(testProperties
+  [ 'prop_alternative_empty, 'prop_alternative_or ])
+  where
+    prop_alternative_empty :: P (v a) = Applicative.empty `eq` Applicative.empty
+    prop_alternative_or :: P (v a -> v a -> v a)
+      = (Applicative.<|>) `eq` (Applicative.<|>)
+
 testBoolFunctions :: forall v. (COMMON_CONTEXT(Bool, v)) => v Bool -> [Test]
 testBoolFunctions _ = $(testProperties ['prop_and, 'prop_or])
   where
@@ -480,7 +520,12 @@ testGeneralBoxedVector dummy = concatMap ($ dummy) [
         testPolymorphicFunctions,
         testOrdFunctions,
         testTuplyFunctions,
-        testNestedVectorFunctions
+        testNestedVectorFunctions,
+        testMonoidFunctions,
+        testFunctorFunctions,
+        testMonadFunctions,
+        testApplicativeFunctions,
+        testAlternativeFunctions
     ]
 
 testBoolBoxedVector dummy = concatMap ($ dummy)
@@ -501,7 +546,8 @@ testNumericBoxedVector dummy = concatMap ($ dummy)
 testGeneralPrimitiveVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
-        testOrdFunctions
+        testOrdFunctions,
+        testMonoidFunctions
     ]
 
 testBoolPrimitiveVector dummy = concatMap ($ dummy)
@@ -522,7 +568,8 @@ testNumericPrimitiveVector dummy = concatMap ($ dummy)
 testGeneralStorableVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
-        testOrdFunctions
+        testOrdFunctions,
+        testMonoidFunctions
     ]
 
 testNumericStorableVector dummy = concatMap ($ dummy)
@@ -537,7 +584,8 @@ testNumericStorableVector dummy = concatMap ($ dummy)
 testGeneralUnboxedVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
-        testOrdFunctions
+        testOrdFunctions,
+        testMonoidFunctions
     ]
 
 testUnitUnboxedVector dummy = concatMap ($ dummy)
