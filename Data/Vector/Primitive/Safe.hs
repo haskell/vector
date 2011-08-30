@@ -42,6 +42,7 @@ module Data.Vector.Primitive.Safe (
 
   -- ** Unfolding
   unfoldr, unfoldrN,
+  constructN, constructrN,
 
   -- ** Enumeration
   enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
