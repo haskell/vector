@@ -41,6 +41,14 @@ Description:
         .
         * <http://trac.haskell.org/vector>
         .
+        Changes in version 0.9
+        .
+        * 'MonadPlus' instance for boxed vectors
+        .
+        * Export more @construct@ and @constructN@ from @Safe@ modules
+        .
+        * Require @primitive-0.4.0.1@
+        .
         Changes in version 0.8
         .
         * New functions: @constructN@, @constructrN@
