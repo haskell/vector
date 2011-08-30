@@ -156,7 +156,7 @@ import           Data.Vector.Mutable  ( MVector(..) )
 import           Data.Primitive.Array
 import qualified Data.Vector.Fusion.Stream as Stream
 
-import Control.Monad ( liftM, ap )
+import Control.Monad ( MonadPlus(..), liftM, ap )
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
 
@@ -274,6 +274,13 @@ instance Monad Vector where
 
   {-# INLINE (>>=) #-}
   (>>=) = flip concatMap
+
+instance MonadPlus Vector where
+  {-# INLINE mzero #-}
+  mzero = empty
+
+  {-# INLINE mplus #-}
+  mplus = (++)
 
 instance Applicative.Applicative Vector where
   {-# INLINE pure #-}
