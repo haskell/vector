@@ -131,7 +131,9 @@ module Data.Vector.Storable (
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
 
   -- * Raw pointers
-  unsafeFromForeignPtr, unsafeToForeignPtr, unsafeWith
+  unsafeFromForeignPtr, unsafeFromForeignPtr0,
+  unsafeToForeignPtr,   unsafeToForeignPtr0,
+  unsafeWith
 ) where
 
 import qualified Data.Vector.Generic          as G
@@ -1359,20 +1361,47 @@ copy = G.copy
 -- --------------------------
 
 -- | /O(1)/ Create a vector from a 'ForeignPtr' with an offset and a length.
+--
 -- The data may not be modified through the 'ForeignPtr' afterwards.
+--
+-- If your offset is 0 it is more efficient to use 'unsafeFromForeignPtr0'.
 unsafeFromForeignPtr :: Storable a
                      => ForeignPtr a    -- ^ pointer
                      -> Int             -- ^ offset
                      -> Int             -- ^ length
                      -> Vector a
 {-# INLINE unsafeFromForeignPtr #-}
-unsafeFromForeignPtr fp i n = Vector n (updPtr (`advancePtr` i) fp)
+unsafeFromForeignPtr fp i n = unsafeFromForeignPtr0 fp' n
+    where
+      fp' = updPtr (`advancePtr` i) fp
+
+-- | /O(1)/ Create a vector from a 'ForeignPtr' and a length.
+--
+-- It is assumed the pointer points directly to the data (no offset).
+-- Use `unsafeFromForeignPtr` if you need to specify an offset.
+--
+-- The data may not be modified through the 'ForeignPtr' afterwards.
+unsafeFromForeignPtr0 :: Storable a
+                      => ForeignPtr a    -- ^ pointer
+                      -> Int             -- ^ length
+                      -> Vector a
+{-# INLINE unsafeFromForeignPtr0 #-}
+unsafeFromForeignPtr0 fp n = Vector n fp
 
 -- | /O(1)/ Yield the underlying 'ForeignPtr' together with the offset to the
 -- data and its length. The data may not be modified through the 'ForeignPtr'.
 unsafeToForeignPtr :: Storable a => Vector a -> (ForeignPtr a, Int, Int)
 {-# INLINE unsafeToForeignPtr #-}
 unsafeToForeignPtr (Vector n fp) = (fp, 0, n)
+
+-- | /O(1)/ Yield the underlying 'ForeignPtr' together with its length.
+--
+-- You can assume the pointer points directly to the data (no offset).
+--
+-- The data may not be modified through the 'ForeignPtr'.
+unsafeToForeignPtr0 :: Storable a => Vector a -> (ForeignPtr a, Int)
+{-# INLINE unsafeToForeignPtr0 #-}
+unsafeToForeignPtr0 (Vector n fp) = (fp, n)
 
 -- | Pass a pointer to the vector's data to the IO action. The data may not be
 -- modified through the 'Ptr.
