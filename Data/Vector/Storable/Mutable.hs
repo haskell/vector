@@ -52,7 +52,9 @@ module Data.Vector.Storable.Mutable(
   unsafeCast,
 
   -- * Raw pointers
-  unsafeFromForeignPtr, unsafeToForeignPtr, unsafeWith
+  unsafeFromForeignPtr, unsafeFromForeignPtr0,
+  unsafeToForeignPtr,   unsafeToForeignPtr0,
+  unsafeWith
 ) where
 
 import qualified Data.Vector.Generic.Mutable as G
@@ -386,15 +388,34 @@ unsafeCast (MVector n fp)
 -- ------------
 
 -- | Create a mutable vector from a 'ForeignPtr' with an offset and a length.
+--
 -- Modifying data through the 'ForeignPtr' afterwards is unsafe if the vector
 -- could have been frozen before the modification.
+--
+--  If your offset is 0 it is more efficient to use 'unsafeFromForeignPtr0'.
 unsafeFromForeignPtr :: Storable a
                      => ForeignPtr a    -- ^ pointer
                      -> Int             -- ^ offset
                      -> Int             -- ^ length
                      -> MVector s a
 {-# INLINE unsafeFromForeignPtr #-}
-unsafeFromForeignPtr fp i n = MVector n (updPtr (`advancePtr` i) fp)
+unsafeFromForeignPtr fp i n = unsafeFromForeignPtr0 fp' n
+    where
+      fp' = updPtr (`advancePtr` i) fp
+
+-- | /O(1)/ Create a mutable vector from a 'ForeignPtr' and a length.
+--
+-- It is assumed the pointer points directly to the data (no offset).
+-- Use `unsafeFromForeignPtr` if you need to specify an offset.
+--
+-- Modifying data through the 'ForeignPtr' afterwards is unsafe if the vector
+-- could have been frozen before the modification.
+unsafeFromForeignPtr0 :: Storable a
+                      => ForeignPtr a    -- ^ pointer
+                      -> Int             -- ^ length
+                      -> MVector s a
+{-# INLINE unsafeFromForeignPtr0 #-}
+unsafeFromForeignPtr0 fp n = MVector n fp
 
 -- | Yield the underlying 'ForeignPtr' together with the offset to the data
 -- and its length. Modifying the data through the 'ForeignPtr' is
@@ -402,6 +423,16 @@ unsafeFromForeignPtr fp i n = MVector n (updPtr (`advancePtr` i) fp)
 unsafeToForeignPtr :: Storable a => MVector s a -> (ForeignPtr a, Int, Int)
 {-# INLINE unsafeToForeignPtr #-}
 unsafeToForeignPtr (MVector n fp) = (fp, 0, n)
+
+-- | /O(1)/ Yield the underlying 'ForeignPtr' together with its length.
+--
+-- You can assume the pointer points directly to the data (no offset).
+--
+-- Modifying the data through the 'ForeignPtr' is unsafe if the vector could
+-- have frozen before the modification.
+unsafeToForeignPtr0 :: Storable a => MVector s a -> (ForeignPtr a, Int)
+{-# INLINE unsafeToForeignPtr0 #-}
+unsafeToForeignPtr0 (MVector n fp) = (fp, n)
 
 -- | Pass a pointer to the vector's data to the IO action. Modifying data
 -- through the pointer is unsafe if the vector could have been frozen before
