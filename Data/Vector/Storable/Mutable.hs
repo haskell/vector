@@ -403,6 +403,11 @@ unsafeFromForeignPtr fp i n = unsafeFromForeignPtr0 fp' n
     where
       fp' = updPtr (`advancePtr` i) fp
 
+{-# RULES
+"unsafeFromForeignPtr fp 0 n -> unsafeFromForeignPtr0 fp n " forall fp n.
+  unsafeFromForeignPtr fp 0 n = unsafeFromForeignPtr0 fp n
+  #-}
+
 -- | /O(1)/ Create a mutable vector from a 'ForeignPtr' and a length.
 --
 -- It is assumed the pointer points directly to the data (no offset).
