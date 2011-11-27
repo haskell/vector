@@ -10,6 +10,8 @@
 -- Bounds checking infrastructure
 --
 
+{-# LANGUAGE MagicHash #-}
+
 module Data.Vector.Internal.Check (
   Checks(..), doChecks,
 
@@ -17,6 +19,8 @@ module Data.Vector.Internal.Check (
   check, assert, checkIndex, checkLength, checkSlice
 ) where
 
+import GHC.Base( Int(..) )
+import GHC.Prim( Int# )
 import Prelude hiding( error )
 import qualified Prelude as P
 
@@ -78,8 +82,12 @@ assert :: String -> Int -> Checks -> String -> Bool -> a -> a
 assert file line kind loc = check file line kind loc assert_msg
 
 checkIndex_msg :: Int -> Int -> String
-{-# NOINLINE checkIndex_msg #-}
-checkIndex_msg i n = "index out of bounds " ++ show (i,n)
+{-# INLINE checkIndex_msg #-}
+checkIndex_msg (I# i#) (I# n#) = checkIndex_msg# i# n#
+
+checkIndex_msg# :: Int# -> Int# -> String
+{-# NOINLINE checkIndex_msg# #-}
+checkIndex_msg# i# n# = "index out of bounds " ++ show (I# i#, I# n#)
 
 checkIndex :: String -> Int -> Checks -> String -> Int -> Int -> a -> a
 {-# INLINE checkIndex #-}
@@ -88,8 +96,12 @@ checkIndex file line kind loc i n x
 
 
 checkLength_msg :: Int -> String
-{-# NOINLINE checkLength_msg #-}
-checkLength_msg n = "negative length " ++ show n
+{-# INLINE checkLength_msg #-}
+checkLength_msg (I# n#) = checkLength_msg# n#
+
+checkLength_msg# :: Int# -> String
+{-# NOINLINE checkLength_msg# #-}
+checkLength_msg# n# = "negative length " ++ show (I# n#)
 
 checkLength :: String -> Int -> Checks -> String -> Int -> a -> a
 {-# INLINE checkLength #-}
@@ -98,8 +110,12 @@ checkLength file line kind loc n x
 
 
 checkSlice_msg :: Int -> Int -> Int -> String
-{-# NOINLINE checkSlice_msg #-}
-checkSlice_msg i m n = "invalid slice " ++ show (i,m,n)
+{-# INLINE checkSlice_msg #-}
+checkSlice_msg (I# i#) (I# m#) (I# n#) = checkSlice_msg# i# m# n#
+
+checkSlice_msg# :: Int# -> Int# -> Int# -> String
+{-# NOINLINE checkSlice_msg# #-}
+checkSlice_msg# i# m# n# = "invalid slice " ++ show (I# i#, I# m#, I# n#)
 
 checkSlice :: String -> Int -> Checks -> String -> Int -> Int -> Int -> a -> a
 {-# INLINE checkSlice #-}
