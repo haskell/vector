@@ -21,8 +21,30 @@ module Data.Vector.Internal.Check (
 
 import GHC.Base( Int(..) )
 import GHC.Prim( Int# )
-import Prelude hiding( error )
+import Prelude hiding( error, (&&), (||), not )
 import qualified Prelude as P
+
+-- NOTE: This is a workaround for GHC's weird behaviour where it doesn't inline
+-- these functions into unfoldings which makes the intermediate code size
+-- explode. See http://hackage.haskell.org/trac/ghc/ticket/5539.
+infixr 2 ||
+infixr 3 &&
+
+not :: Bool -> Bool
+{-# INLINE not #-}
+not True = False
+not False = True
+
+(&&) :: Bool -> Bool -> Bool
+{-# INLINE (&&) #-}
+False && x = False
+True && x = x
+
+(||) :: Bool -> Bool -> Bool
+{-# INLINE (||) #-}
+True || x = True
+False || x = x
+
 
 data Checks = Bounds | Unsafe | Internal deriving( Eq )
 
