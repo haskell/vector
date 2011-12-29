@@ -15,7 +15,7 @@
 module Data.Vector.Internal.Check (
   Checks(..), doChecks,
 
-  error, emptyStream,
+  error, internalError,
   check, checkIndex, checkLength, checkSlice
 ) where
 
@@ -54,25 +54,35 @@ doChecks Bounds   = doBoundsChecks
 doChecks Unsafe   = doUnsafeChecks
 doChecks Internal = doInternalChecks
 
-error :: String -> Int -> Checks -> String -> String -> a
-error file line kind loc msg
-  = P.error $ unlines $
-      (if kind == Internal
-         then (["*** Internal error in package vector ***"
-               ,"*** Please submit a bug report at http://trac.haskell.org/vector"]++)
-         else id) $
-      [ file ++ ":" ++ show line ++ " (" ++ loc ++ "): " ++ msg ]
+error_msg :: String -> Int -> String -> String -> String
+error_msg file line loc msg = file ++ ":" ++ show line ++ " (" ++ loc ++ "): " ++ msg
 
-emptyStream :: String -> Int -> Checks -> String -> a
-{-# NOINLINE emptyStream #-}
-emptyStream file line kind loc
-  = error file line kind loc "empty stream"
+error :: String -> Int -> String -> String -> a
+{-# NOINLINE error #-}
+error file line loc msg
+  = P.error $ error_msg file line loc msg
+
+internalError :: String -> Int -> String -> String -> a
+{-# NOINLINE internalError #-}
+internalError file line loc msg
+  = P.error $ unlines
+        ["*** Internal error in package vector ***"
+        ,"*** Please submit a bug report at http://trac.haskell.org/vector"
+        ,error_msg file line loc msg]
+
+
+checkError :: String -> Int -> Checks -> String -> String -> a
+{-# NOINLINE checkError #-}
+checkError file line kind loc msg
+  = case kind of
+      Internal -> internalError file line loc msg
+      _ -> error file line loc msg
 
 check :: String -> Int -> Checks -> String -> String -> Bool -> a -> a
 {-# INLINE check #-}
 check file line kind loc msg cond x
   | not (doChecks kind) || cond = x
-  | otherwise = error file line kind loc msg
+  | otherwise = checkError file line kind loc msg
 
 checkIndex_msg :: Int -> Int -> String
 {-# INLINE checkIndex_msg #-}
