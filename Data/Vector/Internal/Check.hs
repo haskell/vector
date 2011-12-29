@@ -16,7 +16,7 @@ module Data.Vector.Internal.Check (
   Checks(..), doChecks,
 
   error, emptyStream,
-  check, assert, checkIndex, checkLength, checkSlice
+  check, checkIndex, checkLength, checkSlice
 ) where
 
 import GHC.Base( Int(..) )
@@ -73,13 +73,6 @@ check :: String -> Int -> Checks -> String -> String -> Bool -> a -> a
 check file line kind loc msg cond x
   | not (doChecks kind) || cond = x
   | otherwise = error file line kind loc msg
-
-assert_msg :: String
-assert_msg = "assertion failure"
-
-assert :: String -> Int -> Checks -> String -> Bool -> a -> a
-{-# INLINE assert #-}
-assert file line kind loc = check file line kind loc assert_msg
 
 checkIndex_msg :: Int -> Int -> String
 {-# INLINE checkIndex_msg #-}
