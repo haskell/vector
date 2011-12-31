@@ -41,6 +41,12 @@ Description:
         .
         * <http://trac.haskell.org/vector>
         .
+        Changes in version 0.9.1
+        .
+        . New functions: @unsafeFromForeignPtr0@ and @unsafeToForeignPtr0@
+        .
+        . Small performance improvements
+        .
         Changes in version 0.9
         .
         * 'MonadPlus' instance for boxed vectors
