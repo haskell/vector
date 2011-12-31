@@ -72,6 +72,20 @@ import Prelude hiding ( length, null, replicate, reverse, map, read,
 
 -- | Class of mutable vectors parametrised with a primitive state token.
 --
+-- Minimum complete implementation:
+--
+--   * 'basicLength'
+--
+--   * 'basicUnsafeSlice'
+--
+--   * 'basicOverlaps'
+--
+--   * 'basicUnsafeNew'
+--
+--   * 'basicUnsafeRead'
+--
+--   * 'basicUnsafeWrite'
+--
 class MVector v a where
   -- | Length of the mutable vector. This method should not be
   -- called directly, use 'length' instead.
