@@ -43,9 +43,11 @@ Description:
         .
         Changes in version 0.9.1
         .
-        . New functions: @unsafeFromForeignPtr0@ and @unsafeToForeignPtr0@
+        * New functions: @unsafeFromForeignPtr0@ and @unsafeToForeignPtr0@
         .
-        . Small performance improvements
+        * Small performance improvements
+        .
+        * Fixes for GHC 7.4
         .
         Changes in version 0.9
         .
