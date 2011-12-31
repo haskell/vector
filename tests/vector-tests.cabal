@@ -38,7 +38,7 @@ Executable "vector-tests-O0"
 Executable "vector-tests-O2"
   Main-Is:  Main.hs
 
-  Build-Depends: base >= 4 && < 5, template-haskell, vector == 0.8,
+  Build-Depends: base >= 4 && < 5, template-haskell, vector == 0.9.1,
                  random,
                  QuickCheck >= 2, test-framework, test-framework-quickcheck2
 
