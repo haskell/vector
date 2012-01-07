@@ -1,4 +1,9 @@
-{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, TypeFamilies, Rank2Types #-}
+{-# LANGUAGE FlexibleInstances
+           , MultiParamTypeClasses
+           , TypeFamilies
+           , Rank2Types
+           , BangPatterns
+  #-}
 
 -- |
 -- Module      : Data.Vector
@@ -156,6 +161,7 @@ import           Data.Vector.Mutable  ( MVector(..) )
 import           Data.Primitive.Array
 import qualified Data.Vector.Fusion.Stream as Stream
 
+import Control.DeepSeq ( NFData, rnf )
 import Control.Monad ( MonadPlus(..), liftM, ap )
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
@@ -190,6 +196,12 @@ data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
                        {-# UNPACK #-} !(Array a)
         deriving ( Typeable )
+
+instance NFData a => NFData (Vector a) where
+    rnf (Vector i n arr) = force i
+        where
+          force !ix | ix < n    = rnf (indexArray arr ix) `seq` force (ix+1)
+                    | otherwise = ()
 
 instance Show a => Show (Vector a) where
   showsPrec = G.showsPrec

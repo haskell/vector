@@ -22,6 +22,8 @@ import qualified Data.Vector.Generic.Mutable as M
 
 import qualified Data.Vector.Primitive as P
 
+import Control.DeepSeq ( NFData )
+
 import Control.Monad.Primitive
 import Control.Monad ( liftM )
 
@@ -49,6 +51,9 @@ type STVector s = MVector s
 type instance G.Mutable Vector = MVector
 
 class (G.Vector Vector a, M.MVector MVector a) => Unbox a
+
+instance NFData (Vector a)
+instance NFData (MVector s a)
 
 -- -----------------
 -- Data and Typeable

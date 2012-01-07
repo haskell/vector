@@ -140,6 +140,8 @@ import qualified Data.Vector.Fusion.Stream as Stream
 import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim, sizeOf )
 
+import Control.DeepSeq ( NFData )
+
 import Control.Monad ( liftM )
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
@@ -171,6 +173,8 @@ data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
                        {-# UNPACK #-} !ByteArray
   deriving ( Typeable )
+
+instance NFData (Vector a)
 
 instance (Show a, Prim a) => Show (Vector a) where
   showsPrec = G.showsPrec
