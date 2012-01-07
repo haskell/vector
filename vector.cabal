@@ -136,6 +136,7 @@ Library
         Data.Vector.Fusion.Stream
         Data.Vector.Fusion.Stream.Safe
 
+        Data.Vector.Generic.Mutable.Base
         Data.Vector.Generic.Mutable
         Data.Vector.Generic.Mutable.Safe
         Data.Vector.Generic.Base

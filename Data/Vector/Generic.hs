@@ -780,7 +780,7 @@ update_ :: (Vector v a, Vector v Int)
 {-# INLINE update_ #-}
 update_ v is w = update_stream v (Stream.zipWith (,) (stream is) (stream w))
 
-update_stream :: Vector v a => v a -> Stream (Int,a) -> v a
+update_stream :: Vector v a => v a -> Stream u (Int,a) -> v a
 {-# INLINE update_stream #-}
 update_stream = modifyWithStream M.update
 
@@ -800,7 +800,7 @@ unsafeUpdate_ :: (Vector v a, Vector v Int) => v a -> v Int -> v a -> v a
 unsafeUpdate_ v is w
   = unsafeUpdate_stream v (Stream.zipWith (,) (stream is) (stream w))
 
-unsafeUpdate_stream :: Vector v a => v a -> Stream (Int,a) -> v a
+unsafeUpdate_stream :: Vector v a => v a -> Stream u (Int,a) -> v a
 {-# INLINE unsafeUpdate_stream #-}
 unsafeUpdate_stream = modifyWithStream M.unsafeUpdate
 
@@ -855,7 +855,7 @@ accumulate_ f v is xs = accum_stream f v (Stream.zipWith (,) (stream is)
                                                              (stream xs))
                                         
 
-accum_stream :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
+accum_stream :: Vector v a => (a -> b -> a) -> v a -> Stream u (Int,b) -> v a
 {-# INLINE accum_stream #-}
 accum_stream f = modifyWithStream (M.accum f)
 
@@ -878,7 +878,7 @@ unsafeAccumulate_ f v is xs
   = unsafeAccum_stream f v (Stream.zipWith (,) (stream is) (stream xs))
 
 unsafeAccum_stream
-  :: Vector v a => (a -> b -> a) -> v a -> Stream (Int,b) -> v a
+  :: Vector v a => (a -> b -> a) -> v a -> Stream u (Int,b) -> v a
 {-# INLINE unsafeAccum_stream #-}
 unsafeAccum_stream f = modifyWithStream (M.unsafeAccum f)
 
@@ -954,8 +954,8 @@ modify p = new . New.modify p . clone
 -- We have to make sure that this is strict in the stream but we can't seq on
 -- it while fusion is happening. Hence this ugliness.
 modifyWithStream :: Vector v a
-                 => (forall s. Mutable v s a -> Stream b -> ST s ())
-                 -> v a -> Stream b -> v a
+                 => (forall s. Mutable v s a -> Stream u b -> ST s ())
+                 -> v a -> Stream u b -> v a
 {-# INLINE modifyWithStream #-}
 modifyWithStream p v s = new (New.modifyWithStream p (clone v) s)
 
@@ -1275,7 +1275,7 @@ partition f = partition_stream f . stream
 -- FIXME: Make this inplace-fusible (look at how stable_partition is
 -- implemented in C++)
 
-partition_stream :: Vector v a => (a -> Bool) -> Stream a -> (v a, v a)
+partition_stream :: Vector v a => (a -> Bool) -> Stream u a -> (v a, v a)
 {-# INLINE_STREAM partition_stream #-}
 partition_stream f s = s `seq` runST (
   do
@@ -1293,7 +1293,7 @@ unstablePartition :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 unstablePartition f = unstablePartition_stream f . stream
 
 unstablePartition_stream
-  :: Vector v a => (a -> Bool) -> Stream a -> (v a, v a)
+  :: Vector v a => (a -> Bool) -> Stream u a -> (v a, v a)
 {-# INLINE_STREAM unstablePartition_stream #-}
 unstablePartition_stream f s = s `seq` runST (
   do
@@ -1757,7 +1757,7 @@ fromListN n = unstream . Stream.fromListN n
 -- | /O(n)/ Convert different vector types
 convert :: (Vector v a, Vector w a) => v a -> w a
 {-# INLINE convert #-}
-convert = unstream . stream
+convert = unstream . Stream.reVector . stream
 
 -- Conversions - Mutable vectors
 -- -----------------------------
@@ -1843,8 +1843,11 @@ unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
 -- ---------------------------
 
 -- | /O(1)/ Convert a vector to a 'Stream'
-stream :: Vector v a => v a -> Stream a
+stream :: Vector v a => v a -> Stream v a
 {-# INLINE_STREAM stream #-}
+stream v = Stream.fromVector v
+
+{-
 stream v = v `seq` n `seq` (Stream.unfoldr get 0 `Stream.sized` Exact n)
   where
     n = length v
@@ -1854,9 +1857,10 @@ stream v = v `seq` n `seq` (Stream.unfoldr get 0 `Stream.sized` Exact n)
     {-# INLINE get #-}
     get i | i >= n    = Nothing
           | otherwise = case basicUnsafeIndexM v i of Box x -> Just (x, i+1)
+-}
 
 -- | /O(n)/ Construct a vector from a 'Stream'
-unstream :: Vector v a => Stream a -> v a
+unstream :: Vector v a => Stream v a -> v a
 {-# INLINE unstream #-}
 unstream s = new (New.unstream s)
 
@@ -1872,17 +1876,17 @@ unstream s = new (New.unstream s)
   clone (new p) = p
 
 "inplace [Vector]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
+  forall (f :: forall m. Monad m => MStream m u a -> MStream m u a) m.
   New.unstream (inplace f (stream (new m))) = New.transform f m
 
 "uninplace [Vector]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
+  forall (f :: forall m. Monad m => MStream m u a -> MStream m u a) m.
   stream (new (New.transform f m)) = inplace f (stream (new m))
 
  #-}
 
 -- | /O(1)/ Convert a vector to a 'Stream', proceeding from right to left
-streamR :: Vector v a => v a -> Stream a
+streamR :: Vector v a => v a -> Stream u a
 {-# INLINE_STREAM streamR #-}
 streamR v = v `seq` n `seq` (Stream.unfoldr get n `Stream.sized` Exact n)
   where
@@ -1895,7 +1899,7 @@ streamR v = v `seq` n `seq` (Stream.unfoldr get n `Stream.sized` Exact n)
             case basicUnsafeIndexM v i' of Box x -> Just (x, i')
 
 -- | /O(n)/ Construct a vector from a 'Stream', proceeding from right to left
-unstreamR :: Vector v a => Stream a -> v a
+unstreamR :: Vector v a => Stream v a -> v a
 {-# INLINE unstreamR #-}
 unstreamR s = new (New.unstreamR s)
 
@@ -1914,31 +1918,31 @@ unstreamR s = new (New.unstreamR s)
   New.unstreamR (stream (new p)) = New.modify M.reverse p
 
 "inplace right [Vector]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
+  forall (f :: forall m. Monad m => MStream m u a -> MStream m u a) m.
   New.unstreamR (inplace f (streamR (new m))) = New.transformR f m
 
 "uninplace right [Vector]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a) m.
+  forall (f :: forall m. Monad m => MStream m u a -> MStream m u a) m.
   streamR (new (New.transformR f m)) = inplace f (streamR (new m))
 
  #-}
 
-unstreamM :: (Monad m, Vector v a) => MStream m a -> m (v a)
+unstreamM :: (Monad m, Vector v a) => MStream m u a -> m (v a)
 {-# INLINE_STREAM unstreamM #-}
 unstreamM s = do
                 xs <- MStream.toList s
                 return $ unstream $ Stream.unsafeFromList (MStream.size s) xs
 
-unstreamPrimM :: (PrimMonad m, Vector v a) => MStream m a -> m (v a)
+unstreamPrimM :: (PrimMonad m, Vector v a) => MStream m u a -> m (v a)
 {-# INLINE_STREAM unstreamPrimM #-}
 unstreamPrimM s = M.munstream s >>= unsafeFreeze
 
 -- FIXME: the next two functions are only necessary for the specialisations
-unstreamPrimM_IO :: Vector v a => MStream IO a -> IO (v a)
+unstreamPrimM_IO :: Vector v a => MStream IO u a -> IO (v a)
 {-# INLINE unstreamPrimM_IO #-}
 unstreamPrimM_IO = unstreamPrimM
 
-unstreamPrimM_ST :: Vector v a => MStream (ST s) a -> ST s (v a)
+unstreamPrimM_ST :: Vector v a => MStream (ST s) u a -> ST s (v a)
 {-# INLINE unstreamPrimM_ST #-}
 unstreamPrimM_ST = unstreamPrimM
 

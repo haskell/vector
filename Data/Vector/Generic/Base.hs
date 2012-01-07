@@ -18,8 +18,8 @@ module Data.Vector.Generic.Base (
   Vector(..), Mutable
 ) where
 
-import           Data.Vector.Generic.Mutable ( MVector )
-import qualified Data.Vector.Generic.Mutable as M
+import           Data.Vector.Generic.Mutable.Base ( MVector )
+import qualified Data.Vector.Generic.Mutable.Base as M
 
 import Control.Monad.Primitive
 

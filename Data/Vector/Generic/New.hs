@@ -56,55 +56,55 @@ modify :: (forall s. Mutable v s a -> ST s ()) -> New v a -> New v a
 {-# INLINE modify #-}
 modify f (New p) = New (do { v <- p; f v; return v })
 
-modifyWithStream :: (forall s. Mutable v s a -> Stream b -> ST s ())
-                 -> New v a -> Stream b -> New v a
+modifyWithStream :: (forall s. Mutable v s a -> Stream u b -> ST s ())
+                 -> New v a -> Stream u b -> New v a
 {-# INLINE_STREAM modifyWithStream #-}
 modifyWithStream f (New p) s = s `seq` New (do { v <- p; f v s; return v })
 
-unstream :: Vector v a => Stream a -> New v a
+unstream :: Vector v a => Stream v a -> New v a
 {-# INLINE_STREAM unstream #-}
-unstream s = s `seq` New (MVector.unstream s)
+unstream s = s `seq` New (MVector.vunstream s)
 
 transform :: Vector v a =>
-        (forall m. Monad m => MStream m a -> MStream m a) -> New v a -> New v a
+        (forall m. Monad m => MStream m u a -> MStream m u a) -> New v a -> New v a
 {-# INLINE_STREAM transform #-}
 transform f (New p) = New (MVector.transform f =<< p)
 
 {-# RULES
 
 "transform/transform [New]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a)
-         (g :: forall m. Monad m => MStream m a -> MStream m a)
+  forall (f :: forall m. Monad m => MStream m v a -> MStream m v a)
+         (g :: forall m. Monad m => MStream m v a -> MStream m v a)
          p .
   transform f (transform g p) = transform (f . g) p
 
 "transform/unstream [New]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a)
+  forall (f :: forall m. Monad m => MStream m v a -> MStream m v a)
          s.
   transform f (unstream s) = unstream (f s)
 
  #-}
 
 
-unstreamR :: Vector v a => Stream a -> New v a
+unstreamR :: Vector v a => Stream v a -> New v a
 {-# INLINE_STREAM unstreamR #-}
 unstreamR s = s `seq` New (MVector.unstreamR s)
 
 transformR :: Vector v a =>
-        (forall m. Monad m => MStream m a -> MStream m a) -> New v a -> New v a
+        (forall m. Monad m => MStream m u a -> MStream m u a) -> New v a -> New v a
 {-# INLINE_STREAM transformR #-}
 transformR f (New p) = New (MVector.transformR f =<< p)
 
 {-# RULES
 
 "transformR/transformR [New]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a)
-         (g :: forall m. Monad m => MStream m a -> MStream m a)
+  forall (f :: forall m. Monad m => MStream m v a -> MStream m v a)
+         (g :: forall m. Monad m => MStream m v a -> MStream m v a)
          p .
   transformR f (transformR g p) = transformR (f . g) p
 
 "transformR/unstreamR [New]"
-  forall (f :: forall m. Monad m => MStream m a -> MStream m a)
+  forall (f :: forall m. Monad m => MStream m v a -> MStream m v a)
          s.
   transformR f (unstreamR s) = unstreamR (f s)
 
