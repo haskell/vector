@@ -13,7 +13,7 @@
 --
 
 module Data.Vector.Fusion.Stream.Monadic (
-  Stream(..), Step(..),
+  Stream(..), Step(..), SPEC(..),
 
   -- * Size hints
   size, sized,
