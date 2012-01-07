@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, Rank2Types #-}
+{-# LANGUAGE FlexibleInstances, Rank2Types, BangPatterns #-}
 
 -- |
 -- Module      : Data.Vector.Fusion.Stream
@@ -77,7 +77,7 @@ module Data.Vector.Fusion.Stream (
 
 import Data.Vector.Fusion.Stream.Size
 import Data.Vector.Fusion.Util
-import Data.Vector.Fusion.Stream.Monadic ( Step(..) )
+import Data.Vector.Fusion.Stream.Monadic ( Step(..), SPEC(..) )
 import qualified Data.Vector.Fusion.Stream.Monadic as M
 
 import Prelude hiding ( length, null,
@@ -477,38 +477,40 @@ scanl1' = M.scanl1'
 -- Comparisons
 -- -----------
 
+-- FIXME: Move these to Monadic
+
 -- | Check if two 'Stream's are equal
 eq :: Eq a => Stream a -> Stream a -> Bool
 {-# INLINE_STREAM eq #-}
-eq (M.Stream step1 s1 _) (M.Stream step2 s2 _) = eq_loop0 s1 s2
+eq (M.Stream step1 s1 _) (M.Stream step2 s2 _) = eq_loop0 SPEC s1 s2
   where
-    eq_loop0 s1 s2 = case unId (step1 s1) of
-                       Yield x s1' -> eq_loop1 x s1' s2
-                       Skip    s1' -> eq_loop0   s1' s2
-                       Done        -> null (M.Stream step2 s2 Unknown)
+    eq_loop0 !sPEC s1 s2 = case unId (step1 s1) of
+                             Yield x s1' -> eq_loop1 SPEC x s1' s2
+                             Skip    s1' -> eq_loop0 SPEC   s1' s2
+                             Done        -> null (M.Stream step2 s2 Unknown)
 
-    eq_loop1 x s1 s2 = case unId (step2 s2) of
-                         Yield y s2' -> x == y && eq_loop0   s1 s2'
-                         Skip    s2' ->           eq_loop1 x s1 s2'
-                         Done        -> False
+    eq_loop1 !sPEC x s1 s2 = case unId (step2 s2) of
+                               Yield y s2' -> x == y && eq_loop0 SPEC   s1 s2'
+                               Skip    s2' ->           eq_loop1 SPEC x s1 s2'
+                               Done        -> False
 
 -- | Lexicographically compare two 'Stream's
 cmp :: Ord a => Stream a -> Stream a -> Ordering
 {-# INLINE_STREAM cmp #-}
-cmp (M.Stream step1 s1 _) (M.Stream step2 s2 _) = cmp_loop0 s1 s2
+cmp (M.Stream step1 s1 _) (M.Stream step2 s2 _) = cmp_loop0 SPEC s1 s2
   where
-    cmp_loop0 s1 s2 = case unId (step1 s1) of
-                        Yield x s1' -> cmp_loop1 x s1' s2
-                        Skip    s1' -> cmp_loop0   s1' s2
-                        Done        -> if null (M.Stream step2 s2 Unknown)
-                                         then EQ else LT
+    cmp_loop0 !sPEC s1 s2 = case unId (step1 s1) of
+                              Yield x s1' -> cmp_loop1 SPEC x s1' s2
+                              Skip    s1' -> cmp_loop0 SPEC   s1' s2
+                              Done        -> if null (M.Stream step2 s2 Unknown)
+                                               then EQ else LT
 
-    cmp_loop1 x s1 s2 = case unId (step2 s2) of
-                          Yield y s2' -> case x `compare` y of
-                                           EQ -> cmp_loop0 s1 s2'
-                                           c  -> c
-                          Skip    s2' -> cmp_loop1 x s1 s2'
-                          Done        -> GT
+    cmp_loop1 !sPEC x s1 s2 = case unId (step2 s2) of
+                                Yield y s2' -> case x `compare` y of
+                                                 EQ -> cmp_loop0 SPEC s1 s2'
+                                                 c  -> c
+                                Skip    s2' -> cmp_loop1 SPEC x s1 s2'
+                                Done        -> GT
 
 instance Eq a => Eq (M.Stream Id a) where
   {-# INLINE (==) #-}
