@@ -1,5 +1,5 @@
 Name:           vector-tests
-Version:        0.10
+Version:        0.9.9
 License:        BSD3
 License-File:   LICENSE
 Author:         Max Bolingbroke, Roman Leshchinskiy
@@ -18,7 +18,7 @@ Build-Type:     Simple
 Executable "vector-tests-O0"
   Main-Is:  Main.hs
 
-  Build-Depends: base >= 4 && < 5, template-haskell, vector == 0.10,
+  Build-Depends: base >= 4 && < 5, template-haskell, vector == 0.9.9,
                  random,
                  QuickCheck >= 2, test-framework, test-framework-quickcheck2
 
@@ -38,7 +38,7 @@ Executable "vector-tests-O0"
 Executable "vector-tests-O2"
   Main-Is:  Main.hs
 
-  Build-Depends: base >= 4 && < 5, template-haskell, vector == 0.10,
+  Build-Depends: base >= 4 && < 5, template-haskell, vector == 0.9.9,
                  random,
                  QuickCheck >= 2, test-framework, test-framework-quickcheck2
 
