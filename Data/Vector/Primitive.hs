@@ -205,7 +205,7 @@ instance Prim a => G.Vector Vector a where
   basicUnsafeSlice j n (Vector i _ arr) = Vector (i+j) n arr
 
   {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM (Vector i _ arr) j = return (indexByteArray arr (i+j))
+  basicUnsafeIndexM (Vector i _ arr) j = return $! indexByteArray arr (i+j)
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MVector i n dst) (Vector j _ src)
