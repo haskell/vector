@@ -676,6 +676,8 @@ v ++ w = unstream (stream v Stream.++ stream w)
 -- | /O(n)/ Concatenate all vectors in the list
 concat :: Vector v a => [v a] -> v a
 {-# INLINE concat #-}
+concat = unstream . Stream.fromVectors
+{-
 concat vs = unstream (Stream.flatten mk step (Exact n) (Stream.fromList vs))
   where
     n = List.foldl' (\k v -> k + length v) 0 vs
@@ -690,6 +692,7 @@ concat vs = unstream (Stream.flatten mk step (Exact n) (Stream.fromList vs))
     mk v = let k = length v
            in
            k `seq` (v,0,k)
+-}
 
 -- Monadic initialisation
 -- ----------------------

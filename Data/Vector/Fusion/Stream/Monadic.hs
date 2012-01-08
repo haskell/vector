@@ -73,13 +73,14 @@ module Data.Vector.Fusion.Stream.Monadic (
 
   -- * Conversions
   toList, fromList, fromListN, unsafeFromList,
-  fromVector, reVector
+  fromVector, reVector, fromVectors
 ) where
 
 import Data.Vector.Generic.Base
 import Data.Vector.Fusion.Stream.Size
 import Data.Vector.Fusion.Util ( Box(..), delay_inline )
 
+import qualified Data.List as List
 import Data.Char      ( ord )
 import GHC.Base       ( unsafeChr )
 import Control.Monad  ( liftM )
@@ -129,6 +130,24 @@ instance Functor (Step s) where
   fmap f Done = Done
 
 data Unf m a = forall s. Unf (s -> m (Step s a)) s
+
+unvector :: (Monad m, Vector v a) => Unf m (Either a (v a)) -> Unf m a
+{-# INLINE unvector #-}
+unvector (Unf step s) = Unf step' (Left s)
+  where
+    step' (Left s) = do
+                       r <- step s
+                       case r of
+                         Yield (Left  x) s' -> return $ Yield x (Left s')
+                         Yield (Right v) s' -> basicLength v `seq`
+                                               return (Skip (Right (v,0,s')))
+                         Skip            s' -> return $ Skip (Left s')
+                         Done               -> return Done
+
+    step' (Right (v,i,s))
+      | i >= basicLength v = return $ Skip (Left s)
+      | otherwise          = case basicUnsafeIndexM v i of
+                               Box x -> return $ Yield x (Right (v,i+1,s))
 
 instance Monad m => Functor (Unf m) where
   {-# INLINE fmap #-}
@@ -1556,6 +1575,15 @@ fromVector v = v `seq` n `seq` Stream (Unf step 0) (Unf vstep True) (Exact n)
     {-# INLINE vstep #-}
     vstep True  = return (Yield (Right v) False)
     vstep False = return Done
+
+fromVectors :: (Monad m, Vector v a) => [v a] -> Stream m v a
+{-# INLINE_STREAM fromVectors #-}
+fromVectors vs = Stream (unvector $ Unf step vs) (Unf step vs) (Exact n)
+  where
+    n = List.foldl' (\k v -> k + basicLength v) 0 vs
+
+    step [] = return Done
+    step (v:vs) = return $ Yield (Right v) vs
 
 reVector :: Monad m => Stream m u a -> Stream m v a
 {-# INLINE_STREAM reVector #-}
