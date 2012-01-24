@@ -61,7 +61,7 @@ import           Data.Vector.Generic.Mutable.Base
 import qualified Data.Vector.Generic.Base as V
 
 import qualified Data.Vector.Fusion.Stream      as Stream
-import           Data.Vector.Fusion.Stream      ( Stream, MStream )
+import           Data.Vector.Fusion.Stream      ( Stream, MStream, Chunk(..) )
 import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
 import           Data.Vector.Fusion.Util        ( delay_inline )
@@ -412,18 +412,12 @@ vmunstreamMax s n
   = do
       v <- INTERNAL_CHECK(checkLength) "munstreamMax" n
            $ unsafeNew n
-      let put i x = do
-                       INTERNAL_CHECK(checkIndex) "munstreamMax" i n
-                         $ unsafeWrite v i x
-                       return (i+1)
+      let {-# INLINE_INNER copy #-}
+          copy i (Chunk n f) = do
+                                 f (basicUnsafeSlice i n v)
+                                 return (i+n)
 
-          {-# INLINE_INNER copy #-}
-          copy i u = do
-                       let n = V.basicLength u
-                       V.basicUnsafeCopy (basicUnsafeSlice i n v) u
-                       return (i+n)
-
-      n' <- MStream.vfoldlM' put copy 0 s
+      n' <- MStream.vfoldlM' copy 0 s
       return $ INTERNAL_CHECK(checkSlice) "munstreamMax" 0 n' n
              $ unsafeSlice 0 n' v
 
@@ -433,24 +427,19 @@ vmunstreamUnknown :: (PrimMonad m, V.Vector v a)
 vmunstreamUnknown s
   = do
       v <- unsafeNew 0
-      (v', n) <- MStream.vfoldlM put copy (v, 0) s
+      (v', n) <- MStream.vfoldlM copy (v, 0) s
       return $ INTERNAL_CHECK(checkSlice) "munstreamUnknown" 0 n (length v')
              $ unsafeSlice 0 n v'
   where
-    {-# INLINE_INNER put #-}
-    put (v,i) x = do
-                    v' <- unsafeAppend1 v i x
-                    return (v',i+1)
-
     {-# INLINE_INNER copy #-}
-    copy (v,i) u = do
-                     let n = V.basicLength u
-                         j = i+n
-                     v' <- if basicLength v < j
-                             then unsafeGrow v (delay_inline max (enlarge_delta v) (j - basicLength v))
-                             else return v
-                     V.basicUnsafeCopy (basicUnsafeSlice i n v') u
-                     return (v',j)
+    copy (v,i) (Chunk n f)
+      = do
+          let j = i+n
+          v' <- if basicLength v < j
+                  then unsafeGrow v (delay_inline max (enlarge_delta v) (j - basicLength v))
+                  else return v
+          f (basicUnsafeSlice i n v')
+          return (v',j)
 
 
 

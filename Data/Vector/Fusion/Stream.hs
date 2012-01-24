@@ -14,7 +14,7 @@
 
 module Data.Vector.Fusion.Stream (
   -- * Types
-  Step(..), Stream, MStream,
+  Step(..), Chunk(..), Stream, MStream,
 
   -- * In-place markers
   inplace,
@@ -79,7 +79,7 @@ module Data.Vector.Fusion.Stream (
 import Data.Vector.Generic.Base ( Vector )
 import Data.Vector.Fusion.Stream.Size
 import Data.Vector.Fusion.Util
-import Data.Vector.Fusion.Stream.Monadic ( Step(..), SPEC(..) )
+import Data.Vector.Fusion.Stream.Monadic ( Step(..), Chunk(..), SPEC(..) )
 import qualified Data.Vector.Fusion.Stream.Monadic as M
 
 import Prelude hiding ( length, null,

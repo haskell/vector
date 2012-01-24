@@ -13,7 +13,7 @@
 --
 
 module Data.Vector.Fusion.Stream.Monadic (
-  Stream(..), Unf(..), Step(..), SPEC(..),
+  Stream(..), Unf(..), Step(..), Chunk(..), SPEC(..),
 
   simple,
 
@@ -77,8 +77,10 @@ module Data.Vector.Fusion.Stream.Monadic (
 ) where
 
 import Data.Vector.Generic.Base
+import qualified Data.Vector.Generic.Mutable.Base as M
 import Data.Vector.Fusion.Stream.Size
 import Data.Vector.Fusion.Util ( Box(..), delay_inline )
+import Control.Monad.Primitive
 
 import qualified Data.List as List
 import Data.Char      ( ord )
@@ -129,8 +131,11 @@ instance Functor (Step s) where
   fmap f (Skip s) = Skip s
   fmap f Done = Done
 
+data Chunk v a = Chunk Int (forall m. (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m ())
+
 data Unf m a = forall s. Unf (s -> m (Step s a)) s
 
+{-
 unvector :: (Monad m, Vector v a) => Unf m (Either a (v a)) -> Unf m a
 {-# INLINE unvector #-}
 unvector (Unf step s) = Unf step' (Left s)
@@ -148,6 +153,7 @@ unvector (Unf step s) = Unf step' (Left s)
       | i >= basicLength v = return $ Skip (Left s)
       | otherwise          = case basicUnsafeIndexM v i of
                                Box x -> return $ Yield x (Right (v,i+1,s))
+-}
 
 instance Monad m => Functor (Unf m) where
   {-# INLINE fmap #-}
@@ -156,13 +162,14 @@ instance Monad m => Functor (Unf m) where
       step' s = do r <- step s ; return (fmap f r)
 
 -- | Monadic streams
-data Stream m v a = Stream (Unf m a) (Unf m (Either a (v a))) Size
+data Stream m v a = Stream (Unf m a) (Unf m (Chunk v a)) Size
 
 simple :: Monad m => (s -> m (Step s a)) -> s -> Size -> Stream m v a
 {-# INLINE simple #-}
 simple step s sz = Stream (Unf step s) (Unf step' s) sz
   where
-    step' s = do r <- step s ; return (fmap Left r)
+    step' s = do r <- step s
+                 return $ fmap (\x -> Chunk 1 (\v -> M.basicUnsafeWrite v 0 x)) r
 
 -- | 'Size' hint of a 'Stream'
 size :: Stream m v a -> Size
@@ -207,8 +214,20 @@ singleton x = simple (return . step) True (Exact 1)
 
 -- | Replicate a value to a given length
 replicate :: Monad m => Int -> a -> Stream m v a
-{-# INLINE replicate #-}
-replicate n x = replicateM n (return x)
+{-# INLINE_STREAM replicate #-}
+replicate n x = Stream (Unf pstep n) (Unf vstep True) (Exact len)
+  where
+    len = delay_inline max n 0
+
+    {-# INLINE_INNER pstep #-}
+    pstep i | i <= 0    = return Done
+            | otherwise = return $ Yield x (i-1)
+
+    {-# INLINE_INNER vstep #-}
+    vstep True  = return $ Yield (Chunk len (\v -> M.basicSet v x)) False
+    vstep False = return Done
+
+--replicate n x = replicateM n (return x)
 
 -- | Yield a 'Stream' of values obtained by performing the monadic action the
 -- given number of times
@@ -848,18 +867,17 @@ foldM :: Monad m => (a -> b -> m a) -> a -> Stream m v b -> m a
 {-# INLINE foldM #-}
 foldM = foldlM
 
-vfoldlM :: Monad m => (a -> b -> m a) -> (a -> v b -> m a) -> a -> Stream m v b -> m a
+vfoldlM :: Monad m => (a -> Chunk v b -> m a) -> a -> Stream m v b -> m a
 {-# INLINE_STREAM vfoldlM #-}
-vfoldlM p q z (Stream _ (Unf step s) _) = vfoldlM_loop SPEC z s
+vfoldlM f z (Stream _ (Unf step s) _) = vfoldlM_loop SPEC z s
   where
     vfoldlM_loop !sPEC z s
       = do
           r <- step s
           case r of
-            Yield (Left  x) s' -> do { z' <- p z x; vfoldlM_loop SPEC z' s' }
-            Yield (Right v) s' -> do { z' <- q z v; vfoldlM_loop SPEC z' s' }
-            Skip            s' -> vfoldlM_loop SPEC z s'
-            Done               -> return z
+            Yield x s' -> do { z' <- f z x; vfoldlM_loop SPEC z' s' }
+            Skip    s' -> vfoldlM_loop SPEC z s'
+            Done       -> return z
 
 -- | Left fold over a non-empty 'Stream'
 foldl1 :: Monad m => (a -> a -> a) -> Stream m v a -> m a
@@ -908,18 +926,17 @@ foldM' :: Monad m => (a -> b -> m a) -> a -> Stream m v b -> m a
 {-# INLINE foldM' #-}
 foldM' = foldlM'
 
-vfoldlM' :: Monad m => (a -> b -> m a) -> (a -> v b -> m a) -> a -> Stream m v b -> m a
+vfoldlM' :: Monad m => (a -> Chunk v b -> m a) -> a -> Stream m v b -> m a
 {-# INLINE_STREAM vfoldlM' #-}
-vfoldlM' p q z (Stream _ (Unf step s) _) = vfoldlM'_loop SPEC z s
+vfoldlM' f z (Stream _ (Unf step s) _) = vfoldlM'_loop SPEC z s
   where
     vfoldlM'_loop !sPEC z s
       = z `seq` do
           r <- step s
           case r of
-            Yield (Left  x) s' -> do { z' <- p z x; vfoldlM'_loop SPEC z' s' }
-            Yield (Right v) s' -> do { z' <- q z v; vfoldlM'_loop SPEC z' s' }
-            Skip            s' -> vfoldlM'_loop SPEC z s'
-            Done               -> return z
+            Yield x s' -> do { z' <- f z x; vfoldlM'_loop SPEC z' s' }
+            Skip    s' -> vfoldlM'_loop SPEC z s'
+            Done       -> return z
 
 -- | Left fold over a non-empty 'Stream' with a strict accumulator
 foldl1' :: Monad m => (a -> a -> a) -> Stream m v a -> m a
@@ -1362,9 +1379,26 @@ enumFromTo_small x y = x `seq` y `seq` simple step x (Exact n)
 -- unsigned types). See http://hackage.haskell.org/trac/ghc/ticket/3744
 --
 
-enumFromTo_int :: (Integral a, Monad m) => a -> a -> Stream m v a
+enumFromTo_int :: forall m v. Monad m => Int -> Int -> Stream m v Int
 {-# INLINE_STREAM enumFromTo_int #-}
 enumFromTo_int x y = x `seq` y `seq` simple step x (Exact (len x y))
+  where
+    {-# INLINE [0] len #-}
+    len :: Int -> Int -> Int
+    len x y | x > y     = 0
+            | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
+                          (n > 0)
+                        $ n
+      where
+        n = y-x+1
+
+    {-# INLINE_INNER step #-}
+    step x | x <= y    = return $ Yield x (x+1)
+           | otherwise = return $ Done
+
+enumFromTo_intlike :: (Integral a, Monad m) => a -> a -> Stream m v a
+{-# INLINE_STREAM enumFromTo_intlike #-}
+enumFromTo_intlike x y = x `seq` y `seq` simple step x (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len x y | x > y     = 0
@@ -1386,12 +1420,12 @@ enumFromTo_int x y = x `seq` y `seq` simple step x (Exact (len x y))
 #if WORD_SIZE_IN_BITS > 32
 
 "enumFromTo<Int64> [Stream]"
-  enumFromTo = enumFromTo_int :: Monad m => Int64 -> Int64 -> Stream m v Int64
+  enumFromTo = enumFromTo_intlike :: Monad m => Int64 -> Int64 -> Stream m v Int64
 
 #else
 
 "enumFromTo<Int32> [Stream]"
-  enumFromTo = enumFromTo_int :: Monad m => Int32 -> Int32 -> Stream m v Int32
+  enumFromTo = enumFromTo_intlike :: Monad m => Int32 -> Int32 -> Stream m v Int32
 
 #endif
 
@@ -1573,17 +1607,29 @@ fromVector v = v `seq` n `seq` Stream (Unf step 0) (Unf vstep True) (Exact n)
 
     
     {-# INLINE vstep #-}
-    vstep True  = return (Yield (Right v) False)
+    vstep True  = return (Yield (Chunk (basicLength v) (\mv -> basicUnsafeCopy mv v)) False)
     vstep False = return Done
 
 fromVectors :: (Monad m, Vector v a) => [v a] -> Stream m v a
 {-# INLINE_STREAM fromVectors #-}
-fromVectors vs = Stream (unvector $ Unf step vs) (Unf step vs) (Exact n)
+fromVectors vs = Stream (Unf pstep (Left vs))
+                        (Unf vstep vs)
+                        (Exact n) 
   where
     n = List.foldl' (\k v -> k + basicLength v) 0 vs
 
-    step [] = return Done
-    step (v:vs) = return $ Yield (Right v) vs
+    pstep (Left []) = return Done
+    pstep (Left (v:vs)) = basicLength v `seq` return (Skip (Right (v,0,vs)))
+
+    pstep (Right (v,i,vs))
+      | i >= basicLength v = return $ Skip (Left vs)
+      | otherwise          = case basicUnsafeIndexM v i of
+                               Box x -> return $ Yield x (Right (v,i+1,vs))
+
+
+    vstep [] = return Done
+    vstep (v:vs) = return $ Yield (Chunk (basicLength v)
+                                         (\mv -> basicUnsafeCopy mv v)) vs
 
 reVector :: Monad m => Stream m u a -> Stream m v a
 {-# INLINE_STREAM reVector #-}
