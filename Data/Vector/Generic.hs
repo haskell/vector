@@ -712,7 +712,7 @@ generateM n f = unstreamM (MStream.generateM n f)
 -- | Execute the monadic action and freeze the resulting vector.
 --
 -- @
--- create (do { v \<- 'M.new' 2; 'M.write' v 0 \'a\'; 'M.write' v 1 \'b\' }) = \<'a','b'\>
+-- create (do { v \<- 'M.new' 2; 'M.write' v 0 \'a\'; 'M.write' v 1 \'b\'; return v }) = \<'a','b'\>
 -- @
 create :: Vector v a => (forall s. ST s (Mutable v s a)) -> v a
 {-# INLINE create #-}

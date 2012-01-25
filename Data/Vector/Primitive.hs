@@ -583,7 +583,7 @@ generateM = G.generateM
 -- | Execute the monadic action and freeze the resulting vector.
 --
 -- @
--- create (do { v \<- new 2; write v 0 \'a\'; write v 1 \'b\' }) = \<'a','b'\>
+-- create (do { v \<- new 2; write v 0 \'a\'; write v 1 \'b\'; return v }) = \<'a','b'\>
 -- @
 create :: Prim a => (forall s. ST s (MVector s a)) -> Vector a
 {-# INLINE create #-}
