@@ -105,6 +105,9 @@ instance Prim a => G.MVector MVector a where
     where
       sz = sizeOf (undefined :: a)
 
+  {-# INLINE basicSet #-}
+  basicSet (MVector i n arr) x = setByteArray arr i n x
+
 -- Length information
 -- ------------------
 
