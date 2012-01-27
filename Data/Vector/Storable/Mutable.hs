@@ -72,6 +72,11 @@ import Foreign.Marshal.Array ( advancePtr, copyArray, moveArray )
 import Foreign.C.Types ( CInt )
 
 import Control.Monad.Primitive
+import Data.Primitive.Addr
+import Data.Primitive.Types (Prim)
+
+import GHC.Word (Word8, Word16, Word32, Word64)
+import GHC.Ptr (Ptr(..))
 
 import Prelude hiding ( length, null, replicate, reverse, map, read,
                         take, drop, splitAt, init, tail )
@@ -121,6 +126,9 @@ instance Storable a => G.MVector MVector a where
     = unsafePrimToPrim
     $ withForeignPtr fp $ \p -> pokeElemOff p i x
 
+  {-# INLINE basicSet #-}
+  basicSet = storableSet
+
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MVector n fp) (MVector _ fq)
     = unsafePrimToPrim
@@ -134,6 +142,36 @@ instance Storable a => G.MVector MVector a where
     $ withForeignPtr fp $ \p ->
       withForeignPtr fq $ \q ->
       moveArray p q n
+
+storableSet :: (Storable a, PrimMonad m) => MVector (PrimState m) a -> a -> m ()
+{-# INLINE storableSet #-}
+storableSet v@(MVector n fp) x
+  | n == 0 = return ()
+  | otherwise = unsafePrimToPrim $
+                case sizeOf x of
+                  1 -> storableSetAsPrim n fp x (undefined :: Word8)
+                  2 -> storableSetAsPrim n fp x (undefined :: Word16)
+                  4 -> storableSetAsPrim n fp x (undefined :: Word32)
+                  8 -> storableSetAsPrim n fp x (undefined :: Word64)
+                  _ -> withForeignPtr fp $ \p -> do
+                       poke p x
+
+                       let do_set i
+                             | 2*i < n = do
+                                 copyArray (p `advancePtr` i) p i
+                                 do_set (2*i)
+                             | otherwise = copyArray (p `advancePtr` i) p (n-i)
+
+                       do_set 1
+
+storableSetAsPrim
+  :: (Storable a, Prim b) => Int -> ForeignPtr a -> a -> b -> IO ()
+{-# INLINE [0] storableSetAsPrim #-}
+storableSetAsPrim n fp x y = withForeignPtr fp $ \(Ptr p) -> do
+  poke (Ptr p) x
+  let q = Addr p
+  w <- readOffAddr q 0
+  setAddr (q `plusAddr` sizeOf x) (n-1) (w `asTypeOf` y)
 
 {-# INLINE mallocVector #-}
 mallocVector :: Storable a => Int -> IO (ForeignPtr a)
