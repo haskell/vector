@@ -135,26 +135,6 @@ data Chunk v a = Chunk Int (forall m. (PrimMonad m, Vector v a) => Mutable v (Pr
 
 data Unf m a = forall s. Unf (s -> m (Step s a)) s
 
-{-
-unvector :: (Monad m, Vector v a) => Unf m (Either a (v a)) -> Unf m a
-{-# INLINE unvector #-}
-unvector (Unf step s) = Unf step' (Left s)
-  where
-    step' (Left s) = do
-                       r <- step s
-                       case r of
-                         Yield (Left  x) s' -> return $ Yield x (Left s')
-                         Yield (Right v) s' -> basicLength v `seq`
-                                               return (Skip (Right (v,0,s')))
-                         Skip            s' -> return $ Skip (Left s')
-                         Done               -> return Done
-
-    step' (Right (v,i,s))
-      | i >= basicLength v = return $ Skip (Left s)
-      | otherwise          = case basicUnsafeIndexM v i of
-                               Box x -> return $ Yield x (Right (v,i+1,s))
--}
-
 instance Monad m => Functor (Unf m) where
   {-# INLINE fmap #-}
   fmap f (Unf step s) = Unf step' s
