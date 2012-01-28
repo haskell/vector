@@ -484,7 +484,8 @@ scanl1' = M.scanl1'
 -- | Check if two 'Stream's are equal
 eq :: Eq a => Stream v a -> Stream v a -> Bool
 {-# INLINE_STREAM eq #-}
-eq (M.Stream (M.Unf step1 s1) _ _) (M.Stream (M.Unf step2 s2) _ _) = eq_loop0 SPEC s1 s2
+eq M.Stream{M.sElems = M.Unf step1 s1}
+   M.Stream{M.sElems = M.Unf step2 s2} = eq_loop0 SPEC s1 s2
   where
     eq_loop0 !sPEC s1 s2 = case unId (step1 s1) of
                              Yield x s1' -> eq_loop1 SPEC x s1' s2
@@ -499,7 +500,8 @@ eq (M.Stream (M.Unf step1 s1) _ _) (M.Stream (M.Unf step2 s2) _ _) = eq_loop0 SP
 -- | Lexicographically compare two 'Stream's
 cmp :: Ord a => Stream v a -> Stream v a -> Ordering
 {-# INLINE_STREAM cmp #-}
-cmp (M.Stream (M.Unf step1 s1) _ _) (M.Stream (M.Unf step2 s2) _ _) = cmp_loop0 SPEC s1 s2
+cmp M.Stream{M.sElems = M.Unf step1 s1}
+    M.Stream{M.sElems = M.Unf step2 s2} = cmp_loop0 SPEC s1 s2
   where
     cmp_loop0 !sPEC s1 s2 = case unId (step1 s1) of
                               Yield x s1' -> cmp_loop1 SPEC x s1' s2
@@ -606,7 +608,7 @@ toList s = build (\c n -> toListFB c n s)
 -- This supports foldr/build list fusion that GHC implements
 toListFB :: (a -> b -> b) -> b -> Stream v a -> b
 {-# INLINE [0] toListFB #-}
-toListFB c n (M.Stream (M.Unf step s) _ _) = go s
+toListFB c n M.Stream{M.sElems = M.Unf step s} = go s
   where
     go s = case unId (step s) of
              Yield x s' -> x `c` go s'
