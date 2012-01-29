@@ -483,47 +483,13 @@ scanl1' = M.scanl1'
 
 -- | Check if two 'Stream's are equal
 eq :: Eq a => Stream v a -> Stream v a -> Bool
-{-# INLINE_STREAM eq #-}
-eq M.Stream{M.sElems = M.Unf step1 s1}
-   M.Stream{M.sElems = M.Unf step2 s2} = eq_loop0 SPEC s1 s2
-  where
-    eq_loop0 !sPEC s1 s2 = case unId (step1 s1) of
-                             Yield x s1' -> eq_loop1 SPEC x s1' s2
-                             Skip    s1' -> eq_loop0 SPEC   s1' s2
-                             Done        -> eq_null s2
-
-    eq_loop1 !sPEC x s1 s2 = case unId (step2 s2) of
-                               Yield y s2' -> x == y && eq_loop0 SPEC   s1 s2'
-                               Skip    s2' ->           eq_loop1 SPEC x s1 s2'
-                               Done        -> False
-
-    eq_null s2 = case unId (step2 s2) of
-                   Yield _ _ -> False
-                   Skip s2'  -> eq_null s2'
-                   Done      -> True
+{-# INLINE eq #-}
+eq x y = unId (M.eq x y)
 
 -- | Lexicographically compare two 'Stream's
 cmp :: Ord a => Stream v a -> Stream v a -> Ordering
-{-# INLINE_STREAM cmp #-}
-cmp M.Stream{M.sElems = M.Unf step1 s1}
-    M.Stream{M.sElems = M.Unf step2 s2} = cmp_loop0 SPEC s1 s2
-  where
-    cmp_loop0 !sPEC s1 s2 = case unId (step1 s1) of
-                              Yield x s1' -> cmp_loop1 SPEC x s1' s2
-                              Skip    s1' -> cmp_loop0 SPEC   s1' s2
-                              Done        -> cmp_null s2
-
-    cmp_loop1 !sPEC x s1 s2 = case unId (step2 s2) of
-                                Yield y s2' -> case x `compare` y of
-                                                 EQ -> cmp_loop0 SPEC s1 s2'
-                                                 c  -> c
-                                Skip    s2' -> cmp_loop1 SPEC x s1 s2'
-                                Done        -> GT
-
-    cmp_null s2 = case unId (step2 s2) of
-                    Yield _ _ -> LT
-                    Skip s2'  -> cmp_null s2'
-                    Done      -> EQ
+{-# INLINE cmp #-}
+cmp x y = unId (M.cmp x y)
 
 instance Eq a => Eq (M.Stream Id v a) where
   {-# INLINE (==) #-}

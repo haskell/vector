@@ -41,6 +41,9 @@ module Data.Vector.Fusion.Stream.Monadic (
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
   zip, zip3, zip4, zip5, zip6,
 
+  -- * Comparisons
+  eq, cmp,
+
   -- * Filtering
   filter, filterM, takeWhile, takeWhileM, dropWhile, dropWhileM,
 
@@ -688,6 +691,67 @@ zip6 :: Monad m => Stream m v a -> Stream m v b -> Stream m v c -> Stream m v d
                 -> Stream m v e -> Stream m v f -> Stream m v (a,b,c,d,e,f)
 {-# INLINE zip6 #-}
 zip6 = zipWith6 (,,,,,)
+
+-- Comparisons
+-- -----------
+
+-- | Check if two 'Stream's are equal
+eq :: (Monad m, Eq a) => Stream m v a -> Stream m v a -> m Bool
+{-# INLINE_STREAM eq #-}
+eq Stream{sElems = Unf step1 s1}
+   Stream{sElems = Unf step2 s2} = eq_loop0 SPEC s1 s2
+  where
+    eq_loop0 !sPEC s1 s2 = do
+      r <- step1 s1
+      case r of
+        Yield x s1' -> eq_loop1 SPEC x s1' s2
+        Skip    s1' -> eq_loop0 SPEC   s1' s2
+        Done        -> eq_null s2
+
+    eq_loop1 !sPEC x s1 s2 = do
+      r <- step2 s2
+      case r of
+        Yield y s2'
+          | x == y    -> eq_loop0 SPEC   s1 s2'
+          | otherwise -> return False
+        Skip    s2'   -> eq_loop1 SPEC x s1 s2'
+        Done          -> return False
+
+    eq_null s2 = do
+      r <- step2 s2
+      case r of
+        Yield _ _ -> return False
+        Skip s2'  -> eq_null s2'
+        Done      -> return True
+
+-- | Lexicographically compare two 'Stream's
+cmp :: (Monad m, Ord a) => Stream m v a -> Stream m v a -> m Ordering
+{-# INLINE_STREAM cmp #-}
+cmp Stream{sElems = Unf step1 s1}
+    Stream{sElems = Unf step2 s2} = cmp_loop0 SPEC s1 s2
+  where
+    cmp_loop0 !sPEC s1 s2 = do
+      r <- step1 s1
+      case r of
+        Yield x s1' -> cmp_loop1 SPEC x s1' s2
+        Skip    s1' -> cmp_loop0 SPEC   s1' s2
+        Done        -> cmp_null s2
+
+    cmp_loop1 !sPEC x s1 s2 = do
+      r <- step2 s2
+      case r of
+        Yield y s2' -> case x `compare` y of
+                         EQ -> cmp_loop0 SPEC s1 s2'
+                         c  -> return c
+        Skip    s2' -> cmp_loop1 SPEC x s1 s2'
+        Done        -> return GT
+
+    cmp_null s2 = do
+      r <- step2 s2
+      case r of
+        Yield _ _ -> return LT
+        Skip s2'  -> cmp_null s2'
+        Done      -> return EQ
 
 -- Filtering
 -- ---------
