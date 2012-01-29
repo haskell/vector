@@ -72,12 +72,15 @@ data MVector s a = MVector {-# UNPACK #-} !Int
 type IOVector = MVector RealWorld
 type STVector s = MVector s
 
+-- NOTE: This seems unsafe, see http://trac.haskell.org/vector/ticket/54
+{-
 instance NFData a => NFData (MVector s a) where
     rnf (MVector i n arr) = unsafeInlineST $ force i
         where
           force !ix | ix < n    = do x <- readArray arr ix
                                      rnf x `seq` force (ix+1)
                     | otherwise = return ()
+-}
 
 instance G.MVector MVector a where
   {-# INLINE basicLength #-}
