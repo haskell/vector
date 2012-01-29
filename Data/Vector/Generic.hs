@@ -994,7 +994,8 @@ concatMap :: (Vector v a, Vector v b) => (a -> v b) -> v a -> v b
 -- Slowest
 -- concatMap f = unstream . Stream.concatMap (stream . f) . stream
 
--- Seems to be fastest
+-- Used to be fastest
+{-
 concatMap f = unstream
             . Stream.flatten mk step Unknown
             . stream
@@ -1010,6 +1011,13 @@ concatMap f = unstream
                k = length v
            in
            k `seq` (v,0,k)
+-}
+
+-- This seems to be fastest now
+concatMap f = unstream
+            . Stream.fromVectorStream
+            . Stream.map f
+            . stream
 
 -- Monadic mapping
 -- ---------------

@@ -73,7 +73,7 @@ module Data.Vector.Fusion.Stream.Monadic (
 
   -- * Conversions
   toList, fromList, fromListN, unsafeFromList,
-  fromVector, reVector, fromVectors
+  fromVector, reVector, fromVectors, fromVectorStream
 ) where
 
 import Data.Vector.Generic.Base
@@ -1621,6 +1621,35 @@ fromVectors vs = Stream (Unf pstep (Left vs))
     vstep [] = return Done
     vstep (v:vs) = return $ Yield (Chunk (basicLength v)
                                          (\mv -> basicUnsafeCopy mv v)) vs
+
+
+fromVectorStream :: (Monad m, Vector v a) => Stream m u (v a) -> Stream m v a
+{-# INLINE_STREAM fromVectorStream #-}
+fromVectorStream Stream{sElems = Unf step s}
+  = Stream (Unf pstep (Left s))
+           (Unf vstep s)
+           Unknown
+  where
+    pstep (Left s) = do
+      r <- step s
+      case r of
+        Yield v s' -> basicLength v `seq` return (Skip (Right (v,0,s')))
+        Skip    s' -> return (Skip (Left s'))
+        Done       -> return Done
+
+    pstep (Right (v,i,s))
+      | i >= basicLength v = return (Skip (Left s))
+      | otherwise          = case basicUnsafeIndexM v i of
+                               Box x -> return (Yield x (Right (v,i+1,s)))
+
+
+    vstep s = do
+      r <- step s
+      case r of
+        Yield v s' -> return (Yield (Chunk (basicLength v)
+                                           (\mv -> basicUnsafeCopy mv v)) s')
+        Skip    s' -> return (Skip s')
+        Done       -> return Done
 
 reVector :: Monad m => Stream m u a -> Stream m v a
 {-# INLINE_STREAM reVector #-}

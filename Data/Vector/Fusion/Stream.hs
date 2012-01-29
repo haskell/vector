@@ -68,7 +68,7 @@ module Data.Vector.Fusion.Stream (
 
   -- * Conversions
   toList, fromList, fromListN, unsafeFromList, liftStream,
-  fromVector, reVector, fromVectors,
+  fromVector, reVector, fromVectors, fromVectorStream,
 
   -- * Monadic combinators
   mapM, mapM_, zipWithM, zipWithM_, filterM, foldM, fold1M, foldM', fold1M',
@@ -642,6 +642,10 @@ reVector = M.reVector
 fromVectors :: Vector v a => [v a] -> Stream v a
 {-# INLINE fromVectors #-}
 fromVectors = M.fromVectors
+
+fromVectorStream :: Vector v a => Stream u (v a) -> Stream v a
+{-# INLINE fromVectorStream #-}
+fromVectorStream = M.fromVectorStream
 
 -- | Create a 'Stream' of values from a 'Stream' of streamable things
 flatten :: (a -> s) -> (s -> Step s b) -> Size -> Stream v a -> Stream v b
