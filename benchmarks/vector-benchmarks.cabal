@@ -12,8 +12,8 @@ Executable algorithms
   Main-Is: Main.hs
 
   Build-Depends: base >= 2 && < 5, array,
-                 criterion >= 0.5 && < 0.6,
-                 mwc-random >= 0.5 && < 0.11,
+                 criterion >= 0.5 && < 0.7,
+                 mwc-random >= 0.5 && < 0.12,
                  vector == 0.9.9
 
   if impl(ghc<6.13)
