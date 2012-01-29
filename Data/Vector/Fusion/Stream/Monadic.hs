@@ -1665,4 +1665,3 @@ reVector Stream{sElems = Unf step s, sSize = n} = simple step s n
 
   #-}
 
-    
