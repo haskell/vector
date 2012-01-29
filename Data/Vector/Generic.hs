@@ -212,27 +212,13 @@ mkNoRepType = mkNorepType
 
 -- | /O(1)/ Yield the length of the vector.
 length :: Vector v a => v a -> Int
-{-# INLINE_STREAM length #-}
-length v = basicLength v
-
-{-# RULES
-
-"length/unstream [Vector]" forall s.
-  length (new (New.unstream s)) = Stream.length s
-
-  #-}
+{-# INLINE length #-}
+length = Stream.length . stream
 
 -- | /O(1)/ Test whether a vector if empty
 null :: Vector v a => v a -> Bool
-{-# INLINE_STREAM null #-}
-null v = basicLength v == 0
-
-{-# RULES
-
-"null/unstream [Vector]" forall s.
-  null (new (New.unstream s)) = Stream.null s
-
-  #-}
+{-# INLINE null #-}
+null = Stream.null . stream
 
 -- Indexing
 -- --------

@@ -169,15 +169,27 @@ sized s sz = s { sSize = sz }
 -- ------
 
 -- | Length of a 'Stream'
-length :: Monad m => Stream m v a -> m Int
+length :: (Monad m, Vector v a) => Stream m v a -> m Int
 {-# INLINE_STREAM length #-}
-length s = foldl' (\n _ -> n+1) 0 s
+length Stream{sVector = Just v} = return (basicLength v)
+length Stream{sSize = Exact n}  = return n
+length s = vfoldl' (\n (Chunk k _) -> n+k) 0 s
 
 -- | Check if a 'Stream' is empty
-null :: Monad m => Stream m v a -> m Bool
+null :: (Monad m, Vector v a) => Stream m v a -> m Bool
 {-# INLINE_STREAM null #-}
-null s = foldr (\_ _ -> False) True s
-
+null Stream{sVector = Just v} = return (basicLength v == 0)
+null Stream{sSize = Exact n} = return (n == 0)
+null Stream{sChunks = Unf step s} = null_loop s
+  where
+    null_loop s = do
+      r <- step s
+      case r of
+        Yield (Chunk n _) s'
+          | n /= 0    -> return False
+          | otherwise -> null_loop s'
+        Skip s'       -> null_loop s'
+        Done          -> return True
 
 -- Construction
 -- ------------
@@ -896,6 +908,10 @@ fold1M = foldl1M
 foldl' :: Monad m => (a -> b -> a) -> a -> Stream m v b -> m a
 {-# INLINE foldl' #-}
 foldl' f = foldlM' (\a b -> return (f a b))
+
+vfoldl' :: Monad m => (a -> Chunk v b -> a) -> a -> Stream m v b -> m a
+{-# INLINE vfoldl' #-}
+vfoldl' f = vfoldlM' (\a b -> return (f a b))
 
 -- | Left fold with a strict accumulator and a monadic operator
 foldlM' :: Monad m => (a -> b -> m a) -> a -> Stream m v b -> m a

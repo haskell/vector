@@ -142,12 +142,12 @@ sized = M.sized
 -- ------
 
 -- | Length of a 'Stream'
-length :: Stream v a -> Int
+length :: Vector v a => Stream v a -> Int
 {-# INLINE length #-}
 length = unId . M.length
 
 -- | Check if a 'Stream' is empty
-null :: Stream v a -> Bool
+null :: Vector v a => Stream v a -> Bool
 {-# INLINE null #-}
 null = unId . M.null
 
@@ -490,12 +490,17 @@ eq M.Stream{M.sElems = M.Unf step1 s1}
     eq_loop0 !sPEC s1 s2 = case unId (step1 s1) of
                              Yield x s1' -> eq_loop1 SPEC x s1' s2
                              Skip    s1' -> eq_loop0 SPEC   s1' s2
-                             Done        -> null (M.simple step2 s2 Unknown)
+                             Done        -> eq_null s2
 
     eq_loop1 !sPEC x s1 s2 = case unId (step2 s2) of
                                Yield y s2' -> x == y && eq_loop0 SPEC   s1 s2'
                                Skip    s2' ->           eq_loop1 SPEC x s1 s2'
                                Done        -> False
+
+    eq_null s2 = case unId (step2 s2) of
+                   Yield _ _ -> False
+                   Skip s2'  -> eq_null s2'
+                   Done      -> True
 
 -- | Lexicographically compare two 'Stream's
 cmp :: Ord a => Stream v a -> Stream v a -> Ordering
@@ -506,8 +511,7 @@ cmp M.Stream{M.sElems = M.Unf step1 s1}
     cmp_loop0 !sPEC s1 s2 = case unId (step1 s1) of
                               Yield x s1' -> cmp_loop1 SPEC x s1' s2
                               Skip    s1' -> cmp_loop0 SPEC   s1' s2
-                              Done        -> if null (M.simple step2 s2 Unknown)
-                                               then EQ else LT
+                              Done        -> cmp_null s2
 
     cmp_loop1 !sPEC x s1 s2 = case unId (step2 s2) of
                                 Yield y s2' -> case x `compare` y of
@@ -515,6 +519,11 @@ cmp M.Stream{M.sElems = M.Unf step1 s1}
                                                  c  -> c
                                 Skip    s2' -> cmp_loop1 SPEC x s1 s2'
                                 Done        -> GT
+
+    cmp_null s2 = case unId (step2 s2) of
+                    Yield _ _ -> LT
+                    Skip s2'  -> cmp_null s2'
+                    Done      -> EQ
 
 instance Eq a => Eq (M.Stream Id v a) where
   {-# INLINE (==) #-}
