@@ -144,12 +144,13 @@ instance Monad m => Functor (Unf m) where
 -- | Monadic streams
 data Stream m v a = Stream { sElems  :: Unf m a
                            , sChunks :: Unf m (Chunk v a)
+                           , sVector :: Maybe (v a)
                            , sSize   :: Size
                            }
 
 simple :: Monad m => (s -> m (Step s a)) -> s -> Size -> Stream m v a
 {-# INLINE simple #-}
-simple step s sz = Stream (Unf step s) (Unf step' s) sz
+simple step s sz = Stream (Unf step s) (Unf step' s) Nothing sz
   where
     step' s = do r <- step s
                  return $ fmap (\x -> Chunk 1 (\v -> M.basicUnsafeWrite v 0 x)) r
@@ -198,7 +199,7 @@ singleton x = simple (return . step) True (Exact 1)
 -- | Replicate a value to a given length
 replicate :: Monad m => Int -> a -> Stream m v a
 {-# INLINE_STREAM replicate #-}
-replicate n x = Stream (Unf pstep n) (Unf vstep True) (Exact len)
+replicate n x = Stream (Unf pstep n) (Unf vstep True) Nothing (Exact len)
   where
     len = delay_inline max n 0
 
@@ -253,9 +254,9 @@ infixr 5 ++
 -- | Concatenate two 'Stream's
 (++) :: Monad m => Stream m v a -> Stream m v a -> Stream m v a
 {-# INLINE_STREAM (++) #-}
-Stream (Unf stepa sa) (Unf vstepa vsa) na
-  ++ Stream (Unf stepb sb) (Unf vstepb vsb) nb
-    = Stream (Unf step (Left sa)) (Unf vstep (Left vsa)) (na + nb)
+Stream{sElems = Unf stepa sa, sChunks = Unf vstepa vsa, sSize = na}
+  ++ Stream{sElems = Unf stepb sb, sChunks = Unf vstepb vsb, sSize = nb}
+    = Stream (Unf step (Left sa)) (Unf vstep (Left vsa)) Nothing (na + nb)
   where
     {-# INLINE_INNER step #-}
     step (Left  sa) = do
@@ -1040,7 +1041,7 @@ concatMapM f Stream{sElems = Unf step s} = simple concatMap_go (Left s) Unknown
                 return $ Skip (Right (b_stream, s'))
             Skip    s' -> return $ Skip (Left s')
             Done       -> return Done
-    concatMap_go (Right (Stream (Unf inner_step inner_s) _ sz, s)) = do
+    concatMap_go (Right (Stream{sElems = Unf inner_step inner_s, sSize = sz}, s)) = do
         r <- inner_step inner_s
         case r of
             Yield b inner_s' -> return $ Yield b (Right (simple inner_step inner_s' sz, s))
@@ -1587,7 +1588,10 @@ unsafeFromList sz xs = simple step xs sz
 
 fromVector :: (Monad m, Vector v a) => v a -> Stream m v a
 {-# INLINE_STREAM fromVector #-}
-fromVector v = v `seq` n `seq` Stream (Unf step 0) (Unf vstep True) (Exact n)
+fromVector v = v `seq` n `seq` Stream (Unf step 0)
+                                      (Unf vstep True)
+                                      (Just v)
+                                      (Exact n)
   where
     n = basicLength v
 
@@ -1605,6 +1609,7 @@ fromVectors :: (Monad m, Vector v a) => [v a] -> Stream m v a
 {-# INLINE_STREAM fromVectors #-}
 fromVectors vs = Stream (Unf pstep (Left vs))
                         (Unf vstep vs)
+                        Nothing
                         (Exact n) 
   where
     n = List.foldl' (\k v -> k + basicLength v) 0 vs
@@ -1628,6 +1633,7 @@ fromVectorStream :: (Monad m, Vector v a) => Stream m u (v a) -> Stream m v a
 fromVectorStream Stream{sElems = Unf step s}
   = Stream (Unf pstep (Left s))
            (Unf vstep s)
+           Nothing
            Unknown
   where
     pstep (Left s) = do

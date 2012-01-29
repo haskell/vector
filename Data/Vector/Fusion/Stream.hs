@@ -124,9 +124,9 @@ inplace f s = s `seq` f s
 -- | Convert a pure stream to a monadic stream
 liftStream :: Monad m => Stream v a -> M.Stream m v a
 {-# INLINE_STREAM liftStream #-}
-liftStream (M.Stream (M.Unf step s) (M.Unf vstep t) sz)
+liftStream (M.Stream (M.Unf step s) (M.Unf vstep t) v sz)
     = M.Stream (M.Unf (return . unId . step) s)
-               (M.Unf (return . unId . vstep) t) sz
+               (M.Unf (return . unId . vstep) t) v sz
 
 -- | 'Size' hint of a 'Stream'
 size :: Stream v a -> Size
