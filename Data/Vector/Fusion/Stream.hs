@@ -142,12 +142,12 @@ sized = M.sized
 -- ------
 
 -- | Length of a 'Stream'
-length :: Vector v a => Stream v a -> Int
+length :: Stream v a -> Int
 {-# INLINE length #-}
 length = unId . M.length
 
 -- | Check if a 'Stream' is empty
-null :: Vector v a => Stream v a -> Bool
+null :: Stream v a -> Bool
 {-# INLINE null #-}
 null = unId . M.null
 

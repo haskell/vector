@@ -169,16 +169,14 @@ sized s sz = s { sSize = sz }
 -- ------
 
 -- | Length of a 'Stream'
-length :: (Monad m, Vector v a) => Stream m v a -> m Int
+length :: Monad m => Stream m v a -> m Int
 {-# INLINE_STREAM length #-}
-length Stream{sVector = Just v} = return (basicLength v)
 length Stream{sSize = Exact n}  = return n
 length s = vfoldl' (\n (Chunk k _) -> n+k) 0 s
 
 -- | Check if a 'Stream' is empty
-null :: (Monad m, Vector v a) => Stream m v a -> m Bool
+null :: Monad m => Stream m v a -> m Bool
 {-# INLINE_STREAM null #-}
-null Stream{sVector = Just v} = return (basicLength v == 0)
 null Stream{sSize = Exact n} = return (n == 0)
 null Stream{sChunks = Unf step s} = null_loop s
   where
