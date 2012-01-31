@@ -169,7 +169,7 @@ import qualified Data.Vector.Generic.New as New
 import           Data.Vector.Generic.New ( New )
 
 import qualified Data.Vector.Fusion.Stream as Stream
-import           Data.Vector.Fusion.Stream ( Facets, MFacets, Step(..), inplace, liftStream )
+import           Data.Vector.Fusion.Stream ( Facets, MFacets, Step(..), inplace, lift )
 import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
 import           Data.Vector.Fusion.Util
@@ -349,22 +349,22 @@ unsafeLastM v = unsafeIndexM v (length v - 1)
 {-# RULES
 
 "indexM/unstream [Vector]" forall s i.
-  indexM (new (New.unstream s)) i = liftStream s MStream.!! i
+  indexM (new (New.unstream s)) i = lift s MStream.!! i
 
 "headM/unstream [Vector]" forall s.
-  headM (new (New.unstream s)) = MStream.head (liftStream s)
+  headM (new (New.unstream s)) = MStream.head (lift s)
 
 "lastM/unstream [Vector]" forall s.
-  lastM (new (New.unstream s)) = MStream.last (liftStream s)
+  lastM (new (New.unstream s)) = MStream.last (lift s)
 
 "unsafeIndexM/unstream [Vector]" forall s i.
-  unsafeIndexM (new (New.unstream s)) i = liftStream s MStream.!! i
+  unsafeIndexM (new (New.unstream s)) i = lift s MStream.!! i
 
 "unsafeHeadM/unstream [Vector]" forall s.
-  unsafeHeadM (new (New.unstream s)) = MStream.head (liftStream s)
+  unsafeHeadM (new (New.unstream s)) = MStream.head (lift s)
 
 "unsafeLastM/unstream [Vector]" forall s.
-  unsafeLastM (new (New.unstream s)) = MStream.last (liftStream s)
+  unsafeLastM (new (New.unstream s)) = MStream.last (lift s)
 
   #-}
 

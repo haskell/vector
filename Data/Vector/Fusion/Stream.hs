@@ -67,7 +67,7 @@ module Data.Vector.Fusion.Stream (
   enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- * Conversions
-  toList, fromList, fromListN, unsafeFromList, liftStream,
+  toList, fromList, fromListN, unsafeFromList, lift,
   fromVector, reVector, fromVectors, concatVectors,
 
   -- * Monadic combinators
@@ -122,9 +122,9 @@ inplace f s = s `seq` f s
   #-}
 
 -- | Convert a pure stream to a monadic stream
-liftStream :: Monad m => Facets v a -> M.Facets m v a
-{-# INLINE_FUSED liftStream #-}
-liftStream (M.Facets (M.Unf step s) (M.Unf vstep t) v sz)
+lift :: Monad m => Facets v a -> M.Facets m v a
+{-# INLINE_FUSED lift #-}
+lift (M.Facets (M.Unf step s) (M.Unf vstep t) v sz)
     = M.Facets (M.Unf (return . unId . step) s)
                (M.Unf (return . unId . vstep) t) v sz
 
@@ -506,45 +506,45 @@ instance Ord a => Ord (M.Facets Id v a) where
 -- stream of results
 mapM :: Monad m => (a -> m b) -> Facets v a -> M.Facets m v b
 {-# INLINE mapM #-}
-mapM f = M.mapM f . liftStream
+mapM f = M.mapM f . lift
 
 -- | Apply a monadic action to each element of the stream
 mapM_ :: Monad m => (a -> m b) -> Facets v a -> m ()
 {-# INLINE mapM_ #-}
-mapM_ f = M.mapM_ f . liftStream
+mapM_ f = M.mapM_ f . lift
 
 zipWithM :: Monad m => (a -> b -> m c) -> Facets v a -> Facets v b -> M.Facets m v c
 {-# INLINE zipWithM #-}
-zipWithM f as bs = M.zipWithM f (liftStream as) (liftStream bs)
+zipWithM f as bs = M.zipWithM f (lift as) (lift bs)
 
 zipWithM_ :: Monad m => (a -> b -> m c) -> Facets v a -> Facets v b -> m ()
 {-# INLINE zipWithM_ #-}
-zipWithM_ f as bs = M.zipWithM_ f (liftStream as) (liftStream bs)
+zipWithM_ f as bs = M.zipWithM_ f (lift as) (lift bs)
 
 -- | Yield a monadic stream of elements that satisfy the monadic predicate
 filterM :: Monad m => (a -> m Bool) -> Facets v a -> M.Facets m v a
 {-# INLINE filterM #-}
-filterM f = M.filterM f . liftStream
+filterM f = M.filterM f . lift
 
 -- | Monadic fold
 foldM :: Monad m => (a -> b -> m a) -> a -> Facets v b -> m a
 {-# INLINE foldM #-}
-foldM m z = M.foldM m z . liftStream
+foldM m z = M.foldM m z . lift
 
 -- | Monadic fold over non-empty stream
 fold1M :: Monad m => (a -> a -> m a) -> Facets v a -> m a
 {-# INLINE fold1M #-}
-fold1M m = M.fold1M m . liftStream
+fold1M m = M.fold1M m . lift
 
 -- | Monadic fold with strict accumulator
 foldM' :: Monad m => (a -> b -> m a) -> a -> Facets v b -> m a
 {-# INLINE foldM' #-}
-foldM' m z = M.foldM' m z . liftStream
+foldM' m z = M.foldM' m z . lift
 
 -- | Monad fold over non-empty stream with strict accumulator
 fold1M' :: Monad m => (a -> a -> m a) -> Facets v a -> m a
 {-# INLINE fold1M' #-}
-fold1M' m = M.fold1M' m . liftStream
+fold1M' m = M.fold1M' m . lift
 
 -- Enumerations
 -- ------------
@@ -625,5 +625,5 @@ concatVectors = M.concatVectors
 -- | Create a 'Facets' of values from a 'Facets' of streamable things
 flatten :: (a -> s) -> (s -> Step s b) -> Size -> Facets v a -> Facets v b
 {-# INLINE_FUSED flatten #-}
-flatten mk istep sz = M.flatten (return . mk) (return . istep) sz . liftStream
+flatten mk istep sz = M.flatten (return . mk) (return . istep) sz . lift
 

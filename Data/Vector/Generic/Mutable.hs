@@ -318,7 +318,7 @@ unstream :: (PrimMonad m, MVector v a)
          => Facets u a -> m (v (PrimState m) a)
 -- NOTE: replace INLINE_FUSED by INLINE? (also in unstreamR)
 {-# INLINE_FUSED unstream #-}
-unstream s = munstream (Stream.liftStream s)
+unstream s = munstream (Stream.lift s)
 
 -- | Create a new mutable vector and fill it with elements from the monadic
 -- stream. The vector will grow exponentially if the maximum size of the stream
@@ -383,7 +383,7 @@ vunstream :: (PrimMonad m, V.Vector v a)
          => Facets v a -> m (V.Mutable v (PrimState m) a)
 -- NOTE: replace INLINE_FUSED by INLINE? (also in unstreamR)
 {-# INLINE_FUSED vunstream #-}
-vunstream s = vmunstream (Stream.liftStream s)
+vunstream s = vmunstream (Stream.lift s)
 
 -- | Create a new mutable vector and fill it with elements from the monadic
 -- stream. The vector will grow exponentially if the maximum size of the stream
@@ -451,7 +451,7 @@ unstreamR :: (PrimMonad m, MVector v a)
           => Facets u a -> m (v (PrimState m) a)
 -- NOTE: replace INLINE_FUSED by INLINE? (also in unstream)
 {-# INLINE_FUSED unstreamR #-}
-unstreamR s = munstreamR (Stream.liftStream s)
+unstreamR s = munstreamR (Stream.lift s)
 
 -- | Create a new mutable vector and fill it with elements from the monadic
 -- stream from right to left. The vector will grow exponentially if the maximum
