@@ -165,7 +165,7 @@ size = sSize
 
 -- | Attach a 'Size' hint to a 'Facets'
 sized :: Facets m v a -> Size -> Facets m v a
-{-# INLINE_STREAM sized #-}
+{-# INLINE_FUSED sized #-}
 sized s sz = s { sSize = sz }
 
 -- Length
@@ -173,13 +173,13 @@ sized s sz = s { sSize = sz }
 
 -- | Length of a 'Facets'
 length :: Monad m => Facets m v a -> m Int
-{-# INLINE_STREAM length #-}
+{-# INLINE_FUSED length #-}
 length Facets{sSize = Exact n}  = return n
 length s = vfoldl' (\n (Chunk k _) -> n+k) 0 s
 
 -- | Check if a 'Facets' is empty
 null :: Monad m => Facets m v a -> m Bool
-{-# INLINE_STREAM null #-}
+{-# INLINE_FUSED null #-}
 null Facets{sSize = Exact n} = return (n == 0)
 null Facets{sChunks = Unf step s} = null_loop s
   where
@@ -197,12 +197,12 @@ null Facets{sChunks = Unf step s} = null_loop s
 
 -- | Empty 'Facets'
 empty :: Monad m => Facets m v a
-{-# INLINE_STREAM empty #-}
+{-# INLINE_FUSED empty #-}
 empty = simple (const (return Done)) () (Exact 0)
 
 -- | Singleton 'Facets'
 singleton :: Monad m => a -> Facets m v a
-{-# INLINE_STREAM singleton #-}
+{-# INLINE_FUSED singleton #-}
 singleton x = simple (return . step) True (Exact 1)
   where
     {-# INLINE_INNER step #-}
@@ -211,7 +211,7 @@ singleton x = simple (return . step) True (Exact 1)
 
 -- | Replicate a value to a given length
 replicate :: Monad m => Int -> a -> Facets m v a
-{-# INLINE_STREAM replicate #-}
+{-# INLINE_FUSED replicate #-}
 replicate n x = Facets (Unf pstep n) (Unf vstep True) Nothing (Exact len)
   where
     len = delay_inline max n 0
@@ -229,7 +229,7 @@ replicate n x = Facets (Unf pstep n) (Unf vstep True) Nothing (Exact len)
 -- | Yield a 'Facets' of values obtained by performing the monadic action the
 -- given number of times
 replicateM :: Monad m => Int -> m a -> Facets m v a
-{-# INLINE_STREAM replicateM #-}
+{-# INLINE_FUSED replicateM #-}
 -- NOTE: We delay inlining max here because GHC will create a join point for
 -- the call to newArray# otherwise which is not really nice.
 replicateM n p = simple step n (Exact (delay_inline max n 0))
@@ -244,7 +244,7 @@ generate n f = generateM n (return . f)
 
 -- | Generate a stream from its indices
 generateM :: Monad m => Int -> (Int -> m a) -> Facets m v a
-{-# INLINE_STREAM generateM #-}
+{-# INLINE_FUSED generateM #-}
 generateM n f = n `seq` simple step 0 (Exact (delay_inline max n 0))
   where
     {-# INLINE_INNER step #-}
@@ -266,7 +266,7 @@ snoc s x = s ++ singleton x
 infixr 5 ++
 -- | Concatenate two 'Facets's
 (++) :: Monad m => Facets m v a -> Facets m v a -> Facets m v a
-{-# INLINE_STREAM (++) #-}
+{-# INLINE_FUSED (++) #-}
 Facets{sElems = Unf stepa sa, sChunks = Unf vstepa vsa, sSize = na}
   ++ Facets{sElems = Unf stepb sb, sChunks = Unf vstepb vsb, sSize = nb}
     = Facets (Unf step (Left sa)) (Unf vstep (Left vsa)) Nothing (na + nb)
@@ -304,7 +304,7 @@ Facets{sElems = Unf stepa sa, sChunks = Unf vstepa vsa, sSize = na}
 
 -- | First element of the 'Facets' or error if empty
 head :: Monad m => Facets m v a -> m a
-{-# INLINE_STREAM head #-}
+{-# INLINE_FUSED head #-}
 head Facets{sElems = Unf step s} = head_loop SPEC s
   where
     head_loop !sPEC s
@@ -319,7 +319,7 @@ head Facets{sElems = Unf step s} = head_loop SPEC s
 
 -- | Last element of the 'Facets' or error if empty
 last :: Monad m => Facets m v a -> m a
-{-# INLINE_STREAM last #-}
+{-# INLINE_FUSED last #-}
 last Facets{sElems = Unf step s} = last_loop0 SPEC s
   where
     last_loop0 !sPEC s
@@ -384,7 +384,7 @@ slice i n s = take n (drop i s)
 
 -- | All but the last element
 init :: Monad m => Facets m v a -> Facets m v a
-{-# INLINE_STREAM init #-}
+{-# INLINE_FUSED init #-}
 init Facets{sElems = Unf step s, sSize = sz} = simple step' (Nothing, s) (sz - 1)
   where
     {-# INLINE_INNER step' #-}
@@ -404,7 +404,7 @@ init Facets{sElems = Unf step s, sSize = sz} = simple step' (Nothing, s) (sz - 1
 
 -- | All but the first element
 tail :: Monad m => Facets m v a -> Facets m v a
-{-# INLINE_STREAM tail #-}
+{-# INLINE_FUSED tail #-}
 tail Facets{sElems = Unf step s, sSize = sz} = simple step' (Left s) (sz - 1)
   where
     {-# INLINE_INNER step' #-}
@@ -424,7 +424,7 @@ tail Facets{sElems = Unf step s, sSize = sz} = simple step' (Left s) (sz - 1)
 
 -- | The first @n@ elements
 take :: Monad m => Int -> Facets m v a -> Facets m v a
-{-# INLINE_STREAM take #-}
+{-# INLINE_FUSED take #-}
 take n Facets{sElems = Unf step s, sSize = sz}
   = simple step' (s, 0) (smaller (Exact n) sz)
   where
@@ -439,7 +439,7 @@ take n Facets{sElems = Unf step s, sSize = sz}
 
 -- | All but the first @n@ elements
 drop :: Monad m => Int -> Facets m v a -> Facets m v a
-{-# INLINE_STREAM drop #-}
+{-# INLINE_FUSED drop #-}
 drop n Facets{sElems = Unf step s, sSize = sz}
   = simple step' (s, Just n) (sz - Exact n)
   where
@@ -474,7 +474,7 @@ map f = mapM (return . f)
 
 -- | Map a monadic function over a 'Facets'
 mapM :: Monad m => (a -> m b) -> Facets m v a -> Facets m v b
-{-# INLINE_STREAM mapM #-}
+{-# INLINE_FUSED mapM #-}
 mapM f Facets{sElems = Unf step s, sSize = n} = simple step' s n
   where
     {-# INLINE_INNER step' #-}
@@ -486,7 +486,7 @@ mapM f Facets{sElems = Unf step s, sSize = n} = simple step' s n
                   Done       -> return Done
 
 consume :: Monad m => Facets m v a -> m ()
-{-# INLINE_STREAM consume #-}
+{-# INLINE_FUSED consume #-}
 consume Facets {sChunks = Unf step s} = consume_loop SPEC s
   where
     consume_loop !sPEC s
@@ -499,17 +499,17 @@ consume Facets {sChunks = Unf step s} = consume_loop SPEC s
 
 -- | Execute a monadic action for each element of the 'Facets'
 mapM_ :: Monad m => (a -> m b) -> Facets m v a -> m ()
-{-# INLINE_STREAM mapM_ #-}
+{-# INLINE_FUSED mapM_ #-}
 mapM_ m = consume . mapM m
 
 -- | Transform a 'Facets' to use a different monad
 trans :: (Monad m, Monad m') => (forall a. m a -> m' a)
                              -> Facets m v a -> Facets m' v a
-{-# INLINE_STREAM trans #-}
+{-# INLINE_FUSED trans #-}
 trans f Facets{sElems = Unf step s, sSize = n} = simple (f . step) s n
 
 unbox :: Monad m => Facets m v (Box a) -> Facets m v a
-{-# INLINE_STREAM unbox #-}
+{-# INLINE_FUSED unbox #-}
 unbox Facets{sElems = Unf step s, sSize = n} = simple step' s n
   where
     {-# INLINE_INNER step' #-}
@@ -525,7 +525,7 @@ unbox Facets{sElems = Unf step s, sSize = n} = simple step' s n
 
 -- | Pair each element in a 'Facets' with its index
 indexed :: Monad m => Facets m v a -> Facets m v (Int,a)
-{-# INLINE_STREAM indexed #-}
+{-# INLINE_FUSED indexed #-}
 indexed Facets{sElems = Unf step s, sSize = n} = simple step' (s,0) n
   where
     {-# INLINE_INNER step' #-}
@@ -540,7 +540,7 @@ indexed Facets{sElems = Unf step s, sSize = n} = simple step' (s,0) n
 -- | Pair each element in a 'Facets' with its index, starting from the right
 -- and counting down
 indexedR :: Monad m => Int -> Facets m v a -> Facets m v (Int,a)
-{-# INLINE_STREAM indexedR #-}
+{-# INLINE_FUSED indexedR #-}
 indexedR m Facets{sElems = Unf step s, sSize = n} = simple step' (s,m) n
   where
     {-# INLINE_INNER step' #-}
@@ -556,7 +556,7 @@ indexedR m Facets{sElems = Unf step s, sSize = n} = simple step' (s,m) n
 
 -- | Zip two 'Facets's with the given monadic function
 zipWithM :: Monad m => (a -> b -> m c) -> Facets m v a -> Facets m v b -> Facets m v c
-{-# INLINE_STREAM zipWithM #-}
+{-# INLINE_FUSED zipWithM #-}
 zipWithM f Facets{sElems = Unf stepa sa, sSize = na}
            Facets{sElems = Unf stepb sb, sSize = nb}
   = simple step (sa, sb, Nothing) (smaller na nb)
@@ -592,7 +592,7 @@ zipWithM_ :: Monad m => (a -> b -> m c) -> Facets m v a -> Facets m v b -> m ()
 zipWithM_ f sa sb = consume (zipWithM f sa sb)
 
 zipWith3M :: Monad m => (a -> b -> c -> m d) -> Facets m v a -> Facets m v b -> Facets m v c -> Facets m v d
-{-# INLINE_STREAM zipWith3M #-}
+{-# INLINE_FUSED zipWith3M #-}
 zipWith3M f Facets{sElems = Unf stepa sa, sSize = na}
             Facets{sElems = Unf stepb sb, sSize = nb}
             Facets{sElems = Unf stepc sc, sSize = nc}
@@ -697,7 +697,7 @@ zip6 = zipWith6 (,,,,,)
 
 -- | Check if two 'Facets's are equal
 eq :: (Monad m, Eq a) => Facets m v a -> Facets m v a -> m Bool
-{-# INLINE_STREAM eq #-}
+{-# INLINE_FUSED eq #-}
 eq Facets{sElems = Unf step1 s1}
    Facets{sElems = Unf step2 s2} = eq_loop0 SPEC s1 s2
   where
@@ -726,7 +726,7 @@ eq Facets{sElems = Unf step1 s1}
 
 -- | Lexicographically compare two 'Facets's
 cmp :: (Monad m, Ord a) => Facets m v a -> Facets m v a -> m Ordering
-{-# INLINE_STREAM cmp #-}
+{-# INLINE_FUSED cmp #-}
 cmp Facets{sElems = Unf step1 s1}
     Facets{sElems = Unf step2 s2} = cmp_loop0 SPEC s1 s2
   where
@@ -763,7 +763,7 @@ filter f = filterM (return . f)
 
 -- | Drop elements which do not satisfy the monadic predicate
 filterM :: Monad m => (a -> m Bool) -> Facets m v a -> Facets m v a
-{-# INLINE_STREAM filterM #-}
+{-# INLINE_FUSED filterM #-}
 filterM f Facets{sElems = Unf step s, sSize = n} = simple step' s (toMax n)
   where
     {-# INLINE_INNER step' #-}
@@ -784,7 +784,7 @@ takeWhile f = takeWhileM (return . f)
 
 -- | Longest prefix of elements that satisfy the monadic predicate
 takeWhileM :: Monad m => (a -> m Bool) -> Facets m v a -> Facets m v a
-{-# INLINE_STREAM takeWhileM #-}
+{-# INLINE_FUSED takeWhileM #-}
 takeWhileM f Facets{sElems = Unf step s, sSize = n} = simple step' s (toMax n)
   where
     {-# INLINE_INNER step' #-}
@@ -806,7 +806,7 @@ data DropWhile s a = DropWhile_Drop s | DropWhile_Yield a s | DropWhile_Next s
 
 -- | Drop the longest prefix of elements that satisfy the monadic predicate
 dropWhileM :: Monad m => (a -> m Bool) -> Facets m v a -> Facets m v a
-{-# INLINE_STREAM dropWhileM #-}
+{-# INLINE_FUSED dropWhileM #-}
 dropWhileM f Facets{sElems = Unf step s, sSize = n}
   = simple step' (DropWhile_Drop s) (toMax n)
   where
@@ -841,7 +841,7 @@ dropWhileM f Facets{sElems = Unf step s, sSize = n}
 infix 4 `elem`
 -- | Check whether the 'Facets' contains an element
 elem :: (Monad m, Eq a) => a -> Facets m v a -> m Bool
-{-# INLINE_STREAM elem #-}
+{-# INLINE_FUSED elem #-}
 elem x Facets{sElems = Unf step s} = elem_loop SPEC s
   where
     elem_loop !sPEC s
@@ -868,7 +868,7 @@ find f = findM (return . f)
 -- | Yield 'Just' the first element that satisfies the monadic predicate or
 -- 'Nothing' if no such element exists.
 findM :: Monad m => (a -> m Bool) -> Facets m v a -> m (Maybe a)
-{-# INLINE_STREAM findM #-}
+{-# INLINE_FUSED findM #-}
 findM f Facets{sElems = Unf step s} = find_loop SPEC s
   where
     find_loop !sPEC s
@@ -885,13 +885,13 @@ findM f Facets{sElems = Unf step s} = find_loop SPEC s
 -- | Yield 'Just' the index of the first element that satisfies the predicate
 -- or 'Nothing' if no such element exists.
 findIndex :: Monad m => (a -> Bool) -> Facets m v a -> m (Maybe Int)
-{-# INLINE_STREAM findIndex #-}
+{-# INLINE_FUSED findIndex #-}
 findIndex f = findIndexM (return . f)
 
 -- | Yield 'Just' the index of the first element that satisfies the monadic
 -- predicate or 'Nothing' if no such element exists.
 findIndexM :: Monad m => (a -> m Bool) -> Facets m v a -> m (Maybe Int)
-{-# INLINE_STREAM findIndexM #-}
+{-# INLINE_FUSED findIndexM #-}
 findIndexM f Facets{sElems = Unf step s} = findIndex_loop SPEC s 0
   where
     findIndex_loop !sPEC s i
@@ -915,7 +915,7 @@ foldl f = foldlM (\a b -> return (f a b))
 
 -- | Left fold with a monadic operator
 foldlM :: Monad m => (a -> b -> m a) -> a -> Facets m v b -> m a
-{-# INLINE_STREAM foldlM #-}
+{-# INLINE_FUSED foldlM #-}
 foldlM m z Facets{sElems = Unf step s} = foldlM_loop SPEC z s
   where
     foldlM_loop !sPEC z s
@@ -932,7 +932,7 @@ foldM :: Monad m => (a -> b -> m a) -> a -> Facets m v b -> m a
 foldM = foldlM
 
 vfoldlM :: Monad m => (a -> Chunk v b -> m a) -> a -> Facets m v b -> m a
-{-# INLINE_STREAM vfoldlM #-}
+{-# INLINE_FUSED vfoldlM #-}
 vfoldlM f z Facets{sChunks = Unf step s} = vfoldlM_loop SPEC z s
   where
     vfoldlM_loop !sPEC z s
@@ -950,7 +950,7 @@ foldl1 f = foldl1M (\a b -> return (f a b))
 
 -- | Left fold over a non-empty 'Facets' with a monadic operator
 foldl1M :: Monad m => (a -> a -> m a) -> Facets m v a -> m a
-{-# INLINE_STREAM foldl1M #-}
+{-# INLINE_FUSED foldl1M #-}
 foldl1M f Facets{sElems = Unf step s, sSize = sz} = foldl1M_loop SPEC s
   where
     foldl1M_loop !sPEC s
@@ -977,7 +977,7 @@ vfoldl' f = vfoldlM' (\a b -> return (f a b))
 
 -- | Left fold with a strict accumulator and a monadic operator
 foldlM' :: Monad m => (a -> b -> m a) -> a -> Facets m v b -> m a
-{-# INLINE_STREAM foldlM' #-}
+{-# INLINE_FUSED foldlM' #-}
 foldlM' m z Facets{sElems = Unf step s} = foldlM'_loop SPEC z s
   where
     foldlM'_loop !sPEC z s
@@ -995,7 +995,7 @@ foldM' :: Monad m => (a -> b -> m a) -> a -> Facets m v b -> m a
 foldM' = foldlM'
 
 vfoldlM' :: Monad m => (a -> Chunk v b -> m a) -> a -> Facets m v b -> m a
-{-# INLINE_STREAM vfoldlM' #-}
+{-# INLINE_FUSED vfoldlM' #-}
 vfoldlM' f z Facets{sChunks = Unf step s} = vfoldlM'_loop SPEC z s
   where
     vfoldlM'_loop !sPEC z s
@@ -1014,7 +1014,7 @@ foldl1' f = foldl1M' (\a b -> return (f a b))
 -- | Left fold over a non-empty 'Facets' with a strict accumulator and a
 -- monadic operator
 foldl1M' :: Monad m => (a -> a -> m a) -> Facets m v a -> m a
-{-# INLINE_STREAM foldl1M' #-}
+{-# INLINE_FUSED foldl1M' #-}
 foldl1M' f Facets{sElems = Unf step s, sSize = sz} = foldl1M'_loop SPEC s
   where
     foldl1M'_loop !sPEC s
@@ -1037,7 +1037,7 @@ foldr f = foldrM (\a b -> return (f a b))
 
 -- | Right fold with a monadic operator
 foldrM :: Monad m => (a -> b -> m b) -> b -> Facets m v a -> m b
-{-# INLINE_STREAM foldrM #-}
+{-# INLINE_FUSED foldrM #-}
 foldrM f z Facets{sElems = Unf step s} = foldrM_loop SPEC s
   where
     foldrM_loop !sPEC s
@@ -1055,7 +1055,7 @@ foldr1 f = foldr1M (\a b -> return (f a b))
 
 -- | Right fold over a non-empty stream with a monadic operator
 foldr1M :: Monad m => (a -> a -> m a) -> Facets m v a -> m a
-{-# INLINE_STREAM foldr1M #-}
+{-# INLINE_FUSED foldr1M #-}
 foldr1M f Facets{sElems = Unf step s} = foldr1M_loop0 SPEC s
   where
     foldr1M_loop0 !sPEC s
@@ -1078,7 +1078,7 @@ foldr1M f Facets{sElems = Unf step s} = foldr1M_loop0 SPEC s
 -- -----------------
 
 and :: Monad m => Facets m v Bool -> m Bool
-{-# INLINE_STREAM and #-}
+{-# INLINE_FUSED and #-}
 and Facets{sElems = Unf step s} = and_loop SPEC s
   where
     and_loop !sPEC s
@@ -1091,7 +1091,7 @@ and Facets{sElems = Unf step s} = and_loop SPEC s
             Done           -> return True
 
 or :: Monad m => Facets m v Bool -> m Bool
-{-# INLINE_STREAM or #-}
+{-# INLINE_FUSED or #-}
 or Facets{sElems = Unf step s} = or_loop SPEC s
   where
     or_loop !sPEC s
@@ -1108,7 +1108,7 @@ concatMap :: Monad m => (a -> Facets m v b) -> Facets m v a -> Facets m v b
 concatMap f = concatMapM (return . f)
 
 concatMapM :: Monad m => (a -> m (Facets m v b)) -> Facets m v a -> Facets m v b
-{-# INLINE_STREAM concatMapM #-}
+{-# INLINE_FUSED concatMapM #-}
 concatMapM f Facets{sElems = Unf step s} = simple concatMap_go (Left s) Unknown
   where
     concatMap_go (Left s) = do
@@ -1129,7 +1129,7 @@ concatMapM f Facets{sElems = Unf step s} = simple concatMap_go (Left s) Unknown
 -- | Create a 'Facets' of values from a 'Facets' of streamable things
 flatten :: Monad m => (a -> m s) -> (s -> m (Step s b)) -> Size
                    -> Facets m v a -> Facets m v b
-{-# INLINE_STREAM flatten #-}
+{-# INLINE_FUSED flatten #-}
 flatten mk istep sz Facets{sElems = Unf ostep t} = simple step (Left t) sz
   where
     {-# INLINE_INNER step #-}
@@ -1155,12 +1155,12 @@ flatten mk istep sz Facets{sElems = Unf ostep t} = simple step (Left t) sz
 
 -- | Unfold
 unfoldr :: Monad m => (s -> Maybe (a, s)) -> s -> Facets m u a
-{-# INLINE_STREAM unfoldr #-}
+{-# INLINE_FUSED unfoldr #-}
 unfoldr f = unfoldrM (return . f)
 
 -- | Unfold with a monadic function
 unfoldrM :: Monad m => (s -> m (Maybe (a, s))) -> s -> Facets m u a
-{-# INLINE_STREAM unfoldrM #-}
+{-# INLINE_FUSED unfoldrM #-}
 unfoldrM f s = simple step s Unknown
   where
     {-# INLINE_INNER step #-}
@@ -1172,12 +1172,12 @@ unfoldrM f s = simple step s Unknown
 
 -- | Unfold at most @n@ elements
 unfoldrN :: Monad m => Int -> (s -> Maybe (a, s)) -> s -> Facets m u a
-{-# INLINE_STREAM unfoldrN #-}
+{-# INLINE_FUSED unfoldrN #-}
 unfoldrN n f = unfoldrNM n (return . f)
 
 -- | Unfold at most @n@ elements with a monadic functions
 unfoldrNM :: Monad m => Int -> (s -> m (Maybe (a, s))) -> s -> Facets m u a
-{-# INLINE_STREAM unfoldrNM #-}
+{-# INLINE_FUSED unfoldrNM #-}
 unfoldrNM n f s = simple step (s,n) (Max (delay_inline max n 0))
   where
     {-# INLINE_INNER step #-}
@@ -1190,7 +1190,7 @@ unfoldrNM n f s = simple step (s,n) (Max (delay_inline max n 0))
 
 -- | Apply monadic function n times to value. Zeroth element is original value.
 iterateNM :: Monad m => Int -> (a -> m a) -> a -> Facets m u a
-{-# INLINE_STREAM iterateNM #-}
+{-# INLINE_FUSED iterateNM #-}
 iterateNM n f x0 = simple step (x0,n) (Exact (delay_inline max n 0))
   where
     {-# INLINE_INNER step #-}
@@ -1201,7 +1201,7 @@ iterateNM n f x0 = simple step (x0,n) (Exact (delay_inline max n 0))
 
 -- | Apply function n times to value. Zeroth element is original value.
 iterateN :: Monad m => Int -> (a -> a) -> a -> Facets m u a
-{-# INLINE_STREAM iterateN #-}
+{-# INLINE_FUSED iterateN #-}
 iterateN n f x0 = iterateNM n (return . f) x0
 
 -- Scans
@@ -1214,7 +1214,7 @@ prescanl f = prescanlM (\a b -> return (f a b))
 
 -- | Prefix scan with a monadic operator
 prescanlM :: Monad m => (a -> b -> m a) -> a -> Facets m v b -> Facets m v a
-{-# INLINE_STREAM prescanlM #-}
+{-# INLINE_FUSED prescanlM #-}
 prescanlM f z Facets{sElems = Unf step s, sSize = sz} = simple step' (s,z) sz
   where
     {-# INLINE_INNER step' #-}
@@ -1234,7 +1234,7 @@ prescanl' f = prescanlM' (\a b -> return (f a b))
 
 -- | Prefix scan with strict accumulator and a monadic operator
 prescanlM' :: Monad m => (a -> b -> m a) -> a -> Facets m v b -> Facets m v a
-{-# INLINE_STREAM prescanlM' #-}
+{-# INLINE_FUSED prescanlM' #-}
 prescanlM' f z Facets{sElems = Unf step s, sSize = sz} = simple step' (s,z) sz
   where
     {-# INLINE_INNER step' #-}
@@ -1255,7 +1255,7 @@ postscanl f = postscanlM (\a b -> return (f a b))
 
 -- | Suffix scan with a monadic operator
 postscanlM :: Monad m => (a -> b -> m a) -> a -> Facets m v b -> Facets m v a
-{-# INLINE_STREAM postscanlM #-}
+{-# INLINE_FUSED postscanlM #-}
 postscanlM f z Facets{sElems = Unf step s, sSize = sz} = simple step' (s,z) sz
   where
     {-# INLINE_INNER step' #-}
@@ -1275,7 +1275,7 @@ postscanl' f = postscanlM' (\a b -> return (f a b))
 
 -- | Suffix scan with strict acccumulator and a monadic operator
 postscanlM' :: Monad m => (a -> b -> m a) -> a -> Facets m v b -> Facets m v a
-{-# INLINE_STREAM postscanlM' #-}
+{-# INLINE_FUSED postscanlM' #-}
 postscanlM' f z Facets{sElems = Unf step s, sSize = sz}
   = z `seq` simple step' (s,z) sz
   where
@@ -1317,7 +1317,7 @@ scanl1 f = scanl1M (\x y -> return (f x y))
 
 -- | Scan over a non-empty 'Facets' with a monadic operator
 scanl1M :: Monad m => (a -> a -> m a) -> Facets m v a -> Facets m v a
-{-# INLINE_STREAM scanl1M #-}
+{-# INLINE_FUSED scanl1M #-}
 scanl1M f Facets{sElems = Unf step s, sSize = sz} = simple step' (s, Nothing) sz
   where
     {-# INLINE_INNER step' #-}
@@ -1345,7 +1345,7 @@ scanl1' f = scanl1M' (\x y -> return (f x y))
 -- | Scan over a non-empty 'Facets' with a strict accumulator and a monadic
 -- operator
 scanl1M' :: Monad m => (a -> a -> m a) -> Facets m v a -> Facets m v a
-{-# INLINE_STREAM scanl1M' #-}
+{-# INLINE_FUSED scanl1M' #-}
 scanl1M' f Facets{sElems = Unf step s, sSize = sz}
   = simple step' (s, Nothing) sz
   where
@@ -1377,7 +1377,7 @@ scanl1M' f Facets{sElems = Unf step s, sSize = sz}
 -- | Yield a 'Facets' of the given length containing the values @x@, @x+y@,
 -- @x+y+y@ etc.
 enumFromStepN :: (Num a, Monad m) => a -> a -> Int -> Facets m v a
-{-# INLINE_STREAM enumFromStepN #-}
+{-# INLINE_FUSED enumFromStepN #-}
 enumFromStepN x y n = x `seq` y `seq` n `seq`
                       simple step (x,n) (Exact (delay_inline max n 0))
   where
@@ -1390,7 +1390,7 @@ enumFromStepN x y n = x `seq` y `seq` n `seq`
 -- /WARNING:/ This operation can be very inefficient. If at all possible, use
 -- 'enumFromStepN' instead.
 enumFromTo :: (Enum a, Monad m) => a -> a -> Facets m v a
-{-# INLINE_STREAM enumFromTo #-}
+{-# INLINE_FUSED enumFromTo #-}
 enumFromTo x y = fromList [x .. y]
 
 -- NOTE: We use (x+1) instead of (succ x) below because the latter checks for
@@ -1398,7 +1398,7 @@ enumFromTo x y = fromList [x .. y]
 
 -- FIXME: add "too large" test for Int
 enumFromTo_small :: (Integral a, Monad m) => a -> a -> Facets m v a
-{-# INLINE_STREAM enumFromTo_small #-}
+{-# INLINE_FUSED enumFromTo_small #-}
 enumFromTo_small x y = x `seq` y `seq` simple step x (Exact n)
   where
     n = delay_inline max (fromIntegral y - fromIntegral x + 1) 0
@@ -1450,7 +1450,7 @@ enumFromTo_small x y = x `seq` y `seq` simple step x (Exact n)
 --
 
 enumFromTo_int :: forall m v. Monad m => Int -> Int -> Facets m v Int
-{-# INLINE_STREAM enumFromTo_int #-}
+{-# INLINE_FUSED enumFromTo_int #-}
 enumFromTo_int x y = x `seq` y `seq` simple step x (Exact (len x y))
   where
     {-# INLINE [0] len #-}
@@ -1467,7 +1467,7 @@ enumFromTo_int x y = x `seq` y `seq` simple step x (Exact (len x y))
            | otherwise = return $ Done
 
 enumFromTo_intlike :: (Integral a, Monad m) => a -> a -> Facets m v a
-{-# INLINE_STREAM enumFromTo_intlike #-}
+{-# INLINE_FUSED enumFromTo_intlike #-}
 enumFromTo_intlike x y = x `seq` y `seq` simple step x (Exact (len x y))
   where
     {-# INLINE [0] len #-}
@@ -1502,7 +1502,7 @@ enumFromTo_intlike x y = x `seq` y `seq` simple step x (Exact (len x y))
   #-}
 
 enumFromTo_big_word :: (Integral a, Monad m) => a -> a -> Facets m v a
-{-# INLINE_STREAM enumFromTo_big_word #-}
+{-# INLINE_FUSED enumFromTo_big_word #-}
 enumFromTo_big_word x y = x `seq` y `seq` simple step x (Exact (len x y))
   where
     {-# INLINE [0] len #-}
@@ -1542,7 +1542,7 @@ enumFromTo_big_word x y = x `seq` y `seq` simple step x (Exact (len x y))
 
 -- FIXME: the "too large" test is totally wrong
 enumFromTo_big_int :: (Integral a, Monad m) => a -> a -> Facets m v a
-{-# INLINE_STREAM enumFromTo_big_int #-}
+{-# INLINE_FUSED enumFromTo_big_int #-}
 enumFromTo_big_int x y = x `seq` y `seq` simple step x (Exact (len x y))
   where
     {-# INLINE [0] len #-}
@@ -1569,7 +1569,7 @@ enumFromTo_big_int x y = x `seq` y `seq` simple step x (Exact (len x y))
 #endif
 
 enumFromTo_char :: Monad m => Char -> Char -> Facets m v Char
-{-# INLINE_STREAM enumFromTo_char #-}
+{-# INLINE_FUSED enumFromTo_char #-}
 enumFromTo_char x y = x `seq` y `seq` simple step xn (Exact n)
   where
     xn = ord x
@@ -1594,7 +1594,7 @@ enumFromTo_char x y = x `seq` y `seq` simple step xn (Exact n)
 -- Also, try to do something about pairs?
 
 enumFromTo_double :: (Monad m, Ord a, RealFrac a) => a -> a -> Facets m v a
-{-# INLINE_STREAM enumFromTo_double #-}
+{-# INLINE_FUSED enumFromTo_double #-}
 enumFromTo_double n m = n `seq` m `seq` simple step n (Max (len n m))
   where
     lim = m + 1/2 -- important to float out
@@ -1628,7 +1628,7 @@ enumFromTo_double n m = n `seq` m `seq` simple step n (Max (len n m))
 -- /WARNING:/ This operation is very inefficient. If at all possible, use
 -- 'enumFromStepN' instead.
 enumFromThenTo :: (Enum a, Monad m) => a -> a -> a -> Facets m v a
-{-# INLINE_STREAM enumFromThenTo #-}
+{-# INLINE_FUSED enumFromThenTo #-}
 enumFromThenTo x y z = fromList [x, y .. z]
 
 -- FIXME: Specialise enumFromThenTo.
@@ -1648,7 +1648,7 @@ fromList xs = unsafeFromList Unknown xs
 
 -- | Convert the first @n@ elements of a list to a 'Facets'
 fromListN :: Monad m => Int -> [a] -> Facets m v a
-{-# INLINE_STREAM fromListN #-}
+{-# INLINE_FUSED fromListN #-}
 fromListN n xs = simple step (xs,n) (Max (delay_inline max n 0))
   where
     {-# INLINE_INNER step #-}
@@ -1658,14 +1658,14 @@ fromListN n xs = simple step (xs,n) (Max (delay_inline max n 0))
 
 -- | Convert a list to a 'Facets' with the given 'Size' hint. 
 unsafeFromList :: Monad m => Size -> [a] -> Facets m v a
-{-# INLINE_STREAM unsafeFromList #-}
+{-# INLINE_FUSED unsafeFromList #-}
 unsafeFromList sz xs = simple step xs sz
   where
     step (x:xs) = return (Yield x xs)
     step []     = return Done
 
 fromVector :: (Monad m, Vector v a) => v a -> Facets m v a
-{-# INLINE_STREAM fromVector #-}
+{-# INLINE_FUSED fromVector #-}
 fromVector v = v `seq` n `seq` Facets (Unf step 0)
                                       (Unf vstep True)
                                       (Just v)
@@ -1684,7 +1684,7 @@ fromVector v = v `seq` n `seq` Facets (Unf step 0)
     vstep False = return Done
 
 fromVectors :: (Monad m, Vector v a) => [v a] -> Facets m v a
-{-# INLINE_STREAM fromVectors #-}
+{-# INLINE_FUSED fromVectors #-}
 fromVectors vs = Facets (Unf pstep (Left vs))
                         (Unf vstep vs)
                         Nothing
@@ -1707,7 +1707,7 @@ fromVectors vs = Facets (Unf pstep (Left vs))
 
 
 concatVectors :: (Monad m, Vector v a) => Facets m u (v a) -> Facets m v a
-{-# INLINE_STREAM concatVectors #-}
+{-# INLINE_FUSED concatVectors #-}
 concatVectors Facets{sElems = Unf step s}
   = Facets (Unf pstep (Left s))
            (Unf vstep s)
@@ -1736,7 +1736,7 @@ concatVectors Facets{sElems = Unf step s}
         Done       -> return Done
 
 reVector :: Monad m => Facets m u a -> Facets m v a
-{-# INLINE_STREAM reVector #-}
+{-# INLINE_FUSED reVector #-}
 reVector Facets{sElems = Unf step s, sSize = n} = simple step s n
 
 {-# RULES

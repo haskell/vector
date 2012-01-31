@@ -105,7 +105,7 @@ instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
 -- | /O(1)/ Zip 2 vectors
 zip :: (Unbox a, Unbox b) => MVector s a ->
                              MVector s b -> MVector s (a, b)
-{-# INLINE_STREAM zip #-}
+{-# INLINE_FUSED zip #-}
 zip as bs = MV_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
   where len = length as `delayed_min` length bs
 -- | /O(1)/ Unzip 2 vectors
@@ -117,7 +117,7 @@ unzip (MV_2 n_ as bs) = (as, bs)
 #ifdef DEFINE_IMMUTABLE
 -- | /O(1)/ Zip 2 vectors
 zip :: (Unbox a, Unbox b) => Vector a -> Vector b -> Vector (a, b)
-{-# INLINE_STREAM zip #-}
+{-# INLINE_FUSED zip #-}
 zip as bs = V_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
   where len = length as `delayed_min` length bs
 {-# RULES "stream/zip [Vector.Unboxed]" forall as bs .
@@ -261,7 +261,7 @@ instance (Unbox a,
 zip3 :: (Unbox a, Unbox b, Unbox c) => MVector s a ->
                                        MVector s b ->
                                        MVector s c -> MVector s (a, b, c)
-{-# INLINE_STREAM zip3 #-}
+{-# INLINE_FUSED zip3 #-}
 zip3 as bs cs = MV_3 len (unsafeSlice 0 len as)
                          (unsafeSlice 0 len bs)
                          (unsafeSlice 0 len cs)
@@ -281,7 +281,7 @@ unzip3 (MV_3 n_ as bs cs) = (as, bs, cs)
 zip3 :: (Unbox a, Unbox b, Unbox c) => Vector a ->
                                        Vector b ->
                                        Vector c -> Vector (a, b, c)
-{-# INLINE_STREAM zip3 #-}
+{-# INLINE_FUSED zip3 #-}
 zip3 as bs cs = V_3 len (unsafeSlice 0 len as)
                         (unsafeSlice 0 len bs)
                         (unsafeSlice 0 len cs)
@@ -461,7 +461,7 @@ zip4 :: (Unbox a, Unbox b, Unbox c, Unbox d) => MVector s a ->
                                                 MVector s b ->
                                                 MVector s c ->
                                                 MVector s d -> MVector s (a, b, c, d)
-{-# INLINE_STREAM zip4 #-}
+{-# INLINE_FUSED zip4 #-}
 zip4 as bs cs ds = MV_4 len (unsafeSlice 0 len as)
                             (unsafeSlice 0 len bs)
                             (unsafeSlice 0 len cs)
@@ -488,7 +488,7 @@ zip4 :: (Unbox a, Unbox b, Unbox c, Unbox d) => Vector a ->
                                                 Vector b ->
                                                 Vector c ->
                                                 Vector d -> Vector (a, b, c, d)
-{-# INLINE_STREAM zip4 #-}
+{-# INLINE_FUSED zip4 #-}
 zip4 as bs cs ds = V_4 len (unsafeSlice 0 len as)
                            (unsafeSlice 0 len bs)
                            (unsafeSlice 0 len cs)
@@ -714,7 +714,7 @@ zip5 :: (Unbox a,
                      MVector s c ->
                      MVector s d ->
                      MVector s e -> MVector s (a, b, c, d, e)
-{-# INLINE_STREAM zip5 #-}
+{-# INLINE_FUSED zip5 #-}
 zip5 as bs cs ds es = MV_5 len (unsafeSlice 0 len as)
                                (unsafeSlice 0 len bs)
                                (unsafeSlice 0 len cs)
@@ -750,7 +750,7 @@ zip5 :: (Unbox a,
                      Vector c ->
                      Vector d ->
                      Vector e -> Vector (a, b, c, d, e)
-{-# INLINE_STREAM zip5 #-}
+{-# INLINE_FUSED zip5 #-}
 zip5 as bs cs ds es = V_5 len (unsafeSlice 0 len as)
                               (unsafeSlice 0 len bs)
                               (unsafeSlice 0 len cs)
@@ -1013,7 +1013,7 @@ zip6 :: (Unbox a,
                      MVector s d ->
                      MVector s e ->
                      MVector s f -> MVector s (a, b, c, d, e, f)
-{-# INLINE_STREAM zip6 #-}
+{-# INLINE_FUSED zip6 #-}
 zip6 as bs cs ds es fs = MV_6 len (unsafeSlice 0 len as)
                                   (unsafeSlice 0 len bs)
                                   (unsafeSlice 0 len cs)
@@ -1055,7 +1055,7 @@ zip6 :: (Unbox a,
                      Vector d ->
                      Vector e ->
                      Vector f -> Vector (a, b, c, d, e, f)
-{-# INLINE_STREAM zip6 #-}
+{-# INLINE_FUSED zip6 #-}
 zip6 as bs cs ds es fs = V_6 len (unsafeSlice 0 len as)
                                  (unsafeSlice 0 len bs)
                                  (unsafeSlice 0 len cs)

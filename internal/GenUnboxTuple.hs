@@ -59,7 +59,7 @@ generate n =
                   <+> sep (punctuate (text " ->") [text ty <+> v | v <- vars])
                   <+> text "->"
                   <+> text ty <+> tuple vars
-             ,text "{-# INLINE_STREAM"  <+> name <+> text "#-}"
+             ,text "{-# INLINE_FUSED"  <+> name <+> text "#-}"
              ,name <+> sep varss
                    <+> text "="
                    <+> con c

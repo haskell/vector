@@ -108,7 +108,7 @@ type MFacets = M.Facets
 
 inplace :: (forall m. Monad m => M.Facets m v a -> M.Facets m v b)
         -> Facets v a -> Facets v b
-{-# INLINE_STREAM inplace #-}
+{-# INLINE_FUSED inplace #-}
 inplace f s = s `seq` f s
 
 {-# RULES
@@ -123,7 +123,7 @@ inplace f s = s `seq` f s
 
 -- | Convert a pure stream to a monadic stream
 liftStream :: Monad m => Facets v a -> M.Facets m v a
-{-# INLINE_STREAM liftStream #-}
+{-# INLINE_FUSED liftStream #-}
 liftStream (M.Facets (M.Unf step s) (M.Unf vstep t) v sz)
     = M.Facets (M.Unf (return . unId . step) s)
                (M.Unf (return . unId . vstep) t) v sz
@@ -273,7 +273,7 @@ indexed = M.indexed
 -- | Pair each element in a 'Facets' with its index, starting from the right
 -- and counting down
 indexedR :: Int -> Facets v a -> Facets v (Int,a)
-{-# INLINE_STREAM indexedR #-}
+{-# INLINE_FUSED indexedR #-}
 indexedR = M.indexedR
 
 -- | Zip two 'Facets's with the given function
@@ -624,6 +624,6 @@ concatVectors = M.concatVectors
 
 -- | Create a 'Facets' of values from a 'Facets' of streamable things
 flatten :: (a -> s) -> (s -> Step s b) -> Size -> Facets v a -> Facets v b
-{-# INLINE_STREAM flatten #-}
+{-# INLINE_FUSED flatten #-}
 flatten mk istep sz = M.flatten (return . mk) (return . istep) sz . liftStream
 

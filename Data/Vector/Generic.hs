@@ -226,41 +226,41 @@ null = Stream.null . stream
 infixl 9 !
 -- | O(1) Indexing
 (!) :: Vector v a => v a -> Int -> a
-{-# INLINE_STREAM (!) #-}
+{-# INLINE_FUSED (!) #-}
 (!) v i = BOUNDS_CHECK(checkIndex) "(!)" i (length v)
         $ unId (basicUnsafeIndexM v i)
 
 infixl 9 !?
 -- | O(1) Safe indexing
 (!?) :: Vector v a => v a -> Int -> Maybe a
-{-# INLINE_STREAM (!?) #-}
+{-# INLINE_FUSED (!?) #-}
 v !? i | i < 0 || i >= length v = Nothing
        | otherwise              = Just $ unsafeIndex v i
 
 -- | /O(1)/ First element
 head :: Vector v a => v a -> a
-{-# INLINE_STREAM head #-}
+{-# INLINE_FUSED head #-}
 head v = v ! 0
 
 -- | /O(1)/ Last element
 last :: Vector v a => v a -> a
-{-# INLINE_STREAM last #-}
+{-# INLINE_FUSED last #-}
 last v = v ! (length v - 1)
 
 -- | /O(1)/ Unsafe indexing without bounds checking
 unsafeIndex :: Vector v a => v a -> Int -> a
-{-# INLINE_STREAM unsafeIndex #-}
+{-# INLINE_FUSED unsafeIndex #-}
 unsafeIndex v i = UNSAFE_CHECK(checkIndex) "unsafeIndex" i (length v)
                 $ unId (basicUnsafeIndexM v i)
 
 -- | /O(1)/ First element without checking if the vector is empty
 unsafeHead :: Vector v a => v a -> a
-{-# INLINE_STREAM unsafeHead #-}
+{-# INLINE_FUSED unsafeHead #-}
 unsafeHead v = unsafeIndex v 0
 
 -- | /O(1)/ Last element without checking if the vector is empty
 unsafeLast :: Vector v a => v a -> a
-{-# INLINE_STREAM unsafeLast #-}
+{-# INLINE_FUSED unsafeLast #-}
 unsafeLast v = unsafeIndex v (length v - 1)
 
 {-# RULES
@@ -311,39 +311,39 @@ unsafeLast v = unsafeIndex v (length v - 1)
 -- elements) is evaluated eagerly.
 --
 indexM :: (Vector v a, Monad m) => v a -> Int -> m a
-{-# INLINE_STREAM indexM #-}
+{-# INLINE_FUSED indexM #-}
 indexM v i = BOUNDS_CHECK(checkIndex) "indexM" i (length v)
            $ basicUnsafeIndexM v i
 
 -- | /O(1)/ First element of a vector in a monad. See 'indexM' for an
 -- explanation of why this is useful.
 headM :: (Vector v a, Monad m) => v a -> m a
-{-# INLINE_STREAM headM #-}
+{-# INLINE_FUSED headM #-}
 headM v = indexM v 0
 
 -- | /O(1)/ Last element of a vector in a monad. See 'indexM' for an
 -- explanation of why this is useful.
 lastM :: (Vector v a, Monad m) => v a -> m a
-{-# INLINE_STREAM lastM #-}
+{-# INLINE_FUSED lastM #-}
 lastM v = indexM v (length v - 1)
 
 -- | /O(1)/ Indexing in a monad without bounds checks. See 'indexM' for an
 -- explanation of why this is useful.
 unsafeIndexM :: (Vector v a, Monad m) => v a -> Int -> m a
-{-# INLINE_STREAM unsafeIndexM #-}
+{-# INLINE_FUSED unsafeIndexM #-}
 unsafeIndexM v i = UNSAFE_CHECK(checkIndex) "unsafeIndexM" i (length v)
                  $ basicUnsafeIndexM v i
 
 -- | /O(1)/ First element in a monad without checking for empty vectors.
 -- See 'indexM' for an explanation of why this is useful.
 unsafeHeadM :: (Vector v a, Monad m) => v a -> m a
-{-# INLINE_STREAM unsafeHeadM #-}
+{-# INLINE_FUSED unsafeHeadM #-}
 unsafeHeadM v = unsafeIndexM v 0
 
 -- | /O(1)/ Last element in a monad without checking for empty vectors.
 -- See 'indexM' for an explanation of why this is useful.
 unsafeLastM :: (Vector v a, Monad m) => v a -> m a
-{-# INLINE_STREAM unsafeLastM #-}
+{-# INLINE_FUSED unsafeLastM #-}
 unsafeLastM v = unsafeIndexM v (length v - 1)
 
 {-# RULES
@@ -377,33 +377,33 @@ slice :: Vector v a => Int   -- ^ @i@ starting index
                     -> Int   -- ^ @n@ length
                     -> v a
                     -> v a
-{-# INLINE_STREAM slice #-}
+{-# INLINE_FUSED slice #-}
 slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
             $ basicUnsafeSlice i n v
 
 -- | /O(1)/ Yield all but the last element without copying. The vector may not
 -- be empty.
 init :: Vector v a => v a -> v a
-{-# INLINE_STREAM init #-}
+{-# INLINE_FUSED init #-}
 init v = slice 0 (length v - 1) v
 
 -- | /O(1)/ Yield all but the first element without copying. The vector may not
 -- be empty.
 tail :: Vector v a => v a -> v a
-{-# INLINE_STREAM tail #-}
+{-# INLINE_FUSED tail #-}
 tail v = slice 1 (length v - 1) v
 
 -- | /O(1)/ Yield the first @n@ elements without copying. The vector may
 -- contain less than @n@ elements in which case it is returned unchanged.
 take :: Vector v a => Int -> v a -> v a
-{-# INLINE_STREAM take #-}
+{-# INLINE_FUSED take #-}
 take n v = unsafeSlice 0 (delay_inline min n' (length v)) v
   where n' = max n 0
 
 -- | /O(1)/ Yield all but the first @n@ elements without copying. The vector may
 -- contain less than @n@ elements in which case an empty vector is returned.
 drop :: Vector v a => Int -> v a -> v a
-{-# INLINE_STREAM drop #-}
+{-# INLINE_FUSED drop #-}
 drop n v = unsafeSlice (delay_inline min n' len)
                        (delay_inline max 0 (len - n')) v
   where n' = max n 0
@@ -413,7 +413,7 @@ drop n v = unsafeSlice (delay_inline min n' len)
 --
 -- Note that @'splitAt' n v@ is equivalent to @('take' n v, 'drop' n v)@
 -- but slightly more efficient.
-{-# INLINE_STREAM splitAt #-}
+{-# INLINE_FUSED splitAt #-}
 splitAt :: Vector v a => Int -> v a -> (v a, v a)
 splitAt n v = ( unsafeSlice 0 m v
               , unsafeSlice m (delay_inline max 0 (len - n')) v
@@ -429,20 +429,20 @@ unsafeSlice :: Vector v a => Int   -- ^ @i@ starting index
                           -> Int   -- ^ @n@ length
                           -> v a
                           -> v a
-{-# INLINE_STREAM unsafeSlice #-}
+{-# INLINE_FUSED unsafeSlice #-}
 unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
                   $ basicUnsafeSlice i n v
 
 -- | /O(1)/ Yield all but the last element without copying. The vector may not
 -- be empty but this is not checked.
 unsafeInit :: Vector v a => v a -> v a
-{-# INLINE_STREAM unsafeInit #-}
+{-# INLINE_FUSED unsafeInit #-}
 unsafeInit v = unsafeSlice 0 (length v - 1) v
 
 -- | /O(1)/ Yield all but the first element without copying. The vector may not
 -- be empty but this is not checked.
 unsafeTail :: Vector v a => v a -> v a
-{-# INLINE_STREAM unsafeTail #-}
+{-# INLINE_FUSED unsafeTail #-}
 unsafeTail v = unsafeSlice 1 (length v - 1) v
 
 -- | /O(1)/ Yield the first @n@ elements without copying. The vector must
@@ -720,7 +720,7 @@ create p = new (New.create p)
 force :: Vector v a => v a -> v a
 -- FIXME: we probably ought to inline this later as the rules still might fire
 -- otherwise
-{-# INLINE_STREAM force #-}
+{-# INLINE_FUSED force #-}
 force v = new (clone v)
 
 -- Bulk updates
@@ -1273,7 +1273,7 @@ partition f = partition_stream f . stream
 -- implemented in C++)
 
 partition_stream :: Vector v a => (a -> Bool) -> Facets u a -> (v a, v a)
-{-# INLINE_STREAM partition_stream #-}
+{-# INLINE_FUSED partition_stream #-}
 partition_stream f s = s `seq` runST (
   do
     (mv1,mv2) <- M.partitionStream f s
@@ -1291,7 +1291,7 @@ unstablePartition f = unstablePartition_stream f . stream
 
 unstablePartition_stream
   :: Vector v a => (a -> Bool) -> Facets u a -> (v a, v a)
-{-# INLINE_STREAM unstablePartition_stream #-}
+{-# INLINE_FUSED unstablePartition_stream #-}
 unstablePartition_stream f s = s `seq` runST (
   do
     (mv1,mv2) <- M.unstablePartitionStream f s
@@ -1300,7 +1300,7 @@ unstablePartition_stream f s = s `seq` runST (
     return (v1,v2))
 
 unstablePartition_new :: Vector v a => (a -> Bool) -> New v a -> (v a, v a)
-{-# INLINE_STREAM unstablePartition_new #-}
+{-# INLINE_FUSED unstablePartition_new #-}
 unstablePartition_new f (New.New p) = runST (
   do
     mv <- p
@@ -1774,12 +1774,12 @@ freeze mv = unsafeFreeze =<< M.clone mv
 -- | /O(1)/ Unsafely convert an immutable vector to a mutable one without
 -- copying. The immutable vector may not be used after this operation.
 unsafeThaw :: (PrimMonad m, Vector v a) => v a -> m (Mutable v (PrimState m) a)
-{-# INLINE_STREAM unsafeThaw #-}
+{-# INLINE_FUSED unsafeThaw #-}
 unsafeThaw = basicUnsafeThaw
 
 -- | /O(n)/ Yield a mutable copy of the immutable vector.
 thaw :: (PrimMonad m, Vector v a) => v a -> m (Mutable v (PrimState m) a)
-{-# INLINE_STREAM thaw #-}
+{-# INLINE_FUSED thaw #-}
 thaw v = do
            mv <- M.unsafeNew (length v)
            unsafeCopy mv v
@@ -1799,7 +1799,7 @@ thaw v = do
 -- | /O(n)/ Yield a mutable vector containing copies of each vector in the
 -- list.
 thawMany :: (PrimMonad m, Vector v a) => [v a] -> m (Mutable v (PrimState m) a)
-{-# INLINE_STREAM thawMany #-}
+{-# INLINE_FUSED thawMany #-}
 -- FIXME: add rule for (stream (new (New.create (thawMany vs))))
 -- NOTE: We don't try to consume the list lazily as this wouldn't significantly
 -- change the space requirements anyway.
@@ -1841,7 +1841,7 @@ unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
 
 -- | /O(1)/ Convert a vector to a 'Facets'
 stream :: Vector v a => v a -> Facets v a
-{-# INLINE_STREAM stream #-}
+{-# INLINE_FUSED stream #-}
 stream v = Stream.fromVector v
 
 {-
@@ -1884,7 +1884,7 @@ unstream s = new (New.unstream s)
 
 -- | /O(1)/ Convert a vector to a 'Facets', proceeding from right to left
 streamR :: Vector v a => v a -> Facets u a
-{-# INLINE_STREAM streamR #-}
+{-# INLINE_FUSED streamR #-}
 streamR v = v `seq` n `seq` (Stream.unfoldr get n `Stream.sized` Exact n)
   where
     n = length v
@@ -1925,13 +1925,13 @@ unstreamR s = new (New.unstreamR s)
  #-}
 
 unstreamM :: (Monad m, Vector v a) => MFacets m u a -> m (v a)
-{-# INLINE_STREAM unstreamM #-}
+{-# INLINE_FUSED unstreamM #-}
 unstreamM s = do
                 xs <- MStream.toList s
                 return $ unstream $ Stream.unsafeFromList (MStream.size s) xs
 
 unstreamPrimM :: (PrimMonad m, Vector v a) => MFacets m u a -> m (v a)
-{-# INLINE_STREAM unstreamPrimM #-}
+{-# INLINE_FUSED unstreamPrimM #-}
 unstreamPrimM s = M.munstream s >>= unsafeFreeze
 
 -- FIXME: the next two functions are only necessary for the specialisations
@@ -1956,13 +1956,13 @@ unstreamPrimM_ST = unstreamPrimM
 
 -- | Construct a vector from a monadic initialiser.
 new :: Vector v a => New v a -> v a
-{-# INLINE_STREAM new #-}
+{-# INLINE_FUSED new #-}
 new m = m `seq` runST (unsafeFreeze =<< New.run m)
 
 -- | Convert a vector to an initialiser which, when run, produces a copy of
 -- the vector.
 clone :: Vector v a => v a -> New v a
-{-# INLINE_STREAM clone #-}
+{-# INLINE_FUSED clone #-}
 clone v = v `seq` New.create (
   do
     mv <- M.new (length v)

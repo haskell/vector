@@ -1,8 +1,8 @@
-#define PHASE_STREAM [1]
-#define PHASE_INNER  [0]
+#define PHASE_FUSED [1]
+#define PHASE_INNER [0]
 
-#define INLINE_STREAM INLINE PHASE_STREAM
-#define INLINE_INNER  INLINE PHASE_INNER
+#define INLINE_FUSED INLINE PHASE_FUSED
+#define INLINE_INNER INLINE PHASE_INNER
 
 #ifndef NOT_VECTOR_MODULE
 import qualified Data.Vector.Internal.Check as Ck
@@ -16,4 +16,6 @@ import qualified Data.Vector.Internal.Check as Ck
 #define UNSAFE_CHECK(f) (CHECK(f) Ck.Unsafe)
 #define INTERNAL_CHECK(f) (CHECK(f) Ck.Internal)
 
+#define PHASE_STREAM  Please use "PHASE_FUSED" instead
+#define INLINE_STREAM Please use "INLINE_FUSED" instead
 

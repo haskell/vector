@@ -268,7 +268,7 @@ transform :: (PrimMonad m, MVector v a)
           => (MFacets m u a -> MFacets m u a)
           -> v (PrimState m) a
           -> m (v (PrimState m) a)
-{-# INLINE_STREAM transform #-}
+{-# INLINE_FUSED transform #-}
 transform f v = fill v (f (mstream v))
 
 mstreamR :: (PrimMonad m, MVector v a)
@@ -308,7 +308,7 @@ transformR :: (PrimMonad m, MVector v a)
            => (MFacets m u a -> MFacets m u a)
            -> v (PrimState m) a
            -> m (v (PrimState m) a)
-{-# INLINE_STREAM transformR #-}
+{-# INLINE_FUSED transformR #-}
 transformR f v = fillR v (f (mstreamR v))
 
 -- | Create a new mutable vector and fill it with elements from the 'Facets'.
@@ -316,8 +316,8 @@ transformR f v = fillR v (f (mstreamR v))
 -- unknown.
 unstream :: (PrimMonad m, MVector v a)
          => Facets u a -> m (v (PrimState m) a)
--- NOTE: replace INLINE_STREAM by INLINE? (also in unstreamR)
-{-# INLINE_STREAM unstream #-}
+-- NOTE: replace INLINE_FUSED by INLINE? (also in unstreamR)
+{-# INLINE_FUSED unstream #-}
 unstream s = munstream (Stream.liftStream s)
 
 -- | Create a new mutable vector and fill it with elements from the monadic
@@ -325,7 +325,7 @@ unstream s = munstream (Stream.liftStream s)
 -- is unknown.
 munstream :: (PrimMonad m, MVector v a)
           => MFacets m u a -> m (v (PrimState m) a)
-{-# INLINE_STREAM munstream #-}
+{-# INLINE_FUSED munstream #-}
 munstream s = case upperBound (MStream.size s) of
                Just n  -> munstreamMax     s n
                Nothing -> munstreamUnknown s
@@ -381,8 +381,8 @@ munstreamUnknown s
 -- unknown.
 vunstream :: (PrimMonad m, V.Vector v a)
          => Facets v a -> m (V.Mutable v (PrimState m) a)
--- NOTE: replace INLINE_STREAM by INLINE? (also in unstreamR)
-{-# INLINE_STREAM vunstream #-}
+-- NOTE: replace INLINE_FUSED by INLINE? (also in unstreamR)
+{-# INLINE_FUSED vunstream #-}
 vunstream s = vmunstream (Stream.liftStream s)
 
 -- | Create a new mutable vector and fill it with elements from the monadic
@@ -390,7 +390,7 @@ vunstream s = vmunstream (Stream.liftStream s)
 -- is unknown.
 vmunstream :: (PrimMonad m, V.Vector v a)
            => MFacets m v a -> m (V.Mutable v (PrimState m) a)
-{-# INLINE_STREAM vmunstream #-}
+{-# INLINE_FUSED vmunstream #-}
 vmunstream s = case upperBound (MStream.size s) of
                Just n  -> vmunstreamMax     s n
                Nothing -> vmunstreamUnknown s
@@ -449,8 +449,8 @@ vmunstreamUnknown s
 -- of the 'Facets' is unknown.
 unstreamR :: (PrimMonad m, MVector v a)
           => Facets u a -> m (v (PrimState m) a)
--- NOTE: replace INLINE_STREAM by INLINE? (also in unstream)
-{-# INLINE_STREAM unstreamR #-}
+-- NOTE: replace INLINE_FUSED by INLINE? (also in unstream)
+{-# INLINE_FUSED unstreamR #-}
 unstreamR s = munstreamR (Stream.liftStream s)
 
 -- | Create a new mutable vector and fill it with elements from the monadic
@@ -458,7 +458,7 @@ unstreamR s = munstreamR (Stream.liftStream s)
 -- size of the stream is unknown.
 munstreamR :: (PrimMonad m, MVector v a)
            => MFacets m u a -> m (v (PrimState m) a)
-{-# INLINE_STREAM munstreamR #-}
+{-# INLINE_FUSED munstreamR #-}
 munstreamR s = case upperBound (MStream.size s) of
                Just n  -> munstreamRMax     s n
                Nothing -> munstreamRUnknown s
