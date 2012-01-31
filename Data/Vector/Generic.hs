@@ -1001,7 +1001,7 @@ concatMap f = unstream
 
 -- This seems to be fastest now
 concatMap f = unstream
-            . Stream.fromVectorStream
+            . Stream.concatVectors
             . Stream.map f
             . stream
 

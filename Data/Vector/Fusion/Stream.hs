@@ -68,7 +68,7 @@ module Data.Vector.Fusion.Stream (
 
   -- * Conversions
   toList, fromList, fromListN, unsafeFromList, liftStream,
-  fromVector, reVector, fromVectors, fromVectorStream,
+  fromVector, reVector, fromVectors, concatVectors,
 
   -- * Monadic combinators
   mapM, mapM_, zipWithM, zipWithM_, filterM, foldM, fold1M, foldM', fold1M',
@@ -618,9 +618,9 @@ fromVectors :: Vector v a => [v a] -> Facets v a
 {-# INLINE fromVectors #-}
 fromVectors = M.fromVectors
 
-fromVectorStream :: Vector v a => Facets u (v a) -> Facets v a
-{-# INLINE fromVectorStream #-}
-fromVectorStream = M.fromVectorStream
+concatVectors :: Vector v a => Facets u (v a) -> Facets v a
+{-# INLINE concatVectors #-}
+concatVectors = M.concatVectors
 
 -- | Create a 'Facets' of values from a 'Facets' of streamable things
 flatten :: (a -> s) -> (s -> Step s b) -> Size -> Facets v a -> Facets v b

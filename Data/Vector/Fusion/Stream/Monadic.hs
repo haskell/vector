@@ -76,7 +76,7 @@ module Data.Vector.Fusion.Stream.Monadic (
 
   -- * Conversions
   toList, fromList, fromListN, unsafeFromList,
-  fromVector, reVector, fromVectors, fromVectorStream
+  fromVector, reVector, fromVectors, concatVectors
 ) where
 
 import Data.Vector.Generic.Base
@@ -1706,9 +1706,9 @@ fromVectors vs = Facets (Unf pstep (Left vs))
                                          (\mv -> basicUnsafeCopy mv v)) vs
 
 
-fromVectorStream :: (Monad m, Vector v a) => Facets m u (v a) -> Facets m v a
-{-# INLINE_STREAM fromVectorStream #-}
-fromVectorStream Facets{sElems = Unf step s}
+concatVectors :: (Monad m, Vector v a) => Facets m u (v a) -> Facets m v a
+{-# INLINE_STREAM concatVectors #-}
+concatVectors Facets{sElems = Unf step s}
   = Facets (Unf pstep (Left s))
            (Unf vstep s)
            Nothing
