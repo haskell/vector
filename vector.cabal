@@ -38,42 +38,14 @@ Description:
         .
         * <http://trac.haskell.org/vector>
         .
-        Changes in version 0.9.1
+        Changes in version 0.10
         .
-        * New functions: @unsafeFromForeignPtr0@ and @unsafeToForeignPtr0@
-        .
-        * Small performance improvements
-        .
-        * Fixes for GHC 7.4
-        .
-        Changes in version 0.9
-        .
-        * 'MonadPlus' instance for boxed vectors
-        .
-        * Export more @construct@ and @constructN@ from @Safe@ modules
-        .
-        * Require @primitive-0.4.0.1@
-        .
-        Changes in version 0.8
-        .
-        * New functions: @constructN@, @constructrN@
-        .
-        * Support for GHC 7.2 array copying primitives
-        .
-        * New fixity for @(!)@
-        .
-        * Safe Haskell support (contributed by David Terei)
-        .
-        * 'Functor', 'Monad', 'Applicative', 'Alternative', 'Foldable' and
-          'Traversable' instances for boxed vectors
-          (/WARNING: they tend to be slow and are only provided for completeness/)
-        .
-        * 'Show' instances for immutable vectors follow containers conventions
-        .
-        * 'Read' instances for all immutable vector types
-        .
-        * Performance improvements
-        .
+	* @NFData@ instances
+	.
+	* More efficient block fills
+	.
+	* Safe Haskell support removed
+	.
 
 Cabal-Version:  >= 1.2.3
 Build-Type:     Simple
