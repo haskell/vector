@@ -1,10 +1,10 @@
 Name:           vector
-Version:        0.9.9
+Version:        0.10
 License:        BSD3
 License-File:   LICENSE
 Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
 Maintainer:     Roman Leshchinskiy <rl@cse.unsw.edu.au>
-Copyright:      (c) Roman Leshchinskiy 2008-2011
+Copyright:      (c) Roman Leshchinskiy 2008-2012
 Homepage:       http://code.haskell.org/vector
 Bug-Reports:    http://trac.haskell.org/vector
 Category:       Data, Data Structures
@@ -171,7 +171,7 @@ Library
         vector.h
 
   Build-Depends: base >= 4 && < 5
-               , primitive >= 0.4.9 && < 0.6
+               , primitive >= 0.5 && < 0.6
                , ghc-prim
                , deepseq >= 1.1 && < 1.4
 
