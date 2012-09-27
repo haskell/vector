@@ -514,7 +514,7 @@ testNestedVectorFunctions _ = $(testProperties [])
     --prop_inits        = V.inits       `eq1` (inits       :: v a -> [v a])
     --prop_tails        = V.tails       `eq1` (tails       :: v a -> [v a])
 
-
+testGeneralBoxedVector :: forall a. (COMMON_CONTEXT(a, Data.Vector.Vector), Ord a) => Data.Vector.Vector a -> [Test]
 testGeneralBoxedVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
@@ -534,6 +534,7 @@ testBoolBoxedVector dummy = concatMap ($ dummy)
   , testBoolFunctions
   ]
 
+testNumericBoxedVector :: forall a. (COMMON_CONTEXT(a, Data.Vector.Vector), Ord a, Num a, Enum a, Random a) => Data.Vector.Vector a -> [Test]
 testNumericBoxedVector dummy = concatMap ($ dummy)
   [
     testGeneralBoxedVector
@@ -542,7 +543,7 @@ testNumericBoxedVector dummy = concatMap ($ dummy)
   ]
 
 
-
+testGeneralPrimitiveVector :: forall a. (COMMON_CONTEXT(a, Data.Vector.Primitive.Vector), Data.Vector.Primitive.Prim a, Ord a) => Data.Vector.Primitive.Vector a -> [Test]
 testGeneralPrimitiveVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
@@ -550,12 +551,7 @@ testGeneralPrimitiveVector dummy = concatMap ($ dummy) [
         testMonoidFunctions
     ]
 
-testBoolPrimitiveVector dummy = concatMap ($ dummy)
-  [
-    testGeneralPrimitiveVector
-  , testBoolFunctions
-  ]
-
+testNumericPrimitiveVector :: forall a. (COMMON_CONTEXT(a, Data.Vector.Primitive.Vector), Data.Vector.Primitive.Prim a, Ord a, Num a, Enum a, Random a) => Data.Vector.Primitive.Vector a -> [Test]
 testNumericPrimitiveVector dummy = concatMap ($ dummy)
  [
    testGeneralPrimitiveVector
@@ -564,7 +560,7 @@ testNumericPrimitiveVector dummy = concatMap ($ dummy)
  ]
 
 
-
+testGeneralStorableVector :: forall a. (COMMON_CONTEXT(a, Data.Vector.Storable.Vector), Data.Vector.Storable.Storable a, Ord a) => Data.Vector.Storable.Vector a -> [Test]
 testGeneralStorableVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
@@ -572,6 +568,7 @@ testGeneralStorableVector dummy = concatMap ($ dummy) [
         testMonoidFunctions
     ]
 
+testNumericStorableVector :: forall a. (COMMON_CONTEXT(a, Data.Vector.Storable.Vector), Data.Vector.Storable.Storable a, Ord a, Num a, Enum a, Random a) => Data.Vector.Storable.Vector a -> [Test]
 testNumericStorableVector dummy = concatMap ($ dummy)
   [
     testGeneralStorableVector
@@ -580,7 +577,7 @@ testNumericStorableVector dummy = concatMap ($ dummy)
   ]
 
 
-
+testGeneralUnboxedVector :: forall a. (COMMON_CONTEXT(a, Data.Vector.Unboxed.Vector), Data.Vector.Unboxed.Unbox a, Ord a) => Data.Vector.Unboxed.Vector a -> [Test]
 testGeneralUnboxedVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
@@ -599,6 +596,7 @@ testBoolUnboxedVector dummy = concatMap ($ dummy)
   , testBoolFunctions
   ]
 
+testNumericUnboxedVector :: forall a. (COMMON_CONTEXT(a, Data.Vector.Unboxed.Vector), Data.Vector.Unboxed.Unbox a, Ord a, Num a, Enum a, Random a) => Data.Vector.Unboxed.Vector a -> [Test]
 testNumericUnboxedVector dummy = concatMap ($ dummy)
   [
     testGeneralUnboxedVector
@@ -606,6 +604,7 @@ testNumericUnboxedVector dummy = concatMap ($ dummy)
   , testEnumFunctions
   ]
 
+testTupleUnboxedVector :: forall a. (COMMON_CONTEXT(a, Data.Vector.Unboxed.Vector), Data.Vector.Unboxed.Unbox a, Ord a) => Data.Vector.Unboxed.Vector a -> [Test]
 testTupleUnboxedVector dummy = concatMap ($ dummy)
   [
     testGeneralUnboxedVector
