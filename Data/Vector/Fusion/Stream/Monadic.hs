@@ -1683,7 +1683,7 @@ fromVector v = v `seq` n `seq` Facets (Unf step 0)
     vstep True  = return (Yield (Chunk (basicLength v) (\mv -> basicUnsafeCopy mv v)) False)
     vstep False = return Done
 
-fromVectors :: (Monad m, Vector v a) => [v a] -> Facets m v a
+fromVectors :: forall m v a. (Monad m, Vector v a) => [v a] -> Facets m v a
 {-# INLINE_FUSED fromVectors #-}
 fromVectors vs = Facets (Unf pstep (Left vs))
                         (Unf vstep vs)
@@ -1700,7 +1700,8 @@ fromVectors vs = Facets (Unf pstep (Left vs))
       | otherwise          = case basicUnsafeIndexM v i of
                                Box x -> return $ Yield x (Right (v,i+1,vs))
 
-
+    -- FIXME: work around bug in GHC 7.6.1
+    vstep :: [v a] -> m (Step [v a] (Chunk v a))
     vstep [] = return Done
     vstep (v:vs) = return $ Yield (Chunk (basicLength v)
                                          (\mv -> basicUnsafeCopy mv v)) vs
