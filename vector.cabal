@@ -57,6 +57,7 @@ Extra-Source-Files:
       tests/Main.hs
       tests/Boilerplater.hs
       tests/Utilities.hs
+      tests/Tests/Move.hs
       tests/Tests/Stream.hs
       tests/Tests/Vector.hs
       benchmarks/vector-benchmarks.cabal
