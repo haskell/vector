@@ -24,7 +24,7 @@ import           Data.Vector.Generic.Mutable ( MVector )
 
 import           Data.Vector.Generic.Base ( Vector, Mutable )
 
-import           Data.Vector.Fusion.Stream ( Facets, MFacets )
+import           Data.Vector.Fusion.Stream ( Bundle, MBundle )
 import qualified Data.Vector.Fusion.Stream as Stream
 
 import Control.Monad.Primitive
@@ -56,55 +56,55 @@ modify :: (forall s. Mutable v s a -> ST s ()) -> New v a -> New v a
 {-# INLINE modify #-}
 modify f (New p) = New (do { v <- p; f v; return v })
 
-modifyWithStream :: (forall s. Mutable v s a -> Facets u b -> ST s ())
-                 -> New v a -> Facets u b -> New v a
+modifyWithStream :: (forall s. Mutable v s a -> Bundle u b -> ST s ())
+                 -> New v a -> Bundle u b -> New v a
 {-# INLINE_FUSED modifyWithStream #-}
 modifyWithStream f (New p) s = s `seq` New (do { v <- p; f v s; return v })
 
-unstream :: Vector v a => Facets v a -> New v a
+unstream :: Vector v a => Bundle v a -> New v a
 {-# INLINE_FUSED unstream #-}
 unstream s = s `seq` New (MVector.vunstream s)
 
 transform :: Vector v a =>
-        (forall m. Monad m => MFacets m u a -> MFacets m u a) -> New v a -> New v a
+        (forall m. Monad m => MBundle m u a -> MBundle m u a) -> New v a -> New v a
 {-# INLINE_FUSED transform #-}
 transform f (New p) = New (MVector.transform f =<< p)
 
 {-# RULES
 
 "transform/transform [New]"
-  forall (f :: forall m. Monad m => MFacets m v a -> MFacets m v a)
-         (g :: forall m. Monad m => MFacets m v a -> MFacets m v a)
+  forall (f :: forall m. Monad m => MBundle m v a -> MBundle m v a)
+         (g :: forall m. Monad m => MBundle m v a -> MBundle m v a)
          p .
   transform f (transform g p) = transform (f . g) p
 
 "transform/unstream [New]"
-  forall (f :: forall m. Monad m => MFacets m v a -> MFacets m v a)
+  forall (f :: forall m. Monad m => MBundle m v a -> MBundle m v a)
          s.
   transform f (unstream s) = unstream (f s)
 
  #-}
 
 
-unstreamR :: Vector v a => Facets v a -> New v a
+unstreamR :: Vector v a => Bundle v a -> New v a
 {-# INLINE_FUSED unstreamR #-}
 unstreamR s = s `seq` New (MVector.unstreamR s)
 
 transformR :: Vector v a =>
-        (forall m. Monad m => MFacets m u a -> MFacets m u a) -> New v a -> New v a
+        (forall m. Monad m => MBundle m u a -> MBundle m u a) -> New v a -> New v a
 {-# INLINE_FUSED transformR #-}
 transformR f (New p) = New (MVector.transformR f =<< p)
 
 {-# RULES
 
 "transformR/transformR [New]"
-  forall (f :: forall m. Monad m => MFacets m v a -> MFacets m v a)
-         (g :: forall m. Monad m => MFacets m v a -> MFacets m v a)
+  forall (f :: forall m. Monad m => MBundle m v a -> MBundle m v a)
+         (g :: forall m. Monad m => MBundle m v a -> MBundle m v a)
          p .
   transformR f (transformR g p) = transformR (f . g) p
 
 "transformR/unstreamR [New]"
-  forall (f :: forall m. Monad m => MFacets m v a -> MFacets m v a)
+  forall (f :: forall m. Monad m => MBundle m v a -> MBundle m v a)
          s.
   transformR f (unstreamR s) = unstreamR (f s)
 

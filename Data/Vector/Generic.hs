@@ -169,7 +169,7 @@ import qualified Data.Vector.Generic.New as New
 import           Data.Vector.Generic.New ( New )
 
 import qualified Data.Vector.Fusion.Stream as Stream
-import           Data.Vector.Fusion.Stream ( Facets, MFacets, Step(..), inplace, lift )
+import           Data.Vector.Fusion.Stream ( Bundle, MBundle, Step(..), inplace, lift )
 import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Stream.Size
 import           Data.Vector.Fusion.Util
@@ -769,7 +769,7 @@ update_ :: (Vector v a, Vector v Int)
 {-# INLINE update_ #-}
 update_ v is w = update_stream v (Stream.zipWith (,) (stream is) (stream w))
 
-update_stream :: Vector v a => v a -> Facets u (Int,a) -> v a
+update_stream :: Vector v a => v a -> Bundle u (Int,a) -> v a
 {-# INLINE update_stream #-}
 update_stream = modifyWithStream M.update
 
@@ -789,7 +789,7 @@ unsafeUpdate_ :: (Vector v a, Vector v Int) => v a -> v Int -> v a -> v a
 unsafeUpdate_ v is w
   = unsafeUpdate_stream v (Stream.zipWith (,) (stream is) (stream w))
 
-unsafeUpdate_stream :: Vector v a => v a -> Facets u (Int,a) -> v a
+unsafeUpdate_stream :: Vector v a => v a -> Bundle u (Int,a) -> v a
 {-# INLINE unsafeUpdate_stream #-}
 unsafeUpdate_stream = modifyWithStream M.unsafeUpdate
 
@@ -844,7 +844,7 @@ accumulate_ f v is xs = accum_stream f v (Stream.zipWith (,) (stream is)
                                                              (stream xs))
                                         
 
-accum_stream :: Vector v a => (a -> b -> a) -> v a -> Facets u (Int,b) -> v a
+accum_stream :: Vector v a => (a -> b -> a) -> v a -> Bundle u (Int,b) -> v a
 {-# INLINE accum_stream #-}
 accum_stream f = modifyWithStream (M.accum f)
 
@@ -867,7 +867,7 @@ unsafeAccumulate_ f v is xs
   = unsafeAccum_stream f v (Stream.zipWith (,) (stream is) (stream xs))
 
 unsafeAccum_stream
-  :: Vector v a => (a -> b -> a) -> v a -> Facets u (Int,b) -> v a
+  :: Vector v a => (a -> b -> a) -> v a -> Bundle u (Int,b) -> v a
 {-# INLINE unsafeAccum_stream #-}
 unsafeAccum_stream f = modifyWithStream (M.unsafeAccum f)
 
@@ -943,8 +943,8 @@ modify p = new . New.modify p . clone
 -- We have to make sure that this is strict in the stream but we can't seq on
 -- it while fusion is happening. Hence this ugliness.
 modifyWithStream :: Vector v a
-                 => (forall s. Mutable v s a -> Facets u b -> ST s ())
-                 -> v a -> Facets u b -> v a
+                 => (forall s. Mutable v s a -> Bundle u b -> ST s ())
+                 -> v a -> Bundle u b -> v a
 {-# INLINE modifyWithStream #-}
 modifyWithStream p v s = new (New.modifyWithStream p (clone v) s)
 
@@ -1272,7 +1272,7 @@ partition f = partition_stream f . stream
 -- FIXME: Make this inplace-fusible (look at how stable_partition is
 -- implemented in C++)
 
-partition_stream :: Vector v a => (a -> Bool) -> Facets u a -> (v a, v a)
+partition_stream :: Vector v a => (a -> Bool) -> Bundle u a -> (v a, v a)
 {-# INLINE_FUSED partition_stream #-}
 partition_stream f s = s `seq` runST (
   do
@@ -1290,7 +1290,7 @@ unstablePartition :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 unstablePartition f = unstablePartition_stream f . stream
 
 unstablePartition_stream
-  :: Vector v a => (a -> Bool) -> Facets u a -> (v a, v a)
+  :: Vector v a => (a -> Bool) -> Bundle u a -> (v a, v a)
 {-# INLINE_FUSED unstablePartition_stream #-}
 unstablePartition_stream f s = s `seq` runST (
   do
@@ -1839,8 +1839,8 @@ unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
 -- Conversions to/from Streams
 -- ---------------------------
 
--- | /O(1)/ Convert a vector to a 'Facets'
-stream :: Vector v a => v a -> Facets v a
+-- | /O(1)/ Convert a vector to a 'Bundle'
+stream :: Vector v a => v a -> Bundle v a
 {-# INLINE_FUSED stream #-}
 stream v = Stream.fromVector v
 
@@ -1856,8 +1856,8 @@ stream v = v `seq` n `seq` (Stream.unfoldr get 0 `Stream.sized` Exact n)
           | otherwise = case basicUnsafeIndexM v i of Box x -> Just (x, i+1)
 -}
 
--- | /O(n)/ Construct a vector from a 'Facets'
-unstream :: Vector v a => Facets v a -> v a
+-- | /O(n)/ Construct a vector from a 'Bundle'
+unstream :: Vector v a => Bundle v a -> v a
 {-# INLINE unstream #-}
 unstream s = new (New.unstream s)
 
@@ -1873,17 +1873,17 @@ unstream s = new (New.unstream s)
   clone (new p) = p
 
 "inplace [Vector]"
-  forall (f :: forall m. Monad m => MFacets m u a -> MFacets m u a) m.
+  forall (f :: forall m. Monad m => MBundle m u a -> MBundle m u a) m.
   New.unstream (inplace f (stream (new m))) = New.transform f m
 
 "uninplace [Vector]"
-  forall (f :: forall m. Monad m => MFacets m u a -> MFacets m u a) m.
+  forall (f :: forall m. Monad m => MBundle m u a -> MBundle m u a) m.
   stream (new (New.transform f m)) = inplace f (stream (new m))
 
  #-}
 
--- | /O(1)/ Convert a vector to a 'Facets', proceeding from right to left
-streamR :: Vector v a => v a -> Facets u a
+-- | /O(1)/ Convert a vector to a 'Bundle', proceeding from right to left
+streamR :: Vector v a => v a -> Bundle u a
 {-# INLINE_FUSED streamR #-}
 streamR v = v `seq` n `seq` (Stream.unfoldr get n `Stream.sized` Exact n)
   where
@@ -1895,8 +1895,8 @@ streamR v = v `seq` n `seq` (Stream.unfoldr get n `Stream.sized` Exact n)
             in
             case basicUnsafeIndexM v i' of Box x -> Just (x, i')
 
--- | /O(n)/ Construct a vector from a 'Facets', proceeding from right to left
-unstreamR :: Vector v a => Facets v a -> v a
+-- | /O(n)/ Construct a vector from a 'Bundle', proceeding from right to left
+unstreamR :: Vector v a => Bundle v a -> v a
 {-# INLINE unstreamR #-}
 unstreamR s = new (New.unstreamR s)
 
@@ -1915,31 +1915,31 @@ unstreamR s = new (New.unstreamR s)
   New.unstreamR (stream (new p)) = New.modify M.reverse p
 
 "inplace right [Vector]"
-  forall (f :: forall m. Monad m => MFacets m u a -> MFacets m u a) m.
+  forall (f :: forall m. Monad m => MBundle m u a -> MBundle m u a) m.
   New.unstreamR (inplace f (streamR (new m))) = New.transformR f m
 
 "uninplace right [Vector]"
-  forall (f :: forall m. Monad m => MFacets m u a -> MFacets m u a) m.
+  forall (f :: forall m. Monad m => MBundle m u a -> MBundle m u a) m.
   streamR (new (New.transformR f m)) = inplace f (streamR (new m))
 
  #-}
 
-unstreamM :: (Monad m, Vector v a) => MFacets m u a -> m (v a)
+unstreamM :: (Monad m, Vector v a) => MBundle m u a -> m (v a)
 {-# INLINE_FUSED unstreamM #-}
 unstreamM s = do
                 xs <- MStream.toList s
                 return $ unstream $ Stream.unsafeFromList (MStream.size s) xs
 
-unstreamPrimM :: (PrimMonad m, Vector v a) => MFacets m u a -> m (v a)
+unstreamPrimM :: (PrimMonad m, Vector v a) => MBundle m u a -> m (v a)
 {-# INLINE_FUSED unstreamPrimM #-}
 unstreamPrimM s = M.munstream s >>= unsafeFreeze
 
 -- FIXME: the next two functions are only necessary for the specialisations
-unstreamPrimM_IO :: Vector v a => MFacets IO u a -> IO (v a)
+unstreamPrimM_IO :: Vector v a => MBundle IO u a -> IO (v a)
 {-# INLINE unstreamPrimM_IO #-}
 unstreamPrimM_IO = unstreamPrimM
 
-unstreamPrimM_ST :: Vector v a => MFacets (ST s) u a -> ST s (v a)
+unstreamPrimM_ST :: Vector v a => MBundle (ST s) u a -> ST s (v a)
 {-# INLINE unstreamPrimM_ST #-}
 unstreamPrimM_ST = unstreamPrimM
 

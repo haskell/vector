@@ -14,7 +14,7 @@
 
 module Data.Vector.Fusion.Stream (
   -- * Types
-  Step(..), Chunk(..), Facets, MFacets,
+  Step(..), Chunk(..), Bundle, MBundle,
 
   -- * In-place markers
   inplace,
@@ -101,117 +101,117 @@ import GHC.Base ( build )
 #include "vector.h"
 
 -- | The type of pure streams 
-type Facets = M.Facets Id
+type Bundle = M.Bundle Id
 
 -- | Alternative name for monadic streams
-type MFacets = M.Facets
+type MBundle = M.Bundle
 
-inplace :: (forall m. Monad m => M.Facets m v a -> M.Facets m v b)
-        -> Facets v a -> Facets v b
+inplace :: (forall m. Monad m => M.Bundle m v a -> M.Bundle m v b)
+        -> Bundle v a -> Bundle v b
 {-# INLINE_FUSED inplace #-}
 inplace f s = s `seq` f s
 
 {-# RULES
 
 "inplace/inplace [Vector]"
-  forall (f :: forall m. Monad m => MFacets m v a -> MFacets m v a)
-         (g :: forall m. Monad m => MFacets m v a -> MFacets m v a)
+  forall (f :: forall m. Monad m => MBundle m v a -> MBundle m v a)
+         (g :: forall m. Monad m => MBundle m v a -> MBundle m v a)
          s.
   inplace f (inplace g s) = inplace (f . g) s
 
   #-}
 
 -- | Convert a pure stream to a monadic stream
-lift :: Monad m => Facets v a -> M.Facets m v a
+lift :: Monad m => Bundle v a -> M.Bundle m v a
 {-# INLINE_FUSED lift #-}
-lift (M.Facets (M.Unf step s) (M.Unf vstep t) v sz)
-    = M.Facets (M.Unf (return . unId . step) s)
+lift (M.Bundle (M.Unf step s) (M.Unf vstep t) v sz)
+    = M.Bundle (M.Unf (return . unId . step) s)
                (M.Unf (return . unId . vstep) t) v sz
 
--- | 'Size' hint of a 'Facets'
-size :: Facets v a -> Size
+-- | 'Size' hint of a 'Bundle'
+size :: Bundle v a -> Size
 {-# INLINE size #-}
 size = M.size
 
--- | Attach a 'Size' hint to a 'Facets'
-sized :: Facets v a -> Size -> Facets v a
+-- | Attach a 'Size' hint to a 'Bundle'
+sized :: Bundle v a -> Size -> Bundle v a
 {-# INLINE sized #-}
 sized = M.sized
 
 -- Length
 -- ------
 
--- | Length of a 'Facets'
-length :: Facets v a -> Int
+-- | Length of a 'Bundle'
+length :: Bundle v a -> Int
 {-# INLINE length #-}
 length = unId . M.length
 
--- | Check if a 'Facets' is empty
-null :: Facets v a -> Bool
+-- | Check if a 'Bundle' is empty
+null :: Bundle v a -> Bool
 {-# INLINE null #-}
 null = unId . M.null
 
 -- Construction
 -- ------------
 
--- | Empty 'Facets'
-empty :: Facets v a
+-- | Empty 'Bundle'
+empty :: Bundle v a
 {-# INLINE empty #-}
 empty = M.empty
 
--- | Singleton 'Facets'
-singleton :: a -> Facets v a
+-- | Singleton 'Bundle'
+singleton :: a -> Bundle v a
 {-# INLINE singleton #-}
 singleton = M.singleton
 
 -- | Replicate a value to a given length
-replicate :: Int -> a -> Facets v a
+replicate :: Int -> a -> Bundle v a
 {-# INLINE replicate #-}
 replicate = M.replicate
 
 -- | Generate a stream from its indices
-generate :: Int -> (Int -> a) -> Facets v a
+generate :: Int -> (Int -> a) -> Bundle v a
 {-# INLINE generate #-}
 generate = M.generate
 
 -- | Prepend an element
-cons :: a -> Facets v a -> Facets v a
+cons :: a -> Bundle v a -> Bundle v a
 {-# INLINE cons #-}
 cons = M.cons
 
 -- | Append an element
-snoc :: Facets v a -> a -> Facets v a
+snoc :: Bundle v a -> a -> Bundle v a
 {-# INLINE snoc #-}
 snoc = M.snoc
 
 infixr 5 ++
--- | Concatenate two 'Facets's
-(++) :: Facets v a -> Facets v a -> Facets v a
+-- | Concatenate two 'Bundle's
+(++) :: Bundle v a -> Bundle v a -> Bundle v a
 {-# INLINE (++) #-}
 (++) = (M.++)
 
 -- Accessing elements
 -- ------------------
 
--- | First element of the 'Facets' or error if empty
-head :: Facets v a -> a
+-- | First element of the 'Bundle' or error if empty
+head :: Bundle v a -> a
 {-# INLINE head #-}
 head = unId . M.head
 
--- | Last element of the 'Facets' or error if empty
-last :: Facets v a -> a
+-- | Last element of the 'Bundle' or error if empty
+last :: Bundle v a -> a
 {-# INLINE last #-}
 last = unId . M.last
 
 infixl 9 !!
 -- | Element at the given position
-(!!) :: Facets v a -> Int -> a
+(!!) :: Bundle v a -> Int -> a
 {-# INLINE (!!) #-}
 s !! i = unId (s M.!! i)
 
 infixl 9 !?
 -- | Element at the given position or 'Nothing' if out of bounds
-(!?) :: Facets v a -> Int -> Maybe a
+(!?) :: Bundle v a -> Int -> Maybe a
 {-# INLINE (!?) #-}
 s !? i = unId (s M.!? i)
 
@@ -221,109 +221,109 @@ s !? i = unId (s M.!? i)
 -- | Extract a substream of the given length starting at the given position.
 slice :: Int   -- ^ starting index
       -> Int   -- ^ length
-      -> Facets v a
-      -> Facets v a
+      -> Bundle v a
+      -> Bundle v a
 {-# INLINE slice #-}
 slice = M.slice
 
 -- | All but the last element
-init :: Facets v a -> Facets v a
+init :: Bundle v a -> Bundle v a
 {-# INLINE init #-}
 init = M.init
 
 -- | All but the first element
-tail :: Facets v a -> Facets v a
+tail :: Bundle v a -> Bundle v a
 {-# INLINE tail #-}
 tail = M.tail
 
 -- | The first @n@ elements
-take :: Int -> Facets v a -> Facets v a
+take :: Int -> Bundle v a -> Bundle v a
 {-# INLINE take #-}
 take = M.take
 
 -- | All but the first @n@ elements
-drop :: Int -> Facets v a -> Facets v a
+drop :: Int -> Bundle v a -> Bundle v a
 {-# INLINE drop #-}
 drop = M.drop
 
 -- Mapping
 -- ---------------
 
--- | Map a function over a 'Facets'
-map :: (a -> b) -> Facets v a -> Facets v b
+-- | Map a function over a 'Bundle'
+map :: (a -> b) -> Bundle v a -> Bundle v b
 {-# INLINE map #-}
 map = M.map
 
-unbox :: Facets v (Box a) -> Facets v a
+unbox :: Bundle v (Box a) -> Bundle v a
 {-# INLINE unbox #-}
 unbox = M.unbox
 
-concatMap :: (a -> Facets v b) -> Facets v a -> Facets v b
+concatMap :: (a -> Bundle v b) -> Bundle v a -> Bundle v b
 {-# INLINE concatMap #-}
 concatMap = M.concatMap
 
 -- Zipping
 -- -------
 
--- | Pair each element in a 'Facets' with its index
-indexed :: Facets v a -> Facets v (Int,a)
+-- | Pair each element in a 'Bundle' with its index
+indexed :: Bundle v a -> Bundle v (Int,a)
 {-# INLINE indexed #-}
 indexed = M.indexed
 
--- | Pair each element in a 'Facets' with its index, starting from the right
+-- | Pair each element in a 'Bundle' with its index, starting from the right
 -- and counting down
-indexedR :: Int -> Facets v a -> Facets v (Int,a)
+indexedR :: Int -> Bundle v a -> Bundle v (Int,a)
 {-# INLINE_FUSED indexedR #-}
 indexedR = M.indexedR
 
--- | Zip two 'Facets's with the given function
-zipWith :: (a -> b -> c) -> Facets v a -> Facets v b -> Facets v c
+-- | Zip two 'Bundle's with the given function
+zipWith :: (a -> b -> c) -> Bundle v a -> Bundle v b -> Bundle v c
 {-# INLINE zipWith #-}
 zipWith = M.zipWith
 
--- | Zip three 'Facets's with the given function
-zipWith3 :: (a -> b -> c -> d) -> Facets v a -> Facets v b -> Facets v c -> Facets v d
+-- | Zip three 'Bundle's with the given function
+zipWith3 :: (a -> b -> c -> d) -> Bundle v a -> Bundle v b -> Bundle v c -> Bundle v d
 {-# INLINE zipWith3 #-}
 zipWith3 = M.zipWith3
 
 zipWith4 :: (a -> b -> c -> d -> e)
-                    -> Facets v a -> Facets v b -> Facets v c -> Facets v d
-                    -> Facets v e
+                    -> Bundle v a -> Bundle v b -> Bundle v c -> Bundle v d
+                    -> Bundle v e
 {-# INLINE zipWith4 #-}
 zipWith4 = M.zipWith4
 
 zipWith5 :: (a -> b -> c -> d -> e -> f)
-                    -> Facets v a -> Facets v b -> Facets v c -> Facets v d
-                    -> Facets v e -> Facets v f
+                    -> Bundle v a -> Bundle v b -> Bundle v c -> Bundle v d
+                    -> Bundle v e -> Bundle v f
 {-# INLINE zipWith5 #-}
 zipWith5 = M.zipWith5
 
 zipWith6 :: (a -> b -> c -> d -> e -> f -> g)
-                    -> Facets v a -> Facets v b -> Facets v c -> Facets v d
-                    -> Facets v e -> Facets v f -> Facets v g
+                    -> Bundle v a -> Bundle v b -> Bundle v c -> Bundle v d
+                    -> Bundle v e -> Bundle v f -> Bundle v g
 {-# INLINE zipWith6 #-}
 zipWith6 = M.zipWith6
 
-zip :: Facets v a -> Facets v b -> Facets v (a,b)
+zip :: Bundle v a -> Bundle v b -> Bundle v (a,b)
 {-# INLINE zip #-}
 zip = M.zip
 
-zip3 :: Facets v a -> Facets v b -> Facets v c -> Facets v (a,b,c)
+zip3 :: Bundle v a -> Bundle v b -> Bundle v c -> Bundle v (a,b,c)
 {-# INLINE zip3 #-}
 zip3 = M.zip3
 
-zip4 :: Facets v a -> Facets v b -> Facets v c -> Facets v d
-                -> Facets v (a,b,c,d)
+zip4 :: Bundle v a -> Bundle v b -> Bundle v c -> Bundle v d
+                -> Bundle v (a,b,c,d)
 {-# INLINE zip4 #-}
 zip4 = M.zip4
 
-zip5 :: Facets v a -> Facets v b -> Facets v c -> Facets v d
-                -> Facets v e -> Facets v (a,b,c,d,e)
+zip5 :: Bundle v a -> Bundle v b -> Bundle v c -> Bundle v d
+                -> Bundle v e -> Bundle v (a,b,c,d,e)
 {-# INLINE zip5 #-}
 zip5 = M.zip5
 
-zip6 :: Facets v a -> Facets v b -> Facets v c -> Facets v d
-                -> Facets v e -> Facets v f -> Facets v (a,b,c,d,e,f)
+zip6 :: Bundle v a -> Bundle v b -> Bundle v c -> Bundle v d
+                -> Bundle v e -> Bundle v f -> Bundle v (a,b,c,d,e,f)
 {-# INLINE zip6 #-}
 zip6 = M.zip6
 
@@ -331,17 +331,17 @@ zip6 = M.zip6
 -- ---------
 
 -- | Drop elements which do not satisfy the predicate
-filter :: (a -> Bool) -> Facets v a -> Facets v a
+filter :: (a -> Bool) -> Bundle v a -> Bundle v a
 {-# INLINE filter #-}
 filter = M.filter
 
 -- | Longest prefix of elements that satisfy the predicate
-takeWhile :: (a -> Bool) -> Facets v a -> Facets v a
+takeWhile :: (a -> Bool) -> Bundle v a -> Bundle v a
 {-# INLINE takeWhile #-}
 takeWhile = M.takeWhile
 
 -- | Drop the longest prefix of elements that satisfy the predicate
-dropWhile :: (a -> Bool) -> Facets v a -> Facets v a
+dropWhile :: (a -> Bool) -> Bundle v a -> Bundle v a
 {-# INLINE dropWhile #-}
 dropWhile = M.dropWhile
 
@@ -349,26 +349,26 @@ dropWhile = M.dropWhile
 -- ---------
 
 infix 4 `elem`
--- | Check whether the 'Facets' contains an element
-elem :: Eq a => a -> Facets v a -> Bool
+-- | Check whether the 'Bundle' contains an element
+elem :: Eq a => a -> Bundle v a -> Bool
 {-# INLINE elem #-}
 elem x = unId . M.elem x
 
 infix 4 `notElem`
 -- | Inverse of `elem`
-notElem :: Eq a => a -> Facets v a -> Bool
+notElem :: Eq a => a -> Bundle v a -> Bool
 {-# INLINE notElem #-}
 notElem x = unId . M.notElem x
 
 -- | Yield 'Just' the first element matching the predicate or 'Nothing' if no
 -- such element exists.
-find :: (a -> Bool) -> Facets v a -> Maybe a
+find :: (a -> Bool) -> Bundle v a -> Maybe a
 {-# INLINE find #-}
 find f = unId . M.find f
 
 -- | Yield 'Just' the index of the first element matching the predicate or
 -- 'Nothing' if no such element exists.
-findIndex :: (a -> Bool) -> Facets v a -> Maybe Int
+findIndex :: (a -> Bool) -> Bundle v a -> Maybe Int
 {-# INLINE findIndex #-}
 findIndex f = unId . M.findIndex f
 
@@ -376,43 +376,43 @@ findIndex f = unId . M.findIndex f
 -- -------
 
 -- | Left fold
-foldl :: (a -> b -> a) -> a -> Facets v b -> a
+foldl :: (a -> b -> a) -> a -> Bundle v b -> a
 {-# INLINE foldl #-}
 foldl f z = unId . M.foldl f z
 
--- | Left fold on non-empty 'Facets's
-foldl1 :: (a -> a -> a) -> Facets v a -> a
+-- | Left fold on non-empty 'Bundle's
+foldl1 :: (a -> a -> a) -> Bundle v a -> a
 {-# INLINE foldl1 #-}
 foldl1 f = unId . M.foldl1 f
 
 -- | Left fold with strict accumulator
-foldl' :: (a -> b -> a) -> a -> Facets v b -> a
+foldl' :: (a -> b -> a) -> a -> Bundle v b -> a
 {-# INLINE foldl' #-}
 foldl' f z = unId . M.foldl' f z
 
--- | Left fold on non-empty 'Facets's with strict accumulator
-foldl1' :: (a -> a -> a) -> Facets v a -> a
+-- | Left fold on non-empty 'Bundle's with strict accumulator
+foldl1' :: (a -> a -> a) -> Bundle v a -> a
 {-# INLINE foldl1' #-}
 foldl1' f = unId . M.foldl1' f
 
 -- | Right fold
-foldr :: (a -> b -> b) -> b -> Facets v a -> b
+foldr :: (a -> b -> b) -> b -> Bundle v a -> b
 {-# INLINE foldr #-}
 foldr f z = unId . M.foldr f z
 
--- | Right fold on non-empty 'Facets's
-foldr1 :: (a -> a -> a) -> Facets v a -> a
+-- | Right fold on non-empty 'Bundle's
+foldr1 :: (a -> a -> a) -> Bundle v a -> a
 {-# INLINE foldr1 #-}
 foldr1 f = unId . M.foldr1 f
 
 -- Specialised folds
 -- -----------------
 
-and :: Facets v Bool -> Bool
+and :: Bundle v Bool -> Bool
 {-# INLINE and #-}
 and = unId . M.and
 
-or :: Facets v Bool -> Bool
+or :: Bundle v Bool -> Bool
 {-# INLINE or #-}
 or = unId . M.or
 
@@ -420,17 +420,17 @@ or = unId . M.or
 -- ---------
 
 -- | Unfold
-unfoldr :: (s -> Maybe (a, s)) -> s -> Facets v a
+unfoldr :: (s -> Maybe (a, s)) -> s -> Bundle v a
 {-# INLINE unfoldr #-}
 unfoldr = M.unfoldr
 
 -- | Unfold at most @n@ elements
-unfoldrN :: Int -> (s -> Maybe (a, s)) -> s -> Facets v a
+unfoldrN :: Int -> (s -> Maybe (a, s)) -> s -> Bundle v a
 {-# INLINE unfoldrN #-}
 unfoldrN = M.unfoldrN
 
 -- | Apply function n-1 times to value. Zeroth element is original value.
-iterateN :: Int -> (a -> a) -> a -> Facets v a
+iterateN :: Int -> (a -> a) -> a -> Bundle v a
 {-# INLINE iterateN #-}
 iterateN = M.iterateN
 
@@ -438,42 +438,42 @@ iterateN = M.iterateN
 -- -----
 
 -- | Prefix scan
-prescanl :: (a -> b -> a) -> a -> Facets v b -> Facets v a
+prescanl :: (a -> b -> a) -> a -> Bundle v b -> Bundle v a
 {-# INLINE prescanl #-}
 prescanl = M.prescanl
 
 -- | Prefix scan with strict accumulator
-prescanl' :: (a -> b -> a) -> a -> Facets v b -> Facets v a
+prescanl' :: (a -> b -> a) -> a -> Bundle v b -> Bundle v a
 {-# INLINE prescanl' #-}
 prescanl' = M.prescanl'
 
 -- | Suffix scan
-postscanl :: (a -> b -> a) -> a -> Facets v b -> Facets v a
+postscanl :: (a -> b -> a) -> a -> Bundle v b -> Bundle v a
 {-# INLINE postscanl #-}
 postscanl = M.postscanl
 
 -- | Suffix scan with strict accumulator
-postscanl' :: (a -> b -> a) -> a -> Facets v b -> Facets v a
+postscanl' :: (a -> b -> a) -> a -> Bundle v b -> Bundle v a
 {-# INLINE postscanl' #-}
 postscanl' = M.postscanl'
 
 -- | Haskell-style scan
-scanl :: (a -> b -> a) -> a -> Facets v b -> Facets v a
+scanl :: (a -> b -> a) -> a -> Bundle v b -> Bundle v a
 {-# INLINE scanl #-}
 scanl = M.scanl
 
 -- | Haskell-style scan with strict accumulator
-scanl' :: (a -> b -> a) -> a -> Facets v b -> Facets v a
+scanl' :: (a -> b -> a) -> a -> Bundle v b -> Bundle v a
 {-# INLINE scanl' #-}
 scanl' = M.scanl'
 
--- | Scan over a non-empty 'Facets'
-scanl1 :: (a -> a -> a) -> Facets v a -> Facets v a
+-- | Scan over a non-empty 'Bundle'
+scanl1 :: (a -> a -> a) -> Bundle v a -> Bundle v a
 {-# INLINE scanl1 #-}
 scanl1 = M.scanl1
 
--- | Scan over a non-empty 'Facets' with a strict accumulator
-scanl1' :: (a -> a -> a) -> Facets v a -> Facets v a
+-- | Scan over a non-empty 'Bundle' with a strict accumulator
+scanl1' :: (a -> a -> a) -> Bundle v a -> Bundle v a
 {-# INLINE scanl1' #-}
 scanl1' = M.scanl1'
 
@@ -481,21 +481,21 @@ scanl1' = M.scanl1'
 -- Comparisons
 -- -----------
 
--- | Check if two 'Facets's are equal
-eq :: Eq a => Facets v a -> Facets v a -> Bool
+-- | Check if two 'Bundle's are equal
+eq :: Eq a => Bundle v a -> Bundle v a -> Bool
 {-# INLINE eq #-}
 eq x y = unId (M.eq x y)
 
--- | Lexicographically compare two 'Facets's
-cmp :: Ord a => Facets v a -> Facets v a -> Ordering
+-- | Lexicographically compare two 'Bundle's
+cmp :: Ord a => Bundle v a -> Bundle v a -> Ordering
 {-# INLINE cmp #-}
 cmp x y = unId (M.cmp x y)
 
-instance Eq a => Eq (M.Facets Id v a) where
+instance Eq a => Eq (M.Bundle Id v a) where
   {-# INLINE (==) #-}
   (==) = eq
 
-instance Ord a => Ord (M.Facets Id v a) where
+instance Ord a => Ord (M.Bundle Id v a) where
   {-# INLINE compare #-}
   compare = cmp
 
@@ -504,54 +504,54 @@ instance Ord a => Ord (M.Facets Id v a) where
 
 -- | Apply a monadic action to each element of the stream, producing a monadic
 -- stream of results
-mapM :: Monad m => (a -> m b) -> Facets v a -> M.Facets m v b
+mapM :: Monad m => (a -> m b) -> Bundle v a -> M.Bundle m v b
 {-# INLINE mapM #-}
 mapM f = M.mapM f . lift
 
 -- | Apply a monadic action to each element of the stream
-mapM_ :: Monad m => (a -> m b) -> Facets v a -> m ()
+mapM_ :: Monad m => (a -> m b) -> Bundle v a -> m ()
 {-# INLINE mapM_ #-}
 mapM_ f = M.mapM_ f . lift
 
-zipWithM :: Monad m => (a -> b -> m c) -> Facets v a -> Facets v b -> M.Facets m v c
+zipWithM :: Monad m => (a -> b -> m c) -> Bundle v a -> Bundle v b -> M.Bundle m v c
 {-# INLINE zipWithM #-}
 zipWithM f as bs = M.zipWithM f (lift as) (lift bs)
 
-zipWithM_ :: Monad m => (a -> b -> m c) -> Facets v a -> Facets v b -> m ()
+zipWithM_ :: Monad m => (a -> b -> m c) -> Bundle v a -> Bundle v b -> m ()
 {-# INLINE zipWithM_ #-}
 zipWithM_ f as bs = M.zipWithM_ f (lift as) (lift bs)
 
 -- | Yield a monadic stream of elements that satisfy the monadic predicate
-filterM :: Monad m => (a -> m Bool) -> Facets v a -> M.Facets m v a
+filterM :: Monad m => (a -> m Bool) -> Bundle v a -> M.Bundle m v a
 {-# INLINE filterM #-}
 filterM f = M.filterM f . lift
 
 -- | Monadic fold
-foldM :: Monad m => (a -> b -> m a) -> a -> Facets v b -> m a
+foldM :: Monad m => (a -> b -> m a) -> a -> Bundle v b -> m a
 {-# INLINE foldM #-}
 foldM m z = M.foldM m z . lift
 
 -- | Monadic fold over non-empty stream
-fold1M :: Monad m => (a -> a -> m a) -> Facets v a -> m a
+fold1M :: Monad m => (a -> a -> m a) -> Bundle v a -> m a
 {-# INLINE fold1M #-}
 fold1M m = M.fold1M m . lift
 
 -- | Monadic fold with strict accumulator
-foldM' :: Monad m => (a -> b -> m a) -> a -> Facets v b -> m a
+foldM' :: Monad m => (a -> b -> m a) -> a -> Bundle v b -> m a
 {-# INLINE foldM' #-}
 foldM' m z = M.foldM' m z . lift
 
 -- | Monad fold over non-empty stream with strict accumulator
-fold1M' :: Monad m => (a -> a -> m a) -> Facets v a -> m a
+fold1M' :: Monad m => (a -> a -> m a) -> Bundle v a -> m a
 {-# INLINE fold1M' #-}
 fold1M' m = M.fold1M' m . lift
 
 -- Enumerations
 -- ------------
 
--- | Yield a 'Facets' of the given length containing the values @x@, @x+y@,
+-- | Yield a 'Bundle' of the given length containing the values @x@, @x+y@,
 -- @x+y+y@ etc.
-enumFromStepN :: Num a => a -> a -> Int -> Facets v a
+enumFromStepN :: Num a => a -> a -> Int -> Bundle v a
 {-# INLINE enumFromStepN #-}
 enumFromStepN = M.enumFromStepN
 
@@ -559,7 +559,7 @@ enumFromStepN = M.enumFromStepN
 --
 -- /WARNING:/ This operations can be very inefficient. If at all possible, use
 -- 'enumFromStepN' instead.
-enumFromTo :: Enum a => a -> a -> Facets v a
+enumFromTo :: Enum a => a -> a -> Bundle v a
 {-# INLINE enumFromTo #-}
 enumFromTo = M.enumFromTo
 
@@ -567,63 +567,63 @@ enumFromTo = M.enumFromTo
 --
 -- /WARNING:/ This operations is very inefficient. If at all possible, use
 -- 'enumFromStepN' instead.
-enumFromThenTo :: Enum a => a -> a -> a -> Facets v a
+enumFromThenTo :: Enum a => a -> a -> a -> Bundle v a
 {-# INLINE enumFromThenTo #-}
 enumFromThenTo = M.enumFromThenTo
 
 -- Conversions
 -- -----------
 
--- | Convert a 'Facets' to a list
-toList :: Facets v a -> [a]
+-- | Convert a 'Bundle' to a list
+toList :: Bundle v a -> [a]
 {-# INLINE toList #-}
 -- toList s = unId (M.toList s)
 toList s = build (\c n -> toListFB c n s)
 
 -- This supports foldr/build list fusion that GHC implements
-toListFB :: (a -> b -> b) -> b -> Facets v a -> b
+toListFB :: (a -> b -> b) -> b -> Bundle v a -> b
 {-# INLINE [0] toListFB #-}
-toListFB c n M.Facets{M.sElems = M.Unf step s} = go s
+toListFB c n M.Bundle{M.sElems = M.Unf step s} = go s
   where
     go s = case unId (step s) of
              Yield x s' -> x `c` go s'
              Skip    s' -> go s'
              Done       -> n
 
--- | Create a 'Facets' from a list
-fromList :: [a] -> Facets v a
+-- | Create a 'Bundle' from a list
+fromList :: [a] -> Bundle v a
 {-# INLINE fromList #-}
 fromList = M.fromList
 
--- | Create a 'Facets' from the first @n@ elements of a list
+-- | Create a 'Bundle' from the first @n@ elements of a list
 --
 -- > fromListN n xs = fromList (take n xs)
-fromListN :: Int -> [a] -> Facets v a
+fromListN :: Int -> [a] -> Bundle v a
 {-# INLINE fromListN #-}
 fromListN = M.fromListN
 
-unsafeFromList :: Size -> [a] -> Facets v a
+unsafeFromList :: Size -> [a] -> Bundle v a
 {-# INLINE unsafeFromList #-}
 unsafeFromList = M.unsafeFromList
 
-fromVector :: Vector v a => v a -> Facets v a
+fromVector :: Vector v a => v a -> Bundle v a
 {-# INLINE fromVector #-}
 fromVector = M.fromVector
 
-reVector :: Facets u a -> Facets v a
+reVector :: Bundle u a -> Bundle v a
 {-# INLINE reVector #-}
 reVector = M.reVector
 
-fromVectors :: Vector v a => [v a] -> Facets v a
+fromVectors :: Vector v a => [v a] -> Bundle v a
 {-# INLINE fromVectors #-}
 fromVectors = M.fromVectors
 
-concatVectors :: Vector v a => Facets u (v a) -> Facets v a
+concatVectors :: Vector v a => Bundle u (v a) -> Bundle v a
 {-# INLINE concatVectors #-}
 concatVectors = M.concatVectors
 
--- | Create a 'Facets' of values from a 'Facets' of streamable things
-flatten :: (a -> s) -> (s -> Step s b) -> Size -> Facets v a -> Facets v b
+-- | Create a 'Bundle' of values from a 'Bundle' of streamable things
+flatten :: (a -> s) -> (s -> Step s b) -> Size -> Bundle v a -> Bundle v b
 {-# INLINE_FUSED flatten #-}
 flatten mk istep sz = M.flatten (return . mk) (return . istep) sz . lift
 
