@@ -13,7 +13,7 @@
 --
 
 module Data.Vector.Generic.New (
-  New(..), create, run, runPrim, apply, modify, modifyWithStream,
+  New(..), create, run, runPrim, apply, modify, modifyWithBundle,
   unstream, transform, unstreamR, transformR,
   slice, init, tail, take, drop,
   unsafeSlice, unsafeInit, unsafeTail
@@ -24,8 +24,8 @@ import           Data.Vector.Generic.Mutable ( MVector )
 
 import           Data.Vector.Generic.Base ( Vector, Mutable )
 
-import           Data.Vector.Fusion.Stream ( Bundle, MBundle )
-import qualified Data.Vector.Fusion.Stream as Stream
+import           Data.Vector.Fusion.Bundle ( Bundle, MBundle )
+import qualified Data.Vector.Fusion.Bundle as Bundle
 
 import Control.Monad.Primitive
 import Control.Monad.ST ( ST )
@@ -56,10 +56,10 @@ modify :: (forall s. Mutable v s a -> ST s ()) -> New v a -> New v a
 {-# INLINE modify #-}
 modify f (New p) = New (do { v <- p; f v; return v })
 
-modifyWithStream :: (forall s. Mutable v s a -> Bundle u b -> ST s ())
+modifyWithBundle :: (forall s. Mutable v s a -> Bundle u b -> ST s ())
                  -> New v a -> Bundle u b -> New v a
-{-# INLINE_FUSED modifyWithStream #-}
-modifyWithStream f (New p) s = s `seq` New (do { v <- p; f v s; return v })
+{-# INLINE_FUSED modifyWithBundle #-}
+modifyWithBundle f (New p) s = s `seq` New (do { v <- p; f v s; return v })
 
 unstream :: Vector v a => Bundle v a -> New v a
 {-# INLINE_FUSED unstream #-}
@@ -145,28 +145,28 @@ unsafeTail m = apply MVector.unsafeTail m
 {-# RULES
 
 "slice/unstream [New]" forall i n s.
-  slice i n (unstream s) = unstream (Stream.slice i n s)
+  slice i n (unstream s) = unstream (Bundle.slice i n s)
 
 "init/unstream [New]" forall s.
-  init (unstream s) = unstream (Stream.init s)
+  init (unstream s) = unstream (Bundle.init s)
 
 "tail/unstream [New]" forall s.
-  tail (unstream s) = unstream (Stream.tail s)
+  tail (unstream s) = unstream (Bundle.tail s)
 
 "take/unstream [New]" forall n s.
-  take n (unstream s) = unstream (Stream.take n s)
+  take n (unstream s) = unstream (Bundle.take n s)
 
 "drop/unstream [New]" forall n s.
-  drop n (unstream s) = unstream (Stream.drop n s)
+  drop n (unstream s) = unstream (Bundle.drop n s)
 
 "unsafeSlice/unstream [New]" forall i n s.
-  unsafeSlice i n (unstream s) = unstream (Stream.slice i n s)
+  unsafeSlice i n (unstream s) = unstream (Bundle.slice i n s)
 
 "unsafeInit/unstream [New]" forall s.
-  unsafeInit (unstream s) = unstream (Stream.init s)
+  unsafeInit (unstream s) = unstream (Bundle.init s)
 
 "unsafeTail/unstream [New]" forall s.
-  unsafeTail (unstream s) = unstream (Stream.tail s)
+  unsafeTail (unstream s) = unstream (Bundle.tail s)
 
   #-}
 

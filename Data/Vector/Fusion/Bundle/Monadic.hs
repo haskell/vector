@@ -1,7 +1,7 @@
 {-# LANGUAGE ExistentialQuantification, MultiParamTypeClasses, FlexibleInstances, Rank2Types, BangPatterns, KindSignatures, GADTs, ScopedTypeVariables #-}
 
 -- |
--- Module      : Data.Vector.Fusion.Stream.Monadic
+-- Module      : Data.Vector.Fusion.Bundle.Monadic
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
 -- License     : BSD-style
 --
@@ -12,7 +12,7 @@
 -- Monadic stream combinators.
 --
 
-module Data.Vector.Fusion.Stream.Monadic (
+module Data.Vector.Fusion.Bundle.Monadic (
   Bundle(..), Unf(..), Step(..), Chunk(..), SPEC(..),
 
   simple,
@@ -81,7 +81,7 @@ module Data.Vector.Fusion.Stream.Monadic (
 
 import Data.Vector.Generic.Base
 import qualified Data.Vector.Generic.Mutable.Base as M
-import Data.Vector.Fusion.Stream.Size
+import Data.Vector.Fusion.Bundle.Size
 import Data.Vector.Fusion.Util ( Box(..), delay_inline )
 import Control.Monad.Primitive
 
@@ -116,11 +116,11 @@ data SPEC = SPEC | SPEC2
 {-# ANN type SPEC ForceSpecConstr #-}
 #endif
 
-emptyStream :: String
-{-# NOINLINE emptyStream #-}
-emptyStream = "empty stream"
+emptyBundle :: String
+{-# NOINLINE emptyBundle #-}
+emptyBundle = "empty stream"
 
-#define EMPTY_STREAM (\s -> ERROR s emptyStream)
+#define EMPTY_STREAM (\s -> ERROR s emptyBundle)
 
 -- | Result of taking a single step in a stream
 data Step s a where

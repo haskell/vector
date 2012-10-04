@@ -139,7 +139,7 @@ module Data.Vector.Storable (
 import qualified Data.Vector.Generic          as G
 import           Data.Vector.Storable.Mutable ( MVector(..) )
 import Data.Vector.Storable.Internal
-import qualified Data.Vector.Fusion.Stream as Stream
+import qualified Data.Vector.Fusion.Bundle as Bundle
 
 import Foreign.Storable
 import Foreign.ForeignPtr
@@ -230,27 +230,27 @@ instance Storable a => G.Vector Vector a where
 -- See http://trac.haskell.org/vector/ticket/12
 instance (Storable a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
-  xs == ys = Stream.eq (G.stream xs) (G.stream ys)
+  xs == ys = Bundle.eq (G.stream xs) (G.stream ys)
 
   {-# INLINE (/=) #-}
-  xs /= ys = not (Stream.eq (G.stream xs) (G.stream ys))
+  xs /= ys = not (Bundle.eq (G.stream xs) (G.stream ys))
 
 -- See http://trac.haskell.org/vector/ticket/12
 instance (Storable a, Ord a) => Ord (Vector a) where
   {-# INLINE compare #-}
-  compare xs ys = Stream.cmp (G.stream xs) (G.stream ys)
+  compare xs ys = Bundle.cmp (G.stream xs) (G.stream ys)
 
   {-# INLINE (<) #-}
-  xs < ys = Stream.cmp (G.stream xs) (G.stream ys) == LT
+  xs < ys = Bundle.cmp (G.stream xs) (G.stream ys) == LT
 
   {-# INLINE (<=) #-}
-  xs <= ys = Stream.cmp (G.stream xs) (G.stream ys) /= GT
+  xs <= ys = Bundle.cmp (G.stream xs) (G.stream ys) /= GT
 
   {-# INLINE (>) #-}
-  xs > ys = Stream.cmp (G.stream xs) (G.stream ys) == GT
+  xs > ys = Bundle.cmp (G.stream xs) (G.stream ys) == GT
 
   {-# INLINE (>=) #-}
-  xs >= ys = Stream.cmp (G.stream xs) (G.stream ys) /= LT
+  xs >= ys = Bundle.cmp (G.stream xs) (G.stream ys) /= LT
 
 instance Storable a => Monoid (Vector a) where
   {-# INLINE mempty #-}

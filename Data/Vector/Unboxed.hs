@@ -163,7 +163,7 @@ module Data.Vector.Unboxed (
 
 import Data.Vector.Unboxed.Base
 import qualified Data.Vector.Generic as G
-import qualified Data.Vector.Fusion.Stream as Stream
+import qualified Data.Vector.Fusion.Bundle as Bundle
 import Data.Vector.Fusion.Util ( delayed_min )
 
 import Control.Monad.ST ( ST )
@@ -193,27 +193,27 @@ import Data.Monoid   ( Monoid(..) )
 -- See http://trac.haskell.org/vector/ticket/12
 instance (Unbox a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
-  xs == ys = Stream.eq (G.stream xs) (G.stream ys)
+  xs == ys = Bundle.eq (G.stream xs) (G.stream ys)
 
   {-# INLINE (/=) #-}
-  xs /= ys = not (Stream.eq (G.stream xs) (G.stream ys))
+  xs /= ys = not (Bundle.eq (G.stream xs) (G.stream ys))
 
 -- See http://trac.haskell.org/vector/ticket/12
 instance (Unbox a, Ord a) => Ord (Vector a) where
   {-# INLINE compare #-}
-  compare xs ys = Stream.cmp (G.stream xs) (G.stream ys)
+  compare xs ys = Bundle.cmp (G.stream xs) (G.stream ys)
 
   {-# INLINE (<) #-}
-  xs < ys = Stream.cmp (G.stream xs) (G.stream ys) == LT
+  xs < ys = Bundle.cmp (G.stream xs) (G.stream ys) == LT
 
   {-# INLINE (<=) #-}
-  xs <= ys = Stream.cmp (G.stream xs) (G.stream ys) /= GT
+  xs <= ys = Bundle.cmp (G.stream xs) (G.stream ys) /= GT
 
   {-# INLINE (>) #-}
-  xs > ys = Stream.cmp (G.stream xs) (G.stream ys) == GT
+  xs > ys = Bundle.cmp (G.stream xs) (G.stream ys) == GT
 
   {-# INLINE (>=) #-}
-  xs >= ys = Stream.cmp (G.stream xs) (G.stream ys) /= LT
+  xs >= ys = Bundle.cmp (G.stream xs) (G.stream ys) /= LT
 
 instance Unbox a => Monoid (Vector a) where
   {-# INLINE mempty #-}

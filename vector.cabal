@@ -58,7 +58,7 @@ Extra-Source-Files:
       tests/Boilerplater.hs
       tests/Utilities.hs
       tests/Tests/Move.hs
-      tests/Tests/Stream.hs
+      tests/Tests/Bundle.hs
       tests/Tests/Vector.hs
       benchmarks/vector-benchmarks.cabal
       benchmarks/LICENSE
@@ -99,9 +99,9 @@ Library
         Data.Vector.Internal.Check
 
         Data.Vector.Fusion.Util
-        Data.Vector.Fusion.Stream.Size
-        Data.Vector.Fusion.Stream.Monadic
-        Data.Vector.Fusion.Stream
+        Data.Vector.Fusion.Bundle.Size
+        Data.Vector.Fusion.Bundle.Monadic
+        Data.Vector.Fusion.Bundle
 
         Data.Vector.Generic.Mutable.Base
         Data.Vector.Generic.Mutable

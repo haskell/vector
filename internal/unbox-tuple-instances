@@ -121,7 +121,7 @@ zip :: (Unbox a, Unbox b) => Vector a -> Vector b -> Vector (a, b)
 zip as bs = V_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
   where len = length as `delayed_min` length bs
 {-# RULES "stream/zip [Vector.Unboxed]" forall as bs .
-  G.stream (zip as bs) = Stream.zipWith (,) (G.stream as)
+  G.stream (zip as bs) = Bundle.zipWith (,) (G.stream as)
                                             (G.stream bs)
   #-}
 -- | /O(1)/ Unzip 2 vectors
@@ -288,7 +288,7 @@ zip3 as bs cs = V_3 len (unsafeSlice 0 len as)
   where
     len = length as `delayed_min` length bs `delayed_min` length cs
 {-# RULES "stream/zip3 [Vector.Unboxed]" forall as bs cs .
-  G.stream (zip3 as bs cs) = Stream.zipWith3 (, ,) (G.stream as)
+  G.stream (zip3 as bs cs) = Bundle.zipWith3 (, ,) (G.stream as)
                                                    (G.stream bs)
                                                    (G.stream cs)
   #-}
@@ -499,7 +499,7 @@ zip4 as bs cs ds = V_4 len (unsafeSlice 0 len as)
           length cs `delayed_min`
           length ds
 {-# RULES "stream/zip4 [Vector.Unboxed]" forall as bs cs ds .
-  G.stream (zip4 as bs cs ds) = Stream.zipWith4 (, , ,) (G.stream as)
+  G.stream (zip4 as bs cs ds) = Bundle.zipWith4 (, , ,) (G.stream as)
                                                         (G.stream bs)
                                                         (G.stream cs)
                                                         (G.stream ds)
@@ -767,7 +767,7 @@ zip5 as bs cs ds es = V_5 len (unsafeSlice 0 len as)
                  bs
                  cs
                  ds
-                 es) = Stream.zipWith5 (, , , ,) (G.stream as)
+                 es) = Bundle.zipWith5 (, , , ,) (G.stream as)
                                                  (G.stream bs)
                                                  (G.stream cs)
                                                  (G.stream ds)
@@ -1075,7 +1075,7 @@ zip6 as bs cs ds es fs = V_6 len (unsafeSlice 0 len as)
                  cs
                  ds
                  es
-                 fs) = Stream.zipWith6 (, , , , ,) (G.stream as)
+                 fs) = Bundle.zipWith6 (, , , , ,) (G.stream as)
                                                    (G.stream bs)
                                                    (G.stream cs)
                                                    (G.stream ds)

@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances, Rank2Types, BangPatterns #-}
 
 -- |
--- Module      : Data.Vector.Fusion.Stream
+-- Module      : Data.Vector.Fusion.Bundle
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
 -- License     : BSD-style
 --
@@ -9,10 +9,10 @@
 -- Stability   : experimental
 -- Portability : non-portable
 -- 
--- Streams for stream fusion
+-- Bundles for stream fusion
 --
 
-module Data.Vector.Fusion.Stream (
+module Data.Vector.Fusion.Bundle (
   -- * Types
   Step(..), Chunk(..), Bundle, MBundle,
 
@@ -77,10 +77,10 @@ module Data.Vector.Fusion.Stream (
 ) where
 
 import Data.Vector.Generic.Base ( Vector )
-import Data.Vector.Fusion.Stream.Size
+import Data.Vector.Fusion.Bundle.Size
 import Data.Vector.Fusion.Util
-import Data.Vector.Fusion.Stream.Monadic ( Step(..), Chunk(..), SPEC(..) )
-import qualified Data.Vector.Fusion.Stream.Monadic as M
+import Data.Vector.Fusion.Bundle.Monadic ( Step(..), Chunk(..), SPEC(..) )
+import qualified Data.Vector.Fusion.Bundle.Monadic as M
 
 import Prelude hiding ( length, null,
                         replicate, (++),

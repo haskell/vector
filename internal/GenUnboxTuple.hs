@@ -84,7 +84,7 @@ generate n =
              2 $
              text "G.stream" <+> parens (name "zip" <+> sep varss)
              <+> char '='
-             <+> text "Stream." <> name "zipWith" <+> tuple (replicate n empty)
+             <+> text "Bundle." <> name "zipWith" <+> tuple (replicate n empty)
              <+> sep [parens $ text "G.stream" <+> vs | vs <- varss]
              $$ text "#-}"
      where
