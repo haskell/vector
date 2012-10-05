@@ -8,13 +8,13 @@ import qualified Data.Vector.Generic as DVG
 import qualified Data.Vector.Primitive as DVP
 import qualified Data.Vector.Storable as DVS
 import qualified Data.Vector.Unboxed as DVU
-import qualified Data.Vector.Fusion.Stream as S
+import qualified Data.Vector.Fusion.Bundle as S
 
 import Data.List ( sortBy )
 
 
-instance Show a => Show (S.Stream a) where
-    show s = "Data.Vector.Fusion.Stream.fromList " ++ show (S.toList s)
+instance Show a => Show (S.Bundle v a) where
+    show s = "Data.Vector.Fusion.Bundle.fromList " ++ show (S.toList s)
 
 
 instance Arbitrary a => Arbitrary (DV.Vector a) where
@@ -41,10 +41,10 @@ instance (Arbitrary a, DVU.Unbox a) => Arbitrary (DVU.Vector a) where
 instance (CoArbitrary a, DVU.Unbox a) => CoArbitrary (DVU.Vector a) where
     coarbitrary = coarbitrary . DVU.toList
 
-instance Arbitrary a => Arbitrary (S.Stream a) where
+instance Arbitrary a => Arbitrary (S.Bundle v a) where
     arbitrary = fmap S.fromList arbitrary
 
-instance CoArbitrary a => CoArbitrary (S.Stream a) where
+instance CoArbitrary a => CoArbitrary (S.Bundle v a) where
     coarbitrary = coarbitrary . S.toList
 
 class (Testable (EqTest a), Conclusion (EqTest a)) => TestData a where
@@ -55,12 +55,12 @@ class (Testable (EqTest a), Conclusion (EqTest a)) => TestData a where
   type EqTest a
   equal :: a -> a -> EqTest a
 
-instance Eq a => TestData (S.Stream a) where
-  type Model (S.Stream a) = [a]
+instance Eq a => TestData (S.Bundle v a) where
+  type Model (S.Bundle v a) = [a]
   model = S.toList
   unmodel = S.fromList
 
-  type EqTest (S.Stream a) = Property
+  type EqTest (S.Bundle v a) = Property
   equal x y = property (x == y)
 
 instance Eq a => TestData (DV.Vector a) where

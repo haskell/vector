@@ -8,7 +8,7 @@ import qualified Data.Vector
 import qualified Data.Vector.Primitive
 import qualified Data.Vector.Storable
 import qualified Data.Vector.Unboxed
-import qualified Data.Vector.Fusion.Stream as S
+import qualified Data.Vector.Fusion.Bundle as S
 
 import Test.QuickCheck
 
@@ -74,7 +74,7 @@ testSanity _ = [
     prop_fromList_toList (v :: v a)        = (V.fromList . V.toList)                        v == v
     prop_toList_fromList (l :: [a])        = ((V.toList :: v a -> [a]) . V.fromList)        l == l
     prop_unstream_stream (v :: v a)        = (V.unstream . V.stream)                        v == v
-    prop_stream_unstream (s :: S.Stream a) = ((V.stream :: v a -> S.Stream a) . V.unstream) s == s
+    prop_stream_unstream (s :: S.Bundle v a) = ((V.stream :: v a -> S.Bundle v a) . V.unstream) s == s
 
 testPolymorphicFunctions :: forall a v. (COMMON_CONTEXT(a, v), VECTOR_CONTEXT(Int, v)) => v a -> [Test]
 testPolymorphicFunctions _ = $(testProperties [
