@@ -413,9 +413,10 @@ vmunstreamMax s n
       v <- INTERNAL_CHECK(checkLength) "munstreamMax" n
            $ unsafeNew n
       let {-# INLINE_INNER copy #-}
-          copy i (Chunk n f) = do
-                                 f (basicUnsafeSlice i n v)
-                                 return (i+n)
+          copy i (Chunk n f) =
+            INTERNAL_CHECK(checkSlice) "munstreamMax.copy" i n (length v) $ do
+              f (basicUnsafeSlice i n v)
+              return (i+n)
 
       n' <- MBundle.vfoldlM' copy 0 s
       return $ INTERNAL_CHECK(checkSlice) "munstreamMax" 0 n' n
@@ -438,7 +439,8 @@ vmunstreamUnknown s
           v' <- if basicLength v < j
                   then unsafeGrow v (delay_inline max (enlarge_delta v) (j - basicLength v))
                   else return v
-          f (basicUnsafeSlice i n v')
+          INTERNAL_CHECK(checkSlice) "munstreamUnknown.copy" i n (length v')
+            $ f (basicUnsafeSlice i n v')
           return (v',j)
 
 

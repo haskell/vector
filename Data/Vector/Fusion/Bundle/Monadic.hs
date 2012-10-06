@@ -1704,7 +1704,9 @@ fromVectors vs = Bundle (Unf pstep (Left vs))
     vstep :: [v a] -> m (Step [v a] (Chunk v a))
     vstep [] = return Done
     vstep (v:vs) = return $ Yield (Chunk (basicLength v)
-                                         (\mv -> basicUnsafeCopy mv v)) vs
+                                         (\mv -> INTERNAL_CHECK(check) "concatVectors" "length mismatch"
+                                                                       (M.basicLength mv == basicLength v)
+                                                 $ basicUnsafeCopy mv v)) vs
 
 
 concatVectors :: (Monad m, Vector v a) => Bundle m u (v a) -> Bundle m v a
@@ -1732,7 +1734,9 @@ concatVectors Bundle{sElems = Unf step s}
       r <- step s
       case r of
         Yield v s' -> return (Yield (Chunk (basicLength v)
-                                           (\mv -> basicUnsafeCopy mv v)) s')
+                                           (\mv -> INTERNAL_CHECK(check) "concatVectors" "length mismatch"
+                                                                          (M.basicLength mv == basicLength v)
+                                                   $ basicUnsafeCopy mv v)) s')
         Skip    s' -> return (Skip s')
         Done       -> return Done
 
