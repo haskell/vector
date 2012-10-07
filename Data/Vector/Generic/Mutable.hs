@@ -63,6 +63,7 @@ import qualified Data.Vector.Generic.Base as V
 import qualified Data.Vector.Fusion.Bundle      as Bundle
 import           Data.Vector.Fusion.Bundle      ( Bundle, MBundle, Chunk(..) )
 import qualified Data.Vector.Fusion.Bundle.Monadic as MBundle
+import qualified Data.Vector.Fusion.Stream.Monadic as MStream
 import           Data.Vector.Fusion.Bundle.Size
 import           Data.Vector.Fusion.Util        ( delay_inline )
 
@@ -418,7 +419,7 @@ vmunstreamMax s n
               f (basicUnsafeSlice i n v)
               return (i+n)
 
-      n' <- MBundle.vfoldlM' copy 0 s
+      n' <- MStream.foldlM' copy 0 (MBundle.chunks s)
       return $ INTERNAL_CHECK(checkSlice) "munstreamMax" 0 n' n
              $ unsafeSlice 0 n' v
 
@@ -428,7 +429,7 @@ vmunstreamUnknown :: (PrimMonad m, V.Vector v a)
 vmunstreamUnknown s
   = do
       v <- unsafeNew 0
-      (v', n) <- MBundle.vfoldlM copy (v, 0) s
+      (v', n) <- MStream.foldlM copy (v,0) (MBundle.chunks s)
       return $ INTERNAL_CHECK(checkSlice) "munstreamUnknown" 0 n (length v')
              $ unsafeSlice 0 n v'
   where

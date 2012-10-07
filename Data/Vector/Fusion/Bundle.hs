@@ -79,7 +79,8 @@ module Data.Vector.Fusion.Bundle (
 import Data.Vector.Generic.Base ( Vector )
 import Data.Vector.Fusion.Bundle.Size
 import Data.Vector.Fusion.Util
-import Data.Vector.Fusion.Bundle.Monadic ( Step(..), Chunk(..), SPEC(..) )
+import Data.Vector.Fusion.Stream.Monadic ( Stream(..), Step(..), SPEC(..) )
+import Data.Vector.Fusion.Bundle.Monadic ( Chunk(..) )
 import qualified Data.Vector.Fusion.Bundle.Monadic as M
 
 import Prelude hiding ( length, null,
@@ -124,9 +125,9 @@ inplace f s = s `seq` f s
 -- | Convert a pure stream to a monadic stream
 lift :: Monad m => Bundle v a -> M.Bundle m v a
 {-# INLINE_FUSED lift #-}
-lift (M.Bundle (M.Unf step s) (M.Unf vstep t) v sz)
-    = M.Bundle (M.Unf (return . unId . step) s)
-               (M.Unf (return . unId . vstep) t) v sz
+lift (M.Bundle (Stream step s) (Stream vstep t) v sz)
+    = M.Bundle (Stream (return . unId . step) s)
+               (Stream (return . unId . vstep) t) v sz
 
 -- | 'Size' hint of a 'Bundle'
 size :: Bundle v a -> Size
@@ -583,7 +584,7 @@ toList s = build (\c n -> toListFB c n s)
 -- This supports foldr/build list fusion that GHC implements
 toListFB :: (a -> b -> b) -> b -> Bundle v a -> b
 {-# INLINE [0] toListFB #-}
-toListFB c n M.Bundle{M.sElems = M.Unf step s} = go s
+toListFB c n M.Bundle{M.sElems = Stream step s} = go s
   where
     go s = case unId (step s) of
              Yield x s' -> x `c` go s'

@@ -99,6 +99,7 @@ Library
         Data.Vector.Internal.Check
 
         Data.Vector.Fusion.Util
+        Data.Vector.Fusion.Stream.Monadic
         Data.Vector.Fusion.Bundle.Size
         Data.Vector.Fusion.Bundle.Monadic
         Data.Vector.Fusion.Bundle
