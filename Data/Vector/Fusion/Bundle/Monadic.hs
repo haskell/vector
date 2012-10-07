@@ -73,7 +73,7 @@ module Data.Vector.Fusion.Bundle.Monadic (
   -- * Conversions
   toList, fromList, fromListN, unsafeFromList,
   fromVector, reVector, fromVectors, concatVectors,
-  fromStream, chunks
+  fromStream, chunks, elements
 ) where
 
 import Data.Vector.Generic.Base
@@ -125,6 +125,10 @@ fromStream (Stream step s) sz = Bundle (Stream step s) (Stream step' s) Nothing 
 chunks :: Bundle m v a -> Stream m (Chunk v a)
 {-# INLINE chunks #-}
 chunks = sChunks
+
+elements :: Bundle m v a -> Stream m a
+{-# INLINE elements #-}
+elements = sElems
 
 -- | 'Size' hint of a 'Bundle'
 size :: Bundle m v a -> Size

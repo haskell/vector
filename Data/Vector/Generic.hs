@@ -169,8 +169,10 @@ import qualified Data.Vector.Generic.New as New
 import           Data.Vector.Generic.New ( New )
 
 import qualified Data.Vector.Fusion.Bundle as Bundle
-import           Data.Vector.Fusion.Bundle ( Bundle, MBundle, Step(..), inplace, lift )
+import           Data.Vector.Fusion.Bundle ( Bundle, MBundle, Step(..), lift, inplace )
 import qualified Data.Vector.Fusion.Bundle.Monadic as MBundle
+import           Data.Vector.Fusion.Stream.Monadic ( Stream )
+import qualified Data.Vector.Fusion.Stream.Monadic as S
 import           Data.Vector.Fusion.Bundle.Size
 import           Data.Vector.Fusion.Util
 
@@ -962,12 +964,12 @@ indexed = unstream . Bundle.indexed . stream
 -- | /O(n)/ Map a function over a vector
 map :: (Vector v a, Vector v b) => (a -> b) -> v a -> v b
 {-# INLINE map #-}
-map f = unstream . inplace (MBundle.map f) . stream
+map f = unstream . inplace (S.map f) id . stream
 
 -- | /O(n)/ Apply a function to every element of a vector and its index
 imap :: (Vector v a, Vector v b) => (Int -> a -> b) -> v a -> v b
 {-# INLINE imap #-}
-imap f = unstream . inplace (MBundle.map (uncurry f) . MBundle.indexed)
+imap f = unstream . inplace (S.map (uncurry f) . S.indexed) id
                   . stream
 
 -- | Map a function over a vector and concatenate the results.
@@ -1230,15 +1232,14 @@ unzip6 xs = (map (\(a, b, c, d, e, f) -> a) xs,
 -- | /O(n)/ Drop elements that do not satisfy the predicate
 filter :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE filter #-}
-filter f = unstream . inplace (MBundle.filter f) . stream
+filter f = unstream . inplace (S.filter f) toMax . stream
 
 -- | /O(n)/ Drop elements that do not satisfy the predicate which is applied to
 -- values and their indices
 ifilter :: Vector v a => (Int -> a -> Bool) -> v a -> v a
 {-# INLINE ifilter #-}
 ifilter f = unstream
-          . inplace (MBundle.map snd . MBundle.filter (uncurry f)
-                                     . MBundle.indexed)
+          . inplace (S.map snd . S.filter (uncurry f) . S.indexed) toMax
           . stream
 
 -- | /O(n)/ Drop elements that do not satisfy the monadic predicate
@@ -1366,8 +1367,7 @@ findIndex f = Bundle.findIndex f . stream
 findIndices :: (Vector v a, Vector v Int) => (a -> Bool) -> v a -> v Int
 {-# INLINE findIndices #-}
 findIndices f = unstream
-              . inplace (MBundle.map fst . MBundle.filter (f . snd)
-                                         . MBundle.indexed)
+              . inplace (S.map fst . S.filter (f . snd) . S.indexed) toMax
               . stream
 
 -- | /O(n)/ Yield 'Just' the index of the first occurence of the given element or
@@ -1624,12 +1624,12 @@ sequence_ = mapM_ id
 --
 prescanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE prescanl #-}
-prescanl f z = unstream . inplace (MBundle.prescanl f z) . stream
+prescanl f z = unstream . inplace (S.prescanl f z) id . stream
 
 -- | /O(n)/ Prescan with strict accumulator
 prescanl' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE prescanl' #-}
-prescanl' f z = unstream . inplace (MBundle.prescanl' f z) . stream
+prescanl' f z = unstream . inplace (S.prescanl' f z) id . stream
 
 -- | /O(n)/ Scan
 --
@@ -1641,12 +1641,12 @@ prescanl' f z = unstream . inplace (MBundle.prescanl' f z) . stream
 --
 postscanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE postscanl #-}
-postscanl f z = unstream . inplace (MBundle.postscanl f z) . stream
+postscanl f z = unstream . inplace (S.postscanl f z) id . stream
 
 -- | /O(n)/ Scan with strict accumulator
 postscanl' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE postscanl' #-}
-postscanl' f z = unstream . inplace (MBundle.postscanl' f z) . stream
+postscanl' f z = unstream . inplace (S.postscanl' f z) id . stream
 
 -- | /O(n)/ Haskell-style scan
 --
@@ -1673,12 +1673,12 @@ scanl' f z = unstream . Bundle.scanl' f z . stream
 --
 scanl1 :: Vector v a => (a -> a -> a) -> v a -> v a
 {-# INLINE scanl1 #-}
-scanl1 f = unstream . inplace (MBundle.scanl1 f) . stream
+scanl1 f = unstream . inplace (S.scanl1 f) id . stream
 
 -- | /O(n)/ Scan over a non-empty vector with a strict accumulator
 scanl1' :: Vector v a => (a -> a -> a) -> v a -> v a
 {-# INLINE scanl1' #-}
-scanl1' f = unstream . inplace (MBundle.scanl1' f) . stream
+scanl1' f = unstream . inplace (S.scanl1' f) id . stream
 
 -- | /O(n)/ Right-to-left prescan
 --
@@ -1688,22 +1688,22 @@ scanl1' f = unstream . inplace (MBundle.scanl1' f) . stream
 --
 prescanr :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
 {-# INLINE prescanr #-}
-prescanr f z = unstreamR . inplace (MBundle.prescanl (flip f) z) . streamR
+prescanr f z = unstreamR . inplace (S.prescanl (flip f) z) id . streamR
 
 -- | /O(n)/ Right-to-left prescan with strict accumulator
 prescanr' :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
 {-# INLINE prescanr' #-}
-prescanr' f z = unstreamR . inplace (MBundle.prescanl' (flip f) z) . streamR
+prescanr' f z = unstreamR . inplace (S.prescanl' (flip f) z) id . streamR
 
 -- | /O(n)/ Right-to-left scan
 postscanr :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
 {-# INLINE postscanr #-}
-postscanr f z = unstreamR . inplace (MBundle.postscanl (flip f) z) . streamR
+postscanr f z = unstreamR . inplace (S.postscanl (flip f) z) id . streamR
 
 -- | /O(n)/ Right-to-left scan with strict accumulator
 postscanr' :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
 {-# INLINE postscanr' #-}
-postscanr' f z = unstreamR . inplace (MBundle.postscanl' (flip f) z) . streamR
+postscanr' f z = unstreamR . inplace (S.postscanl' (flip f) z) id . streamR
 
 -- | /O(n)/ Right-to-left Haskell-style scan
 scanr :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
@@ -1718,13 +1718,13 @@ scanr' f z = unstreamR . Bundle.scanl' (flip f) z . streamR
 -- | /O(n)/ Right-to-left scan over a non-empty vector
 scanr1 :: Vector v a => (a -> a -> a) -> v a -> v a
 {-# INLINE scanr1 #-}
-scanr1 f = unstreamR . inplace (MBundle.scanl1 (flip f)) . streamR
+scanr1 f = unstreamR . inplace (S.scanl1 (flip f)) id . streamR
 
 -- | /O(n)/ Right-to-left scan over a non-empty vector with a strict
 -- accumulator
 scanr1' :: Vector v a => (a -> a -> a) -> v a -> v a
 {-# INLINE scanr1' #-}
-scanr1' f = unstreamR . inplace (MBundle.scanl1' (flip f)) . streamR
+scanr1' f = unstreamR . inplace (S.scanl1' (flip f)) id . streamR
 
 -- Conversions - Lists
 -- ------------------------
@@ -1873,12 +1873,12 @@ unstream s = new (New.unstream s)
   clone (new p) = p
 
 "inplace [Vector]"
-  forall (f :: forall m. Monad m => MBundle m u a -> MBundle m u a) m.
-  New.unstream (inplace f (stream (new m))) = New.transform f m
+  forall (f :: forall m. Monad m => Stream m a -> Stream m a) g m.
+  New.unstream (inplace f g (stream (new m))) = New.transform f g m
 
 "uninplace [Vector]"
-  forall (f :: forall m. Monad m => MBundle m u a -> MBundle m u a) m.
-  stream (new (New.transform f m)) = inplace f (stream (new m))
+  forall (f :: forall m. Monad m => Stream m a -> Stream m a) g m.
+  stream (new (New.transform f g m)) = inplace f g (stream (new m))
 
  #-}
 
@@ -1915,12 +1915,12 @@ unstreamR s = new (New.unstreamR s)
   New.unstreamR (stream (new p)) = New.modify M.reverse p
 
 "inplace right [Vector]"
-  forall (f :: forall m. Monad m => MBundle m u a -> MBundle m u a) m.
-  New.unstreamR (inplace f (streamR (new m))) = New.transformR f m
+  forall (f :: forall m. Monad m => Stream m a -> Stream m a) g m.
+  New.unstreamR (inplace f g (streamR (new m))) = New.transformR f g m
 
 "uninplace right [Vector]"
-  forall (f :: forall m. Monad m => MBundle m u a -> MBundle m u a) m.
-  streamR (new (New.transformR f m)) = inplace f (streamR (new m))
+  forall (f :: forall m. Monad m => Stream m a -> Stream m a) g m.
+  streamR (new (New.transformR f g m)) = inplace f g (streamR (new m))
 
  #-}
 

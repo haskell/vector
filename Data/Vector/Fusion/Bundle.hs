@@ -82,6 +82,7 @@ import Data.Vector.Fusion.Util
 import Data.Vector.Fusion.Stream.Monadic ( Stream(..), Step(..), SPEC(..) )
 import Data.Vector.Fusion.Bundle.Monadic ( Chunk(..) )
 import qualified Data.Vector.Fusion.Bundle.Monadic as M
+import qualified Data.Vector.Fusion.Stream.Monadic as S
 
 import Prelude hiding ( length, null,
                         replicate, (++),
@@ -107,18 +108,18 @@ type Bundle = M.Bundle Id
 -- | Alternative name for monadic streams
 type MBundle = M.Bundle
 
-inplace :: (forall m. Monad m => M.Bundle m v a -> M.Bundle m v b)
-        -> Bundle v a -> Bundle v b
+inplace :: (forall m. Monad m => S.Stream m a -> S.Stream m b)
+	-> (Size -> Size) -> Bundle v a -> Bundle v b
 {-# INLINE_FUSED inplace #-}
-inplace f s = s `seq` f s
+inplace f g b = b `seq` M.fromStream (f (M.elements b)) (g (M.size b))
 
 {-# RULES
 
 "inplace/inplace [Vector]"
-  forall (f :: forall m. Monad m => MBundle m v a -> MBundle m v a)
-         (g :: forall m. Monad m => MBundle m v a -> MBundle m v a)
-         s.
-  inplace f (inplace g s) = inplace (f . g) s
+  forall (f1 :: forall m. Monad m => S.Stream m a -> S.Stream m a)
+         (f2 :: forall m. Monad m => S.Stream m a -> S.Stream m a)
+         g1 g2 s.
+  inplace f1 g1 (inplace f2 g2 s) = inplace (f1 . f2) (g1 . g2) s
 
   #-}
 

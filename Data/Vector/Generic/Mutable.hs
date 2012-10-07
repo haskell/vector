@@ -63,7 +63,8 @@ import qualified Data.Vector.Generic.Base as V
 import qualified Data.Vector.Fusion.Bundle      as Bundle
 import           Data.Vector.Fusion.Bundle      ( Bundle, MBundle, Chunk(..) )
 import qualified Data.Vector.Fusion.Bundle.Monadic as MBundle
-import qualified Data.Vector.Fusion.Stream.Monadic as MStream
+import           Data.Vector.Fusion.Stream.Monadic ( Stream )
+import qualified Data.Vector.Fusion.Stream.Monadic as Stream
 import           Data.Vector.Fusion.Bundle.Size
 import           Data.Vector.Fusion.Util        ( delay_inline )
 
@@ -239,9 +240,9 @@ unsafePrepend1 v i x
                     $ unsafeWrite v' i' x
                   return (v', i')
 
-mstream :: (PrimMonad m, MVector v a) => v (PrimState m) a -> MBundle m u a
+mstream :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Stream m a
 {-# INLINE mstream #-}
-mstream v = v `seq` n `seq` (MBundle.unfoldrM get 0 `MBundle.sized` Exact n)
+mstream v = v `seq` n `seq` (Stream.unfoldrM get 0)
   where
     n = length v
 
@@ -251,12 +252,10 @@ mstream v = v `seq` n `seq` (MBundle.unfoldrM get 0 `MBundle.sized` Exact n)
           | otherwise = return $ Nothing
 
 fill :: (PrimMonad m, MVector v a)
-     => v (PrimState m) a
-     -> MBundle m u a
-     -> m (v (PrimState m) a)
+     => v (PrimState m) a -> Stream m a -> m (v (PrimState m) a)
 {-# INLINE fill #-}
 fill v s = v `seq` do
-                     n' <- MBundle.foldM put 0 s
+                     n' <- Stream.foldM put 0 s
                      return $ unsafeSlice 0 n' v
   where
     {-# INLINE_INNER put #-}
@@ -265,18 +264,15 @@ fill v s = v `seq` do
                   $ unsafeWrite v i x
                 return (i+1)
 
-transform :: (PrimMonad m, MVector v a)
-          => (MBundle m u a -> MBundle m u a)
-          -> v (PrimState m) a
-          -> m (v (PrimState m) a)
+transform
+  :: (PrimMonad m, MVector v a)
+  => (Stream m a -> Stream m a) -> v (PrimState m) a -> m (v (PrimState m) a)
 {-# INLINE_FUSED transform #-}
 transform f v = fill v (f (mstream v))
 
-mstreamR :: (PrimMonad m, MVector v a)
-         => v (PrimState m) a
-         -> MBundle m u a
+mstreamR :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Stream m a
 {-# INLINE mstreamR #-}
-mstreamR v = v `seq` n `seq` (MBundle.unfoldrM get n `MBundle.sized` Exact n)
+mstreamR v = v `seq` n `seq` (Stream.unfoldrM get n)
   where
     n = length v
 
@@ -288,12 +284,10 @@ mstreamR v = v `seq` n `seq` (MBundle.unfoldrM get n `MBundle.sized` Exact n)
         j = i-1
 
 fillR :: (PrimMonad m, MVector v a)
-      => v (PrimState m) a
-      -> MBundle m u a
-      -> m (v (PrimState m) a)
+      => v (PrimState m) a -> Stream m a -> m (v (PrimState m) a)
 {-# INLINE fillR #-}
 fillR v s = v `seq` do
-                      i <- MBundle.foldM put n s
+                      i <- Stream.foldM put n s
                       return $ unsafeSlice i (n-i) v
   where
     n = length v
@@ -305,10 +299,9 @@ fillR v s = v `seq` do
       where
         j = i-1
 
-transformR :: (PrimMonad m, MVector v a)
-           => (MBundle m u a -> MBundle m u a)
-           -> v (PrimState m) a
-           -> m (v (PrimState m) a)
+transformR
+  :: (PrimMonad m, MVector v a)
+  => (Stream m a -> Stream m a) -> v (PrimState m) a -> m (v (PrimState m) a)
 {-# INLINE_FUSED transformR #-}
 transformR f v = fillR v (f (mstreamR v))
 
@@ -419,7 +412,7 @@ vmunstreamMax s n
               f (basicUnsafeSlice i n v)
               return (i+n)
 
-      n' <- MStream.foldlM' copy 0 (MBundle.chunks s)
+      n' <- Stream.foldlM' copy 0 (MBundle.chunks s)
       return $ INTERNAL_CHECK(checkSlice) "munstreamMax" 0 n' n
              $ unsafeSlice 0 n' v
 
@@ -429,7 +422,7 @@ vmunstreamUnknown :: (PrimMonad m, V.Vector v a)
 vmunstreamUnknown s
   = do
       v <- unsafeNew 0
-      (v', n) <- MStream.foldlM copy (v,0) (MBundle.chunks s)
+      (v', n) <- Stream.foldlM copy (v,0) (MBundle.chunks s)
       return $ INTERNAL_CHECK(checkSlice) "munstreamUnknown" 0 n (length v')
              $ unsafeSlice 0 n v'
   where
