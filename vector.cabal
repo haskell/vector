@@ -1,5 +1,5 @@
 Name:           vector
-Version:        0.10.9
+Version:        0.10
 License:        BSD3
 License-File:   LICENSE
 Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
@@ -37,6 +37,10 @@ Description:
         requests.
         .
         * <http://trac.haskell.org/vector>
+        .
+        Changes in version 0.10.0.1
+        .
+        * Require @primitive@ to include workaround for a GHC array copying bug
         .
         Changes in version 0.10
         .
@@ -131,7 +135,7 @@ Library
         vector.h
 
   Build-Depends: base >= 4 && < 5
-               , primitive >= 0.5 && < 0.6
+               , primitive >= 0.5.0.1 && < 0.6
                , ghc-prim
                , deepseq >= 1.1 && < 1.4
 
