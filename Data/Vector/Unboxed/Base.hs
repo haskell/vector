@@ -1,4 +1,7 @@
 {-# LANGUAGE MultiParamTypeClasses, TypeFamilies, FlexibleContexts #-}
+#if __GLASGOW_HASKELL__ >= 707
+{-# LANGUAGE DeriveDataTypeable, StandaloneDeriving #-}
+#endif
 {-# OPTIONS_HADDOCK hide #-}
 
 -- |
@@ -29,6 +32,9 @@ import Data.Word ( Word, Word8, Word16, Word32, Word64 )
 import Data.Int  ( Int8, Int16, Int32, Int64 )
 import Data.Complex
 
+#if __GLASGOW_HASKELL__ >= 707
+import Data.Typeable ( Typeable )
+#else
 import Data.Typeable ( Typeable1(..), Typeable2(..), mkTyConApp,
 #if MIN_VERSION_base(4,4,0)
                        mkTyCon3
@@ -36,6 +42,8 @@ import Data.Typeable ( Typeable1(..), Typeable2(..), mkTyConApp,
                        mkTyCon
 #endif
                      )
+#endif
+
 import Data.Data     ( Data(..) )
 
 #include "vector.h"
@@ -53,7 +61,10 @@ class (G.Vector Vector a, M.MVector MVector a) => Unbox a
 -- -----------------
 -- Data and Typeable
 -- -----------------
-
+#if __GLASGOW_HASKELL__ >= 707
+deriving instance Typeable Vector
+deriving instance Typeable MVector
+#else
 #if MIN_VERSION_base(4,4,0)
 vectorTyCon = mkTyCon3 "vector"
 #else
@@ -65,6 +76,7 @@ instance Typeable1 Vector where
 
 instance Typeable2 MVector where
   typeOf2 _ = mkTyConApp (vectorTyCon "Data.Vector.Unboxed.Mutable" "MVector") []
+#endif
 
 instance (Data a, Unbox a) => Data (Vector a) where
   gfoldl       = G.gfoldl
