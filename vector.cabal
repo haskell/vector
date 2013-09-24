@@ -50,6 +50,7 @@ Cabal-Version:  >= 1.6
 Build-Type:     Simple
 
 Extra-Source-Files:
+      README.md
       tests/vector-tests.cabal
       tests/LICENSE
       tests/Setup.hs
