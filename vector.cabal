@@ -1,12 +1,12 @@
 Name:           vector
-Version:        0.10.9
+Version:        0.10.9.0
 License:        BSD3
 License-File:   LICENSE
 Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
 Maintainer:     Roman Leshchinskiy <rl@cse.unsw.edu.au>
 Copyright:      (c) Roman Leshchinskiy 2008-2012
-Homepage:       http://code.haskell.org/vector
-Bug-Reports:    http://trac.haskell.org/vector
+Homepage:       https://github.com/haskell/vector
+Bug-Reports:    https://github.com/haskell/vector/issues
 Category:       Data, Data Structures
 Synopsis:       Efficient Arrays
 Description:
@@ -33,11 +33,6 @@ Description:
         .
         * <http://haskell.org/haskellwiki/Numeric_Haskell:_A_Vector_Tutorial>
         .
-        Please use the project trac to submit bug reports and feature
-        requests.
-        .
-        * <http://trac.haskell.org/vector>
-        .
         Changes in version 0.10.0.1
         .
         * Require @primitive@ to include workaround for a GHC array copying bug
@@ -51,7 +46,7 @@ Description:
 	* Safe Haskell support removed
 	.
 
-Cabal-Version:  >= 1.2.3
+Cabal-Version:  >= 1.6
 Build-Type:     Simple
 
 Extra-Source-Files:
@@ -153,3 +148,6 @@ Library
   if flag(InternalChecks)
     cpp-options: -DVECTOR_INTERNAL_CHECKS
 
+source-repository head
+  type:     git
+  location: https://github.com/haskell/vector
