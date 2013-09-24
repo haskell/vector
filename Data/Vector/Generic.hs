@@ -196,7 +196,12 @@ import Prelude hiding ( length, null,
                         showsPrec )
 
 import qualified Text.Read as Read
+
+#if __GLASGOW_HASKELL__ >= 707
+import Data.Typeable ( Typeable, gcast1 )
+#else
 import Data.Typeable ( Typeable1, gcast1 )
+#endif
 
 #include "vector.h"
 
@@ -2021,7 +2026,11 @@ mkType :: String -> DataType
 {-# INLINE mkType #-}
 mkType = mkNoRepType
 
+#if __GLASGOW_HASKELL__ >= 707
+dataCast :: (Vector v a, Data a, Typeable v, Typeable t)
+#else
 dataCast :: (Vector v a, Data a, Typeable1 v, Typeable1 t)
+#endif
          => (forall d. Data  d => c (t d)) -> Maybe  (c (v a))
 {-# INLINE dataCast #-}
 dataCast f = gcast1 f
