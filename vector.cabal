@@ -1,5 +1,5 @@
 Name:           vector
-Version:        0.10
+Version:        0.10.0.1
 License:        BSD3
 License-File:   LICENSE
 Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
@@ -62,7 +62,7 @@ Extra-Source-Files:
       tests/Boilerplater.hs
       tests/Utilities.hs
       tests/Tests/Move.hs
-      tests/Tests/Bundle.hs
+      tests/Tests/Stream.hs
       tests/Tests/Vector.hs
       benchmarks/vector-benchmarks.cabal
       benchmarks/LICENSE
@@ -103,12 +103,10 @@ Library
         Data.Vector.Internal.Check
 
         Data.Vector.Fusion.Util
+        Data.Vector.Fusion.Stream.Size
         Data.Vector.Fusion.Stream.Monadic
-        Data.Vector.Fusion.Bundle.Size
-        Data.Vector.Fusion.Bundle.Monadic
-        Data.Vector.Fusion.Bundle
+        Data.Vector.Fusion.Stream
 
-        Data.Vector.Generic.Mutable.Base
         Data.Vector.Generic.Mutable
         Data.Vector.Generic.Base
         Data.Vector.Generic.New

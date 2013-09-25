@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, BangPatterns, TypeFamilies, ScopedTypeVariables #-}
+{-# LANGUAGE MultiParamTypeClasses, BangPatterns, ScopedTypeVariables #-}
 -- |
 -- Module      : Data.Vector.Generic.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -49,23 +49,18 @@ module Data.Vector.Generic.Mutable (
 
   -- * Internal operations
   mstream, mstreamR,
-  unstream, unstreamR, vunstream,
+  unstream, unstreamR,
   munstream, munstreamR,
   transform, transformR,
   fill, fillR,
   unsafeAccum, accum, unsafeUpdate, update, reverse,
-  unstablePartition, unstablePartitionBundle, partitionBundle
+  unstablePartition, unstablePartitionStream, partitionStream
 ) where
 
-import           Data.Vector.Generic.Mutable.Base
-import qualified Data.Vector.Generic.Base as V
-
-import qualified Data.Vector.Fusion.Bundle      as Bundle
-import           Data.Vector.Fusion.Bundle      ( Bundle, MBundle, Chunk(..) )
-import qualified Data.Vector.Fusion.Bundle.Monadic as MBundle
-import           Data.Vector.Fusion.Stream.Monadic ( Stream )
-import qualified Data.Vector.Fusion.Stream.Monadic as Stream
-import           Data.Vector.Fusion.Bundle.Size
+import qualified Data.Vector.Fusion.Stream      as Stream
+import           Data.Vector.Fusion.Stream      ( Stream, MStream )
+import qualified Data.Vector.Fusion.Stream.Monadic as MStream
+import           Data.Vector.Fusion.Stream.Size
 import           Data.Vector.Fusion.Util        ( delay_inline )
 
 import Control.Monad.Primitive ( PrimMonad, PrimState )
@@ -75,12 +70,23 @@ import Prelude hiding ( length, null, replicate, reverse, map, read,
 
 #include "vector.h"
 
-{-
-type family Immutable (v :: * -> * -> *) :: * -> *
-
 -- | Class of mutable vectors parametrised with a primitive state token.
 --
-class MBundle.Pointer u a => MVector v a where
+-- Minimum complete implementation:
+--
+--   * 'basicLength'
+--
+--   * 'basicUnsafeSlice'
+--
+--   * 'basicOverlaps'
+--
+--   * 'basicUnsafeNew'
+--
+--   * 'basicUnsafeRead'
+--
+--   * 'basicUnsafeWrite'
+--
+class MVector v a where
   -- | Length of the mutable vector. This method should not be
   -- called directly, use 'length' instead.
   basicLength       :: v s a -> Int
@@ -121,10 +127,6 @@ class MBundle.Pointer u a => MVector v a where
   -- | Set all elements of the vector to the given value. This method should
   -- not be called directly, use 'set' instead.
   basicSet         :: PrimMonad m => v (PrimState m) a -> a -> m ()
-
-  basicUnsafeCopyPointer :: PrimMonad m => v (PrimState m) a
-                                        -> Immutable v a
-                                        -> m ()
 
   -- | Copy a vector. The two vectors may not overlap. This method should not
   -- be called directly, use 'unsafeCopy' instead.
@@ -168,14 +170,6 @@ class MBundle.Pointer u a => MVector v a where
                | otherwise = basicUnsafeCopy (basicUnsafeSlice i (n-i) v)
                                              (basicUnsafeSlice 0 (n-i) v)
 
-  {-# INLINE basicUnsafeCopyPointer #-}
-  basicUnsafeCopyPointer !dst !src = do_copy 0 src
-    where
-      do_copy !i p | Just (x,q) <- MBundle.pget p = do
-                                                      basicUnsafeWrite dst i x
-                                                      do_copy (i+1) q
-                   | otherwise = return ()
-
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy !dst !src = do_copy 0
     where
@@ -202,8 +196,7 @@ class MBundle.Pointer u a => MVector v a where
         return v'
     where
       n = basicLength v
--}
- 
+
 -- ------------------
 -- Internal functions
 -- ------------------
@@ -240,9 +233,9 @@ unsafePrepend1 v i x
                     $ unsafeWrite v' i' x
                   return (v', i')
 
-mstream :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Stream m a
+mstream :: (PrimMonad m, MVector v a) => v (PrimState m) a -> MStream m a
 {-# INLINE mstream #-}
-mstream v = v `seq` n `seq` (Stream.unfoldrM get 0)
+mstream v = v `seq` n `seq` (MStream.unfoldrM get 0 `MStream.sized` Exact n)
   where
     n = length v
 
@@ -252,10 +245,10 @@ mstream v = v `seq` n `seq` (Stream.unfoldrM get 0)
           | otherwise = return $ Nothing
 
 fill :: (PrimMonad m, MVector v a)
-     => v (PrimState m) a -> Stream m a -> m (v (PrimState m) a)
+           => v (PrimState m) a -> MStream m a -> m (v (PrimState m) a)
 {-# INLINE fill #-}
 fill v s = v `seq` do
-                     n' <- Stream.foldM put 0 s
+                     n' <- MStream.foldM put 0 s
                      return $ unsafeSlice 0 n' v
   where
     {-# INLINE_INNER put #-}
@@ -264,15 +257,14 @@ fill v s = v `seq` do
                   $ unsafeWrite v i x
                 return (i+1)
 
-transform
-  :: (PrimMonad m, MVector v a)
-  => (Stream m a -> Stream m a) -> v (PrimState m) a -> m (v (PrimState m) a)
-{-# INLINE_FUSED transform #-}
+transform :: (PrimMonad m, MVector v a)
+  => (MStream m a -> MStream m a) -> v (PrimState m) a -> m (v (PrimState m) a)
+{-# INLINE_STREAM transform #-}
 transform f v = fill v (f (mstream v))
 
-mstreamR :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Stream m a
+mstreamR :: (PrimMonad m, MVector v a) => v (PrimState m) a -> MStream m a
 {-# INLINE mstreamR #-}
-mstreamR v = v `seq` n `seq` (Stream.unfoldrM get n)
+mstreamR v = v `seq` n `seq` (MStream.unfoldrM get n `MStream.sized` Exact n)
   where
     n = length v
 
@@ -284,10 +276,10 @@ mstreamR v = v `seq` n `seq` (Stream.unfoldrM get n)
         j = i-1
 
 fillR :: (PrimMonad m, MVector v a)
-      => v (PrimState m) a -> Stream m a -> m (v (PrimState m) a)
+           => v (PrimState m) a -> MStream m a -> m (v (PrimState m) a)
 {-# INLINE fillR #-}
 fillR v s = v `seq` do
-                      i <- Stream.foldM put n s
+                      i <- MStream.foldM put n s
                       return $ unsafeSlice i (n-i) v
   where
     n = length v
@@ -299,28 +291,25 @@ fillR v s = v `seq` do
       where
         j = i-1
 
-transformR
-  :: (PrimMonad m, MVector v a)
-  => (Stream m a -> Stream m a) -> v (PrimState m) a -> m (v (PrimState m) a)
-{-# INLINE_FUSED transformR #-}
+transformR :: (PrimMonad m, MVector v a)
+  => (MStream m a -> MStream m a) -> v (PrimState m) a -> m (v (PrimState m) a)
+{-# INLINE_STREAM transformR #-}
 transformR f v = fillR v (f (mstreamR v))
 
--- | Create a new mutable vector and fill it with elements from the 'Bundle'.
--- The vector will grow exponentially if the maximum size of the 'Bundle' is
+-- | Create a new mutable vector and fill it with elements from the 'Stream'.
+-- The vector will grow exponentially if the maximum size of the 'Stream' is
 -- unknown.
-unstream :: (PrimMonad m, MVector v a)
-         => Bundle u a -> m (v (PrimState m) a)
--- NOTE: replace INLINE_FUSED by INLINE? (also in unstreamR)
-{-# INLINE_FUSED unstream #-}
-unstream s = munstream (Bundle.lift s)
+unstream :: (PrimMonad m, MVector v a) => Stream a -> m (v (PrimState m) a)
+-- NOTE: replace INLINE_STREAM by INLINE? (also in unstreamR)
+{-# INLINE_STREAM unstream #-}
+unstream s = munstream (Stream.liftStream s)
 
 -- | Create a new mutable vector and fill it with elements from the monadic
 -- stream. The vector will grow exponentially if the maximum size of the stream
 -- is unknown.
-munstream :: (PrimMonad m, MVector v a)
-          => MBundle m u a -> m (v (PrimState m) a)
-{-# INLINE_FUSED munstream #-}
-munstream s = case upperBound (MBundle.size s) of
+munstream :: (PrimMonad m, MVector v a) => MStream m a -> m (v (PrimState m) a)
+{-# INLINE_STREAM munstream #-}
+munstream s = case upperBound (MStream.size s) of
                Just n  -> munstreamMax     s n
                Nothing -> munstreamUnknown s
 
@@ -330,12 +319,12 @@ munstream s = case upperBound (MBundle.size s) of
 -- the shape of the vector) and one for when the vector has grown. To see the
 -- problem simply compile this:
 --
--- fromList = Data.Vector.Unboxed.unstream . Bundle.fromList
+-- fromList = Data.Vector.Unboxed.unstream . Stream.fromList
 --
 -- I'm not sure this still applies (19/04/2010)
 
-munstreamMax :: (PrimMonad m, MVector v a)
-             => MBundle m u a -> Int -> m (v (PrimState m) a)
+munstreamMax
+  :: (PrimMonad m, MVector v a) => MStream m a -> Int -> m (v (PrimState m) a)
 {-# INLINE munstreamMax #-}
 munstreamMax s n
   = do
@@ -345,17 +334,17 @@ munstreamMax s n
                        INTERNAL_CHECK(checkIndex) "munstreamMax" i n
                          $ unsafeWrite v i x
                        return (i+1)
-      n' <- MBundle.foldM' put 0 s
+      n' <- MStream.foldM' put 0 s
       return $ INTERNAL_CHECK(checkSlice) "munstreamMax" 0 n' n
              $ unsafeSlice 0 n' v
 
-munstreamUnknown :: (PrimMonad m, MVector v a)
-                 => MBundle m u a -> m (v (PrimState m) a)
+munstreamUnknown
+  :: (PrimMonad m, MVector v a) => MStream m a -> m (v (PrimState m) a)
 {-# INLINE munstreamUnknown #-}
 munstreamUnknown s
   = do
       v <- unsafeNew 0
-      (v', n) <- MBundle.foldM put (v, 0) s
+      (v', n) <- MStream.foldM put (v, 0) s
       return $ INTERNAL_CHECK(checkSlice) "munstreamUnknown" 0 n (length v')
              $ unsafeSlice 0 n v'
   where
@@ -364,103 +353,25 @@ munstreamUnknown s
                     v' <- unsafeAppend1 v i x
                     return (v',i+1)
 
-
-
-
-
-
-
--- | Create a new mutable vector and fill it with elements from the 'Bundle'.
--- The vector will grow exponentially if the maximum size of the 'Bundle' is
--- unknown.
-vunstream :: (PrimMonad m, V.Vector v a)
-         => Bundle v a -> m (V.Mutable v (PrimState m) a)
--- NOTE: replace INLINE_FUSED by INLINE? (also in unstreamR)
-{-# INLINE_FUSED vunstream #-}
-vunstream s = vmunstream (Bundle.lift s)
-
--- | Create a new mutable vector and fill it with elements from the monadic
--- stream. The vector will grow exponentially if the maximum size of the stream
--- is unknown.
-vmunstream :: (PrimMonad m, V.Vector v a)
-           => MBundle m v a -> m (V.Mutable v (PrimState m) a)
-{-# INLINE_FUSED vmunstream #-}
-vmunstream s = case upperBound (MBundle.size s) of
-               Just n  -> vmunstreamMax     s n
-               Nothing -> vmunstreamUnknown s
-
--- FIXME: I can't think of how to prevent GHC from floating out
--- unstreamUnknown. That is bad because SpecConstr then generates two
--- specialisations: one for when it is called from unstream (it doesn't know
--- the shape of the vector) and one for when the vector has grown. To see the
--- problem simply compile this:
---
--- fromList = Data.Vector.Unboxed.unstream . Bundle.fromList
---
--- I'm not sure this still applies (19/04/2010)
-
-vmunstreamMax :: (PrimMonad m, V.Vector v a)
-              => MBundle m v a -> Int -> m (V.Mutable v (PrimState m) a)
-{-# INLINE vmunstreamMax #-}
-vmunstreamMax s n
-  = do
-      v <- INTERNAL_CHECK(checkLength) "munstreamMax" n
-           $ unsafeNew n
-      let {-# INLINE_INNER copy #-}
-          copy i (Chunk n f) =
-            INTERNAL_CHECK(checkSlice) "munstreamMax.copy" i n (length v) $ do
-              f (basicUnsafeSlice i n v)
-              return (i+n)
-
-      n' <- Stream.foldlM' copy 0 (MBundle.chunks s)
-      return $ INTERNAL_CHECK(checkSlice) "munstreamMax" 0 n' n
-             $ unsafeSlice 0 n' v
-
-vmunstreamUnknown :: (PrimMonad m, V.Vector v a)
-                 => MBundle m v a -> m (V.Mutable v (PrimState m) a)
-{-# INLINE vmunstreamUnknown #-}
-vmunstreamUnknown s
-  = do
-      v <- unsafeNew 0
-      (v', n) <- Stream.foldlM copy (v,0) (MBundle.chunks s)
-      return $ INTERNAL_CHECK(checkSlice) "munstreamUnknown" 0 n (length v')
-             $ unsafeSlice 0 n v'
-  where
-    {-# INLINE_INNER copy #-}
-    copy (v,i) (Chunk n f)
-      = do
-          let j = i+n
-          v' <- if basicLength v < j
-                  then unsafeGrow v (delay_inline max (enlarge_delta v) (j - basicLength v))
-                  else return v
-          INTERNAL_CHECK(checkSlice) "munstreamUnknown.copy" i n (length v')
-            $ f (basicUnsafeSlice i n v')
-          return (v',j)
-
-
-
-
--- | Create a new mutable vector and fill it with elements from the 'Bundle'
+-- | Create a new mutable vector and fill it with elements from the 'Stream'
 -- from right to left. The vector will grow exponentially if the maximum size
--- of the 'Bundle' is unknown.
-unstreamR :: (PrimMonad m, MVector v a)
-          => Bundle u a -> m (v (PrimState m) a)
--- NOTE: replace INLINE_FUSED by INLINE? (also in unstream)
-{-# INLINE_FUSED unstreamR #-}
-unstreamR s = munstreamR (Bundle.lift s)
+-- of the 'Stream' is unknown.
+unstreamR :: (PrimMonad m, MVector v a) => Stream a -> m (v (PrimState m) a)
+-- NOTE: replace INLINE_STREAM by INLINE? (also in unstream)
+{-# INLINE_STREAM unstreamR #-}
+unstreamR s = munstreamR (Stream.liftStream s)
 
 -- | Create a new mutable vector and fill it with elements from the monadic
 -- stream from right to left. The vector will grow exponentially if the maximum
 -- size of the stream is unknown.
-munstreamR :: (PrimMonad m, MVector v a)
-           => MBundle m u a -> m (v (PrimState m) a)
-{-# INLINE_FUSED munstreamR #-}
-munstreamR s = case upperBound (MBundle.size s) of
+munstreamR :: (PrimMonad m, MVector v a) => MStream m a -> m (v (PrimState m) a)
+{-# INLINE_STREAM munstreamR #-}
+munstreamR s = case upperBound (MStream.size s) of
                Just n  -> munstreamRMax     s n
                Nothing -> munstreamRUnknown s
 
-munstreamRMax :: (PrimMonad m, MVector v a)
-              => MBundle m u a -> Int -> m (v (PrimState m) a)
+munstreamRMax
+  :: (PrimMonad m, MVector v a) => MStream m a -> Int -> m (v (PrimState m) a)
 {-# INLINE munstreamRMax #-}
 munstreamRMax s n
   = do
@@ -471,17 +382,17 @@ munstreamRMax s n
                       INTERNAL_CHECK(checkIndex) "munstreamRMax" i' n
                         $ unsafeWrite v i' x
                       return i'
-      i <- MBundle.foldM' put n s
+      i <- MStream.foldM' put n s
       return $ INTERNAL_CHECK(checkSlice) "munstreamRMax" i (n-i) n
              $ unsafeSlice i (n-i) v
 
-munstreamRUnknown :: (PrimMonad m, MVector v a)
-                  => MBundle m u a -> m (v (PrimState m) a)
+munstreamRUnknown
+  :: (PrimMonad m, MVector v a) => MStream m a -> m (v (PrimState m) a)
 {-# INLINE munstreamRUnknown #-}
 munstreamRUnknown s
   = do
       v <- unsafeNew 0
-      (v', i) <- MBundle.foldM put (v, 0) s
+      (v', i) <- MStream.foldM put (v, 0) s
       let n = length v'
       return $ INTERNAL_CHECK(checkSlice) "unstreamRUnknown" i (n-i) n
              $ unsafeSlice i (n-i) v'
@@ -599,7 +510,7 @@ replicate n x = basicUnsafeReplicate (delay_inline max 0 n) x
 -- and fill it with values produced by repeatedly executing the monadic action.
 replicateM :: (PrimMonad m, MVector v a) => Int -> m a -> m (v (PrimState m) a)
 {-# INLINE replicateM #-}
-replicateM n m = munstream (MBundle.replicateM n m)
+replicateM n m = munstream (MStream.replicateM n m)
 
 -- | Create a copy of a mutable vector.
 clone :: (PrimMonad m, MVector v a) => v (PrimState m) a -> m (v (PrimState m) a)
@@ -798,9 +709,9 @@ unsafeMove dst src = UNSAFE_CHECK(check) "unsafeMove" "length mismatch"
 -- ------------
 
 accum :: (PrimMonad m, MVector v a)
-      => (a -> b -> a) -> v (PrimState m) a -> Bundle u (Int, b) -> m ()
+        => (a -> b -> a) -> v (PrimState m) a -> Stream (Int, b) -> m ()
 {-# INLINE accum #-}
-accum f !v s = Bundle.mapM_ upd s
+accum f !v s = Stream.mapM_ upd s
   where
     {-# INLINE_INNER upd #-}
     upd (i,b) = do
@@ -811,9 +722,9 @@ accum f !v s = Bundle.mapM_ upd s
     !n = length v
 
 update :: (PrimMonad m, MVector v a)
-                        => v (PrimState m) a -> Bundle u (Int, a) -> m ()
+                        => v (PrimState m) a -> Stream (Int, a) -> m ()
 {-# INLINE update #-}
-update !v s = Bundle.mapM_ upd s
+update !v s = Stream.mapM_ upd s
   where
     {-# INLINE_INNER upd #-}
     upd (i,b) = BOUNDS_CHECK(checkIndex) "update" i n
@@ -822,9 +733,9 @@ update !v s = Bundle.mapM_ upd s
     !n = length v
 
 unsafeAccum :: (PrimMonad m, MVector v a)
-            => (a -> b -> a) -> v (PrimState m) a -> Bundle u (Int, b) -> m ()
+            => (a -> b -> a) -> v (PrimState m) a -> Stream (Int, b) -> m ()
 {-# INLINE unsafeAccum #-}
-unsafeAccum f !v s = Bundle.mapM_ upd s
+unsafeAccum f !v s = Stream.mapM_ upd s
   where
     {-# INLINE_INNER upd #-}
     upd (i,b) = do
@@ -835,9 +746,9 @@ unsafeAccum f !v s = Bundle.mapM_ upd s
     !n = length v
 
 unsafeUpdate :: (PrimMonad m, MVector v a)
-                        => v (PrimState m) a -> Bundle u (Int, a) -> m ()
+                        => v (PrimState m) a -> Stream (Int, a) -> m ()
 {-# INLINE unsafeUpdate #-}
-unsafeUpdate !v s = Bundle.mapM_ upd s
+unsafeUpdate !v s = Stream.mapM_ upd s
   where
     {-# INLINE_INNER upd #-}
     upd (i,b) = UNSAFE_CHECK(checkIndex) "accum" i n
@@ -883,16 +794,16 @@ unstablePartition f !v = from_left 0 (length v)
                                from_left (i+1) j
                         else from_right i (j-1)
 
-unstablePartitionBundle :: (PrimMonad m, MVector v a)
-        => (a -> Bool) -> Bundle u a -> m (v (PrimState m) a, v (PrimState m) a)
-{-# INLINE unstablePartitionBundle #-}
-unstablePartitionBundle f s
-  = case upperBound (Bundle.size s) of
+unstablePartitionStream :: (PrimMonad m, MVector v a)
+        => (a -> Bool) -> Stream a -> m (v (PrimState m) a, v (PrimState m) a)
+{-# INLINE unstablePartitionStream #-}
+unstablePartitionStream f s
+  = case upperBound (Stream.size s) of
       Just n  -> unstablePartitionMax f s n
       Nothing -> partitionUnknown f s
 
 unstablePartitionMax :: (PrimMonad m, MVector v a)
-        => (a -> Bool) -> Bundle u a -> Int
+        => (a -> Bool) -> Stream a -> Int
         -> m (v (PrimState m) a, v (PrimState m) a)
 {-# INLINE unstablePartitionMax #-}
 unstablePartitionMax f s n
@@ -908,19 +819,19 @@ unstablePartitionMax f s n
                             unsafeWrite v (j-1) x
                             return (i, j-1)
                                 
-      (i,j) <- Bundle.foldM' put (0, n) s
+      (i,j) <- Stream.foldM' put (0, n) s
       return (unsafeSlice 0 i v, unsafeSlice j (n-j) v)
 
-partitionBundle :: (PrimMonad m, MVector v a)
-        => (a -> Bool) -> Bundle u a -> m (v (PrimState m) a, v (PrimState m) a)
-{-# INLINE partitionBundle #-}
-partitionBundle f s
-  = case upperBound (Bundle.size s) of
+partitionStream :: (PrimMonad m, MVector v a)
+        => (a -> Bool) -> Stream a -> m (v (PrimState m) a, v (PrimState m) a)
+{-# INLINE partitionStream #-}
+partitionStream f s
+  = case upperBound (Stream.size s) of
       Just n  -> partitionMax f s n
       Nothing -> partitionUnknown f s
 
 partitionMax :: (PrimMonad m, MVector v a)
-  => (a -> Bool) -> Bundle u a -> Int -> m (v (PrimState m) a, v (PrimState m) a)
+  => (a -> Bool) -> Stream a -> Int -> m (v (PrimState m) a, v (PrimState m) a)
 {-# INLINE partitionMax #-}
 partitionMax f s n
   = do
@@ -938,7 +849,7 @@ partitionMax f s n
                             unsafeWrite v j' x
                             return (i,j') 
                             
-      (i,j) <- Bundle.foldM' put (0,n) s
+      (i,j) <- Stream.foldM' put (0,n) s
       INTERNAL_CHECK(check) "partitionMax" "invalid indices" (i <= j)
         $ return ()
       let l = unsafeSlice 0 i v
@@ -947,13 +858,13 @@ partitionMax f s n
       return (l,r)
 
 partitionUnknown :: (PrimMonad m, MVector v a)
-        => (a -> Bool) -> Bundle u a -> m (v (PrimState m) a, v (PrimState m) a)
+        => (a -> Bool) -> Stream a -> m (v (PrimState m) a, v (PrimState m) a)
 {-# INLINE partitionUnknown #-}
 partitionUnknown f s
   = do
       v1 <- unsafeNew 0
       v2 <- unsafeNew 0
-      (v1', n1, v2', n2) <- Bundle.foldM' put (v1, 0, v2, 0) s
+      (v1', n1, v2', n2) <- Stream.foldM' put (v1, 0, v2, 0) s
       INTERNAL_CHECK(checkSlice) "partitionUnknown" 0 n1 (length v1')
         $ INTERNAL_CHECK(checkSlice) "partitionUnknown" 0 n2 (length v2')
         $ return (unsafeSlice 0 n1 v1', unsafeSlice 0 n2 v2')

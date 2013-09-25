@@ -59,7 +59,7 @@ generate n =
                   <+> sep (punctuate (text " ->") [text ty <+> v | v <- vars])
                   <+> text "->"
                   <+> text ty <+> tuple vars
-             ,text "{-# INLINE_FUSED"  <+> name <+> text "#-}"
+             ,text "{-# INLINE_STREAM"  <+> name <+> text "#-}"
              ,name <+> sep varss
                    <+> text "="
                    <+> con c
@@ -84,7 +84,7 @@ generate n =
              2 $
              text "G.stream" <+> parens (name "zip" <+> sep varss)
              <+> char '='
-             <+> text "Bundle." <> name "zipWith" <+> tuple (replicate n empty)
+             <+> text "Stream." <> name "zipWith" <+> tuple (replicate n empty)
              <+> sep [parens $ text "G.stream" <+> vs | vs <- varss]
              $$ text "#-}"
      where

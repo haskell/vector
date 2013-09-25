@@ -1,5 +1,5 @@
 -- |
--- Module      : Data.Vector.Fusion.Bundle.Size
+-- Module      : Data.Vector.Fusion.Stream.Size
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
 -- License     : BSD-style
 --
@@ -10,7 +10,7 @@
 -- Size hints for streams.
 --
 
-module Data.Vector.Fusion.Bundle.Size (
+module Data.Vector.Fusion.Stream.Size (
   Size(..), smaller, larger, toMax, upperBound
 ) where
 
