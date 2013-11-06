@@ -1,4 +1,4 @@
-{-# LANGUAGE Rank2Types, MultiParamTypeClasses, FlexibleContexts,
+{-# LANGUAGE CPP, Rank2Types, MultiParamTypeClasses, FlexibleContexts,
              TypeFamilies, ScopedTypeVariables, BangPatterns #-}
 -- |
 -- Module      : Data.Vector.Generic

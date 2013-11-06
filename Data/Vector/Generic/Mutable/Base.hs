@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, BangPatterns #-}
+{-# LANGUAGE CPP, MultiParamTypeClasses, BangPatterns #-}
 -- |
 -- Module      : Data.Vector.Generic.Mutable.Base
 -- Copyright   : (c) Roman Leshchinskiy 2008-2011

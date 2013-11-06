@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, Rank2Types, BangPatterns #-}
+{-# LANGUAGE CPP, FlexibleInstances, Rank2Types, BangPatterns #-}
 
 -- |
 -- Module      : Data.Vector.Fusion.Bundle

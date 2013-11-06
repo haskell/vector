@@ -1,4 +1,5 @@
-{-# LANGUAGE FlexibleInstances
+{-# LANGUAGE DeriveDataTypeable
+           , FlexibleInstances
            , MultiParamTypeClasses
            , TypeFamilies
            , Rank2Types

@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 -- |
 -- Module      : Data.Vector.Unboxed.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010

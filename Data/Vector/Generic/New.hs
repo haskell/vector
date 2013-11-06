@@ -1,4 +1,4 @@
-{-# LANGUAGE Rank2Types, FlexibleContexts #-}
+{-# LANGUAGE CPP, Rank2Types, FlexibleContexts #-}
 
 -- |
 -- Module      : Data.Vector.Generic.New

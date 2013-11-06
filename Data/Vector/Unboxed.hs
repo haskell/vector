@@ -1,4 +1,4 @@
-{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE CPP, Rank2Types #-}
 
 -- |
 -- Module      : Data.Vector.Unboxed
