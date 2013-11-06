@@ -1,6 +1,7 @@
 Changes in version 0.11.0.0
 
- * ...WRITEME...
+ * Define `Applicative` instances for `Data.Vector.Fusion.Util.{Box,Id}`
+ * Define non-bottom `fail` for `instance Monad Vector`
 
 Changes in version 0.10.9.1
 
