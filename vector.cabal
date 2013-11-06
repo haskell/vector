@@ -1,5 +1,6 @@
 Name:           vector
 Version:        0.11.0.0
+-- don't forget to update the changelog file!
 License:        BSD3
 License-File:   LICENSE
 Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
@@ -32,21 +33,8 @@ Description:
         There is also a (draft) tutorial on common uses of vector.
         .
         * <http://haskell.org/haskellwiki/Numeric_Haskell:_A_Vector_Tutorial>
-        .
-        Changes in version 0.10.0.1
-        .
-        * Require @primitive@ to include workaround for a GHC array copying bug
-        .
-        Changes in version 0.10
-        .
-	* @NFData@ instances
-	.
-	* More efficient block fills
-	.
-	* Safe Haskell support removed
-	.
 
-Cabal-Version:  >= 1.6
+Cabal-Version:  >=1.10
 Build-Type:     Simple
 
 Extra-Source-Files:
@@ -75,6 +63,7 @@ Extra-Source-Files:
       benchmarks/TestData/Graph.hs
       benchmarks/TestData/ParenTree.hs
       benchmarks/TestData/Random.hs
+      changelog
       internal/GenUnboxTuple.hs
       internal/unbox-tuple-instances
 
@@ -94,7 +83,23 @@ Flag InternalChecks
 
 
 Library
-  Extensions: CPP, DeriveDataTypeable
+  Default-Language: Haskell2010
+  Other-Extensions:
+        BangPatterns
+        CPP
+        DeriveDataTypeable
+        ExistentialQuantification
+        FlexibleContexts
+        FlexibleInstances
+        GADTs
+        KindSignatures
+        MagicHash
+        MultiParamTypeClasses
+        Rank2Types
+        ScopedTypeVariables
+        StandaloneDeriving
+        TypeFamilies
+
   Exposed-Modules:
         Data.Vector.Internal.Check
 
@@ -130,14 +135,11 @@ Library
   Install-Includes:
         vector.h
 
-  Build-Depends: base >= 4 && < 5
+  Build-Depends: base >= 4.3 && < 4.8
                , primitive >= 0.5.0.1 && < 0.6
-               , ghc-prim
+               , ghc-prim >= 0.2 && < 0.4
                , deepseq >= 1.1 && < 1.4
 
-  if impl(ghc<6.13)
-    Ghc-Options: -finline-if-enough-args -fno-method-sharing
-  
   Ghc-Options: -O2
 
   if flag(BoundsChecks)
@@ -151,4 +153,4 @@ Library
 
 source-repository head
   type:     git
-  location: https://github.com/haskell/vector
+  location: https://github.com/haskell/vector.git
