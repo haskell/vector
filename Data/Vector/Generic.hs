@@ -79,7 +79,7 @@ module Data.Vector.Generic (
   map, imap, concatMap,
 
   -- ** Monadic mapping
-  mapM, mapM_, forM, forM_,
+  mapM, imapM, mapM_, imapM_, forM, forM_,
 
   -- ** Zipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
@@ -1021,11 +1021,23 @@ mapM :: (Monad m, Vector v a, Vector v b) => (a -> m b) -> v a -> m (v b)
 {-# INLINE mapM #-}
 mapM f = unstreamM . Bundle.mapM f . stream
 
+-- | /O(n)/ Apply the monadic action to every element of a vector and its
+-- index, yielding a vector of results
+imapM :: (Monad m, Vector v a, Vector v b)
+      => (Int -> a -> m b) -> v a -> m (v b)
+imapM f = unstreamM . Bundle.mapM (uncurry f) . Bundle.indexed . stream
+
 -- | /O(n)/ Apply the monadic action to all elements of a vector and ignore the
 -- results
 mapM_ :: (Monad m, Vector v a) => (a -> m b) -> v a -> m ()
 {-# INLINE mapM_ #-}
 mapM_ f = Bundle.mapM_ f . stream
+
+-- | /O(n)/ Apply the monadic action to every element of a vector and its
+-- index, ignoring the results
+imapM_ :: (Monad m, Vector v a) => (Int -> a -> m b) -> v a -> m ()
+{-# INLINE imapM_ #-}
+imapM_ f = Bundle.mapM_ (uncurry f) . Bundle.indexed . stream
 
 -- | /O(n)/ Apply the monadic action to all elements of the vector, yielding a
 -- vector of results. Equvalent to @flip 'mapM'@.

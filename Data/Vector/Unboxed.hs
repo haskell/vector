@@ -102,7 +102,7 @@ module Data.Vector.Unboxed (
   map, imap, concatMap,
 
   -- ** Monadic mapping
-  mapM, mapM_, forM, forM_,
+  mapM, imapM, mapM_, imapM_, forM, forM_,
 
   -- ** Zipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
@@ -785,11 +785,24 @@ mapM :: (Monad m, Unbox a, Unbox b) => (a -> m b) -> Vector a -> m (Vector b)
 {-# INLINE mapM #-}
 mapM = G.mapM
 
+-- | /O(n)/ Apply the monadic action to every element of a vector and its
+-- index, yielding a vector of results
+imapM :: (Monad m, Unbox a, Unbox b)
+      => (Int -> a -> m b) -> Vector a -> m (Vector b)
+{-# INLINE imapM #-}
+imapM = G.imapM
+
 -- | /O(n)/ Apply the monadic action to all elements of a vector and ignore the
 -- results
 mapM_ :: (Monad m, Unbox a) => (a -> m b) -> Vector a -> m ()
 {-# INLINE mapM_ #-}
 mapM_ = G.mapM_
+
+-- | /O(n)/ Apply the monadic action to every element of a vector and its
+-- index, ignoring the results
+imapM_ :: (Monad m, Unbox a) => (Int -> a -> m b) -> Vector a -> m ()
+{-# INLINE imapM_ #-}
+imapM_ = G.imapM_
 
 -- | /O(n)/ Apply the monadic action to all elements of the vector, yielding a
 -- vector of results. Equvalent to @flip 'mapM'@.
