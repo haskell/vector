@@ -6,7 +6,7 @@
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
 -- Stability   : experimental
 -- Portability : non-portable
--- 
+--
 -- Ugly internal utility functions for implementing 'Storable'-based vectors.
 --
 

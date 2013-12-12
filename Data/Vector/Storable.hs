@@ -8,7 +8,7 @@
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
 -- Stability   : experimental
 -- Portability : non-portable
--- 
+--
 -- 'Storable'-based vectors.
 --
 
@@ -64,7 +64,7 @@ module Data.Vector.Storable (
   accum, accumulate_,
   unsafeAccum, unsafeAccumulate_,
 
-  -- ** Permutations 
+  -- ** Permutations
   reverse, backpermute, unsafeBackpermute,
 
   -- ** Safe destructive updates
@@ -627,7 +627,7 @@ force = G.force
 -- > <5,9,2,7> // [(2,1),(0,3),(2,8)] = <3,9,8,7>
 --
 (//) :: Storable a => Vector a   -- ^ initial vector (of length @m@)
-                -> [(Int, a)] -- ^ list of index/value pairs (of length @n@) 
+                -> [(Int, a)] -- ^ list of index/value pairs (of length @n@)
                 -> Vector a
 {-# INLINE (//) #-}
 (//) = (G.//)
@@ -1211,7 +1211,7 @@ postscanl' = G.postscanl'
 -- >         yi = f y(i-1) x(i-1)
 --
 -- Example: @scanl (+) 0 \<1,2,3,4\> = \<0,1,3,6,10\>@
--- 
+--
 scanl :: (Storable a, Storable b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE scanl #-}
 scanl = G.scanl
@@ -1354,7 +1354,7 @@ unsafeCopy
   :: (Storable a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE unsafeCopy #-}
 unsafeCopy = G.unsafeCopy
-           
+
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length.
 copy :: (Storable a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()

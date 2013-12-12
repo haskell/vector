@@ -8,7 +8,7 @@
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
 -- Stability   : experimental
 -- Portability : non-portable
--- 
+--
 -- Mutable vectors based on Storable.
 --
 
@@ -139,7 +139,7 @@ instance Storable a => G.MVector MVector a where
     $ withForeignPtr fp $ \p ->
       withForeignPtr fq $ \q ->
       copyArray p q n
-  
+
   {-# INLINE basicUnsafeMove #-}
   basicUnsafeMove (MVector n fp) (MVector _ fq)
     = unsafePrimToPrim
@@ -300,7 +300,7 @@ clone = G.clone
 
 -- | Grow a vector by the given number of elements. The number must be
 -- positive.
-grow :: (PrimMonad m, Storable a)  
+grow :: (PrimMonad m, Storable a)
               => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE grow #-}
 grow = G.grow
@@ -316,7 +316,7 @@ unsafeGrow = G.unsafeGrow
 -- ------------------------
 
 -- | Reset all elements of the vector to some undefined value, clearing all
--- references to external objects. This is usually a noop for unboxed vectors. 
+-- references to external objects. This is usually a noop for unboxed vectors.
 clear :: (PrimMonad m, Storable a) => MVector (PrimState m) a -> m ()
 {-# INLINE clear #-}
 clear = G.clear
@@ -369,7 +369,7 @@ set = G.set
 
 -- | Copy a vector. The two vectors must have the same length and may not
 -- overlap.
-copy :: (PrimMonad m, Storable a) 
+copy :: (PrimMonad m, Storable a)
                  => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
 {-# INLINE copy #-}
 copy = G.copy
@@ -385,7 +385,7 @@ unsafeCopy = G.unsafeCopy
 
 -- | Move the contents of a vector. The two vectors must have the same
 -- length.
--- 
+--
 -- If the vectors do not overlap, then this is equivalent to 'copy'.
 -- Otherwise, the copying is performed as if the source vector were
 -- copied to a temporary vector and then the temporary vector was copied
@@ -397,7 +397,7 @@ move = G.move
 
 -- | Move the contents of a vector. The two vectors must have the same
 -- length, but this is not checked.
--- 
+--
 -- If the vectors do not overlap, then this is equivalent to 'unsafeCopy'.
 -- Otherwise, the copying is performed as if the source vector were
 -- copied to a temporary vector and then the temporary vector was copied

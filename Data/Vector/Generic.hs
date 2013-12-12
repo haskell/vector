@@ -8,7 +8,7 @@
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
 -- Stability   : experimental
 -- Portability : non-portable
--- 
+--
 -- Generic interface to pure vectors.
 --
 
@@ -64,7 +64,7 @@ module Data.Vector.Generic (
   accum, accumulate, accumulate_,
   unsafeAccum, unsafeAccumulate, unsafeAccumulate_,
 
-  -- ** Permutations 
+  -- ** Permutations
   reverse, backpermute, unsafeBackpermute,
 
   -- ** Safe destructive updates
@@ -115,7 +115,7 @@ module Data.Vector.Generic (
   minIndex, minIndexBy, maxIndex, maxIndexBy,
 
   -- ** Monadic folds
-  foldM, ifoldM, foldM', ifoldM', 
+  foldM, ifoldM, foldM', ifoldM',
   fold1M, fold1M', foldM_, ifoldM_,
   foldM'_, ifoldM'_, fold1M_, fold1M'_,
 
@@ -850,7 +850,7 @@ accumulate_ :: (Vector v a, Vector v Int, Vector v b)
 {-# INLINE accumulate_ #-}
 accumulate_ f v is xs = accum_stream f v (Bundle.zipWith (,) (stream is)
                                                              (stream xs))
-                                        
+
 
 accum_stream :: Vector v a => (a -> b -> a) -> v a -> Bundle u (Int,b) -> v a
 {-# INLINE accum_stream #-}
@@ -1369,7 +1369,7 @@ break :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 break f xs = case findIndex f xs of
                Just i  -> (unsafeSlice 0 i xs, unsafeSlice i (length xs - i) xs)
                Nothing -> (xs, empty)
-    
+
 
 -- Searching
 -- ---------
@@ -1714,7 +1714,7 @@ postscanl' f z = unstream . inplace (S.postscanl' f z) id . stream
 -- >         yi = f y(i-1) x(i-1)
 --
 -- Example: @scanl (+) 0 \<1,2,3,4\> = \<0,1,3,6,10\>@
--- 
+--
 scanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE scanl #-}
 scanl f z = unstream . Bundle.scanl f z . stream

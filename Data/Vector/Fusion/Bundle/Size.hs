@@ -6,7 +6,7 @@
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
 -- Stability   : experimental
 -- Portability : portable
--- 
+--
 -- Size hints for streams.
 --
 
