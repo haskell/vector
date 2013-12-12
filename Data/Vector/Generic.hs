@@ -87,7 +87,7 @@ module Data.Vector.Generic (
   zip, zip3, zip4, zip5, zip6,
 
   -- ** Monadic zipping
-  zipWithM, zipWithM_,
+  zipWithM, izipWithM, zipWithM_, izipWithM_,
 
   -- ** Unzipping
   unzip, unzip3, unzip4, unzip5, unzip6,
@@ -1192,12 +1192,30 @@ zipWithM :: (Monad m, Vector v a, Vector v b, Vector v c)
 {-# INLINE zipWithM #-}
 zipWithM f as bs = unstreamM $ Bundle.zipWithM f (stream as) (stream bs)
 
+-- | /O(min(m,n))/ Zip the two vectors with a monadic action that also takes
+-- the element index and yield a vector of results
+izipWithM :: (Monad m, Vector v a, Vector v b, Vector v c)
+         => (Int -> a -> b -> m c) -> v a -> v b -> m (v c)
+{-# INLINE izipWithM #-}
+izipWithM m as bs = unstreamM . Bundle.zipWithM (uncurry m)
+                                (Bundle.indexed (stream as))
+                                $ stream bs
+
 -- | /O(min(m,n))/ Zip the two vectors with the monadic action and ignore the
 -- results
 zipWithM_ :: (Monad m, Vector v a, Vector v b)
           => (a -> b -> m c) -> v a -> v b -> m ()
 {-# INLINE zipWithM_ #-}
 zipWithM_ f as bs = Bundle.zipWithM_ f (stream as) (stream bs)
+
+-- | /O(min(m,n))/ Zip the two vectors with a monadic action that also takes
+-- the element index and ignore the results
+izipWithM_ :: (Monad m, Vector v a, Vector v b)
+          => (Int -> a -> b -> m c) -> v a -> v b -> m ()
+{-# INLINE izipWithM_ #-}
+izipWithM_ m as bs = Bundle.zipWithM_ (uncurry m)
+                      (Bundle.indexed (stream as))
+                      $ stream bs
 
 -- Unzipping
 -- ---------
