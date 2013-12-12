@@ -131,8 +131,9 @@ module Data.Vector (
   minIndex, minIndexBy, maxIndex, maxIndexBy,
 
   -- ** Monadic folds
-  foldM, foldM', fold1M, fold1M',
-  foldM_, foldM'_, fold1M_, fold1M'_,
+  foldM, ifoldM, foldM', ifoldM',
+  fold1M, fold1M',foldM_, ifoldM_,
+  foldM'_, ifoldM'_, fold1M_, fold1M'_,
 
   -- ** Monadic sequencing
   sequence, sequence_,
@@ -1301,6 +1302,11 @@ foldM :: Monad m => (a -> b -> m a) -> a -> Vector b -> m a
 {-# INLINE foldM #-}
 foldM = G.foldM
 
+-- | /O(n)/ Monadic fold (action applied to each element and its index)
+ifoldM :: Monad m => (a -> Int -> b -> m a) -> a -> Vector b -> m a
+{-# INLINE ifoldM #-}
+ifoldM = G.ifoldM
+
 -- | /O(n)/ Monadic fold over non-empty vectors
 fold1M :: Monad m => (a -> a -> m a) -> Vector a -> m a
 {-# INLINE fold1M #-}
@@ -1310,6 +1316,12 @@ fold1M = G.fold1M
 foldM' :: Monad m => (a -> b -> m a) -> a -> Vector b -> m a
 {-# INLINE foldM' #-}
 foldM' = G.foldM'
+
+-- | /O(n)/ Monadic fold with strict accumulator (action applied to each
+-- element and its index)
+ifoldM' :: Monad m => (a -> Int -> b -> m a) -> a -> Vector b -> m a
+{-# INLINE ifoldM' #-}
+ifoldM' = G.ifoldM'
 
 -- | /O(n)/ Monadic fold over non-empty vectors with strict accumulator
 fold1M' :: Monad m => (a -> a -> m a) -> Vector a -> m a
@@ -1321,6 +1333,12 @@ foldM_ :: Monad m => (a -> b -> m a) -> a -> Vector b -> m ()
 {-# INLINE foldM_ #-}
 foldM_ = G.foldM_
 
+-- | /O(n)/ Monadic fold that discards the result (action applied to each
+-- element and its index)
+ifoldM_ :: Monad m => (a -> Int -> b -> m a) -> a -> Vector b -> m ()
+{-# INLINE ifoldM_ #-}
+ifoldM_ = G.ifoldM_
+
 -- | /O(n)/ Monadic fold over non-empty vectors that discards the result
 fold1M_ :: Monad m => (a -> a -> m a) -> Vector a -> m ()
 {-# INLINE fold1M_ #-}
@@ -1330,6 +1348,12 @@ fold1M_ = G.fold1M_
 foldM'_ :: Monad m => (a -> b -> m a) -> a -> Vector b -> m ()
 {-# INLINE foldM'_ #-}
 foldM'_ = G.foldM'_
+
+-- | /O(n)/ Monadic fold with strict accumulator that discards the result
+-- (action applied to each element and its index)
+ifoldM'_ :: Monad m => (a -> Int -> b -> m a) -> a -> Vector b -> m ()
+{-# INLINE ifoldM'_ #-}
+ifoldM'_ = G.ifoldM'_
 
 -- | /O(n)/ Monadic fold over non-empty vectors with strict accumulator
 -- that discards the result
