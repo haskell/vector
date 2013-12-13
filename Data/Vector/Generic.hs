@@ -1046,21 +1046,21 @@ forM_ as f = mapM_ f as
 zipWith :: (Vector v a, Vector v b, Vector v c)
         => (a -> b -> c) -> v a -> v b -> v c
 {-# INLINE zipWith #-}
-zipWith f xs ys = unstream (Bundle.zipWith f (stream xs) (stream ys))
+zipWith f = \xs ys -> unstream (Bundle.zipWith f (stream xs) (stream ys))
 
 -- | Zip three vectors with the given function.
 zipWith3 :: (Vector v a, Vector v b, Vector v c, Vector v d)
          => (a -> b -> c -> d) -> v a -> v b -> v c -> v d
 {-# INLINE zipWith3 #-}
-zipWith3 f as bs cs = unstream (Bundle.zipWith3 f (stream as)
+zipWith3 f = \as bs cs -> unstream (Bundle.zipWith3 f (stream as)
                                                   (stream bs)
                                                   (stream cs))
 
 zipWith4 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e)
          => (a -> b -> c -> d -> e) -> v a -> v b -> v c -> v d -> v e
 {-# INLINE zipWith4 #-}
-zipWith4 f as bs cs ds
-  = unstream (Bundle.zipWith4 f (stream as)
+zipWith4 f = \as bs cs ds ->
+    unstream (Bundle.zipWith4 f (stream as)
                                 (stream bs)
                                 (stream cs)
                                 (stream ds))
@@ -1070,8 +1070,8 @@ zipWith5 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e,
          => (a -> b -> c -> d -> e -> f) -> v a -> v b -> v c -> v d -> v e
                                          -> v f
 {-# INLINE zipWith5 #-}
-zipWith5 f as bs cs ds es
-  = unstream (Bundle.zipWith5 f (stream as)
+zipWith5 f = \as bs cs ds es ->
+    unstream (Bundle.zipWith5 f (stream as)
                                 (stream bs)
                                 (stream cs)
                                 (stream ds)
@@ -1082,8 +1082,8 @@ zipWith6 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e,
          => (a -> b -> c -> d -> e -> f -> g)
          -> v a -> v b -> v c -> v d -> v e -> v f -> v g
 {-# INLINE zipWith6 #-}
-zipWith6 f as bs cs ds es fs
-  = unstream (Bundle.zipWith6 f (stream as)
+zipWith6 f = \as bs cs ds es fs ->
+    unstream (Bundle.zipWith6 f (stream as)
                                 (stream bs)
                                 (stream cs)
                                 (stream ds)
@@ -1095,23 +1095,23 @@ zipWith6 f as bs cs ds es fs
 izipWith :: (Vector v a, Vector v b, Vector v c)
         => (Int -> a -> b -> c) -> v a -> v b -> v c
 {-# INLINE izipWith #-}
-izipWith f xs ys = unstream
-                  (Bundle.zipWith (uncurry f) (Bundle.indexed (stream xs))
-                                                              (stream ys))
+izipWith f = \xs ys ->
+    unstream (Bundle.zipWith (uncurry f) (Bundle.indexed (stream xs))
+                                                         (stream ys))
 
 izipWith3 :: (Vector v a, Vector v b, Vector v c, Vector v d)
          => (Int -> a -> b -> c -> d) -> v a -> v b -> v c -> v d
 {-# INLINE izipWith3 #-}
-izipWith3 f as bs cs
-  = unstream (Bundle.zipWith3 (uncurry f) (Bundle.indexed (stream as))
+izipWith3 f = \as bs cs ->
+    unstream (Bundle.zipWith3 (uncurry f) (Bundle.indexed (stream as))
                                                           (stream bs)
                                                           (stream cs))
 
 izipWith4 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e)
          => (Int -> a -> b -> c -> d -> e) -> v a -> v b -> v c -> v d -> v e
 {-# INLINE izipWith4 #-}
-izipWith4 f as bs cs ds
-  = unstream (Bundle.zipWith4 (uncurry f) (Bundle.indexed (stream as))
+izipWith4 f = \as bs cs ds ->
+    unstream (Bundle.zipWith4 (uncurry f) (Bundle.indexed (stream as))
                                                           (stream bs)
                                                           (stream cs)
                                                           (stream ds))
@@ -1121,8 +1121,8 @@ izipWith5 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e,
          => (Int -> a -> b -> c -> d -> e -> f) -> v a -> v b -> v c -> v d
                                                 -> v e -> v f
 {-# INLINE izipWith5 #-}
-izipWith5 f as bs cs ds es
-  = unstream (Bundle.zipWith5 (uncurry f) (Bundle.indexed (stream as))
+izipWith5 f = \as bs cs ds es ->
+    unstream (Bundle.zipWith5 (uncurry f) (Bundle.indexed (stream as))
                                                           (stream bs)
                                                           (stream cs)
                                                           (stream ds)
@@ -1133,8 +1133,8 @@ izipWith6 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e,
          => (Int -> a -> b -> c -> d -> e -> f -> g)
          -> v a -> v b -> v c -> v d -> v e -> v f -> v g
 {-# INLINE izipWith6 #-}
-izipWith6 f as bs cs ds es fs
-  = unstream (Bundle.zipWith6 (uncurry f) (Bundle.indexed (stream as))
+izipWith6 f = \as bs cs ds es fs ->
+    unstream (Bundle.zipWith6 (uncurry f) (Bundle.indexed (stream as))
                                                           (stream bs)
                                                           (stream cs)
                                                           (stream ds)
@@ -1177,14 +1177,14 @@ zipWithM :: (Monad m, Vector v a, Vector v b, Vector v c)
          => (a -> b -> m c) -> v a -> v b -> m (v c)
 -- FIXME: specialise for ST and IO?
 {-# INLINE zipWithM #-}
-zipWithM f as bs = unstreamM $ Bundle.zipWithM f (stream as) (stream bs)
+zipWithM f = \as bs -> unstreamM $ Bundle.zipWithM f (stream as) (stream bs)
 
 -- | /O(min(m,n))/ Zip the two vectors with the monadic action and ignore the
 -- results
 zipWithM_ :: (Monad m, Vector v a, Vector v b)
           => (a -> b -> m c) -> v a -> v b -> m ()
 {-# INLINE zipWithM_ #-}
-zipWithM_ f as bs = Bundle.zipWithM_ f (stream as) (stream bs)
+zipWithM_ f = \as bs -> Bundle.zipWithM_ f (stream as) (stream bs)
 
 -- Unzipping
 -- ---------
