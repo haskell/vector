@@ -39,15 +39,6 @@ Build-Type:     Simple
 
 Extra-Source-Files:
       README.md
-      tests/vector-tests.cabal
-      tests/LICENSE
-      tests/Setup.hs
-      tests/Main.hs
-      tests/Boilerplater.hs
-      tests/Utilities.hs
-      tests/Tests/Move.hs
-      tests/Tests/Bundle.hs
-      tests/Tests/Vector.hs
       benchmarks/vector-benchmarks.cabal
       benchmarks/LICENSE
       benchmarks/Setup.hs
