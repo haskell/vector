@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Tests.Vector (tests) where
 
 import Boilerplater

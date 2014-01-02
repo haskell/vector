@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Tests.Bundle ( tests ) where
 
 import Boilerplater
