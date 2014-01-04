@@ -39,15 +39,6 @@ Build-Type:     Simple
 
 Extra-Source-Files:
       README.md
-      tests/vector-tests.cabal
-      tests/LICENSE
-      tests/Setup.hs
-      tests/Main.hs
-      tests/Boilerplater.hs
-      tests/Utilities.hs
-      tests/Tests/Move.hs
-      tests/Tests/Bundle.hs
-      tests/Tests/Vector.hs
       benchmarks/vector-benchmarks.cabal
       benchmarks/LICENSE
       benchmarks/Setup.hs
@@ -154,3 +145,66 @@ Library
 source-repository head
   type:     git
   location: https://github.com/haskell/vector.git
+
+
+-- We have two variants of test suite which are identical in every
+-- respect except they use different optmization levels
+Test-suite test-O0
+  type:             exitcode-stdio-1.0
+  Default-Language: Haskell2010
+  hs-source-dirs:   tests
+  main-is:          Main.hs
+  other-modules:
+        Tests.Bundle,
+        Tests.Move,
+        Tests.Vector,
+        Boilerplater
+        Utilities
+  Default-Extensions: CPP,
+              ScopedTypeVariables,
+              PatternGuards,
+              MultiParamTypeClasses,
+              FlexibleContexts,
+              Rank2Types,
+              TypeSynonymInstances,
+              TypeFamilies,
+              TemplateHaskell
+  Ghc-Options: -O0
+  Ghc-Options: -Wall -fno-warn-orphans -fno-warn-missing-signatures
+  build-depends: base    >= 4 && < 5
+               , vector  >= 0.11
+               , template-haskell
+               , random
+               , QuickCheck >= 2
+               , test-framework
+               , test-framework-quickcheck2
+
+Test-suite test-O2
+  type:             exitcode-stdio-1.0
+  Default-Language: Haskell2010
+  hs-source-dirs:   tests
+  main-is:          Main.hs
+  other-modules:
+        Tests.Bundle,
+        Tests.Move,
+        Tests.Vector,
+        Boilerplater,
+        Utilities
+  Default-Extensions: CPP,
+              ScopedTypeVariables,
+              PatternGuards,
+              MultiParamTypeClasses,
+              FlexibleContexts,
+              Rank2Types,
+              TypeSynonymInstances,
+              TypeFamilies,
+              TemplateHaskell
+  Ghc-Options: -O2
+  Ghc-Options: -Wall -fno-warn-orphans -fno-warn-missing-signatures
+  build-depends: base    >= 4 && < 5
+               , vector  >= 0.11
+               , template-haskell
+               , random
+               , QuickCheck >= 2
+               , test-framework
+               , test-framework-quickcheck2
