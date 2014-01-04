@@ -23,14 +23,15 @@ before_install:
 
 install:
  - cabal-1.18 update
- - cabal-1.18 install --only-dependencies
+ - cabal-1.18 install --enable-tests --only-dependencies
  - ghc --version
 
 script:
- - cabal-1.18 configure -v2
+ - cabal-1.18 configure --enable-tests -v2
  - cabal-1.18 build
 # -O2 causes check warning
 # - cabal-1.18 check
+ - cabal-1.68 test
  - cabal-1.18 sdist
  - export SRC_TGZ=$(cabal-1.18 info . | awk '{print $2 ".tar.gz";exit}') ;
    cd dist/;
