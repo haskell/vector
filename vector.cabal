@@ -4,7 +4,7 @@ Version:        0.11.0.0
 License:        BSD3
 License-File:   LICENSE
 Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
-Maintainer:     Roman Leshchinskiy <rl@cse.unsw.edu.au>
+Maintainer:     Haskell Libraries Team <libraries@haskell.org>
 Copyright:      (c) Roman Leshchinskiy 2008-2012
 Homepage:       https://github.com/haskell/vector
 Bug-Reports:    https://github.com/haskell/vector/issues
