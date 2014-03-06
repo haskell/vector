@@ -21,6 +21,9 @@ import Data.Monoid
 import qualified Control.Applicative as Applicative
 import System.Random       (Random)
 
+import Data.Functor.Identity
+import Control.Monad.Trans.Writer
+
 #define COMMON_CONTEXT(a, v) \
  VANILLA_CONTEXT(a, v), VECTOR_CONTEXT(a, v)
 
@@ -140,10 +143,12 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Monadic mapping
         {- 'prop_mapM, 'prop_mapM_, 'prop_forM, 'prop_forM_, -}
+        'prop_imapM, 'prop_imapM_,
 
         -- Zipping
         'prop_zipWith, 'prop_zipWith3, {- ... -}
         'prop_izipWith, 'prop_izipWith3, {- ... -}
+        'prop_izipWithM, 'prop_izipWithM_,
         {- 'prop_zip, ... -}
 
         -- Monadic zipping
@@ -169,6 +174,7 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_foldl, 'prop_foldl1, 'prop_foldl', 'prop_foldl1',
         'prop_foldr, 'prop_foldr1, 'prop_foldr', 'prop_foldr1',
         'prop_ifoldl, 'prop_ifoldl', 'prop_ifoldr, 'prop_ifoldr',
+        'prop_ifoldM, 'prop_ifoldM', 'prop_ifoldM_, 'prop_ifoldM'_,
 
         -- Specialised folds
         'prop_all, 'prop_any,
@@ -272,7 +278,15 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_zipWith3 :: P ((a -> a -> a -> a) -> v a -> v a -> v a -> v a)
              = V.zipWith3 `eq` zipWith3
     prop_imap :: P ((Int -> a -> a) -> v a -> v a) = V.imap `eq` imap
+    prop_imapM :: P ((Int -> a -> Identity a) -> v a -> Identity (v a))
+            = V.imapM `eq` imapM
+    prop_imapM_ :: P ((Int -> a -> Writer [a] ()) -> v a -> Writer [a] ())
+            = V.imapM_ `eq` imapM_
     prop_izipWith :: P ((Int -> a -> a -> a) -> v a -> v a -> v a) = V.izipWith `eq` izipWith
+    prop_izipWithM :: P ((Int -> a -> a -> Identity a) -> v a -> v a -> Identity (v a))
+            = V.izipWithM `eq` izipWithM
+    prop_izipWithM_ :: P ((Int -> a -> a -> Writer [a] ()) -> v a -> v a -> Writer [a] ())
+            = V.izipWithM_ `eq` izipWithM_
     prop_izipWith3 :: P ((Int -> a -> a -> a -> a) -> v a -> v a -> v a -> v a)
              = V.izipWith3 `eq` izipWith3
 
@@ -315,6 +329,14 @@ testPolymorphicFunctions _ = $(testProperties [
         = V.ifoldr `eq` ifoldr
     prop_ifoldr' :: P ((Int -> a -> a -> a) -> a -> v a -> a)
         = V.ifoldr' `eq` ifoldr
+    prop_ifoldM :: P ((a -> Int -> a -> Identity a) -> a -> v a -> Identity a)
+        = V.ifoldM `eq` ifoldM
+    prop_ifoldM' :: P ((a -> Int -> a -> Identity a) -> a -> v a -> Identity a)
+        = V.ifoldM' `eq` ifoldM
+    prop_ifoldM_ :: P ((() -> Int -> a -> Writer [a] ()) -> () -> v a -> Writer [a] ())
+        = V.ifoldM_ `eq` ifoldM_
+    prop_ifoldM'_ :: P ((() -> Int -> a -> Writer [a] ()) -> () -> v a -> Writer [a] ())
+        = V.ifoldM'_ `eq` ifoldM_
 
     prop_all :: P ((a -> Bool) -> v a -> Bool) = V.all `eq` all
     prop_any :: P ((a -> Bool) -> v a -> Bool) = V.any `eq` any
