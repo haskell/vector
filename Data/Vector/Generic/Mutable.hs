@@ -7,7 +7,7 @@
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
 -- Stability   : experimental
 -- Portability : non-portable
--- 
+--
 -- Generic interface to mutable vectors
 --
 
@@ -186,7 +186,7 @@ class MBundle.Pointer u a => MVector v a where
                             basicUnsafeWrite dst i x
                             do_copy (i+1)
                 | otherwise = return ()
-  
+
   {-# INLINE basicUnsafeMove #-}
   basicUnsafeMove !dst !src
     | basicOverlaps dst src = do
@@ -203,7 +203,7 @@ class MBundle.Pointer u a => MVector v a where
     where
       n = basicLength v
 -}
- 
+
 -- ------------------
 -- Internal functions
 -- ------------------
@@ -665,7 +665,7 @@ unsafeGrowFront v by = UNSAFE_CHECK(checkLength) "unsafeGrowFront" by
 -- ------------------------
 
 -- | Reset all elements of the vector to some undefined value, clearing all
--- references to external objects. This is usually a noop for unboxed vectors. 
+-- references to external objects. This is usually a noop for unboxed vectors.
 clear :: (PrimMonad m, MVector v a) => v (PrimState m) a -> m ()
 {-# INLINE clear #-}
 clear = basicClear
@@ -755,7 +755,7 @@ copy dst src = BOUNDS_CHECK(check) "copy" "overlapping vectors"
 
 -- | Move the contents of a vector. The two vectors must have the same
 -- length.
--- 
+--
 -- If the vectors do not overlap, then this is equivalent to 'copy'.
 -- Otherwise, the copying is performed as if the source vector were
 -- copied to a temporary vector and then the temporary vector was copied
@@ -781,7 +781,7 @@ unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
 
 -- | Move the contents of a vector. The two vectors must have the same
 -- length, but this is not checked.
--- 
+--
 -- If the vectors do not overlap, then this is equivalent to 'unsafeCopy'.
 -- Otherwise, the copying is performed as if the source vector were
 -- copied to a temporary vector and then the temporary vector was copied
@@ -907,7 +907,7 @@ unstablePartitionMax f s n
             | otherwise = do
                             unsafeWrite v (j-1) x
                             return (i, j-1)
-                                
+
       (i,j) <- Bundle.foldM' put (0, n) s
       return (unsafeSlice 0 i v, unsafeSlice j (n-j) v)
 
@@ -936,8 +936,8 @@ partitionMax f s n
             | otherwise = let j' = j-1 in
                           do
                             unsafeWrite v j' x
-                            return (i,j') 
-                            
+                            return (i,j')
+
       (i,j) <- Bundle.foldM' put (0,n) s
       INTERNAL_CHECK(check) "partitionMax" "invalid indices" (i <= j)
         $ return ()

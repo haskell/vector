@@ -87,7 +87,7 @@ module Data.Vector.Unboxed (
   accum, accumulate, accumulate_,
   unsafeAccum, unsafeAccumulate, unsafeAccumulate_,
 
-  -- ** Permutations 
+  -- ** Permutations
   reverse, backpermute, unsafeBackpermute,
 
   -- ** Safe destructive updates
@@ -102,7 +102,7 @@ module Data.Vector.Unboxed (
   map, imap, concatMap,
 
   -- ** Monadic mapping
-  mapM, mapM_, forM, forM_,
+  mapM, imapM, mapM_, imapM_, forM, forM_,
 
   -- ** Zipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
@@ -110,7 +110,7 @@ module Data.Vector.Unboxed (
   zip, zip3, zip4, zip5, zip6,
 
   -- ** Monadic zipping
-  zipWithM, zipWithM_,
+  zipWithM, izipWithM, zipWithM_, izipWithM_,
 
   -- ** Unzipping
   unzip, unzip3, unzip4, unzip5, unzip6,
@@ -138,8 +138,9 @@ module Data.Vector.Unboxed (
   minIndex, minIndexBy, maxIndex, maxIndexBy,
 
   -- ** Monadic folds
-  foldM, foldM', fold1M, fold1M',
-  foldM_, foldM'_, fold1M_, fold1M'_,
+  foldM, ifoldM, foldM', ifoldM',
+  fold1M, fold1M', foldM_, ifoldM_,
+  foldM'_, ifoldM'_, fold1M_, fold1M'_,
 
   -- * Prefix sums (scans)
   prescanl, prescanl',
@@ -596,7 +597,7 @@ force = G.force
 -- > <5,9,2,7> // [(2,1),(0,3),(2,8)] = <3,9,8,7>
 --
 (//) :: Unbox a => Vector a   -- ^ initial vector (of length @m@)
-                -> [(Int, a)] -- ^ list of index/value pairs (of length @n@) 
+                -> [(Int, a)] -- ^ list of index/value pairs (of length @n@)
                 -> Vector a
 {-# INLINE (//) #-}
 (//) = (G.//)
@@ -785,11 +786,24 @@ mapM :: (Monad m, Unbox a, Unbox b) => (a -> m b) -> Vector a -> m (Vector b)
 {-# INLINE mapM #-}
 mapM = G.mapM
 
+-- | /O(n)/ Apply the monadic action to every element of a vector and its
+-- index, yielding a vector of results
+imapM :: (Monad m, Unbox a, Unbox b)
+      => (Int -> a -> m b) -> Vector a -> m (Vector b)
+{-# INLINE imapM #-}
+imapM = G.imapM
+
 -- | /O(n)/ Apply the monadic action to all elements of a vector and ignore the
 -- results
 mapM_ :: (Monad m, Unbox a) => (a -> m b) -> Vector a -> m ()
 {-# INLINE mapM_ #-}
 mapM_ = G.mapM_
+
+-- | /O(n)/ Apply the monadic action to every element of a vector and its
+-- index, ignoring the results
+imapM_ :: (Monad m, Unbox a) => (Int -> a -> m b) -> Vector a -> m ()
+{-# INLINE imapM_ #-}
+imapM_ = G.imapM_
 
 -- | /O(n)/ Apply the monadic action to all elements of the vector, yielding a
 -- vector of results. Equvalent to @flip 'mapM'@.
@@ -882,12 +896,26 @@ zipWithM :: (Monad m, Unbox a, Unbox b, Unbox c)
 {-# INLINE zipWithM #-}
 zipWithM = G.zipWithM
 
+-- | /O(min(m,n))/ Zip the two vectors with a monadic action that also takes
+-- the element index and yield a vector of results
+izipWithM :: (Monad m, Unbox a, Unbox b, Unbox c)
+         => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m (Vector c)
+{-# INLINE izipWithM #-}
+izipWithM = G.izipWithM
+
 -- | /O(min(m,n))/ Zip the two vectors with the monadic action and ignore the
 -- results
 zipWithM_ :: (Monad m, Unbox a, Unbox b)
           => (a -> b -> m c) -> Vector a -> Vector b -> m ()
 {-# INLINE zipWithM_ #-}
 zipWithM_ = G.zipWithM_
+
+-- | /O(min(m,n))/ Zip the two vectors with a monadic action that also takes
+-- the element index and ignore the results
+izipWithM_ :: (Monad m, Unbox a, Unbox b)
+          => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m ()
+{-# INLINE izipWithM_ #-}
+izipWithM_ = G.izipWithM_
 
 -- Filtering
 -- ---------
@@ -1151,6 +1179,11 @@ foldM :: (Monad m, Unbox b) => (a -> b -> m a) -> a -> Vector b -> m a
 {-# INLINE foldM #-}
 foldM = G.foldM
 
+-- | /O(n)/ Monadic fold (action applied to each element and its index)
+ifoldM :: (Monad m, Unbox b) => (a -> Int -> b -> m a) -> a -> Vector b -> m a
+{-# INLINE ifoldM #-}
+ifoldM = G.ifoldM
+
 -- | /O(n)/ Monadic fold over non-empty vectors
 fold1M :: (Monad m, Unbox a) => (a -> a -> m a) -> Vector a -> m a
 {-# INLINE fold1M #-}
@@ -1160,6 +1193,12 @@ fold1M = G.fold1M
 foldM' :: (Monad m, Unbox b) => (a -> b -> m a) -> a -> Vector b -> m a
 {-# INLINE foldM' #-}
 foldM' = G.foldM'
+
+-- | /O(n)/ Monadic fold with strict accumulator (action applied to each
+-- element and its index)
+ifoldM' :: (Monad m, Unbox b) => (a -> Int -> b -> m a) -> a -> Vector b -> m a
+{-# INLINE ifoldM' #-}
+ifoldM' = G.ifoldM'
 
 -- | /O(n)/ Monadic fold over non-empty vectors with strict accumulator
 fold1M' :: (Monad m, Unbox a) => (a -> a -> m a) -> Vector a -> m a
@@ -1171,6 +1210,12 @@ foldM_ :: (Monad m, Unbox b) => (a -> b -> m a) -> a -> Vector b -> m ()
 {-# INLINE foldM_ #-}
 foldM_ = G.foldM_
 
+-- | /O(n)/ Monadic fold that discards the result (action applied to each
+-- element and its index)
+ifoldM_ :: (Monad m, Unbox b) => (a -> Int -> b -> m a) -> a -> Vector b -> m ()
+{-# INLINE ifoldM_ #-}
+ifoldM_ = G.ifoldM_
+
 -- | /O(n)/ Monadic fold over non-empty vectors that discards the result
 fold1M_ :: (Monad m, Unbox a) => (a -> a -> m a) -> Vector a -> m ()
 {-# INLINE fold1M_ #-}
@@ -1180,6 +1225,13 @@ fold1M_ = G.fold1M_
 foldM'_ :: (Monad m, Unbox b) => (a -> b -> m a) -> a -> Vector b -> m ()
 {-# INLINE foldM'_ #-}
 foldM'_ = G.foldM'_
+
+-- | /O(n)/ Monadic fold with strict accumulator that discards the result
+-- (action applied to each element and its index)
+ifoldM'_ :: (Monad m, Unbox b)
+         => (a -> Int -> b -> m a) -> a -> Vector b -> m ()
+{-# INLINE ifoldM'_ #-}
+ifoldM'_ = G.ifoldM'_
 
 -- | /O(n)/ Monadic fold over non-empty vectors with strict accumulator
 -- that discards the result
@@ -1231,7 +1283,7 @@ postscanl' = G.postscanl'
 -- >         yi = f y(i-1) x(i-1)
 --
 -- Example: @scanl (+) 0 \<1,2,3,4\> = \<0,1,3,6,10\>@
--- 
+--
 scanl :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE scanl #-}
 scanl = G.scanl
@@ -1355,7 +1407,7 @@ unsafeCopy
   :: (Unbox a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE unsafeCopy #-}
 unsafeCopy = G.unsafeCopy
-           
+
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length.
 copy :: (Unbox a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()

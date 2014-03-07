@@ -32,7 +32,7 @@ module Data.Vector.Fusion.Bundle.Monadic (
 
   -- * Mapping
   map, mapM, mapM_, trans, unbox, concatMap, flatten,
-  
+
   -- * Zipping
   indexed, indexedR, zipWithM_,
   zipWithM, zipWith3M, zipWith4M, zipWith5M, zipWith6M,
@@ -1001,7 +1001,7 @@ fromListN :: Monad m => Int -> [a] -> Bundle m v a
 {-# INLINE_FUSED fromListN #-}
 fromListN n xs = fromStream (S.fromListN n xs) (Max (delay_inline max n 0))
 
--- | Convert a list to a 'Bundle' with the given 'Size' hint. 
+-- | Convert a list to a 'Bundle' with the given 'Size' hint.
 unsafeFromList :: Monad m => Size -> [a] -> Bundle m v a
 {-# INLINE_FUSED unsafeFromList #-}
 unsafeFromList sz xs = fromStream (S.fromList xs) sz
@@ -1020,7 +1020,7 @@ fromVector v = v `seq` n `seq` Bundle (Stream step 0)
            | otherwise = case basicUnsafeIndexM v i of
                            Box x -> return $ Yield x (i+1)
 
-    
+
     {-# INLINE vstep #-}
     vstep True  = return (Yield (Chunk (basicLength v) (\mv -> basicUnsafeCopy mv v)) False)
     vstep False = return Done
@@ -1030,7 +1030,7 @@ fromVectors :: forall m v a. (Monad m, Vector v a) => [v a] -> Bundle m v a
 fromVectors vs = Bundle (Stream pstep (Left vs))
                         (Stream vstep vs)
                         Nothing
-                        (Exact n) 
+                        (Exact n)
   where
     n = List.foldl' (\k v -> k + basicLength v) 0 vs
 

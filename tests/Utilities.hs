@@ -10,8 +10,12 @@ import qualified Data.Vector.Storable as DVS
 import qualified Data.Vector.Unboxed as DVU
 import qualified Data.Vector.Fusion.Bundle as S
 
+import Control.Monad (foldM, foldM_, zipWithM, zipWithM_)
+import Control.Monad.Trans.Writer
+import Data.Function (on)
+import Data.Functor.Identity
 import Data.List ( sortBy )
-
+import Data.Monoid
 
 instance Show a => Show (S.Bundle v a) where
     show s = "Data.Vector.Fusion.Bundle.fromList " ++ show (S.toList s)
@@ -46,6 +50,18 @@ instance Arbitrary a => Arbitrary (S.Bundle v a) where
 
 instance CoArbitrary a => CoArbitrary (S.Bundle v a) where
     coarbitrary = coarbitrary . S.toList
+
+instance Arbitrary a => Arbitrary (Identity a) where
+    arbitrary = fmap Identity arbitrary
+
+instance CoArbitrary a => CoArbitrary (Identity a) where
+    coarbitrary = coarbitrary . runIdentity
+
+instance Arbitrary a => Arbitrary (Writer a ()) where
+    arbitrary = fmap (writer . ((,) ())) arbitrary
+
+instance CoArbitrary a => CoArbitrary (Writer a ()) where
+    coarbitrary = coarbitrary . runWriter
 
 class (Testable (EqTest a), Conclusion (EqTest a)) => TestData a where
   type Model a
@@ -128,6 +144,22 @@ instance (Eq a, TestData a) => TestData [a] where
 
   type EqTest [a] = Property
   equal x y = property (x == y)
+
+instance (Eq a, TestData a) => TestData (Identity a) where
+  type Model (Identity a) = Identity (Model a)
+  model = fmap model
+  unmodel = fmap unmodel
+
+  type EqTest (Identity a) = Property
+  equal = (property .) . on (==) runIdentity
+
+instance (Eq a, TestData a, Monoid a) => TestData (Writer a ()) where
+  type Model (Writer a ()) = Writer (Model a) ()
+  model = mapWriter model
+  unmodel = mapWriter unmodel
+
+  type EqTest (Writer a ()) = Property
+  equal = (property .) . on (==) execWriter
 
 instance (Eq a, Eq b, TestData a, TestData b) => TestData (a,b) where
   type Model (a,b) = (Model a, Model b)
@@ -233,23 +265,46 @@ xs // ps = go xs ps' 0
     go (x:xs) ps j = x : go xs ps (j+1)
     go [] _ _      = []
 
+
+withIndexFirst m f = m (uncurry f) . zip [0..]
+
 imap :: (Int -> a -> a) -> [a] -> [a]
-imap f = map (uncurry f) . zip [0..]
+imap = withIndexFirst map
+
+imapM :: Monad m => (Int -> a -> m a) -> [a] -> m [a]
+imapM = withIndexFirst mapM
+
+imapM_ :: Monad m => (Int -> a -> m b) -> [a] -> m ()
+imapM_ = withIndexFirst mapM_
 
 izipWith :: (Int -> a -> a -> a) -> [a] -> [a] -> [a]
-izipWith f = zipWith (uncurry f) . zip [0..]
+izipWith = withIndexFirst zipWith
+
+izipWithM :: Monad m => (Int -> a -> a -> m a) -> [a] -> [a] -> m [a]
+izipWithM = withIndexFirst zipWithM
+
+izipWithM_ :: Monad m => (Int -> a -> a -> m b) -> [a] -> [a] -> m ()
+izipWithM_ = withIndexFirst zipWithM_
 
 izipWith3 :: (Int -> a -> a -> a -> a) -> [a] -> [a] -> [a] -> [a]
-izipWith3 f = zipWith3 (uncurry f) . zip [0..]
+izipWith3 = withIndexFirst zipWith3
 
 ifilter :: (Int -> a -> Bool) -> [a] -> [a]
-ifilter f = map snd . filter (uncurry f) . zip [0..]
+ifilter f = map snd . withIndexFirst filter f
+
+indexedLeftFold fld f z = fld (uncurry . f) z . zip [0..]
 
 ifoldl :: (a -> Int -> a -> a) -> a -> [a] -> a
-ifoldl f z = foldl (uncurry . f) z . zip [0..]
+ifoldl = indexedLeftFold foldl
 
 ifoldr :: (Int -> a -> b -> b) -> b -> [a] -> b
 ifoldr f z = foldr (uncurry f) z . zip [0..]
+
+ifoldM :: Monad m => (a -> Int -> a -> m a) -> a -> [a] -> m a
+ifoldM = indexedLeftFold foldM
+
+ifoldM_ :: Monad m => (b -> Int -> a -> m b) -> b -> [a] -> m ()
+ifoldM_ = indexedLeftFold foldM_
 
 minIndex :: Ord a => [a] -> Int
 minIndex = fst . foldr1 imin . zip [0..]

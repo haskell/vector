@@ -8,7 +8,7 @@
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
 -- Stability   : experimental
 -- Portability : non-portable
--- 
+--
 -- Purely functional interface to initialisation of mutable vectors
 --
 

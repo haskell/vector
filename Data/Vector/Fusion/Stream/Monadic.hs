@@ -29,7 +29,7 @@ module Data.Vector.Fusion.Stream.Monadic (
 
   -- * Mapping
   map, mapM, mapM_, trans, unbox, concatMap, flatten,
-  
+
   -- * Zipping
   indexed, indexedR, zipWithM_,
   zipWithM, zipWith3M, zipWith4M, zipWith5M, zipWith6M,
@@ -318,7 +318,7 @@ init (Stream step s) = Stream step' (Nothing, s)
                              Done       -> EMPTY_STREAM "init"
                          ) (step s)
 
-    step' (Just x,  s) = liftM (\r -> 
+    step' (Just x,  s) = liftM (\r ->
                            case r of
                              Yield y s' -> Yield x (Just y, s')
                              Skip    s' -> Skip    (Just x, s')
@@ -379,7 +379,7 @@ drop n (Stream step s) = Stream step' (s, Just n)
                              Skip    s' -> Skip    (s', Nothing)
                              Done       -> Done
                            ) (step s)
-                     
+
 -- Mapping
 -- -------
 
@@ -1028,7 +1028,7 @@ flatten mk istep (Stream ostep t) = Stream step (Left t)
                         Skip    t' -> return $ Skip (Left t')
                         Done       -> return $ Done
 
-    
+
     step (Right (s,t)) = do
                            r <- istep s
                            case r of
@@ -1520,7 +1520,7 @@ fromVector v = v `seq` n `seq` Stream (Unf step 0)
            | otherwise = case basicUnsafeIndexM v i of
                            Box x -> return $ Yield x (i+1)
 
-    
+
     {-# INLINE vstep #-}
     vstep True  = return (Yield (Chunk (basicLength v) (\mv -> basicUnsafeCopy mv v)) False)
     vstep False = return Done
@@ -1530,7 +1530,7 @@ fromVectors :: forall m a. (Monad m, Vector v a) => [v a] -> Stream m a
 fromVectors vs = Stream (Unf pstep (Left vs))
                         (Unf vstep vs)
                         Nothing
-                        (Exact n) 
+                        (Exact n)
   where
     n = List.foldl' (\k v -> k + basicLength v) 0 vs
 

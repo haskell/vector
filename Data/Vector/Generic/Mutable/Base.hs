@@ -7,8 +7,8 @@
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
 -- Stability   : experimental
 -- Portability : non-portable
--- 
--- Class of mutable vectors 
+--
+-- Class of mutable vectors
 --
 
 module Data.Vector.Generic.Mutable.Base (
@@ -115,7 +115,7 @@ class MVector v a where
                             basicUnsafeWrite dst i x
                             do_copy (i+1)
                 | otherwise = return ()
-  
+
   {-# INLINE basicUnsafeMove #-}
   basicUnsafeMove !dst !src
     | basicOverlaps dst src = do

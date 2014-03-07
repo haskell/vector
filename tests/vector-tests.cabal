@@ -20,7 +20,8 @@ Executable "vector-tests-O0"
 
   Build-Depends: base >= 4 && < 5, template-haskell, vector == 0.11.0.0,
                  random,
-                 QuickCheck >= 2, test-framework, test-framework-quickcheck2
+                 QuickCheck >= 2, test-framework, test-framework-quickcheck2,
+                 transformers >= 0.2.0.0
 
   Extensions: CPP,
               ScopedTypeVariables,
@@ -40,7 +41,8 @@ Executable "vector-tests-O2"
 
   Build-Depends: base >= 4 && < 5, template-haskell, vector == 0.11.0.0,
                  random,
-                 QuickCheck >= 2, test-framework, test-framework-quickcheck2
+                 QuickCheck >= 2, test-framework, test-framework-quickcheck2,
+                 transformers >= 0.2.0.0
 
   Extensions: CPP,
               ScopedTypeVariables,

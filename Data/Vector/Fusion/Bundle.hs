@@ -8,7 +8,7 @@
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
 -- Stability   : experimental
 -- Portability : non-portable
--- 
+--
 -- Bundles for stream fusion
 --
 
@@ -36,7 +36,7 @@ module Data.Vector.Fusion.Bundle (
 
   -- * Mapping
   map, concatMap, flatten, unbox,
-  
+
   -- * Zipping
   indexed, indexedR,
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
@@ -102,7 +102,7 @@ import GHC.Base ( build )
 
 #include "vector.h"
 
--- | The type of pure streams 
+-- | The type of pure streams
 type Bundle = M.Bundle Id
 
 -- | Alternative name for monadic streams

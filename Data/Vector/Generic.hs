@@ -8,7 +8,7 @@
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
 -- Stability   : experimental
 -- Portability : non-portable
--- 
+--
 -- Generic interface to pure vectors.
 --
 
@@ -64,7 +64,7 @@ module Data.Vector.Generic (
   accum, accumulate, accumulate_,
   unsafeAccum, unsafeAccumulate, unsafeAccumulate_,
 
-  -- ** Permutations 
+  -- ** Permutations
   reverse, backpermute, unsafeBackpermute,
 
   -- ** Safe destructive updates
@@ -79,7 +79,7 @@ module Data.Vector.Generic (
   map, imap, concatMap,
 
   -- ** Monadic mapping
-  mapM, mapM_, forM, forM_,
+  mapM, imapM, mapM_, imapM_, forM, forM_,
 
   -- ** Zipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
@@ -87,7 +87,7 @@ module Data.Vector.Generic (
   zip, zip3, zip4, zip5, zip6,
 
   -- ** Monadic zipping
-  zipWithM, zipWithM_,
+  zipWithM, izipWithM, zipWithM_, izipWithM_,
 
   -- ** Unzipping
   unzip, unzip3, unzip4, unzip5, unzip6,
@@ -115,8 +115,9 @@ module Data.Vector.Generic (
   minIndex, minIndexBy, maxIndex, maxIndexBy,
 
   -- ** Monadic folds
-  foldM, foldM', fold1M, fold1M',
-  foldM_, foldM'_, fold1M_, fold1M'_,
+  foldM, ifoldM, foldM', ifoldM',
+  fold1M, fold1M', foldM_, ifoldM_,
+  foldM'_, ifoldM'_, fold1M_, fold1M'_,
 
   -- ** Monadic sequencing
   sequence, sequence_,
@@ -849,7 +850,7 @@ accumulate_ :: (Vector v a, Vector v Int, Vector v b)
 {-# INLINE accumulate_ #-}
 accumulate_ f v is xs = accum_stream f v (Bundle.zipWith (,) (stream is)
                                                              (stream xs))
-                                        
+
 
 accum_stream :: Vector v a => (a -> b -> a) -> v a -> Bundle u (Int,b) -> v a
 {-# INLINE accum_stream #-}
@@ -1021,11 +1022,23 @@ mapM :: (Monad m, Vector v a, Vector v b) => (a -> m b) -> v a -> m (v b)
 {-# INLINE mapM #-}
 mapM f = unstreamM . Bundle.mapM f . stream
 
+-- | /O(n)/ Apply the monadic action to every element of a vector and its
+-- index, yielding a vector of results
+imapM :: (Monad m, Vector v a, Vector v b)
+      => (Int -> a -> m b) -> v a -> m (v b)
+imapM f = unstreamM . Bundle.mapM (uncurry f) . Bundle.indexed . stream
+
 -- | /O(n)/ Apply the monadic action to all elements of a vector and ignore the
 -- results
 mapM_ :: (Monad m, Vector v a) => (a -> m b) -> v a -> m ()
 {-# INLINE mapM_ #-}
 mapM_ f = Bundle.mapM_ f . stream
+
+-- | /O(n)/ Apply the monadic action to every element of a vector and its
+-- index, ignoring the results
+imapM_ :: (Monad m, Vector v a) => (Int -> a -> m b) -> v a -> m ()
+{-# INLINE imapM_ #-}
+imapM_ f = Bundle.mapM_ (uncurry f) . Bundle.indexed . stream
 
 -- | /O(n)/ Apply the monadic action to all elements of the vector, yielding a
 -- vector of results. Equvalent to @flip 'mapM'@.
@@ -1179,12 +1192,30 @@ zipWithM :: (Monad m, Vector v a, Vector v b, Vector v c)
 {-# INLINE zipWithM #-}
 zipWithM f as bs = unstreamM $ Bundle.zipWithM f (stream as) (stream bs)
 
+-- | /O(min(m,n))/ Zip the two vectors with a monadic action that also takes
+-- the element index and yield a vector of results
+izipWithM :: (Monad m, Vector v a, Vector v b, Vector v c)
+         => (Int -> a -> b -> m c) -> v a -> v b -> m (v c)
+{-# INLINE izipWithM #-}
+izipWithM m as bs = unstreamM . Bundle.zipWithM (uncurry m)
+                                (Bundle.indexed (stream as))
+                                $ stream bs
+
 -- | /O(min(m,n))/ Zip the two vectors with the monadic action and ignore the
 -- results
 zipWithM_ :: (Monad m, Vector v a, Vector v b)
           => (a -> b -> m c) -> v a -> v b -> m ()
 {-# INLINE zipWithM_ #-}
 zipWithM_ f as bs = Bundle.zipWithM_ f (stream as) (stream bs)
+
+-- | /O(min(m,n))/ Zip the two vectors with a monadic action that also takes
+-- the element index and ignore the results
+izipWithM_ :: (Monad m, Vector v a, Vector v b)
+          => (Int -> a -> b -> m c) -> v a -> v b -> m ()
+{-# INLINE izipWithM_ #-}
+izipWithM_ m as bs = Bundle.zipWithM_ (uncurry m)
+                      (Bundle.indexed (stream as))
+                      $ stream bs
 
 -- Unzipping
 -- ---------
@@ -1338,7 +1369,7 @@ break :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 break f xs = case findIndex f xs of
                Just i  -> (unsafeSlice 0 i xs, unsafeSlice i (length xs - i) xs)
                Nothing -> (xs, empty)
-    
+
 
 -- Searching
 -- ---------
@@ -1563,6 +1594,11 @@ foldM :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m a
 {-# INLINE foldM #-}
 foldM m z = Bundle.foldM m z . stream
 
+-- | /O(n)/ Monadic fold (action applied to each element and its index)
+ifoldM :: (Monad m, Vector v b) => (a -> Int -> b -> m a) -> a -> v b -> m a
+{-# INLINE ifoldM #-}
+ifoldM m z = Bundle.foldM (uncurry . m) z . Bundle.indexed . stream
+
 -- | /O(n)/ Monadic fold over non-empty vectors
 fold1M :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m a
 {-# INLINE fold1M #-}
@@ -1572,6 +1608,12 @@ fold1M m = Bundle.fold1M m . stream
 foldM' :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m a
 {-# INLINE foldM' #-}
 foldM' m z = Bundle.foldM' m z . stream
+
+-- | /O(n)/ Monadic fold with strict accumulator (action applied to each
+-- element and its index)
+ifoldM' :: (Monad m, Vector v b) => (a -> Int -> b -> m a) -> a -> v b -> m a
+{-# INLINE ifoldM' #-}
+ifoldM' m z = Bundle.foldM' (uncurry . m) z . Bundle.indexed . stream
 
 -- | /O(n)/ Monadic fold over non-empty vectors with strict accumulator
 fold1M' :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m a
@@ -1587,6 +1629,12 @@ foldM_ :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m ()
 {-# INLINE foldM_ #-}
 foldM_ m z = discard . Bundle.foldM m z . stream
 
+-- | /O(n)/ Monadic fold that discards the result (action applied to
+-- each element and its index)
+ifoldM_ :: (Monad m, Vector v b) => (a -> Int -> b -> m a) -> a -> v b -> m ()
+{-# INLINE ifoldM_ #-}
+ifoldM_ m z = discard . Bundle.foldM (uncurry . m) z . Bundle.indexed . stream
+
 -- | /O(n)/ Monadic fold over non-empty vectors that discards the result
 fold1M_ :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m ()
 {-# INLINE fold1M_ #-}
@@ -1596,6 +1644,12 @@ fold1M_ m = discard . Bundle.fold1M m . stream
 foldM'_ :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m ()
 {-# INLINE foldM'_ #-}
 foldM'_ m z = discard . Bundle.foldM' m z . stream
+
+-- | /O(n)/ Monadic fold with strict accumulator that discards the result
+-- (action applied to each element and its index)
+ifoldM'_ :: (Monad m, Vector v b) => (a -> Int -> b -> m a) -> a -> v b -> m ()
+{-# INLINE ifoldM'_ #-}
+ifoldM'_ m z = discard . Bundle.foldM' (uncurry . m) z . Bundle.indexed . stream
 
 -- | /O(n)/ Monad fold over non-empty vectors with strict accumulator
 -- that discards the result
@@ -1660,7 +1714,7 @@ postscanl' f z = unstream . inplace (S.postscanl' f z) id . stream
 -- >         yi = f y(i-1) x(i-1)
 --
 -- Example: @scanl (+) 0 \<1,2,3,4\> = \<0,1,3,6,10\>@
--- 
+--
 scanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE scanl #-}
 scanl f z = unstream . Bundle.scanl f z . stream

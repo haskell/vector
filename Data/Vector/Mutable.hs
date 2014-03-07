@@ -8,7 +8,7 @@
 -- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
 -- Stability   : experimental
 -- Portability : non-portable
--- 
+--
 -- Mutable boxed vectors.
 --
 
@@ -117,7 +117,7 @@ instance G.MVector MVector a where
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MVector i n dst) (MVector j _ src)
     = copyMutableArray dst i src j n
-  
+
   basicUnsafeMove dst@(MVector iDst n arrDst) src@(MVector iSrc _ arrSrc)
     = case n of
         0 -> return ()
@@ -309,7 +309,7 @@ unsafeGrow = G.unsafeGrow
 -- ------------------------
 
 -- | Reset all elements of the vector to some undefined value, clearing all
--- references to external objects. This is usually a noop for unboxed vectors. 
+-- references to external objects. This is usually a noop for unboxed vectors.
 clear :: PrimMonad m => MVector (PrimState m) a -> m ()
 {-# INLINE clear #-}
 clear = G.clear
@@ -373,7 +373,7 @@ unsafeCopy = G.unsafeCopy
 
 -- | Move the contents of a vector. The two vectors must have the same
 -- length.
--- 
+--
 -- If the vectors do not overlap, then this is equivalent to 'copy'.
 -- Otherwise, the copying is performed as if the source vector were
 -- copied to a temporary vector and then the temporary vector was copied
@@ -385,7 +385,7 @@ move = G.move
 
 -- | Move the contents of a vector. The two vectors must have the same
 -- length, but this is not checked.
--- 
+--
 -- If the vectors do not overlap, then this is equivalent to 'unsafeCopy'.
 -- Otherwise, the copying is performed as if the source vector were
 -- copied to a temporary vector and then the temporary vector was copied
