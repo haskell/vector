@@ -2053,13 +2053,12 @@ cmp xs ys = compare (stream xs) (stream ys)
 -- | Generic definition of 'Prelude.showsPrec'
 showsPrec :: (Vector v a, Show a) => Int -> v a -> ShowS
 {-# INLINE showsPrec #-}
-showsPrec p v = showParen (p > 10) $ showString "fromList " . shows (toList v)
+showsPrec _ = shows . toList
 
 -- | Generic definition of 'Text.Read.readPrec'
 readPrec :: (Vector v a, Read a) => Read.ReadPrec (v a)
 {-# INLINE readPrec #-}
-readPrec = Read.parens $ Read.prec 10 $ do
-  Read.Ident "fromList" <- Read.lexP
+readPrec = do
   xs <- Read.readPrec
   return (fromList xs)
 
