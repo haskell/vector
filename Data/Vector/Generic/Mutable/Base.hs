@@ -33,7 +33,7 @@ class MVector v a where
                    -> v s a
                    -> v s a
 
-  -- Check whether two vectors overlap. This method should not be
+  -- | Check whether two vectors overlap. This method should not be
   -- called directly, use 'overlaps' instead.
   basicOverlaps    :: v s a -> v s a -> Bool
 

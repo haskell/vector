@@ -569,7 +569,7 @@ unsafeDrop n v = unsafeSlice n (length v - n) v
 -- Overlapping
 -- -----------
 
--- Check whether two vectors overlap.
+-- | Check whether two vectors overlap.
 overlaps :: MVector v a => v s a -> v s a -> Bool
 {-# INLINE overlaps #-}
 overlaps = basicOverlaps
