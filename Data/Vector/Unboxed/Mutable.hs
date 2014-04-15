@@ -134,7 +134,7 @@ unsafeTail = G.unsafeTail
 -- Overlapping
 -- -----------
 
--- Check whether two vectors overlap.
+-- | Check whether two vectors overlap.
 overlaps :: Unbox a => MVector s a -> MVector s a -> Bool
 {-# INLINE overlaps #-}
 overlaps = G.overlaps
