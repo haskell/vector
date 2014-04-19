@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, DeriveDataTypeable, MultiParamTypeClasses, FlexibleInstances, BangPatterns #-}
+{-# LANGUAGE CPP, DeriveDataTypeable, MultiParamTypeClasses, FlexibleInstances, BangPatterns, TypeFamilies #-}
 
 -- |
 -- Module      : Data.Vector.Mutable
