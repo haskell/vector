@@ -1,4 +1,5 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, BangPatterns #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, BangPatterns,
+             TypeFamilies  #-}
 
 -- |
 -- Module      : Data.Vector.Mutable

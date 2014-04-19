@@ -1,4 +1,5 @@
-{-# LANGUAGE MultiParamTypeClasses, BangPatterns, ScopedTypeVariables #-}
+{-# LANGUAGE MultiParamTypeClasses, BangPatterns, ScopedTypeVariables,
+             TypeFamilies #-}
 -- |
 -- Module      : Data.Vector.Generic.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
