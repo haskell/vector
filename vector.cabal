@@ -70,16 +70,19 @@ Extra-Source-Files:
 Flag BoundsChecks
   Description: Enable bounds checking
   Default: True
+  Manual: True
 
 Flag UnsafeChecks
   Description: Enable bounds checking in unsafe operations at the cost of a
                significant performance penalty
   Default: False
+  Manual: True
 
 Flag InternalChecks
   Description: Enable internal consistency checks at the cost of a
                significant performance penalty
   Default: False
+  Manual: True
 
 
 Library
