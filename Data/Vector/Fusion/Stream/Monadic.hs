@@ -1359,19 +1359,27 @@ enumFromTo_intlike x y = x `seq` y `seq` Stream step x
 "enumFromTo<Int> [Stream]"
   enumFromTo = enumFromTo_int :: Monad m => Int -> Int -> Stream m Int
 
+  #-}
+
 #if WORD_SIZE_IN_BITS > 32
+
+{-# RULES
 
 "enumFromTo<Int64> [Stream]"
   enumFromTo = enumFromTo_intlike :: Monad m => Int64 -> Int64 -> Stream m Int64
 
+  #-}
+
 #else
+
+{-# RULES
 
 "enumFromTo<Int32> [Stream]"
   enumFromTo = enumFromTo_intlike :: Monad m => Int32 -> Int32 -> Stream m Int32
 
-#endif
-
   #-}
+
+#endif
 
 enumFromTo_big_word :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_FUSED enumFromTo_big_word #-}
@@ -1390,13 +1398,21 @@ enumFromTo_big_word x y = x `seq` y `seq` Stream step x
   enumFromTo = enumFromTo_big_word
                         :: Monad m => Word64 -> Word64 -> Stream m Word64
 
+  #-}
+
 #if WORD_SIZE_IN_BITS == 32
+
+{-# RULES
 
 "enumFromTo<Word32> [Stream]"
   enumFromTo = enumFromTo_big_word
                         :: Monad m => Word32 -> Word32 -> Stream m Word32
 
+  #-}
+
 #endif
+
+{-# RULES
 
 "enumFromTo<Integer> [Stream]"
   enumFromTo = enumFromTo_big_word
