@@ -119,9 +119,9 @@ inplace f g b = b `seq` M.fromStream (f (M.elements b)) (g (M.size b))
   forall (f1 :: forall m. Monad m => S.Stream m a -> S.Stream m a)
          (f2 :: forall m. Monad m => S.Stream m a -> S.Stream m a)
          g1 g2 s.
-  inplace f1 g1 (inplace f2 g2 s) = inplace (f1 . f2) (g1 . g2) s
+  inplace f1 g1 (inplace f2 g2 s) = inplace (f1 . f2) (g1 . g2) s   #-}
 
-  #-}
+
 
 -- | Convert a pure stream to a monadic stream
 lift :: Monad m => Bundle v a -> M.Bundle m v a

@@ -324,9 +324,8 @@ zipWithM f Bundle{sElems = sa, sSize = na}
 {-# RULES
 
 "zipWithM xs xs [Vector.Bundle]" forall f xs.
-  zipWithM f xs xs = mapM (\x -> f x x) xs
+  zipWithM f xs xs = mapM (\x -> f x x) xs   #-}
 
-  #-}
 
 zipWithM_ :: Monad m => (a -> b -> m c) -> Bundle m v a -> Bundle m v b -> m ()
 {-# INLINE zipWithM_ #-}
@@ -769,9 +768,9 @@ enumFromTo_small x y = x `seq` y `seq` fromStream (Stream step x) (Exact n)
   enumFromTo = enumFromTo_small :: Monad m => Word8 -> Word8 -> Bundle m v Word8
 
 "enumFromTo<Word16> [Bundle]"
-  enumFromTo = enumFromTo_small :: Monad m => Word16 -> Word16 -> Bundle m v Word16
+  enumFromTo = enumFromTo_small :: Monad m => Word16 -> Word16 -> Bundle m v Word16   #-}
 
-  #-}
+
 
 #if WORD_SIZE_IN_BITS > 32
 
@@ -781,9 +780,9 @@ enumFromTo_small x y = x `seq` y `seq` fromStream (Stream step x) (Exact n)
   enumFromTo = enumFromTo_small :: Monad m => Int32 -> Int32 -> Bundle m v Int32
 
 "enumFromTo<Word32> [Bundle]"
-  enumFromTo = enumFromTo_small :: Monad m => Word32 -> Word32 -> Bundle m v Word32
+  enumFromTo = enumFromTo_small :: Monad m => Word32 -> Word32 -> Bundle m v Word32   #-}
 
-  #-}
+
 
 #endif
 
@@ -840,16 +839,16 @@ enumFromTo_intlike x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len 
 #if WORD_SIZE_IN_BITS > 32
 
 "enumFromTo<Int64> [Bundle]"
-  enumFromTo = enumFromTo_intlike :: Monad m => Int64 -> Int64 -> Bundle m v Int64
+  enumFromTo = enumFromTo_intlike :: Monad m => Int64 -> Int64 -> Bundle m v Int64    #-}
 
 #else
 
 "enumFromTo<Int32> [Bundle]"
-  enumFromTo = enumFromTo_intlike :: Monad m => Int32 -> Int32 -> Bundle m v Int32
+  enumFromTo = enumFromTo_intlike :: Monad m => Int32 -> Int32 -> Bundle m v Int32    #-}
 
 #endif
 
-  #-}
+
 
 enumFromTo_big_word :: (Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_big_word #-}
@@ -886,9 +885,9 @@ enumFromTo_big_word x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len
 
 "enumFromTo<Integer> [Bundle]"
   enumFromTo = enumFromTo_big_word
-                        :: Monad m => Integer -> Integer -> Bundle m v Integer
+                        :: Monad m => Integer -> Integer -> Bundle m v Integer   #-}
 
-  #-}
+
 
 -- FIXME: the "too large" test is totally wrong
 enumFromTo_big_int :: (Integral a, Monad m) => a -> a -> Bundle m v a
@@ -912,9 +911,9 @@ enumFromTo_big_int x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len 
 {-# RULES
 
 "enumFromTo<Int64> [Bundle]"
-  enumFromTo = enumFromTo_big :: Monad m => Int64 -> Int64 -> Bundle m v Int64
+  enumFromTo = enumFromTo_big :: Monad m => Int64 -> Int64 -> Bundle m v Int64   #-}
 
-  #-}
+
 
 #endif
 
@@ -934,9 +933,9 @@ enumFromTo_char x y = x `seq` y `seq` fromStream (Stream step xn) (Exact n)
 {-# RULES
 
 "enumFromTo<Char> [Bundle]"
-  enumFromTo = enumFromTo_char
+  enumFromTo = enumFromTo_char   #-}
 
-  #-}
+
 
 ------------------------------------------------------------------------
 
@@ -967,9 +966,9 @@ enumFromTo_double n m = n `seq` m `seq` fromStream (Stream step n) (Max (len n m
   enumFromTo = enumFromTo_double :: Monad m => Double -> Double -> Bundle m v Double
 
 "enumFromTo<Float> [Bundle]"
-  enumFromTo = enumFromTo_double :: Monad m => Float -> Float -> Bundle m v Float
+  enumFromTo = enumFromTo_double :: Monad m => Float -> Float -> Bundle m v Float   #-}
 
-  #-}
+
 
 ------------------------------------------------------------------------
 
@@ -1092,7 +1091,7 @@ reVector Bundle{sElems = s, sSize = n} = fromStream s n
   reVector = id
 
 "reVector/reVector [Vector]" forall s.
-  reVector (reVector s) = s
+  reVector (reVector s) = s   #-}
 
-  #-}
+
 

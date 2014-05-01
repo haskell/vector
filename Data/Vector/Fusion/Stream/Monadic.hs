@@ -502,9 +502,8 @@ zipWithM f (Stream stepa sa) (Stream stepb sb) = Stream step (sa, sb, Nothing)
 {-# RULES
 
 "zipWithM xs xs [Vector.Stream]" forall f xs.
-  zipWithM f xs xs = mapM (\x -> f x x) xs
+  zipWithM f xs xs = mapM (\x -> f x x) xs   #-}
 
-  #-}
 
 zipWithM_ :: Monad m => (a -> b -> m c) -> Stream m a -> Stream m b -> m ()
 {-# INLINE zipWithM_ #-}
@@ -1299,9 +1298,8 @@ enumFromTo_small x y = x `seq` y `seq` Stream step x
   enumFromTo = enumFromTo_small :: Monad m => Word8 -> Word8 -> Stream m Word8
 
 "enumFromTo<Word16> [Stream]"
-  enumFromTo = enumFromTo_small :: Monad m => Word16 -> Word16 -> Stream m Word16
+  enumFromTo = enumFromTo_small :: Monad m => Word16 -> Word16 -> Stream m Word16   #-}
 
-  #-}
 
 #if WORD_SIZE_IN_BITS > 32
 
@@ -1311,9 +1309,8 @@ enumFromTo_small x y = x `seq` y `seq` Stream step x
   enumFromTo = enumFromTo_small :: Monad m => Int32 -> Int32 -> Stream m Int32
 
 "enumFromTo<Word32> [Stream]"
-  enumFromTo = enumFromTo_small :: Monad m => Word32 -> Word32 -> Stream m Word32
+  enumFromTo = enumFromTo_small :: Monad m => Word32 -> Word32 -> Stream m Word32   #-}
 
-  #-}
 
 #endif
 
@@ -1362,16 +1359,16 @@ enumFromTo_intlike x y = x `seq` y `seq` Stream step x
 #if WORD_SIZE_IN_BITS > 32
 
 "enumFromTo<Int64> [Stream]"
-  enumFromTo = enumFromTo_intlike :: Monad m => Int64 -> Int64 -> Stream m Int64
+  enumFromTo = enumFromTo_intlike :: Monad m => Int64 -> Int64 -> Stream m Int64 #-}
 
 #else
 
 "enumFromTo<Int32> [Stream]"
-  enumFromTo = enumFromTo_intlike :: Monad m => Int32 -> Int32 -> Stream m Int32
+  enumFromTo = enumFromTo_intlike :: Monad m => Int32 -> Int32 -> Stream m Int32 #-}
 
-#endif
+#endif 
 
-  #-}
+-- test
 
 enumFromTo_big_word :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_FUSED enumFromTo_big_word #-}
@@ -1400,9 +1397,9 @@ enumFromTo_big_word x y = x `seq` y `seq` Stream step x
 
 "enumFromTo<Integer> [Stream]"
   enumFromTo = enumFromTo_big_word
-                        :: Monad m => Integer -> Integer -> Stream m Integer
+                        :: Monad m => Integer -> Integer -> Stream m Integer   #-}
 
-  #-}
+
 
 -- FIXME: the "too large" test is totally wrong
 enumFromTo_big_int :: (Integral a, Monad m) => a -> a -> Stream m a
@@ -1418,9 +1415,9 @@ enumFromTo_big_int x y = x `seq` y `seq` Stream step x
 {-# RULES
 
 "enumFromTo<Int64> [Stream]"
-  enumFromTo = enumFromTo_big :: Monad m => Int64 -> Int64 -> Stream m Int64
+  enumFromTo = enumFromTo_big :: Monad m => Int64 -> Int64 -> Stream m Int64   #-}
 
-  #-}
+
 
 #endif
 
@@ -1438,9 +1435,9 @@ enumFromTo_char x y = x `seq` y `seq` Stream step xn
 {-# RULES
 
 "enumFromTo<Char> [Stream]"
-  enumFromTo = enumFromTo_char
+  enumFromTo = enumFromTo_char   #-}
 
-  #-}
+
 
 ------------------------------------------------------------------------
 
@@ -1463,9 +1460,9 @@ enumFromTo_double n m = n `seq` m `seq` Stream step n
   enumFromTo = enumFromTo_double :: Monad m => Double -> Double -> Stream m Double
 
 "enumFromTo<Float> [Stream]"
-  enumFromTo = enumFromTo_double :: Monad m => Float -> Float -> Stream m Float
+  enumFromTo = enumFromTo_double :: Monad m => Float -> Float -> Stream m Float   #-}
 
-  #-}
+
 
 ------------------------------------------------------------------------
 
@@ -1592,8 +1589,8 @@ reVector (Stream step s, sSize = n} = Stream step s n
   reVector = id
 
 "reVector/reVector [Vector]" forall s.
-  reVector (reVector s) = s
+  reVector (reVector s) = s   #-}
 
-  #-}
+
 -}
 
