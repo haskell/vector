@@ -1373,7 +1373,7 @@ break f xs = case findIndex f xs of
 groupBy :: Vector v a => (a -> a -> Bool) -> v a -> [v a]
 groupBy eq vec = if null vec
    then []
-   else (take (1 + length ys) vec) : groupBy eq zs 
+   else take (1 + length ys) vec : groupBy eq zs 
    where
       (ys, zs) = span (eq x) xs
       x = head vec
