@@ -99,7 +99,7 @@ module Data.Vector.Generic (
   takeWhile, dropWhile,
 
   -- ** Partitioning
-  partition, unstablePartition, span, break,
+  partition, unstablePartition, span, break, groupBy,
 
   -- ** Searching
   elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
@@ -1369,6 +1369,15 @@ break :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 break f xs = case findIndex f xs of
                Just i  -> (unsafeSlice 0 i xs, unsafeSlice i (length xs - i) xs)
                Nothing -> (xs, empty)
+
+groupBy :: Vector v a => (a -> a -> Bool) -> v a -> [v a]
+groupBy eq vec = if null vec
+   then []
+   else (take (1 + length ys) vec) : groupBy eq zs 
+   where
+      (ys, zs) = span (eq x) xs
+      x = head vec
+      xs = tail vec
 
 
 -- Searching
