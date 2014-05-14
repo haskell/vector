@@ -44,6 +44,11 @@ instance Num Size where
 
   fromInteger n     = Exact (fromInteger n)
 
+  (*)    = error "vector: internal error * for Bundle.size isn't defined"
+  abs    = error "vector: internal error abs for Bundle.size isn't defined"
+  signum = error "vector: internal error signum for Bundle.size isn't defined"
+
+
 -- | Minimum of two size hints
 smaller :: Size -> Size -> Size
 {-# INLINE smaller #-}
