@@ -1,0 +1,17 @@
+Changes in version 0.10.9.2
+
+ * Fix compilation with GHC 7.9
+
+Changes in version 0.10.9.1
+
+ * Implement poly-kinded Typeable
+
+Changes in version 0.10.0.1
+
+ * Require `primitive` to include workaround for a GHC array copying bug
+
+Changes in version 0.10
+
+ * `NFData` instances
+ * More efficient block fills
+ * Safe Haskell support removed

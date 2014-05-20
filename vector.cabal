@@ -1,9 +1,10 @@
 Name:           vector
-Version:        0.10.9.1
+Version:        0.10.9.2
+-- don't forget to update the changelog file!
 License:        BSD3
 License-File:   LICENSE
 Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
-Maintainer:     Roman Leshchinskiy <rl@cse.unsw.edu.au>
+Maintainer:     libraries@haskell.org
 Copyright:      (c) Roman Leshchinskiy 2008-2012
 Homepage:       https://github.com/haskell/vector
 Bug-Reports:    https://github.com/haskell/vector/issues
@@ -32,19 +33,6 @@ Description:
         There is also a (draft) tutorial on common uses of vector.
         .
         * <http://haskell.org/haskellwiki/Numeric_Haskell:_A_Vector_Tutorial>
-        .
-        Changes in version 0.10.0.1
-        .
-        * Require @primitive@ to include workaround for a GHC array copying bug
-        .
-        Changes in version 0.10
-        .
-	* @NFData@ instances
-	.
-	* More efficient block fills
-	.
-	* Safe Haskell support removed
-	.
 
 Cabal-Version:  >= 1.6
 Build-Type:     Simple
@@ -75,22 +63,26 @@ Extra-Source-Files:
       benchmarks/TestData/Graph.hs
       benchmarks/TestData/ParenTree.hs
       benchmarks/TestData/Random.hs
+      changelog
       internal/GenUnboxTuple.hs
       internal/unbox-tuple-instances
 
 Flag BoundsChecks
   Description: Enable bounds checking
   Default: True
+  Manual: True
 
 Flag UnsafeChecks
   Description: Enable bounds checking in unsafe operations at the cost of a
                significant performance penalty
   Default: False
+  Manual: True
 
 Flag InternalChecks
   Description: Enable internal consistency checks at the cost of a
                significant performance penalty
   Default: False
+  Manual: True
 
 
 Library
@@ -149,4 +141,4 @@ Library
 
 source-repository head
   type:     git
-  location: https://github.com/haskell/vector
+  location: https://github.com/haskell/vector.git
