@@ -194,7 +194,7 @@ import qualified Control.Applicative as Applicative
 import qualified Data.Foldable as Foldable
 import qualified Data.Traversable as Traversable
 
-#if __GLASGOW_HASKELL__ > 780
+#if __GLASGOW_HASKELL__ >= 780
 import qualified GHC.Exts as Exts (IsList(..))
 #endif
 
@@ -218,7 +218,7 @@ instance Read a => Read (Vector a) where
   readPrec = G.readPrec
   readListPrec = readListPrecDefault
 
-#if __GLASGOW_HASKELL__ > 780
+#if __GLASGOW_HASKELL__ >= 780
 instance Exts.IsList (Vector a) where
   type Item (Vector a) = a
   fromList = fromList
