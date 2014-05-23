@@ -837,19 +837,27 @@ enumFromTo_intlike x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len 
 "enumFromTo<Int> [Bundle]"
   enumFromTo = enumFromTo_int :: Monad m => Int -> Int -> Bundle m v Int
 
+  #-}
+
 #if WORD_SIZE_IN_BITS > 32
+
+{-# RULES
 
 "enumFromTo<Int64> [Bundle]"
   enumFromTo = enumFromTo_intlike :: Monad m => Int64 -> Int64 -> Bundle m v Int64
 
+  #-}
+
 #else
+
+{-# RULES
 
 "enumFromTo<Int32> [Bundle]"
   enumFromTo = enumFromTo_intlike :: Monad m => Int32 -> Int32 -> Bundle m v Int32
 
-#endif
-
   #-}
+
+#endif
 
 enumFromTo_big_word :: (Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_big_word #-}
@@ -876,13 +884,21 @@ enumFromTo_big_word x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len
   enumFromTo = enumFromTo_big_word
                         :: Monad m => Word64 -> Word64 -> Bundle m v Word64
 
+  #-}
+
 #if WORD_SIZE_IN_BITS == 32
+
+{-# RULES
 
 "enumFromTo<Word32> [Bundle]"
   enumFromTo = enumFromTo_big_word
                         :: Monad m => Word32 -> Word32 -> Bundle m v Word32
 
+ #-}
+
 #endif
+
+{-# RULES
 
 "enumFromTo<Integer> [Bundle]"
   enumFromTo = enumFromTo_big_word
