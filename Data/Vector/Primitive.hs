@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable, FlexibleInstances, MultiParamTypeClasses, TypeFamilies, ScopedTypeVariables, Rank2Types #-}
+{-# LANGUAGE CPP, DeriveDataTypeable, FlexibleInstances, MultiParamTypeClasses, TypeFamilies, ScopedTypeVariables, Rank2Types #-}
 
 -- |
 -- Module      : Data.Vector.Primitive
@@ -168,6 +168,10 @@ import Text.Read     ( Read(..), readListPrecDefault )
 
 import Data.Monoid   ( Monoid(..) )
 
+#if __GLASGOW_HASKELL__ >= 708
+import qualified GHC.Exts as Exts
+#endif
+
 -- | Unboxed vectors of primitive types
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
@@ -255,6 +259,15 @@ instance Prim a => Monoid (Vector a) where
   {-# INLINE mconcat #-}
   mconcat = concat
 
+#if __GLASGOW_HASKELL__ >= 708
+
+instance Prim a => Exts.IsList (Vector a) where
+  type Item (Vector a) = a
+  fromList = fromList
+  fromListN = fromListN
+  toList = toList
+
+#endif
 -- Length
 -- ------
 
