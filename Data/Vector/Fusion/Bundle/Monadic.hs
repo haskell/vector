@@ -105,6 +105,7 @@ import Data.Int  ( Int8, Int16, Int32, Int64 )
 import Data.Word ( Word8, Word16, Word32, Word, Word64 )
 
 #include "vector.h"
+#include "MachDeps.h"
 
 data Chunk v a = Chunk Int (forall m. (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m ())
 
@@ -911,7 +912,7 @@ enumFromTo_big_int x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len 
 {-# RULES
 
 "enumFromTo<Int64> [Bundle]"
-  enumFromTo = enumFromTo_big :: Monad m => Int64 -> Int64 -> Bundle m v Int64   #-}
+  enumFromTo = enumFromTo_big_int :: Monad m => Int64 -> Int64 -> Bundle m v Int64   #-}
 
 
 

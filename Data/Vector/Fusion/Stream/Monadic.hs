@@ -98,6 +98,7 @@ import GHC.Exts ( SpecConstrAnnotation(..) )
 #endif
 
 #include "vector.h"
+#include "MachDeps.h"
 
 data SPEC = SPEC | SPEC2
 #if __GLASGOW_HASKELL__ >= 700
@@ -1413,7 +1414,7 @@ enumFromTo_big_int x y = x `seq` y `seq` Stream step x
 {-# RULES
 
 "enumFromTo<Int64> [Stream]"
-  enumFromTo = enumFromTo_big :: Monad m => Int64 -> Int64 -> Stream m Int64   #-}
+  enumFromTo = enumFromTo_big_int :: Monad m => Int64 -> Int64 -> Stream m Int64   #-}
 
 
 
