@@ -1366,9 +1366,7 @@ enumFromTo_intlike x y = x `seq` y `seq` Stream step x
 "enumFromTo<Int32> [Stream]"
   enumFromTo = enumFromTo_intlike :: Monad m => Int32 -> Int32 -> Stream m Int32 #-}
 
-#endif 
-
--- test
+#endif
 
 enumFromTo_big_word :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_FUSED enumFromTo_big_word #-}
