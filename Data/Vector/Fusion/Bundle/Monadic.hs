@@ -783,8 +783,6 @@ enumFromTo_small x y = x `seq` y `seq` fromStream (Stream step x) (Exact n)
 "enumFromTo<Word32> [Bundle]"
   enumFromTo = enumFromTo_small :: Monad m => Word32 -> Word32 -> Bundle m v Word32   #-}
 
-
-
 #endif
 
 -- NOTE: We could implement a generic "too large" test:
