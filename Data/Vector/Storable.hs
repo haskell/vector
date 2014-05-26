@@ -173,6 +173,10 @@ import Text.Read     ( Read(..), readListPrecDefault )
 
 import Data.Monoid   ( Monoid(..) )
 
+#if __GLASGOW_HASKELL__ >= 708
+import qualified GHC.Exts as Exts
+#endif
+
 #include "vector.h"
 
 -- | 'Storable'-based vectors
@@ -261,6 +265,16 @@ instance Storable a => Monoid (Vector a) where
 
   {-# INLINE mconcat #-}
   mconcat = concat
+
+#if __GLASGOW_HASKELL__ >= 708
+
+instance Storable a => Exts.IsList (Vector a) where
+  type Item (Vector a) = a
+  fromList = fromList
+  fromListN = fromListN
+  toList = toList
+
+#endif
 
 -- Length
 -- ------

@@ -1,4 +1,4 @@
-{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE Rank2Types, TypeFamilies #-}
 
 -- |
 -- Module      : Data.Vector.Unboxed
@@ -188,6 +188,10 @@ import Text.Read     ( Read(..), readListPrecDefault )
 
 import Data.Monoid   ( Monoid(..) )
 
+#if __GLASGOW_HASKELL__ >= 708
+import qualified GHC.Exts as Exts (IsList(..))
+#endif
+
 #include "vector.h"
 
 -- See http://trac.haskell.org/vector/ticket/12
@@ -231,6 +235,16 @@ instance (Show a, Unbox a) => Show (Vector a) where
 instance (Read a, Unbox a) => Read (Vector a) where
   readPrec = G.readPrec
   readListPrec = readListPrecDefault
+
+#if __GLASGOW_HASKELL__ >= 708
+
+instance (Unbox e) => Exts.IsList (Vector e) where
+  type Item (Vector e) = e
+  fromList = fromList
+  fromListN = fromListN
+  toList = toList
+
+#endif
 
 -- Length information
 -- ------------------
