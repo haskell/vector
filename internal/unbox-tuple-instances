@@ -122,8 +122,8 @@ zip as bs = V_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
   where len = length as `delayed_min` length bs
 {-# RULES "stream/zip [Vector.Unboxed]" forall as bs .
   G.stream (zip as bs) = Bundle.zipWith (,) (G.stream as)
-                                            (G.stream bs)
-  #-}
+                                            (G.stream bs)   #-}
+
 -- | /O(1)/ Unzip 2 vectors
 unzip :: (Unbox a, Unbox b) => Vector (a, b) -> (Vector a,
                                                  Vector b)
@@ -290,8 +290,8 @@ zip3 as bs cs = V_3 len (unsafeSlice 0 len as)
 {-# RULES "stream/zip3 [Vector.Unboxed]" forall as bs cs .
   G.stream (zip3 as bs cs) = Bundle.zipWith3 (, ,) (G.stream as)
                                                    (G.stream bs)
-                                                   (G.stream cs)
-  #-}
+                                                   (G.stream cs)   #-}
+
 -- | /O(1)/ Unzip 3 vectors
 unzip3 :: (Unbox a,
            Unbox b,
@@ -502,8 +502,8 @@ zip4 as bs cs ds = V_4 len (unsafeSlice 0 len as)
   G.stream (zip4 as bs cs ds) = Bundle.zipWith4 (, , ,) (G.stream as)
                                                         (G.stream bs)
                                                         (G.stream cs)
-                                                        (G.stream ds)
-  #-}
+                                                        (G.stream ds)   #-}
+
 -- | /O(1)/ Unzip 4 vectors
 unzip4 :: (Unbox a,
            Unbox b,
@@ -771,8 +771,8 @@ zip5 as bs cs ds es = V_5 len (unsafeSlice 0 len as)
                                                  (G.stream bs)
                                                  (G.stream cs)
                                                  (G.stream ds)
-                                                 (G.stream es)
-  #-}
+                                                 (G.stream es)   #-}
+
 -- | /O(1)/ Unzip 5 vectors
 unzip5 :: (Unbox a,
            Unbox b,
@@ -1080,8 +1080,8 @@ zip6 as bs cs ds es fs = V_6 len (unsafeSlice 0 len as)
                                                    (G.stream cs)
                                                    (G.stream ds)
                                                    (G.stream es)
-                                                   (G.stream fs)
-  #-}
+                                                   (G.stream fs)   #-}
+
 -- | /O(1)/ Unzip 6 vectors
 unzip6 :: (Unbox a,
            Unbox b,

@@ -84,9 +84,9 @@ transform f g (New p) = New (MVector.transform f =<< p)
 "transform/unstream [New]"
   forall (f :: forall m. Monad m => Stream m a -> Stream m a)
          g s.
-  transform f g (unstream s) = unstream (Bundle.inplace f g s)
+  transform f g (unstream s) = unstream (Bundle.inplace f g s)  #-}
 
- #-}
+
 
 
 unstreamR :: Vector v a => Bundle v a -> New v a
@@ -111,9 +111,9 @@ transformR f g (New p) = New (MVector.transformR f =<< p)
 "transformR/unstreamR [New]"
   forall (f :: forall m. Monad m => Stream m a -> Stream m a)
          g s.
-  transformR f g (unstreamR s) = unstreamR (Bundle.inplace f g s)
+  transformR f g (unstreamR s) = unstreamR (Bundle.inplace f g s)  #-}
 
- #-}
+
 
 slice :: Vector v a => Int -> Int -> New v a -> New v a
 {-# INLINE_FUSED slice #-}
@@ -171,7 +171,7 @@ unsafeTail m = apply MVector.unsafeTail m
   unsafeInit (unstream s) = unstream (Bundle.init s)
 
 "unsafeTail/unstream [New]" forall s.
-  unsafeTail (unstream s) = unstream (Bundle.tail s)
+  unsafeTail (unstream s) = unstream (Bundle.tail s)   #-}
 
-  #-}
+
 

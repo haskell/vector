@@ -292,9 +292,9 @@ unsafeLast v = unsafeIndex v (length v - 1)
   unsafeHead (new (New.unstream s)) = Bundle.head s
 
 "unsafeLast/unstream [Vector]" forall s.
-  unsafeLast (new (New.unstream s)) = Bundle.last s
+  unsafeLast (new (New.unstream s)) = Bundle.last s  #-}
 
- #-}
+
 
 -- Monadic indexing
 -- ----------------
@@ -372,9 +372,9 @@ unsafeLastM v = unsafeIndexM v (length v - 1)
   unsafeHeadM (new (New.unstream s)) = MBundle.head (lift s)
 
 "unsafeLastM/unstream [Vector]" forall s.
-  unsafeLastM (new (New.unstream s)) = MBundle.last (lift s)
+  unsafeLastM (new (New.unstream s)) = MBundle.last (lift s)   #-}
 
-  #-}
+
 
 -- Extracting subvectors (slicing)
 -- -------------------------------
@@ -489,9 +489,9 @@ unsafeDrop n v = unsafeSlice n (length v - n) v
   unsafeInit (new p) = new (New.unsafeInit p)
 
 "unsafeTail/new [Vector]" forall p.
-  unsafeTail (new p) = new (New.unsafeTail p)
+  unsafeTail (new p) = new (New.unsafeTail p)   #-}
 
-  #-}
+
 
 -- Initialisation
 -- --------------
@@ -1349,9 +1349,9 @@ unstablePartition_new f (New.New p) = runST (
 
 "unstablePartition" forall f p.
   unstablePartition_stream f (stream (new p))
-    = unstablePartition_new f p
+    = unstablePartition_new f p   #-}
 
-  #-}
+
 
 
 -- FIXME: make span and break fusible
@@ -1850,9 +1850,9 @@ thaw v = do
   unsafeThaw (new p) = New.runPrim p
 
 "thaw/new [Vector]" forall p.
-  thaw (new p) = New.runPrim p
+  thaw (new p) = New.runPrim p   #-}
 
-  #-}
+
 
 {-
 -- | /O(n)/ Yield a mutable vector containing copies of each vector in the
@@ -1937,9 +1937,9 @@ unstream s = new (New.unstream s)
 
 "uninplace [Vector]"
   forall (f :: forall m. Monad m => Stream m a -> Stream m a) g m.
-  stream (new (New.transform f g m)) = inplace f g (stream (new m))
+  stream (new (New.transform f g m)) = inplace f g (stream (new m))  #-}
 
- #-}
+
 
 -- | /O(1)/ Convert a vector to a 'Bundle', proceeding from right to left
 streamR :: Vector v a => v a -> Bundle u a
@@ -1979,9 +1979,9 @@ unstreamR s = new (New.unstreamR s)
 
 "uninplace right [Vector]"
   forall (f :: forall m. Monad m => Stream m a -> Stream m a) g m.
-  streamR (new (New.transformR f g m)) = inplace f g (streamR (new m))
+  streamR (new (New.transformR f g m)) = inplace f g (streamR (new m))  #-}
 
- #-}
+
 
 unstreamM :: (Monad m, Vector v a) => MBundle m u a -> m (v a)
 {-# INLINE_FUSED unstreamM #-}
@@ -2005,9 +2005,9 @@ unstreamPrimM_ST = unstreamPrimM
 {-# RULES
 
 "unstreamM[IO]" unstreamM = unstreamPrimM_IO
-"unstreamM[ST]" unstreamM = unstreamPrimM_ST
+"unstreamM[ST]" unstreamM = unstreamPrimM_ST  #-}
 
- #-}
+
 
 
 -- Recycling support

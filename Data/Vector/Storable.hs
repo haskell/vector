@@ -1381,8 +1381,8 @@ unsafeFromForeignPtr fp i n = unsafeFromForeignPtr0 fp' n
 
 {-# RULES
 "unsafeFromForeignPtr fp 0 n -> unsafeFromForeignPtr0 fp n " forall fp n.
-  unsafeFromForeignPtr fp 0 n = unsafeFromForeignPtr0 fp n
-  #-}
+  unsafeFromForeignPtr fp 0 n = unsafeFromForeignPtr0 fp n   #-}
+
 
 -- | /O(1)/ Create a vector from a 'ForeignPtr' and a length.
 --
