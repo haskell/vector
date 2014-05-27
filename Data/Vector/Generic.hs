@@ -163,14 +163,13 @@ module Data.Vector.Generic (
 
 import           Data.Vector.Generic.Base
 
-import           Data.Vector.Generic.Mutable ( MVector )
 import qualified Data.Vector.Generic.Mutable as M
 
 import qualified Data.Vector.Generic.New as New
 import           Data.Vector.Generic.New ( New )
 
 import qualified Data.Vector.Fusion.Bundle as Bundle
-import           Data.Vector.Fusion.Bundle ( Bundle, MBundle, Step(..), lift, inplace )
+import           Data.Vector.Fusion.Bundle ( Bundle, MBundle, lift, inplace )
 import qualified Data.Vector.Fusion.Bundle.Monadic as MBundle
 import           Data.Vector.Fusion.Stream.Monadic ( Stream )
 import qualified Data.Vector.Fusion.Stream.Monadic as S
@@ -179,8 +178,6 @@ import           Data.Vector.Fusion.Util
 
 import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
-import qualified Control.Monad as Monad
-import qualified Data.List as List
 import Prelude hiding ( length, null,
                         replicate, (++), concat,
                         head, last,
@@ -573,7 +570,7 @@ constructN !n f = runST (
                           v'' <- unsafeFreeze v'
                           fill v'' (i+1)
 
-    fill v i = return v
+    fill v _ = return v
 
 -- | /O(n)/ Construct a vector with @n@ elements from right to left by
 -- repeatedly applying the generator function to the already constructed part
@@ -602,7 +599,7 @@ constructrN !n f = runST (
                           v'' <- unsafeFreeze v'
                           fill v'' (i+1)
 
-    fill v i = return v
+    fill v _ = return v
 
 
 -- Enumeration
@@ -1228,39 +1225,39 @@ unzip xs = (map fst xs, map snd xs)
 unzip3 :: (Vector v a, Vector v b, Vector v c, Vector v (a, b, c))
        => v (a, b, c) -> (v a, v b, v c)
 {-# INLINE unzip3 #-}
-unzip3 xs = (map (\(a, b, c) -> a) xs,
-             map (\(a, b, c) -> b) xs,
-             map (\(a, b, c) -> c) xs)
+unzip3 xs = (map (\(a, _, _) -> a) xs,
+             map (\(_, b, _) -> b) xs,
+             map (\(_, _, c) -> c) xs)
 
 unzip4 :: (Vector v a, Vector v b, Vector v c, Vector v d,
            Vector v (a, b, c, d))
        => v (a, b, c, d) -> (v a, v b, v c, v d)
 {-# INLINE unzip4 #-}
-unzip4 xs = (map (\(a, b, c, d) -> a) xs,
-             map (\(a, b, c, d) -> b) xs,
-             map (\(a, b, c, d) -> c) xs,
-             map (\(a, b, c, d) -> d) xs)
+unzip4 xs = (map (\(a, _, _, _) -> a) xs,
+             map (\(_, b, _, _) -> b) xs,
+             map (\(_, _, c, _) -> c) xs,
+             map (\(_, _, _, d) -> d) xs)
 
 unzip5 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e,
            Vector v (a, b, c, d, e))
        => v (a, b, c, d, e) -> (v a, v b, v c, v d, v e)
 {-# INLINE unzip5 #-}
-unzip5 xs = (map (\(a, b, c, d, e) -> a) xs,
-             map (\(a, b, c, d, e) -> b) xs,
-             map (\(a, b, c, d, e) -> c) xs,
-             map (\(a, b, c, d, e) -> d) xs,
-             map (\(a, b, c, d, e) -> e) xs)
+unzip5 xs = (map (\(a, _, _, _, _) -> a) xs,
+             map (\(_, b, _, _, _) -> b) xs,
+             map (\(_, _, c, _, _) -> c) xs,
+             map (\(_, _, _, d, _) -> d) xs,
+             map (\(_, _, _, _, e) -> e) xs)
 
 unzip6 :: (Vector v a, Vector v b, Vector v c, Vector v d, Vector v e,
            Vector v f, Vector v (a, b, c, d, e, f))
        => v (a, b, c, d, e, f) -> (v a, v b, v c, v d, v e, v f)
 {-# INLINE unzip6 #-}
-unzip6 xs = (map (\(a, b, c, d, e, f) -> a) xs,
-             map (\(a, b, c, d, e, f) -> b) xs,
-             map (\(a, b, c, d, e, f) -> c) xs,
-             map (\(a, b, c, d, e, f) -> d) xs,
-             map (\(a, b, c, d, e, f) -> e) xs,
-             map (\(a, b, c, d, e, f) -> f) xs)
+unzip6 xs = (map (\(a, _, _, _, _, _) -> a) xs,
+             map (\(_, b, _, _, _, _) -> b) xs,
+             map (\(_, _, c, _, _, _) -> c) xs,
+             map (\(_, _, _, d, _, _) -> d) xs,
+             map (\(_, _, _, _, e, _) -> e) xs,
+             map (\(_, _, _, _, _, f) -> f) xs)
 
 -- Filtering
 -- ---------
@@ -1528,10 +1525,10 @@ maximum = Bundle.foldl1' max . stream
 -- comparison function. The vector may not be empty.
 maximumBy :: Vector v a => (a -> a -> Ordering) -> v a -> a
 {-# INLINE maximumBy #-}
-maximumBy cmp = Bundle.foldl1' maxBy . stream
+maximumBy cmpr = Bundle.foldl1' maxBy . stream
   where
     {-# INLINE maxBy #-}
-    maxBy x y = case cmp x y of
+    maxBy x y = case cmpr x y of
                   LT -> y
                   _  -> x
 
@@ -1545,10 +1542,10 @@ minimum = Bundle.foldl1' min . stream
 -- comparison function. The vector may not be empty.
 minimumBy :: Vector v a => (a -> a -> Ordering) -> v a -> a
 {-# INLINE minimumBy #-}
-minimumBy cmp = Bundle.foldl1' minBy . stream
+minimumBy cmpr = Bundle.foldl1' minBy . stream
   where
     {-# INLINE minBy #-}
-    minBy x y = case cmp x y of
+    minBy x y = case cmpr x y of
                   GT -> y
                   _  -> x
 
@@ -1562,10 +1559,10 @@ maxIndex = maxIndexBy compare
 -- the given comparison function. The vector may not be empty.
 maxIndexBy :: Vector v a => (a -> a -> Ordering) -> v a -> Int
 {-# INLINE maxIndexBy #-}
-maxIndexBy cmp = fst . Bundle.foldl1' imax . Bundle.indexed . stream
+maxIndexBy cmpr = fst . Bundle.foldl1' imax . Bundle.indexed . stream
   where
     imax (i,x) (j,y) = i `seq` j `seq`
-                       case cmp x y of
+                       case cmpr x y of
                          LT -> (j,y)
                          _  -> (i,x)
 
@@ -1579,10 +1576,10 @@ minIndex = minIndexBy compare
 -- the given comparison function. The vector may not be empty.
 minIndexBy :: Vector v a => (a -> a -> Ordering) -> v a -> Int
 {-# INLINE minIndexBy #-}
-minIndexBy cmp = fst . Bundle.foldl1' imin . Bundle.indexed . stream
+minIndexBy cmpr = fst . Bundle.foldl1' imin . Bundle.indexed . stream
   where
     imin (i,x) (j,y) = i `seq` j `seq`
-                       case cmp x y of
+                       case cmpr x y of
                          GT -> (j,y)
                          _  -> (i,x)
 
