@@ -14,12 +14,8 @@ module Data.Vector.Storable.Internal (
   getPtr, setPtr, updPtr
 ) where
 
-import Control.Monad.Primitive ( unsafeInlineIO )
-import Foreign.Storable
 import Foreign.ForeignPtr
 import Foreign.Ptr
-import Foreign.Marshal.Array ( advancePtr )
-import GHC.Base         ( quotInt )
 import GHC.ForeignPtr   ( ForeignPtr(..) )
 import GHC.Ptr          ( Ptr(..) )
 
