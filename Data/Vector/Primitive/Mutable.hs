@@ -62,6 +62,8 @@ import Prelude hiding ( length, null, replicate, reverse, map, read,
 
 import Data.Typeable ( Typeable )
 
+-- Data.Vector.Internal.Check is unnecessary
+#define NOT_VECTOR_MODULE
 #include "vector.h"
 
 -- | Mutable vectors of primitive types.
@@ -77,7 +79,7 @@ instance NFData (MVector s a)
 
 instance Prim a => G.MVector MVector a where
   basicLength (MVector _ n _) = n
-  basicUnsafeSlice j m (MVector i n arr)
+  basicUnsafeSlice j m (MVector i _ arr)
     = MVector (i+j) m arr
 
   {-# INLINE basicOverlaps #-}
@@ -92,10 +94,10 @@ instance Prim a => G.MVector MVector a where
                      `liftM` newByteArray (n * sizeOf (undefined :: a))
 
   {-# INLINE basicUnsafeRead #-}
-  basicUnsafeRead (MVector i n arr) j = readByteArray arr (i+j)
+  basicUnsafeRead (MVector i _ arr) j = readByteArray arr (i+j)
 
   {-# INLINE basicUnsafeWrite #-}
-  basicUnsafeWrite (MVector i n arr) j x = writeByteArray arr (i+j) x
+  basicUnsafeWrite (MVector i _ arr) j x = writeByteArray arr (i+j) x
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MVector i n dst) (MVector j _ src)
