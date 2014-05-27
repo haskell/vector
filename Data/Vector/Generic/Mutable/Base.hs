@@ -17,6 +17,8 @@ module Data.Vector.Generic.Mutable.Base (
 
 import Control.Monad.Primitive ( PrimMonad, PrimState )
 
+-- Data.Vector.Internal.Check is unused
+#define NOT_VECTOR_MODULE
 #include "vector.h"
 
 -- | Class of mutable vectors parametrised with a primitive state token.
