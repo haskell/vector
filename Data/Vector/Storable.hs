@@ -165,8 +165,6 @@ import Prelude hiding ( length, null,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_ )
 
-import qualified Prelude
-
 import Data.Typeable ( Typeable )
 import Data.Data     ( Data(..) )
 import Text.Read     ( Read(..), readListPrecDefault )
@@ -177,6 +175,8 @@ import Data.Monoid   ( Monoid(..) )
 import qualified GHC.Exts as Exts
 #endif
 
+-- Data.Vector.Internal.Check is unused
+#define NOT_VECTOR_MODULE
 #include "vector.h"
 
 -- | 'Storable'-based vectors
@@ -1388,7 +1388,7 @@ unsafeFromForeignPtr :: Storable a
                      -> Int             -- ^ offset
                      -> Int             -- ^ length
                      -> Vector a
-{-# INLINE unsafeFromForeignPtr #-}
+{-# INLINE_FUSED unsafeFromForeignPtr #-}
 unsafeFromForeignPtr fp i n = unsafeFromForeignPtr0 fp' n
     where
       fp' = updPtr (`advancePtr` i) fp
@@ -1430,6 +1430,6 @@ unsafeToForeignPtr0 (Vector n fp) = (fp, n)
 -- modified through the 'Ptr.
 unsafeWith :: Storable a => Vector a -> (Ptr a -> IO b) -> IO b
 {-# INLINE unsafeWith #-}
-unsafeWith (Vector n fp) = withForeignPtr fp
+unsafeWith (Vector _ fp) = withForeignPtr fp
 
 
