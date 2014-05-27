@@ -34,13 +34,14 @@ module Data.Vector.Generic.Mutable (
 
   -- ** Growing
   grow, unsafeGrow,
+  growFront, unsafeGrowFront,
 
   -- ** Restricting memory usage
   clear,
 
   -- * Accessing individual elements
-  read, write, swap,
-  unsafeRead, unsafeWrite, unsafeSwap,
+  read, write, swap, exchange,
+  unsafeRead, unsafeWrite, unsafeSwap, unsafeExchange,
 
   -- * Modifying vectors
 
@@ -234,8 +235,8 @@ unsafePrepend1 v i x
                   unsafeWrite v i' x
                   return (v, i')
   | otherwise = do
-                  (v', i) <- enlargeFront v
-                  let i' = i-1
+                  (v', j) <- enlargeFront v
+                  let i' = j-1
                   INTERNAL_CHECK(checkIndex) "unsafePrepend1" i' (length v')
                     $ unsafeWrite v' i' x
                   return (v', i')
@@ -406,13 +407,13 @@ vmunstreamMax s n
   = do
       v <- INTERNAL_CHECK(checkLength) "munstreamMax" n
            $ unsafeNew n
-      let {-# INLINE_INNER copy #-}
-          copy i (Chunk n f) =
-            INTERNAL_CHECK(checkSlice) "munstreamMax.copy" i n (length v) $ do
-              f (basicUnsafeSlice i n v)
-              return (i+n)
+      let {-# INLINE_INNER copyChunk #-}
+          copyChunk i (Chunk m f) =
+            INTERNAL_CHECK(checkSlice) "munstreamMax.copyChunk" i m (length v) $ do
+              f (basicUnsafeSlice i m v)
+              return (i+m)
 
-      n' <- Stream.foldlM' copy 0 (MBundle.chunks s)
+      n' <- Stream.foldlM' copyChunk 0 (MBundle.chunks s)
       return $ INTERNAL_CHECK(checkSlice) "munstreamMax" 0 n' n
              $ unsafeSlice 0 n' v
 
@@ -422,18 +423,18 @@ vmunstreamUnknown :: (PrimMonad m, V.Vector v a)
 vmunstreamUnknown s
   = do
       v <- unsafeNew 0
-      (v', n) <- Stream.foldlM copy (v,0) (MBundle.chunks s)
+      (v', n) <- Stream.foldlM copyChunk (v,0) (MBundle.chunks s)
       return $ INTERNAL_CHECK(checkSlice) "munstreamUnknown" 0 n (length v')
              $ unsafeSlice 0 n v'
   where
-    {-# INLINE_INNER copy #-}
-    copy (v,i) (Chunk n f)
+    {-# INLINE_INNER copyChunk #-}
+    copyChunk (v,i) (Chunk n f)
       = do
           let j = i+n
           v' <- if basicLength v < j
                   then unsafeGrow v (delay_inline max (enlarge_delta v) (j - basicLength v))
                   else return v
-          INTERNAL_CHECK(checkSlice) "munstreamUnknown.copy" i n (length v')
+          INTERNAL_CHECK(checkSlice) "munstreamUnknown.copyChunk" i n (length v')
             $ f (basicUnsafeSlice i n v')
           return (v',j)
 
@@ -626,6 +627,7 @@ growFront :: (PrimMonad m, MVector v a)
 growFront v by = BOUNDS_CHECK(checkLength) "growFront" by
                $ unsafeGrowFront v by
 
+enlarge_delta :: MVector v a => v s a -> Int
 enlarge_delta v = max (length v) 1
 
 -- | Grow a vector logarithmically
