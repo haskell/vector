@@ -80,7 +80,7 @@ import Data.Vector.Generic.Base
 import qualified Data.Vector.Generic.Mutable.Base as M
 import Data.Vector.Fusion.Bundle.Size
 import Data.Vector.Fusion.Util ( Box(..), delay_inline )
-import Data.Vector.Fusion.Stream.Monadic ( Stream(..), Step(..), SPEC(..) )
+import Data.Vector.Fusion.Stream.Monadic ( Stream(..), Step(..) )
 import qualified Data.Vector.Fusion.Stream.Monadic as S
 import Control.Monad.Primitive
 
@@ -118,7 +118,7 @@ data Bundle m v a = Bundle { sElems  :: Stream m a
 
 fromStream :: Monad m => Stream m a -> Size -> Bundle m v a
 {-# INLINE fromStream #-}
-fromStream (Stream step s) sz = Bundle (Stream step s) (Stream step' s) Nothing sz
+fromStream (Stream step t) sz = Bundle (Stream step t) (Stream step' t) Nothing sz
   where
     step' s = do r <- step s
                  return $ fmap (\x -> Chunk 1 (\v -> M.basicUnsafeWrite v 0 x)) r
@@ -291,7 +291,7 @@ mapM_ :: Monad m => (a -> m b) -> Bundle m v a -> m ()
 mapM_ m = S.mapM_ m . sElems
 
 -- | Transform a 'Bundle' to use a different monad
-trans :: (Monad m, Monad m') => (forall a. m a -> m' a)
+trans :: (Monad m, Monad m') => (forall z. m z -> m' z)
                              -> Bundle m v a -> Bundle m' v a
 {-# INLINE_FUSED trans #-}
 trans f Bundle{sElems = s, sChunks = cs, sVector = v, sSize = n}
@@ -754,7 +754,7 @@ enumFromTo_small x y = x `seq` y `seq` fromStream (Stream step x) (Exact n)
     n = delay_inline max (fromIntegral y - fromIntegral x + 1) 0
 
     {-# INLINE_INNER step #-}
-    step x | x <= y    = return $ Yield x (x+1)
+    step z | z <= y    = return $ Yield z (z+1)
            | otherwise = return $ Done
 
 {-# RULES
@@ -803,15 +803,15 @@ enumFromTo_int x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len x y)
   where
     {-# INLINE [0] len #-}
     len :: Int -> Int -> Int
-    len x y | x > y     = 0
+    len u v | u > v     = 0
             | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
                           (n > 0)
                         $ n
       where
-        n = y-x+1
+        n = v-u+1
 
     {-# INLINE_INNER step #-}
-    step x | x <= y    = return $ Yield x (x+1)
+    step z | z <= y    = return $ Yield z (z+1)
            | otherwise = return $ Done
 
 enumFromTo_intlike :: (Integral a, Monad m) => a -> a -> Bundle m v a
@@ -819,15 +819,15 @@ enumFromTo_intlike :: (Integral a, Monad m) => a -> a -> Bundle m v a
 enumFromTo_intlike x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
-    len x y | x > y     = 0
+    len u v | u > v     = 0
             | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
                           (n > 0)
                         $ fromIntegral n
       where
-        n = y-x+1
+        n = v-u+1
 
     {-# INLINE_INNER step #-}
-    step x | x <= y    = return $ Yield x (x+1)
+    step z | z <= y    = return $ Yield z (z+1)
            | otherwise = return $ Done
 
 {-# RULES
@@ -854,15 +854,15 @@ enumFromTo_big_word :: (Integral a, Monad m) => a -> a -> Bundle m v a
 enumFromTo_big_word x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
-    len x y | x > y     = 0
+    len u v | u > v     = 0
             | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
                           (n < fromIntegral (maxBound :: Int))
                         $ fromIntegral (n+1)
       where
-        n = y-x
+        n = v-u
 
     {-# INLINE_INNER step #-}
-    step x | x <= y    = return $ Yield x (x+1)
+    step z | z <= y    = return $ Yield z (z+1)
            | otherwise = return $ Done
 
 {-# RULES
@@ -894,15 +894,15 @@ enumFromTo_big_int :: (Integral a, Monad m) => a -> a -> Bundle m v a
 enumFromTo_big_int x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
-    len x y | x > y     = 0
+    len u v | u > v     = 0
             | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
                           (n > 0 && n <= fromIntegral (maxBound :: Int))
                         $ fromIntegral n
       where
-        n = y-x+1
+        n = v-u+1
 
     {-# INLINE_INNER step #-}
-    step x | x <= y    = return $ Yield x (x+1)
+    step z | z <= y    = return $ Yield z (z+1)
            | otherwise = return $ Done
 
 #if WORD_SIZE_IN_BITS > 32
@@ -926,7 +926,7 @@ enumFromTo_char x y = x `seq` y `seq` fromStream (Stream step xn) (Exact n)
     n = delay_inline max 0 (yn - xn + 1)
 
     {-# INLINE_INNER step #-}
-    step xn | xn <= yn  = return $ Yield (unsafeChr xn) (xn+1)
+    step zn | zn <= yn  = return $ Yield (unsafeChr zn) (zn+1)
             | otherwise = return $ Done
 
 {-# RULES
@@ -950,10 +950,11 @@ enumFromTo_double n m = n `seq` m `seq` fromStream (Stream step n) (Max (len n m
     {-# INLINE [0] len #-}
     len x y | x > y     = 0
             | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
-                          (n > 0)
-                        $ fromIntegral n
+                          (l > 0)
+                        $ fromIntegral l
       where
-        n = truncate (y-x)+2
+        l :: Integer
+        l = truncate (y-x)+2
 
     {-# INLINE_INNER step #-}
     step x | x <= lim  = return $ Yield x (x+1)
@@ -1025,12 +1026,12 @@ fromVector v = v `seq` n `seq` Bundle (Stream step 0)
 
 fromVectors :: forall m v a. (Monad m, Vector v a) => [v a] -> Bundle m v a
 {-# INLINE_FUSED fromVectors #-}
-fromVectors vs = Bundle (Stream pstep (Left vs))
-                        (Stream vstep vs)
+fromVectors us = Bundle (Stream pstep (Left us))
+                        (Stream vstep us)
                         Nothing
                         (Exact n)
   where
-    n = List.foldl' (\k v -> k + basicLength v) 0 vs
+    n = List.foldl' (\k v -> k + basicLength v) 0 us
 
     pstep (Left []) = return Done
     pstep (Left (v:vs)) = basicLength v `seq` return (Skip (Right (v,0,vs)))
@@ -1051,9 +1052,9 @@ fromVectors vs = Bundle (Stream pstep (Left vs))
 
 concatVectors :: (Monad m, Vector v a) => Bundle m u (v a) -> Bundle m v a
 {-# INLINE_FUSED concatVectors #-}
-concatVectors Bundle{sElems = Stream step s}
-  = Bundle (Stream pstep (Left s))
-           (Stream vstep s)
+concatVectors Bundle{sElems = Stream step t}
+  = Bundle (Stream pstep (Left t))
+           (Stream vstep t)
            Nothing
            Unknown
   where
