@@ -39,12 +39,12 @@ not False = True
 
 (&&) :: Bool -> Bool -> Bool
 {-# INLINE (&&) #-}
-False && x = False
+False && _ = False
 True && x = x
 
 (||) :: Bool -> Bool -> Bool
 {-# INLINE (||) #-}
-True || x = True
+True || _ = True
 False || x = x
 
 
