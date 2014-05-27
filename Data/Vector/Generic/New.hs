@@ -20,11 +20,10 @@ module Data.Vector.Generic.New (
 ) where
 
 import qualified Data.Vector.Generic.Mutable as MVector
-import           Data.Vector.Generic.Mutable ( MVector )
 
 import           Data.Vector.Generic.Base ( Vector, Mutable )
 
-import           Data.Vector.Fusion.Bundle ( Bundle, MBundle )
+import           Data.Vector.Fusion.Bundle ( Bundle )
 import qualified Data.Vector.Fusion.Bundle as Bundle
 import           Data.Vector.Fusion.Stream.Monadic ( Stream )
 import           Data.Vector.Fusion.Bundle.Size
@@ -34,6 +33,8 @@ import Control.Monad.ST ( ST )
 import Control.Monad  ( liftM )
 import Prelude hiding ( init, tail, take, drop, reverse, map, filter )
 
+-- Data.Vector.Internal.Check is unused
+#define NOT_VECTOR_MODULE
 #include "vector.h"
 
 data New v a = New (forall s. ST s (Mutable v s a))
@@ -71,7 +72,7 @@ transform
   :: Vector v a => (forall m. Monad m => Stream m a -> Stream m a)
                 -> (Size -> Size) -> New v a -> New v a
 {-# INLINE_FUSED transform #-}
-transform f g (New p) = New (MVector.transform f =<< p)
+transform f _ (New p) = New (MVector.transform f =<< p)
 
 {-# RULES
 
@@ -97,7 +98,7 @@ transformR
   :: Vector v a => (forall m. Monad m => Stream m a -> Stream m a)
                 -> (Size -> Size) -> New v a -> New v a
 {-# INLINE_FUSED transformR #-}
-transformR f g (New p) = New (MVector.transformR f =<< p)
+transformR f _ (New p) = New (MVector.transformR f =<< p)
 
 {-# RULES
 
