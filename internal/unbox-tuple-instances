@@ -112,7 +112,7 @@ zip as bs = MV_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
 unzip :: (Unbox a, Unbox b) => MVector s (a, b) -> (MVector s a,
                                                     MVector s b)
 {-# INLINE unzip #-}
-unzip (MV_2 n_ as bs) = (as, bs)
+unzip (MV_2 _ as bs) = (as, bs)
 #endif
 #ifdef DEFINE_IMMUTABLE
 -- | /O(1)/ Zip 2 vectors
@@ -274,7 +274,7 @@ unzip3 :: (Unbox a,
                                                MVector s b,
                                                MVector s c)
 {-# INLINE unzip3 #-}
-unzip3 (MV_3 n_ as bs cs) = (as, bs, cs)
+unzip3 (MV_3 _ as bs cs) = (as, bs, cs)
 #endif
 #ifdef DEFINE_IMMUTABLE
 -- | /O(1)/ Zip 3 vectors
@@ -480,7 +480,7 @@ unzip4 :: (Unbox a,
                                                   MVector s c,
                                                   MVector s d)
 {-# INLINE unzip4 #-}
-unzip4 (MV_4 n_ as bs cs ds) = (as, bs, cs, ds)
+unzip4 (MV_4 _ as bs cs ds) = (as, bs, cs, ds)
 #endif
 #ifdef DEFINE_IMMUTABLE
 -- | /O(1)/ Zip 4 vectors
@@ -737,7 +737,7 @@ unzip5 :: (Unbox a,
                                                      MVector s d,
                                                      MVector s e)
 {-# INLINE unzip5 #-}
-unzip5 (MV_5 n_ as bs cs ds es) = (as, bs, cs, ds, es)
+unzip5 (MV_5 _ as bs cs ds es) = (as, bs, cs, ds, es)
 #endif
 #ifdef DEFINE_IMMUTABLE
 -- | /O(1)/ Zip 5 vectors
@@ -1040,7 +1040,7 @@ unzip6 :: (Unbox a,
                                                         MVector s e,
                                                         MVector s f)
 {-# INLINE unzip6 #-}
-unzip6 (MV_6 n_ as bs cs ds es fs) = (as, bs, cs, ds, es, fs)
+unzip6 (MV_6 _ as bs cs ds es fs) = (as, bs, cs, ds, es, fs)
 #endif
 #ifdef DEFINE_IMMUTABLE
 -- | /O(1)/ Zip 6 vectors

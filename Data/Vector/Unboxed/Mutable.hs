@@ -62,6 +62,8 @@ import Prelude hiding ( length, null, replicate, reverse, map, read,
                         take, drop, splitAt, init, tail,
                         zip, zip3, unzip, unzip3 )
 
+-- don't import an unused Data.Vector.Internal.Check
+#define NOT_VECTOR_MODULE
 #include "vector.h"
 
 -- Length information
