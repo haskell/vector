@@ -71,7 +71,6 @@ import GHC.ForeignPtr (mallocPlainForeignPtrBytes)
 
 import Foreign.Ptr
 import Foreign.Marshal.Array ( advancePtr, copyArray, moveArray )
-import Foreign.C.Types ( CInt )
 
 import Control.Monad.Primitive
 import Data.Primitive.Addr
@@ -85,6 +84,8 @@ import Prelude hiding ( length, null, replicate, reverse, map, read,
 
 import Data.Typeable ( Typeable )
 
+-- Data.Vector.Internal.Check is not needed
+#define NOT_VECTOR_MODULE
 #include "vector.h"
 
 -- | Mutable 'Storable'-based vectors
@@ -102,7 +103,7 @@ instance Storable a => G.MVector MVector a where
   basicLength (MVector n _) = n
 
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice j m (MVector n fp) = MVector m (updPtr (`advancePtr` j) fp)
+  basicUnsafeSlice j m (MVector _ fp) = MVector m (updPtr (`advancePtr` j) fp)
 
   -- FIXME: this relies on non-portable pointer comparisons
   {-# INLINE basicOverlaps #-}
@@ -149,7 +150,7 @@ instance Storable a => G.MVector MVector a where
 
 storableSet :: (Storable a, PrimMonad m) => MVector (PrimState m) a -> a -> m ()
 {-# INLINE storableSet #-}
-storableSet v@(MVector n fp) x
+storableSet (MVector n fp) x
   | n == 0 = return ()
   | otherwise = unsafePrimToPrim $
                 case sizeOf x of
@@ -440,7 +441,7 @@ unsafeFromForeignPtr :: Storable a
                      -> Int             -- ^ offset
                      -> Int             -- ^ length
                      -> MVector s a
-{-# INLINE unsafeFromForeignPtr #-}
+{-# INLINE_FUSED unsafeFromForeignPtr #-}
 unsafeFromForeignPtr fp i n = unsafeFromForeignPtr0 fp' n
     where
       fp' = updPtr (`advancePtr` i) fp
@@ -486,5 +487,5 @@ unsafeToForeignPtr0 (MVector n fp) = (fp, n)
 -- the modification.
 unsafeWith :: Storable a => IOVector a -> (Ptr a -> IO b) -> IO b
 {-# INLINE unsafeWith #-}
-unsafeWith (MVector n fp) = withForeignPtr fp
+unsafeWith (MVector _ fp) = withForeignPtr fp
 
