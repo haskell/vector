@@ -143,7 +143,7 @@ Library
                , ghc-prim >= 0.2 && < 0.4
                , deepseq >= 1.1 && < 1.4
 
-  Ghc-Options: -O2 -Wall
+  Ghc-Options: -O2 -Wall -fno-warn-orphans
 
   if flag(BoundsChecks)
     cpp-options: -DVECTOR_BOUNDS_CHECKS
