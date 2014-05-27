@@ -183,7 +183,6 @@ import Prelude hiding ( length, null,
                         scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_ )
-import qualified Prelude
 
 import Text.Read     ( Read(..), readListPrecDefault )
 
@@ -193,6 +192,7 @@ import Data.Monoid   ( Monoid(..) )
 import qualified GHC.Exts as Exts (IsList(..))
 #endif
 
+#define NOT_VECTOR_MODULE
 #include "vector.h"
 
 -- See http://trac.haskell.org/vector/ticket/12

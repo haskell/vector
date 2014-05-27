@@ -128,7 +128,7 @@ zip as bs = V_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
 unzip :: (Unbox a, Unbox b) => Vector (a, b) -> (Vector a,
                                                  Vector b)
 {-# INLINE unzip #-}
-unzip (V_2 n_ as bs) = (as, bs)
+unzip (V_2 _ as bs) = (as, bs)
 #endif
 #ifdef DEFINE_INSTANCES
 data instance MVector s (a, b, c)
@@ -297,7 +297,7 @@ unzip3 :: (Unbox a,
            Unbox b,
            Unbox c) => Vector (a, b, c) -> (Vector a, Vector b, Vector c)
 {-# INLINE unzip3 #-}
-unzip3 (V_3 n_ as bs cs) = (as, bs, cs)
+unzip3 (V_3 _ as bs cs) = (as, bs, cs)
 #endif
 #ifdef DEFINE_INSTANCES
 data instance MVector s (a, b, c, d)
@@ -513,7 +513,7 @@ unzip4 :: (Unbox a,
                                                Vector c,
                                                Vector d)
 {-# INLINE unzip4 #-}
-unzip4 (V_4 n_ as bs cs ds) = (as, bs, cs, ds)
+unzip4 (V_4 _ as bs cs ds) = (as, bs, cs, ds)
 #endif
 #ifdef DEFINE_INSTANCES
 data instance MVector s (a, b, c, d, e)
@@ -784,7 +784,7 @@ unzip5 :: (Unbox a,
                                                   Vector d,
                                                   Vector e)
 {-# INLINE unzip5 #-}
-unzip5 (V_5 n_ as bs cs ds es) = (as, bs, cs, ds, es)
+unzip5 (V_5 _ as bs cs ds es) = (as, bs, cs, ds, es)
 #endif
 #ifdef DEFINE_INSTANCES
 data instance MVector s (a, b, c, d, e, f)
@@ -1095,5 +1095,5 @@ unzip6 :: (Unbox a,
                                                      Vector e,
                                                      Vector f)
 {-# INLINE unzip6 #-}
-unzip6 (V_6 n_ as bs cs ds es fs) = (as, bs, cs, ds, es, fs)
+unzip6 (V_6 _ as bs cs ds es fs) = (as, bs, cs, ds, es, fs)
 #endif
