@@ -183,8 +183,6 @@ import Prelude hiding ( length, null,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_, sequence, sequence_ )
 
-import qualified Prelude
-
 import Data.Typeable ( Typeable )
 import Data.Data     ( Data(..) )
 import Text.Read     ( Read(..), readListPrecDefault )
@@ -206,9 +204,9 @@ data Vector a = Vector {-# UNPACK #-} !Int
         deriving ( Typeable )
 
 instance NFData a => NFData (Vector a) where
-    rnf (Vector i n arr) = force i
+    rnf (Vector i n arr) = rnfAll i
         where
-          force !ix | ix < n    = rnf (indexArray arr ix) `seq` force (ix+1)
+          rnfAll ix | ix < n    = rnf (indexArray arr ix) `seq` rnfAll (ix+1)
                     | otherwise = ()
 
 instance Show a => Show (Vector a) where
