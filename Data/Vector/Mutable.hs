@@ -54,8 +54,6 @@ import qualified Data.Vector.Generic.Mutable as G
 import           Data.Primitive.Array
 import           Control.Monad.Primitive
 
-import Control.DeepSeq ( NFData, rnf )
-
 import Prelude hiding ( length, null, replicate, reverse, map, read,
                         take, drop, splitAt, init, tail )
 
@@ -87,7 +85,7 @@ instance G.MVector MVector a where
   basicLength (MVector _ n _) = n
 
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice j m (MVector i n arr) = MVector (i+j) m arr
+  basicUnsafeSlice j m (MVector i _ arr) = MVector (i+j) m arr
 
   {-# INLINE basicOverlaps #-}
   basicOverlaps (MVector i m arr1) (MVector j n arr2)
@@ -109,10 +107,10 @@ instance G.MVector MVector a where
         return (MVector 0 n arr)
 
   {-# INLINE basicUnsafeRead #-}
-  basicUnsafeRead (MVector i n arr) j = readArray arr (i+j)
+  basicUnsafeRead (MVector i _ arr) j = readArray arr (i+j)
 
   {-# INLINE basicUnsafeWrite #-}
-  basicUnsafeWrite (MVector i n arr) j x = writeArray arr (i+j) x
+  basicUnsafeWrite (MVector i _ arr) j x = writeArray arr (i+j) x
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MVector i n dst) (MVector j _ src)
