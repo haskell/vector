@@ -160,8 +160,6 @@ import Prelude hiding ( length, null,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_ )
 
-import qualified Prelude
-
 import Data.Typeable ( Typeable )
 import Data.Data     ( Data(..) )
 import Text.Read     ( Read(..), readListPrecDefault )
