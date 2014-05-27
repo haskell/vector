@@ -79,7 +79,7 @@ module Data.Vector.Fusion.Bundle (
 import Data.Vector.Generic.Base ( Vector )
 import Data.Vector.Fusion.Bundle.Size
 import Data.Vector.Fusion.Util
-import Data.Vector.Fusion.Stream.Monadic ( Stream(..), Step(..), SPEC(..) )
+import Data.Vector.Fusion.Stream.Monadic ( Stream(..), Step(..) )
 import Data.Vector.Fusion.Bundle.Monadic ( Chunk(..) )
 import qualified Data.Vector.Fusion.Bundle.Monadic as M
 import qualified Data.Vector.Fusion.Stream.Monadic as S
@@ -100,6 +100,8 @@ import Prelude hiding ( length, null,
 
 import GHC.Base ( build )
 
+-- Data.Vector.Internal.Check is unused
+#define NOT_VECTOR_MODULE
 #include "vector.h"
 
 -- | The type of pure streams
@@ -585,7 +587,7 @@ toList s = build (\c n -> toListFB c n s)
 -- This supports foldr/build list fusion that GHC implements
 toListFB :: (a -> b -> b) -> b -> Bundle v a -> b
 {-# INLINE [0] toListFB #-}
-toListFB c n M.Bundle{M.sElems = Stream step s} = go s
+toListFB c n M.Bundle{M.sElems = Stream step t} = go t
   where
     go s = case unId (step s) of
              Yield x s' -> x `c` go s'
