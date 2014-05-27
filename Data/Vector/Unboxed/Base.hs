@@ -48,6 +48,8 @@ import Data.Typeable ( Typeable1(..), Typeable2(..), mkTyConApp,
 
 import Data.Data     ( Data(..) )
 
+-- Data.Vector.Internal.Check is unused
+#define NOT_VECTOR_MODULE
 #include "vector.h"
 
 data family MVector s a
@@ -113,7 +115,7 @@ instance M.MVector MVector () where
 
   basicLength (MV_Unit n) = n
 
-  basicUnsafeSlice i m (MV_Unit n) = MV_Unit m
+  basicUnsafeSlice _ m (MV_Unit _) = MV_Unit m
 
   basicOverlaps _ _ = False
 
@@ -142,10 +144,10 @@ instance G.Vector Vector () where
   basicLength (V_Unit n) = n
 
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice i m (V_Unit n) = V_Unit m
+  basicUnsafeSlice _ m (V_Unit _) = V_Unit m
 
   {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM (V_Unit _) i = return ()
+  basicUnsafeIndexM (V_Unit _) _ = return ()
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MV_Unit _) (V_Unit _) = return ()
