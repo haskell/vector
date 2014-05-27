@@ -11,7 +11,7 @@
 --
 
 module Data.Vector.Fusion.Bundle.Size (
-  Size(..), smaller, larger, toMax, upperBound
+  Size(..), smaller, larger, toMax, upperBound, lowerBound
 ) where
 
 import Data.Vector.Fusion.Util ( delay_inline )
@@ -33,10 +33,10 @@ instance Num Size where
 
 
   Exact m - Exact n = Exact (m-n)
-  Exact m - Max   n = Max   m
+  Exact m - Max   _ = Max   m
 
   Max   m - Exact n = Max   (m-n)
-  Max   m - Max   n = Max   m
+  Max   m - Max   _ = Max   m
   Max   m - Unknown = Max   m
 
   _       - _       = Unknown
