@@ -1,3 +1,7 @@
+Changes in version 0.10.9.3
+
+ * Add support for OverloadedLists in GHC >= 7.8
+
 Changes in version 0.10.9.2
 
  * Fix compilation with GHC 7.9
