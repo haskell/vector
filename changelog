@@ -1,4 +1,8 @@
-Changes in version 0.10.9.3
+Changes in version 0.10.10.0
+
+ * Minor version bump to rectify PVP violation occured in 0.10.9.3 release
+
+Changes in version 0.10.9.3 (deprecated)
 
  * Add support for OverloadedLists in GHC >= 7.8
 
