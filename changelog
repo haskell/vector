@@ -1,3 +1,7 @@
+Changes in version 0.10.11.0
+
+* Support OverloadedLists for boxed Vector in GHC >= 7.8
+
 Changes in version 0.10.10.0
 
  * Minor version bump to rectify PVP violation occured in 0.10.9.3 release
