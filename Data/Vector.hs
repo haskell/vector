@@ -1,4 +1,5 @@
-{-# LANGUAGE FlexibleInstances
+{-# LANGUAGE CPP
+           , FlexibleInstances
            , MultiParamTypeClasses
            , TypeFamilies
            , Rank2Types
@@ -191,6 +192,10 @@ import qualified Control.Applicative as Applicative
 import qualified Data.Foldable as Foldable
 import qualified Data.Traversable as Traversable
 
+#if __GLASGOW_HASKELL__ >= 708
+import qualified GHC.Exts as Exts
+#endif
+
 -- | Boxed vectors, supporting efficient slicing.
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
@@ -209,6 +214,14 @@ instance Show a => Show (Vector a) where
 instance Read a => Read (Vector a) where
   readPrec = G.readPrec
   readListPrec = readListPrecDefault
+
+#if __GLASGOW_HASKELL__ >= 708
+instance Exts.IsList (Vector a) where
+  type Item (Vector a) = a
+  fromList = fromList
+  fromListN = fromListN
+  toList = toList
+#endif
 
 instance Data a => Data (Vector a) where
   gfoldl       = G.gfoldl
