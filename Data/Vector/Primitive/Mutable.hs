@@ -69,7 +69,7 @@ import Data.Typeable ( Typeable )
 -- | Mutable vectors of primitive types.
 data MVector s a = MVector {-# UNPACK #-} !Int
                            {-# UNPACK #-} !Int
-                           {-# UNPACK #-} !(MutableByteArray s)
+                           {-# UNPACK #-} !(MutableByteArray s) -- ^ offset, length, underlying mutable byte array
         deriving ( Typeable )
 
 type IOVector = MVector RealWorld
