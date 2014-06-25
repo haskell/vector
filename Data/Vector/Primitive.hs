@@ -17,7 +17,7 @@
 
 module Data.Vector.Primitive (
   -- * Primitive vectors
-  Vector, MVector(..), Prim,
+  Vector(..), MVector(..), Prim,
 
   -- * Accessors
 
@@ -175,7 +175,7 @@ import qualified GHC.Exts as Exts
 -- | Unboxed vectors of primitive types
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
-                       {-# UNPACK #-} !ByteArray
+                       {-# UNPACK #-} !ByteArray -- ^ offset, length, underlying byte array
   deriving ( Typeable )
 
 instance NFData (Vector a)
