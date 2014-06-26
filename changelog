@@ -1,6 +1,11 @@
+Changes in version 0.10.12.0
+
+ * Export MVector constructor from Data.Vector.Primitive to match Vector's
+   (which was already exported).
+
 Changes in version 0.10.11.0
 
-* Support OverloadedLists for boxed Vector in GHC >= 7.8
+ * Support OverloadedLists for boxed Vector in GHC >= 7.8
 
 Changes in version 0.10.10.0
 
