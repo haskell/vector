@@ -25,7 +25,7 @@ install:
  - cabal install --enable-tests --only-dependencies
 
 script:
- - cabal configure -v2
+ - cabal configure -v2 --enable-tests
  - cabal build
  - cabal test
  - cabal sdist
