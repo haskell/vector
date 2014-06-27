@@ -22,11 +22,12 @@ before_install:
 
 install:
  - travis_retry cabal update
- - cabal install --only-dependencies
+ - cabal install --enable-tests --only-dependencies
 
 script:
- - cabal configure -v2
+ - cabal configure -v2 --enable-tests
  - cabal build
+ - cabal test
  - cabal sdist
  - export SRC_TGZ=$(cabal info . | awk '{print $2 ".tar.gz";exit}') ;
    cd dist/;
