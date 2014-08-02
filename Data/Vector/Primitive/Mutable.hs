@@ -90,8 +90,13 @@ instance Prim a => G.MVector MVector a where
       between x y z = x >= y && x < z
 
   {-# INLINE basicUnsafeNew #-}
-  basicUnsafeNew n = MVector 0 n
-                     `liftM` newByteArray (n * sizeOf (undefined :: a))
+  basicUnsafeNew n
+    | n < 0 = error $ "Primitive.basicUnsafeNew: negative length: " ++ show n
+    | n > mx = error $ "Primitive.basicUnsafeNew: length to large: " ++ show n
+    | otherwise = MVector 0 n `liftM` newByteArray (n * size)
+    where
+      size = sizeOf (undefined :: a)
+      mx = maxBound `div` size :: Int
 
   {-# INLINE basicUnsafeRead #-}
   basicUnsafeRead (MVector i _ arr) j = readByteArray arr (i+j)
