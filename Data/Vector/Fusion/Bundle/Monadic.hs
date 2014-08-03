@@ -266,7 +266,8 @@ take n Bundle{sElems = s, sSize = sz} = fromStream (S.take n s) (smaller (Exact 
 -- | All but the first @n@ elements
 drop :: Monad m => Int -> Bundle m v a -> Bundle m v a
 {-# INLINE_FUSED drop #-}
-drop n Bundle{sElems = s, sSize = sz} = fromStream (S.drop n s) (sz - Exact n)
+drop n Bundle{sElems = s, sSize = sz} =
+  fromStream (S.drop n s) (clampedSubtract sz (Exact n))
 
 -- Mapping
 -- -------

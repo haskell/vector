@@ -11,7 +11,7 @@
 --
 
 module Data.Vector.Fusion.Bundle.Size (
-  Size(..), smaller, larger, toMax, upperBound, lowerBound
+  Size(..), clampedSubtract, smaller, larger, toMax, upperBound, lowerBound
 ) where
 
 import Data.Vector.Fusion.Util ( delay_inline )
@@ -23,19 +23,19 @@ data Size = Exact Int          -- ^ Exact size
         deriving( Eq, Show )
 
 instance Num Size where
-  Exact m + Exact n = Exact (m+n)
-  Exact m + Max   n = Max   (m+n)
+  Exact m + Exact n = checkedAdd Exact m n
+  Exact m + Max   n = checkedAdd Max m n
 
-  Max   m + Exact n = Max   (m+n)
-  Max   m + Max   n = Max   (m+n)
+  Max   m + Exact n = checkedAdd Max m n
+  Max   m + Max   n = checkedAdd Max m n
 
   _       + _       = Unknown
 
 
-  Exact m - Exact n = Exact (m-n)
+  Exact m - Exact n = checkedSubtract Exact m n
   Exact m - Max   _ = Max   m
 
-  Max   m - Exact n = Max   (m-n)
+  Max   m - Exact n = checkedSubtract Max m n
   Max   m - Max   _ = Max   m
   Max   m - Unknown = Max   m
 
@@ -48,6 +48,34 @@ instance Num Size where
   abs    = error "vector: internal error abs for Bundle.size isn't defined"
   signum = error "vector: internal error signum for Bundle.size isn't defined"
 
+{-# INLINE checkedAdd #-}
+checkedAdd :: (Int -> Size) -> Int -> Int -> Size
+checkedAdd con m n
+  | r <= m =
+      error $ "Data.Vector.Fusion.Bundle.Size.checkedAdd: overflow: " ++ show r
+  | otherwise = con r
+  where
+    r = m + n
+
+{-# INLINE checkedSubtract #-}
+checkedSubtract :: (Int -> Size) -> Int -> Int -> Size
+checkedSubtract con m n
+  | r < 0 =
+      error $ "Data.Vector.Fusion.Bundle.Size.checkedSubtract: underflow: " ++ show r
+  | otherwise = con r
+  where
+    r = m - n
+
+-- | Subtract two sizes with clamping to 0, for drop-like things
+{-# INLINE clampedSubtract #-}
+clampedSubtract :: Size -> Size -> Size
+clampedSubtract (Exact m) (Exact n) = Exact (max 0 (m - n))
+clampedSubtract (Max   m) (Exact n)
+  | m <= n = Exact 0
+  | otherwise = Max (m - n)
+clampedSubtract (Exact m) (Max   _) = Max m
+clampedSubtract (Max   m) (Max   _) = Max m
+clampedSubtract _         _ = Unknown
 
 -- | Minimum of two size hints
 smaller :: Size -> Size -> Size
