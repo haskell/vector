@@ -15,6 +15,8 @@ module Data.Vector.Fusion.Util (
 
   delay_inline, delayed_min
 ) where
+import Control.Applicative
+import Control.Monad (ap)
 
 import Control.Applicative (Applicative(..))
 
@@ -27,6 +29,10 @@ instance Functor Id where
 instance Applicative Id where
   pure = Id
   Id f <*> Id x = Id (f x)
+
+instance Applicative Id where
+  pure = return
+  (<*>) = ap
 
 instance Monad Id where
   return     = Id
@@ -41,6 +47,10 @@ instance Functor Box where
 instance Applicative Box where
   pure = Box
   Box f <*> Box x = Box (f x)
+
+instance Applicative Box where
+  pure = return
+  (<*>) = ap
 
 instance Monad Box where
   return      = Box
