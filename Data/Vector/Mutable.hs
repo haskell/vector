@@ -40,8 +40,8 @@ module Data.Vector.Mutable (
   clear,
 
   -- * Accessing individual elements
-  read, write, swap,
-  unsafeRead, unsafeWrite, unsafeSwap,
+  read, write, modify, swap,
+  unsafeRead, unsafeWrite, unsafeModify, unsafeSwap,
 
   -- * Modifying vectors
 
@@ -325,6 +325,11 @@ write :: PrimMonad m => MVector (PrimState m) a -> Int -> a -> m ()
 {-# INLINE write #-}
 write = G.write
 
+-- | Modify the element at the given position.
+modify :: PrimMonad m => MVector (PrimState m) a -> (a -> a) -> Int -> m ()
+{-# INLINE modify #-}
+modify = G.modify
+
 -- | Swap the elements at the given positions.
 swap :: PrimMonad m => MVector (PrimState m) a -> Int -> Int -> m ()
 {-# INLINE swap #-}
@@ -340,6 +345,11 @@ unsafeRead = G.unsafeRead
 unsafeWrite :: PrimMonad m => MVector (PrimState m) a -> Int -> a -> m ()
 {-# INLINE unsafeWrite #-}
 unsafeWrite = G.unsafeWrite
+
+-- | Modify the element at the given position. No bounds checks are performed.
+unsafeModify :: PrimMonad m => MVector (PrimState m) a -> (a -> a) -> Int -> m ()
+{-# INLINE unsafeModify #-}
+unsafeModify = G.unsafeModify
 
 -- | Swap the elements at the given positions. No bounds checks are performed.
 unsafeSwap :: PrimMonad m => MVector (PrimState m) a -> Int -> Int -> m ()
