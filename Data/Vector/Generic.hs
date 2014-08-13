@@ -43,6 +43,7 @@ module Data.Vector.Generic (
 
   -- ** Unfolding
   unfoldr, unfoldrN,
+  unfoldrM, unfoldrNM,
   constructN, constructrN,
 
   -- ** Enumeration
@@ -550,6 +551,22 @@ unfoldr f = unstream . Bundle.unfoldr f
 unfoldrN  :: Vector v a => Int -> (b -> Maybe (a, b)) -> b -> v a
 {-# INLINE unfoldrN #-}
 unfoldrN n f = unstream . Bundle.unfoldrN n f
+
+-- | /O(n)/ Construct a vector by repeatedly applying the monadic
+-- generator function to a seed. The generator function yields 'Just'
+-- the next element and the new seed or 'Nothing' if there are no more
+-- elements.
+unfoldrM :: (Monad m, Vector v a) => (b -> m (Maybe (a, b))) -> b -> m (v a)
+{-# INLINE unfoldrM #-}
+unfoldrM f = unstreamM . MBundle.unfoldrM f
+
+-- | /O(n)/ Construct a vector by repeatedly applying the monadic
+-- generator function to a seed. The generator function yields 'Just'
+-- the next element and the new seed or 'Nothing' if there are no more
+-- elements.
+unfoldrNM :: (Monad m, Vector v a) => Int -> (b -> m (Maybe (a, b))) -> b -> m (v a)
+{-# INLINE unfoldrNM #-}
+unfoldrNM n f = unstreamM . MBundle.unfoldrNM n f
 
 -- | /O(n)/ Construct a vector with @n@ elements by repeatedly applying the
 -- generator function to the already constructed part of the vector.

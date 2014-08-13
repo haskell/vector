@@ -46,6 +46,7 @@ module Data.Vector.Primitive (
 
   -- ** Unfolding
   unfoldr, unfoldrN,
+  unfoldrM, unfoldrNM,
   constructN, constructrN,
 
   -- ** Enumeration
@@ -515,6 +516,22 @@ unfoldr = G.unfoldr
 unfoldrN :: Prim a => Int -> (b -> Maybe (a, b)) -> b -> Vector a
 {-# INLINE unfoldrN #-}
 unfoldrN = G.unfoldrN
+
+-- | /O(n)/ Construct a vector by repeatedly applying the monadic
+-- generator function to a seed. The generator function yields 'Just'
+-- the next element and the new seed or 'Nothing' if there are no more
+-- elements.
+unfoldrM :: (Monad m, Prim a) => (b -> m (Maybe (a, b))) -> b -> m (Vector a)
+{-# INLINE unfoldrM #-}
+unfoldrM = G.unfoldrM
+
+-- | /O(n)/ Construct a vector by repeatedly applying the monadic
+-- generator function to a seed. The generator function yields 'Just'
+-- the next element and the new seed or 'Nothing' if there are no more
+-- elements.
+unfoldrNM :: (Monad m, Prim a) => Int -> (b -> m (Maybe (a, b))) -> b -> m (Vector a)
+{-# INLINE unfoldrNM #-}
+unfoldrNM = G.unfoldrNM
 
 -- | /O(n)/ Construct a vector with @n@ elements by repeatedly applying the
 -- generator function to the already constructed part of the vector.
