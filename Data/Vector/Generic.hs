@@ -39,7 +39,7 @@ module Data.Vector.Generic (
   empty, singleton, replicate, generate, iterateN,
 
   -- ** Monadic initialisation
-  replicateM, generateM, create, createT,
+  replicateM, generateM, iterateNM, create, createT,
 
   -- ** Unfolding
   unfoldr, unfoldrN,
@@ -710,6 +710,11 @@ replicateM n m = unstreamM (MBundle.replicateM n m)
 generateM :: (Monad m, Vector v a) => Int -> (Int -> m a) -> m (v a)
 {-# INLINE generateM #-}
 generateM n f = unstreamM (MBundle.generateM n f)
+
+-- | /O(n)/ Apply monadic function n times to value. Zeroth element is original value.
+iterateNM :: (Monad m, Vector v a) => Int -> (a -> m a) -> a -> m (v a)
+{-# INLINE iterateNM #-}
+iterateNM n f x = unstreamM (MBundle.iterateNM n f x)
 
 -- | Execute the monadic action and freeze the resulting vector.
 --

@@ -42,7 +42,7 @@ module Data.Vector.Primitive (
   empty, singleton, replicate, generate, iterateN,
 
   -- ** Monadic initialisation
-  replicateM, generateM, create, createT,
+  replicateM, generateM, iterateNM, create, createT,
 
   -- ** Unfolding
   unfoldr, unfoldrN,
@@ -608,6 +608,11 @@ replicateM = G.replicateM
 generateM :: (Monad m, Prim a) => Int -> (Int -> m a) -> m (Vector a)
 {-# INLINE generateM #-}
 generateM = G.generateM
+
+-- | /O(n)/ Apply monadic function n times to value. Zeroth element is original value.
+iterateNM :: (Monad m, Prim a) => Int -> (a -> m a) -> a -> m (Vector a)
+{-# INLINE iterateNM #-}
+iterateNM = G.iterateNM
 
 -- | Execute the monadic action and freeze the resulting vector.
 --
