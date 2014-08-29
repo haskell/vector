@@ -51,7 +51,8 @@ instance Num Size where
 {-# INLINE checkedAdd #-}
 checkedAdd :: (Int -> Size) -> Int -> Int -> Size
 checkedAdd con m n
-  | r <= m =
+    -- Note: we assume m and n are >= 0.
+  | r < m || r < n =
       error $ "Data.Vector.Fusion.Bundle.Size.checkedAdd: overflow: " ++ show r
   | otherwise = con r
   where
