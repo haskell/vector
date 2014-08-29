@@ -6,6 +6,10 @@ import Test.QuickCheck.Property (Property(..))
 
 import Utilities ()
 
+import Control.Monad (replicateM)
+import Control.Monad.ST (runST)
+import Data.List (sort,permutations)
+
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Generic.Mutable as M
 
@@ -28,8 +32,18 @@ testMove v = G.length v > 0 ==> (MkProperty $ do
   actual <- return $  G.modify (\ mv -> M.move (M.slice dstOff len mv) (M.slice srcOff len mv)) v
   unProperty $ counterexample ("Move: " ++ show (v, dstOff, srcOff, len)) (expected == actual))
 
+checkPermutations :: Int -> Bool
+checkPermutations n = runST $ do
+    vec <- U.thaw (U.fromList [1..n])
+    res <- replicateM (product [1..n]) $ M.nextPermutation vec >> U.freeze vec >>= return . U.toList
+    return $! ([1..n] : res) == sort (permutations [1..n]) ++ [[n,n-1..1]]
+
+testPermutations :: Bool
+testPermutations = all checkPermutations [1..7]
+
 tests =
     [testProperty "Data.Vector.Mutable (Move)" (testMove :: V.Vector Int -> Property),
      testProperty "Data.Vector.Primitive.Mutable (Move)" (testMove :: P.Vector Int -> Property),
      testProperty "Data.Vector.Unboxed.Mutable (Move)" (testMove :: U.Vector Int -> Property),
-     testProperty "Data.Vector.Storable.Mutable (Move)" (testMove :: S.Vector Int -> Property)]
+     testProperty "Data.Vector.Storable.Mutable (Move)" (testMove :: S.Vector Int -> Property),
+     testProperty "Data.Vector.Generic.Mutable (nextPermutation)" testPermutations]
