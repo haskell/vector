@@ -24,6 +24,7 @@ module Data.Vector.Internal.Check (
 import GHC.Base( Int(..) )
 import GHC.Prim( Int# )
 import Prelude hiding( error, (&&), (||), not )
+import Data.Word (Word)
 import qualified Prelude as P
 
 -- NOTE: This is a workaround for GHC's weird behaviour where it doesn't inline
@@ -119,7 +120,8 @@ checkIndex_msg# i# n# = "index out of bounds " ++ show (I# i#, I# n#)
 checkIndex :: String -> Int -> Checks -> String -> Int -> Int -> a -> a
 {-# INLINE checkIndex #-}
 checkIndex file line kind loc i n x
-  = check file line kind loc (checkIndex_msg i n) (i >= 0 && i<n) x
+  = check file line kind loc (checkIndex_msg i n)
+       ((fromIntegral i::Word) < fromIntegral n) x
 
 
 checkLength_msg :: Int -> String
