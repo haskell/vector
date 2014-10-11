@@ -85,7 +85,8 @@ Flag InternalChecks
 
 
 Library
-  Extensions: CPP, DeriveDataTypeable
+  Default-Language: Haskell2010
+  Default-Extensions: CPP, DeriveDataTypeable
   Exposed-Modules:
         Data.Vector.Internal.Check
 
