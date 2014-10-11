@@ -3,6 +3,8 @@ Changes in version 0.10.12.0
  * Export MVector constructor from Data.Vector.Primitive to match Vector's
    (which was already exported).
 
+ * Fix building on GHC 7.9 by adding Applicative instances for Id and Box
+
 Changes in version 0.10.11.0
 
  * Support OverloadedLists for boxed Vector in GHC >= 7.8

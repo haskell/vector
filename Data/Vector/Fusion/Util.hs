@@ -22,6 +22,10 @@ newtype Id a = Id { unId :: a }
 instance Functor Id where
   fmap f (Id x) = Id (f x)
 
+instance Applicative Id where
+  pure = Id
+  Id f <*> Id x = Id (f x)
+
 instance Monad Id where
   return     = Id
   Id x >>= f = f x
@@ -31,6 +35,10 @@ data Box a = Box { unBox :: a }
 
 instance Functor Box where
   fmap f (Box x) = Box (f x)
+
+instance Applicative Box where
+  pure = Box
+  Box f <*> Box x = Box (f x)
 
 instance Monad Box where
   return      = Box
