@@ -16,6 +16,8 @@ module Data.Vector.Fusion.Util (
   delay_inline, delayed_min
 ) where
 
+import Control.Applicative
+
 -- | Identity monad
 newtype Id a = Id { unId :: a }
 
