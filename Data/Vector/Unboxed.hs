@@ -474,9 +474,8 @@ unfoldr :: Unbox a => (b -> Maybe (a, b)) -> b -> Vector a
 unfoldr = G.unfoldr
 
 -- | /O(n)/ Construct a vector with at most @n@ elements by repeatedly applying
--- the generator function to the a seed. The generator function yields 'Just'
--- the next element and the new seed or 'Nothing' if there are no more
--- elements.
+-- the generator function to a seed. The generator function yields 'Just' the
+-- next element and the new seed or 'Nothing' if there are no more elements.
 --
 -- > unfoldrN 3 (\n -> Just (n,n-1)) 10 = <10,9,8>
 unfoldrN :: Unbox a => Int -> (b -> Maybe (a, b)) -> b -> Vector a

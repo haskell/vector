@@ -536,9 +536,8 @@ unfoldr :: Vector v a => (b -> Maybe (a, b)) -> b -> v a
 unfoldr f = unstream . Bundle.unfoldr f
 
 -- | /O(n)/ Construct a vector with at most @n@ elements by repeatedly applying
--- the generator function to the a seed. The generator function yields 'Just'
--- the next element and the new seed or 'Nothing' if there are no more
--- elements.
+-- the generator function to a seed. The generator function yields 'Just' the
+-- next element and the new seed or 'Nothing' if there are no more elements.
 --
 -- > unfoldrN 3 (\n -> Just (n,n-1)) 10 = <10,9,8>
 unfoldrN  :: Vector v a => Int -> (b -> Maybe (a, b)) -> b -> v a
