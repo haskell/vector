@@ -122,6 +122,7 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Unfolding (FIXME)
         {- 'prop_unfoldr, prop_unfoldrN, -}
+        'prop_unfoldr, 'prop_unfoldrM,
         'prop_constructN, 'prop_constructrN,
 
         -- Enumeration? (FIXME?)
