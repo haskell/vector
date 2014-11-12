@@ -3,6 +3,7 @@ module Tests.Vector (tests) where
 import Boilerplater
 import Utilities as Util
 
+import Data.Functor.Identity
 import qualified Data.Traversable as T (Traversable(..))
 import Data.Foldable (Foldable(foldMap))
 
@@ -113,7 +114,7 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Initialisation (FIXME)
         'prop_empty, 'prop_singleton, 'prop_replicate,
-        'prop_generate, 'prop_iterateN,
+        'prop_generate, 'prop_iterateN, 'prop_iterateNM,
 
         -- Monadic initialisation (FIXME)
         'prop_createT,
@@ -231,7 +232,8 @@ testPolymorphicFunctions _ = $(testProperties [
               = (\n _ -> n < 1000) ===> V.generate `eq` Util.generate
     prop_iterateN  :: P (Int -> (a -> a) -> a -> v a)
               = (\n _ _ -> n < 1000) ===> V.iterateN `eq` (\n f -> take n . iterate f)
-
+    prop_iterateNM :: P (Int -> (a -> Writer [Int] a) -> a -> Writer [Int] (v a))
+              = (\n _ _ -> n < 1000) ===> V.iterateNM `eq` Util.iterateNM
     prop_createT :: P ((a, v a) -> (a, v a))
     prop_createT = (\v -> V.createT (T.mapM V.thaw v)) `eq` id
 
@@ -433,10 +435,18 @@ testPolymorphicFunctions _ = $(testProperties [
     limitUnfolds f (theirs, ours) | ours >= 0
                                   , Just (out, theirs') <- f theirs = Just (out, (theirs', ours - 1))
                                   | otherwise                       = Nothing
+    limitUnfoldsM f (theirs, ours)
+        | ours >= 0 = do r <- f theirs
+                         return $ (\(a,b) -> (a,(b,ours - 1))) `fmap` r
+        | otherwise = return Nothing
+
+
     prop_unfoldr :: P (Int -> (Int -> Maybe (a,Int)) -> Int -> v a)
          = (\n f a -> V.unfoldr (limitUnfolds f) (a, n))
            `eq` (\n f a -> unfoldr (limitUnfolds f) (a, n))
-
+    prop_unfoldrM :: P (Int -> (Int -> Writer [Int] (Maybe (a,Int))) -> Int -> Writer [Int] (v a))
+         = (\n f a -> V.unfoldrM (limitUnfoldsM f) (a,n))
+           `eq` (\n f a -> Util.unfoldrM (limitUnfoldsM f) (a, n))
     prop_constructN  = \f -> forAll (choose (0,20)) $ \n -> unP prop n f
       where
         prop :: P (Int -> (v a -> a) -> v a) = V.constructN `eq` constructN []

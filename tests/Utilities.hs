@@ -52,8 +52,10 @@ instance Arbitrary a => Arbitrary (S.Bundle v a) where
 instance CoArbitrary a => CoArbitrary (S.Bundle v a) where
     coarbitrary = coarbitrary . S.toList
 
-instance Arbitrary a => Arbitrary (Writer a ()) where
-    arbitrary = fmap (writer . ((,) ())) arbitrary
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Writer a b) where
+    arbitrary = do b <- arbitrary
+                   a <- arbitrary
+                   return $ writer (b,a)
 
 instance CoArbitrary a => CoArbitrary (Writer a ()) where
     coarbitrary = coarbitrary . runWriter
@@ -148,13 +150,13 @@ instance (Eq a, TestData a) => TestData (Identity a) where
   type EqTest (Identity a) = Property
   equal = (property .) . on (==) runIdentity
 
-instance (Eq a, TestData a, Monoid a) => TestData (Writer a ()) where
-  type Model (Writer a ()) = Writer (Model a) ()
+instance (Eq a, TestData a, Eq b, TestData b, Monoid a) => TestData (Writer a b) where
+  type Model (Writer a b) = Writer (Model a) (Model b)
   model = mapWriter model
   unmodel = mapWriter unmodel
 
-  type EqTest (Writer a ()) = Property
-  equal = (property .) . on (==) execWriter
+  type EqTest (Writer a b) = Property
+  equal = (property .) . on (==) runWriter
 
 instance (Eq a, Eq b, TestData a, TestData b) => TestData (a,b) where
   type Model (a,b) = (Model a, Model b)
@@ -325,3 +327,18 @@ maxIndex = fst . foldr1 imax . zip [0..]
     imax (i,x) (j,y) | x >= y    = (i,x)
                      | otherwise = (j,y)
 
+iterateNM :: Monad m => Int -> (a -> m a) -> a -> m [a]
+iterateNM n f x
+    | n <= 0    = return []
+    | n == 1    = return [x]
+    | otherwise =  do x' <- f x
+                      xs <- iterateNM (n-1) f x'
+                      return (x : xs)
+
+unfoldrM :: Monad m => (b -> m (Maybe (a,b))) -> b -> m [a]
+unfoldrM step b0 = do
+    r <- step b0
+    case r of
+      Nothing    -> return []
+      Just (a,b) -> do as <- unfoldrM step b
+                       return (a : as)
