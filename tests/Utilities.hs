@@ -342,3 +342,9 @@ unfoldrM step b0 = do
       Nothing    -> return []
       Just (a,b) -> do as <- unfoldrM step b
                        return (a : as)
+
+
+limitUnfolds f (theirs, ours)
+    | ours >= 0
+    , Just (out, theirs') <- f theirs = Just (out, (theirs', ours - 1))
+    | otherwise                       = Nothing

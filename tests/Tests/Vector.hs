@@ -120,9 +120,8 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_createT,
         {- 'prop_replicateM, 'prop_generateM, 'prop_create, -}
 
-        -- Unfolding (FIXME)
-        {- 'prop_unfoldr, prop_unfoldrN, -}
-        'prop_unfoldr, 'prop_unfoldrM,
+        -- Unfolding
+        'prop_unfoldr, 'prop_unfoldrN, 'prop_unfoldrM, 'prop_unfoldrNM,
         'prop_constructN, 'prop_constructrN,
 
         -- Enumeration? (FIXME?)
@@ -433,11 +432,12 @@ testPolymorphicFunctions _ = $(testProperties [
 
     -- Because the vectors are strict, we need to be totally sure that the unfold eventually terminates. This
     -- is achieved by injecting our own bit of state into the unfold - the maximum number of unfolds allowed.
-    limitUnfolds f (theirs, ours) | ours >= 0
-                                  , Just (out, theirs') <- f theirs = Just (out, (theirs', ours - 1))
-                                  | otherwise                       = Nothing
+    limitUnfolds f (theirs, ours)
+        | ours > 0
+        , Just (out, theirs') <- f theirs = Just (out, (theirs', ours - 1))
+        | otherwise                       = Nothing
     limitUnfoldsM f (theirs, ours)
-        | ours >= 0 = do r <- f theirs
+        | ours >  0 = do r <- f theirs
                          return $ (\(a,b) -> (a,(b,ours - 1))) `fmap` r
         | otherwise = return Nothing
 
@@ -445,9 +445,14 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_unfoldr :: P (Int -> (Int -> Maybe (a,Int)) -> Int -> v a)
          = (\n f a -> V.unfoldr (limitUnfolds f) (a, n))
            `eq` (\n f a -> unfoldr (limitUnfolds f) (a, n))
+    prop_unfoldrN :: P (Int -> (Int -> Maybe (a,Int)) -> Int -> v a)
+         = V.unfoldrN `eq` (\n f a -> unfoldr (limitUnfolds f) (a, n))
     prop_unfoldrM :: P (Int -> (Int -> Writer [Int] (Maybe (a,Int))) -> Int -> Writer [Int] (v a))
          = (\n f a -> V.unfoldrM (limitUnfoldsM f) (a,n))
            `eq` (\n f a -> Util.unfoldrM (limitUnfoldsM f) (a, n))
+    prop_unfoldrNM :: P (Int -> (Int -> Writer [Int] (Maybe (a,Int))) -> Int -> Writer [Int] (v a))
+         = V.unfoldrNM `eq` (\n f a -> Util.unfoldrM (limitUnfoldsM f) (a, n))
+
     prop_constructN  = \f -> forAll (choose (0,20)) $ \n -> unP prop n f
       where
         prop :: P (Int -> (v a -> a) -> v a) = V.constructN `eq` constructN []
