@@ -54,7 +54,7 @@ import qualified Data.Vector.Generic.Mutable as G
 import           Data.Primitive.Array
 import           Control.Monad.Primitive
 
-import Prelude hiding ( length, null, replicate, reverse, map, read,
+import Prelude hiding ( length, null, replicate, reverse, read,
                         take, drop, splitAt, init, tail )
 
 import Data.Typeable ( Typeable )
