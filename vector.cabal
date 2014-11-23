@@ -1,5 +1,5 @@
 Name:           vector
-Version:        0.10.12.1
+Version:        0.10.12.2
 -- don't forget to update the changelog file!
 License:        BSD3
 License-File:   LICENSE
@@ -123,7 +123,7 @@ Library
   Build-Depends: base >= 4 && < 5
                , primitive >= 0.5.0.1 && < 0.6
                , ghc-prim
-               , deepseq >= 1.1 && < 1.4
+               , deepseq >= 1.1 && < 1.5
 
   if impl(ghc<6.13)
     Ghc-Options: -finline-if-enough-args -fno-method-sharing
