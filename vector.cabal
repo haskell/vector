@@ -140,7 +140,7 @@ Library
   Build-Depends: base >= 4.3 && < 4.9
                , primitive >= 0.5.0.1 && < 0.6
                , ghc-prim >= 0.2 && < 0.4
-               , deepseq >= 1.1 && < 1.4
+               , deepseq >= 1.1 && < 1.5
 
   Ghc-Options: -O2 -Wall -fno-warn-orphans
 
