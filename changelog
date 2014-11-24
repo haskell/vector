@@ -1,3 +1,7 @@
+Changes in version 0.10.12.2
+
+ * Add support for `deepseq-1.4.0.0`
+
 Changes in version 0.10.12.1
 
  * Fixed compilation on non-head GHCs
