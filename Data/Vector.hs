@@ -112,7 +112,9 @@ module Data.Vector (
   -- * Working with predicates
 
   -- ** Filtering
-  filter, ifilter, filterM,
+  filter, ifilter,
+  filterMap, ifilterMap,
+  filterM,
   takeWhile, dropWhile,
 
   -- ** Partitioning
@@ -1078,6 +1080,16 @@ filter = G.filter
 ifilter :: (Int -> a -> Bool) -> Vector a -> Vector a
 {-# INLINE ifilter #-}
 ifilter = G.ifilter
+
+-- | /O(n)/ Drop elements when predicate returns Nothing
+filterMap :: (a -> Maybe b) -> Vector a -> Vector b
+{-# INLINE filterMap #-}
+filterMap = G.filterMap
+
+-- | /O(n)/ Drop elements when predicate, applied to index and value, returns Nothing
+ifilterMap :: (Int -> a -> Maybe b) -> Vector a -> Vector b
+{-# INLINE ifilterMap #-}
+ifilterMap = G.ifilterMap
 
 -- | /O(n)/ Drop elements that do not satisfy the monadic predicate
 filterM :: Monad m => (a -> m Bool) -> Vector a -> m (Vector a)

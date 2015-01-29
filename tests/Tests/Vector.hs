@@ -159,6 +159,7 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Filtering
         'prop_filter, 'prop_ifilter, {- prop_filterM, -}
+        'prop_filterMap, 'prop_ifilterMap,
         'prop_takeWhile, 'prop_dropWhile,
 
         -- Paritioning
@@ -292,6 +293,8 @@ testPolymorphicFunctions _ = $(testProperties [
 
     prop_filter :: P ((a -> Bool) -> v a -> v a) = V.filter `eq` filter
     prop_ifilter :: P ((Int -> a -> Bool) -> v a -> v a) = V.ifilter `eq` ifilter
+    prop_filterMap :: P ((a -> Maybe a) -> v a -> v a) = V.filterMap `eq` filterMap
+    prop_ifilterMap :: P ((Int -> a -> Maybe a) -> v a -> v a) = V.ifilterMap `eq` ifilterMap
     prop_takeWhile :: P ((a -> Bool) -> v a -> v a) = V.takeWhile `eq` takeWhile
     prop_dropWhile :: P ((a -> Bool) -> v a -> v a) = V.dropWhile `eq` dropWhile
     prop_partition :: P ((a -> Bool) -> v a -> (v a, v a))

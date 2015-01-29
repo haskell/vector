@@ -91,7 +91,9 @@ module Data.Vector.Primitive (
   -- * Working with predicates
 
   -- ** Filtering
-  filter, ifilter, filterM,
+  filter, ifilter,
+  filterMap, ifilterMap,
+  filterM,
   takeWhile, dropWhile,
 
   -- ** Partitioning
@@ -886,6 +888,16 @@ filter = G.filter
 ifilter :: Prim a => (Int -> a -> Bool) -> Vector a -> Vector a
 {-# INLINE ifilter #-}
 ifilter = G.ifilter
+
+-- | /O(n)/ Drop elements when predicate returns Nothing
+filterMap :: (Prim a, Prim b) => (a -> Maybe b) -> Vector a -> Vector b
+{-# INLINE filterMap #-}
+filterMap = G.filterMap
+
+-- | /O(n)/ Drop elements when predicate, applied to index and value, returns Nothing
+ifilterMap :: (Prim a, Prim b) => (Int -> a -> Maybe b) -> Vector a -> Vector b
+{-# INLINE ifilterMap #-}
+ifilterMap = G.ifilterMap
 
 -- | /O(n)/ Drop elements that do not satisfy the monadic predicate
 filterM :: (Monad m, Prim a) => (a -> m Bool) -> Vector a -> m (Vector a)
