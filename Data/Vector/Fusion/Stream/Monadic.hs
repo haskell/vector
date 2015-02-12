@@ -40,7 +40,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   eq, cmp,
 
   -- * Filtering
-  filter, filterM, filterMap, takeWhile, takeWhileM, dropWhile, dropWhileM,
+  filter, filterM, mapMaybe, takeWhile, takeWhileM, dropWhile, dropWhileM,
 
   -- * Searching
   elem, notElem, find, findM, findIndex, findIndexM,
@@ -676,9 +676,9 @@ filter :: Monad m => (a -> Bool) -> Stream m a -> Stream m a
 {-# INLINE filter #-}
 filter f = filterM (return . f)
 
-filterMap :: Monad m => (a -> Maybe b) -> Stream m a -> Stream m b
-{-# INLINE_FUSED filterMap #-}
-filterMap f (Stream step t) = Stream step' t
+mapMaybe :: Monad m => (a -> Maybe b) -> Stream m a -> Stream m b
+{-# INLINE_FUSED mapMaybe #-}
+mapMaybe f (Stream step t) = Stream step' t
   where
     {-# INLINE_INNER step' #-}
     step' s = do

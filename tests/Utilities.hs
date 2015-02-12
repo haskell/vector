@@ -293,11 +293,11 @@ izipWith3 = withIndexFirst zipWith3
 ifilter :: (Int -> a -> Bool) -> [a] -> [a]
 ifilter f = map snd . withIndexFirst filter f
 
-filterMap :: (a -> Maybe b) -> [a] -> [b]
-filterMap f = catMaybes . map f
+mapMaybe :: (a -> Maybe b) -> [a] -> [b]
+mapMaybe f = catMaybes . map f
 
-ifilterMap :: (Int -> a -> Maybe b) -> [a] -> [b]
-ifilterMap f = catMaybes . withIndexFirst map f
+imapMaybe :: (Int -> a -> Maybe b) -> [a] -> [b]
+imapMaybe f = catMaybes . withIndexFirst map f
 
 indexedLeftFold fld f z = fld (uncurry . f) z . zip [0..]
 

@@ -96,7 +96,7 @@ module Data.Vector.Generic (
 
   -- ** Filtering
   filter, ifilter,
-  filterMap, ifilterMap,
+  mapMaybe, imapMaybe,
   filterM,
   takeWhile, dropWhile,
 
@@ -1278,15 +1278,15 @@ ifilter f = unstream
           . stream
 
 -- | /O(n)/ Drop elements when predicate returns Nothing
-filterMap :: (Vector v a, Vector v b) => (a -> Maybe b) -> v a -> v b
-{-# INLINE filterMap #-}
-filterMap f = unstream . inplace (S.filterMap f) toMax . stream
+mapMaybe :: (Vector v a, Vector v b) => (a -> Maybe b) -> v a -> v b
+{-# INLINE mapMaybe #-}
+mapMaybe f = unstream . inplace (S.mapMaybe f) toMax . stream
 
 -- | /O(n)/ Drop elements when predicate, applied to index and value, returns Nothing
-ifilterMap :: (Vector v a, Vector v b) => (Int -> a -> Maybe b) -> v a -> v b
-{-# INLINE ifilterMap #-}
-ifilterMap f = unstream
-          . inplace (S.filterMap (uncurry f) . S.indexed) toMax
+imapMaybe :: (Vector v a, Vector v b) => (Int -> a -> Maybe b) -> v a -> v b
+{-# INLINE imapMaybe #-}
+imapMaybe f = unstream
+          . inplace (S.mapMaybe (uncurry f) . S.indexed) toMax
           . stream
 
 
