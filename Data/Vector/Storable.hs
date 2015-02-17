@@ -146,7 +146,7 @@ import Foreign.ForeignPtr
 import Foreign.Ptr
 import Foreign.Marshal.Array ( advancePtr, copyArray )
 
-import Control.DeepSeq ( NFData )
+import Control.DeepSeq ( NFData(rnf) )
 
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
@@ -184,7 +184,8 @@ data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !(ForeignPtr a)
         deriving ( Typeable )
 
-instance NFData (Vector a)
+instance NFData (Vector a) where
+  rnf (Vector _ _) = ()
 
 instance (Show a, Storable a) => Show (Vector a) where
   showsPrec = G.showsPrec
