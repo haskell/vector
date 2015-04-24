@@ -166,6 +166,7 @@ import Control.DeepSeq ( NFData, rnf )
 import Control.Monad ( MonadPlus(..), liftM, ap )
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
+import Control.Monad.Zip
 
 import Prelude hiding ( length, null,
                         replicate, (++), concat,
@@ -306,6 +307,16 @@ instance MonadPlus Vector where
 
   {-# INLINE mplus #-}
   mplus = (++)
+
+instance MonadZip Vector where
+  {-# INLINE mzip #-}
+  mzip = zip
+
+  {-# INLINE mzipWith #-}
+  mzipWith = zipWith
+
+  {-# INLINE munzip #-}
+  munzip = unzip
 
 instance Applicative.Applicative Vector where
   {-# INLINE pure #-}
