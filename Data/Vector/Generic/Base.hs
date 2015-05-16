@@ -15,7 +15,7 @@
 --
 
 module Data.Vector.Generic.Base (
-  Vector(..), Mutable
+  Vector(..), Mutable, Pure
 ) where
 
 import           Data.Vector.Generic.Mutable.Base ( MVector )
@@ -23,10 +23,14 @@ import qualified Data.Vector.Generic.Mutable.Base as M
 
 import Control.Monad.Primitive
 
--- | @Mutable v s a@ is the mutable version of the pure vector type @v a@ with
+-- | @'Mutable' v s a@ is the mutable version of the pure vector type @v a@ with
 -- the state token @s@
 --
 type family Mutable (v :: * -> *) :: * -> * -> *
+
+-- | @'Pure' mv a@ is the pure version of the mutable vector type @mv s a@.
+-- 'Pure' and 'Mutable' have the law that @(mv ~ Mutable v, v ~ Pure mv)@ must always hold
+type family Pure (mv :: * -> * -> *) :: * -> *
 
 -- | Class of immutable vectors. Every immutable vector is associated with its
 -- mutable version through the 'Mutable' type family. Methods of this class
@@ -45,19 +49,19 @@ type family Mutable (v :: * -> *) :: * -> * -> *
 --
 --   * 'basicUnsafeIndexM'
 --
-class MVector (Mutable v) a => Vector v a where
+class (v ~ Pure (Mutable v),MVector (Mutable v) a) => Vector v a where
   -- | /Assumed complexity: O(1)/
   --
   -- Unsafely convert a mutable vector to its immutable version
   -- without copying. The mutable vector may not be used after
   -- this operation.
-  basicUnsafeFreeze :: PrimMonad m => Mutable v (PrimState m) a -> m (v a)
+  basicUnsafeFreeze :: (PrimMonad m,mv~Mutable v,v~Pure mv) => mv (PrimState m) a -> m (v a)
 
   -- | /Assumed complexity: O(1)/
   --
   -- Unsafely convert an immutable vector to its mutable version without
   -- copying. The immutable vector may not be used after this operation.
-  basicUnsafeThaw :: PrimMonad m => v a -> m (Mutable v (PrimState m) a)
+  basicUnsafeThaw :: (PrimMonad m,mv~Mutable v,v~Pure mv) => v a -> m (mv (PrimState m) a)
 
   -- | /Assumed complexity: O(1)/
   --
@@ -106,10 +110,10 @@ class MVector (Mutable v) a => Vector v a where
   --
   -- Instances of 'Vector' should redefine this method if they wish to support
   -- an efficient block copy operation.
-  --
+  --`
   -- Default definition: copying basic on 'basicUnsafeIndexM' and
   -- 'basicUnsafeWrite'.
-  basicUnsafeCopy :: PrimMonad m => Mutable v (PrimState m) a -> v a -> m ()
+  basicUnsafeCopy :: (PrimMonad m,mv~Mutable v,v~Pure mv) => mv (PrimState m) a -> v a -> m ()
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy !dst !src = do_copy 0

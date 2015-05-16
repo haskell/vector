@@ -196,6 +196,8 @@ instance (Data a, Prim a) => Data (Vector a) where
 
 type instance G.Mutable Vector = MVector
 
+type instance G.Pure MVector = Vector
+
 instance Prim a => G.Vector Vector a where
   {-# INLINE basicUnsafeFreeze #-}
   basicUnsafeFreeze (MVector i n marr)

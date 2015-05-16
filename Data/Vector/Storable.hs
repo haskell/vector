@@ -203,6 +203,8 @@ instance (Data a, Storable a) => Data (Vector a) where
 
 type instance G.Mutable Vector = MVector
 
+type instance G.Pure MVector = Vector
+
 instance Storable a => G.Vector Vector a where
   {-# INLINE basicUnsafeFreeze #-}
   basicUnsafeFreeze (MVector n fp) = return $ Vector n fp

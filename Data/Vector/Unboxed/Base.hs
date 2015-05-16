@@ -60,6 +60,8 @@ type STVector s = MVector s
 
 type instance G.Mutable Vector = MVector
 
+type instance G.Pure MVector = Vector
+
 class (G.Vector Vector a, M.MVector MVector a) => Unbox a
 
 instance NFData (Vector a) where rnf !_ = ()

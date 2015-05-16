@@ -107,7 +107,7 @@ import Data.Word ( Word8, Word16, Word32, Word, Word64 )
 #include "vector.h"
 #include "MachDeps.h"
 
-data Chunk v a = Chunk Int (forall m. (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m ())
+data Chunk v a = Chunk Int (forall m mv. (PrimMonad m, Vector v a, MUTABLE_PURE(mv,v)) => mv (PrimState m) a -> m ())
 
 -- | Monadic streams
 data Bundle m v a = Bundle { sElems  :: Stream m a

@@ -234,6 +234,8 @@ instance Data a => Data (Vector a) where
 
 type instance G.Mutable Vector = MVector
 
+type instance G.Pure MVector = Vector
+
 instance G.Vector Vector a where
   {-# INLINE basicUnsafeFreeze #-}
   basicUnsafeFreeze (MVector i n marr)

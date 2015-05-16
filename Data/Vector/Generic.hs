@@ -14,7 +14,7 @@
 
 module Data.Vector.Generic (
   -- * Immutable vectors
-  Vector(..), Mutable,
+  Vector(..), Mutable, Pure,
 
   -- * Accessors
 
@@ -705,7 +705,7 @@ generateM n f = unstreamM (MBundle.generateM n f)
 -- @
 -- create (do { v \<- 'M.new' 2; 'M.write' v 0 \'a\'; 'M.write' v 1 \'b\'; return v }) = \<'a','b'\>
 -- @
-create :: Vector v a => (forall s. ST s (Mutable v s a)) -> v a
+create :: (Vector v a, MUTABLE_PURE(mv,v)) => (forall s. ST s (mv s a)) -> v a
 {-# INLINE create #-}
 create p = new (New.create p)
 
@@ -941,14 +941,14 @@ unsafeBackpermute v is = seq v
 -- @
 -- modify (\\v -> 'M.write' v 0 \'x\') ('replicate' 3 \'a\') = \<\'x\',\'a\',\'a\'\>
 -- @
-modify :: Vector v a => (forall s. Mutable v s a -> ST s ()) -> v a -> v a
+modify :: (Vector v a,MUTABLE_PURE(mv,v)) => (forall s. mv s a -> ST s ()) -> v a -> v a
 {-# INLINE modify #-}
 modify p = new . New.modify p . clone
 
 -- We have to make sure that this is strict in the stream but we can't seq on
 -- it while fusion is happening. Hence this ugliness.
-modifyWithBundle :: Vector v a
-                 => (forall s. Mutable v s a -> Bundle u b -> ST s ())
+modifyWithBundle :: (Vector v a, MUTABLE_PURE(mv,v)  )
+                 => (forall s. mv s a -> Bundle u b -> ST s ())
                  -> v a -> Bundle u b -> v a
 {-# INLINE modifyWithBundle #-}
 modifyWithBundle p v s = new (New.modifyWithBundle p (clone v) s)
@@ -1818,23 +1818,23 @@ convert = unstream . Bundle.reVector . stream
 -- | /O(1)/ Unsafe convert a mutable vector to an immutable one without
 -- copying. The mutable vector may not be used after this operation.
 unsafeFreeze
-  :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m (v a)
+  :: (PrimMonad m, Vector v a, MUTABLE_PURE(mv,v)) => mv (PrimState m) a -> m (v a)
 {-# INLINE unsafeFreeze #-}
 unsafeFreeze = basicUnsafeFreeze
 
 -- | /O(n)/ Yield an immutable copy of the mutable vector.
-freeze :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m (v a)
+freeze :: (PrimMonad m, Vector v a,MUTABLE_PURE(mv,v)) => mv (PrimState m) a -> m (v a)
 {-# INLINE freeze #-}
 freeze mv = unsafeFreeze =<< M.clone mv
 
 -- | /O(1)/ Unsafely convert an immutable vector to a mutable one without
 -- copying. The immutable vector may not be used after this operation.
-unsafeThaw :: (PrimMonad m, Vector v a) => v a -> m (Mutable v (PrimState m) a)
+unsafeThaw :: (PrimMonad m, Vector v a,MUTABLE_PURE(mv,v)) => v a -> m (mv (PrimState m) a)
 {-# INLINE_FUSED unsafeThaw #-}
 unsafeThaw = basicUnsafeThaw
 
 -- | /O(n)/ Yield a mutable copy of the immutable vector.
-thaw :: (PrimMonad m, Vector v a) => v a -> m (Mutable v (PrimState m) a)
+thaw :: (PrimMonad m, Vector v a, MUTABLE_PURE(mv,v)) => v a -> m (Mutable v (PrimState m) a)
 {-# INLINE_FUSED thaw #-}
 thaw v = do
            mv <- M.unsafeNew (length v)
@@ -1877,7 +1877,7 @@ thawMany vs = do
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length.
 copy
-  :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
+  :: (PrimMonad m, Vector v a, MUTABLE_PURE(mv,v)) => mv (PrimState m) a -> v a -> m ()
 {-# INLINE copy #-}
 copy dst src = BOUNDS_CHECK(check) "copy" "length mismatch"
                                           (M.length dst == length src)
@@ -1886,7 +1886,7 @@ copy dst src = BOUNDS_CHECK(check) "copy" "length mismatch"
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length. This is not checked.
 unsafeCopy
-  :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
+  :: (PrimMonad m, Vector v a, MUTABLE_PURE(mv,v)) => mv (PrimState m) a -> v a -> m ()
 {-# INLINE unsafeCopy #-}
 unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
                                          (M.length dst == length src)
