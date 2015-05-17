@@ -35,7 +35,8 @@ type family Pure (mv :: * -> * -> *) :: * -> *
 -- | Class of immutable vectors. Every immutable vector is associated with its
 -- mutable version through the 'Mutable' type family. Methods of this class
 -- should not be used directly. Instead, "Data.Vector.Generic" and other
--- Data.Vector modules provide safe and fusible wrappers.
+-- Data.Vector modules provide safe and fusible wrappers. Every 'Vector' instance
+-- must provide instances of both 'Mutable' and 'Pure' that jointly obey @v ~ 'Pure' ('Mutable' v)@.
 --
 -- Minimum complete implementation:
 --
