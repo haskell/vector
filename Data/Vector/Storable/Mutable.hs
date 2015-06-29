@@ -57,7 +57,7 @@ module Data.Vector.Storable.Mutable(
   unsafeWith
 ) where
 
-import Control.DeepSeq ( NFData )
+import Control.DeepSeq ( NFData(rnf) )
 
 import qualified Data.Vector.Generic.Mutable as G
 import Data.Vector.Storable.Internal
@@ -96,7 +96,8 @@ data MVector s a = MVector {-# UNPACK #-} !Int
 type IOVector = MVector RealWorld
 type STVector s = MVector s
 
-instance NFData (MVector s a)
+instance NFData (MVector s a) where
+  rnf (MVector _ _) = ()
 
 instance Storable a => G.MVector MVector a where
   {-# INLINE basicLength #-}

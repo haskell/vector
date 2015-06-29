@@ -140,7 +140,7 @@ import qualified Data.Vector.Fusion.Bundle as Bundle
 import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim, sizeOf )
 
-import Control.DeepSeq ( NFData )
+import Control.DeepSeq ( NFData(rnf) )
 
 import Control.Monad ( liftM )
 import Control.Monad.ST ( ST )
@@ -176,7 +176,8 @@ data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !ByteArray -- ^ offset, length, underlying byte array
   deriving ( Typeable )
 
-instance NFData (Vector a)
+instance NFData (Vector a) where
+  rnf (Vector _ _ _) = ()
 
 instance (Show a, Prim a) => Show (Vector a) where
   showsPrec = G.showsPrec

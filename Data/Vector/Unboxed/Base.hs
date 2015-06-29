@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, MultiParamTypeClasses, TypeFamilies, FlexibleContexts #-}
+{-# LANGUAGE BangPatterns, CPP, MultiParamTypeClasses, TypeFamilies, FlexibleContexts #-}
 #if __GLASGOW_HASKELL__ >= 707
 {-# LANGUAGE DeriveDataTypeable, StandaloneDeriving #-}
 #endif
@@ -25,7 +25,7 @@ import qualified Data.Vector.Generic.Mutable as M
 
 import qualified Data.Vector.Primitive as P
 
-import Control.DeepSeq ( NFData )
+import Control.DeepSeq ( NFData(rnf) )
 
 import Control.Monad.Primitive
 import Control.Monad ( liftM )
@@ -62,8 +62,8 @@ type instance G.Mutable Vector = MVector
 
 class (G.Vector Vector a, M.MVector MVector a) => Unbox a
 
-instance NFData (Vector a)
-instance NFData (MVector s a)
+instance NFData (Vector a) where rnf !_ = ()
+instance NFData (MVector s a) where rnf !_ = ()
 
 -- -----------------
 -- Data and Typeable

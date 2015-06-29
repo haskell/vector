@@ -55,7 +55,7 @@ import           Data.Primitive ( Prim, sizeOf )
 import           Control.Monad.Primitive
 import           Control.Monad ( liftM )
 
-import Control.DeepSeq ( NFData )
+import Control.DeepSeq ( NFData(rnf) )
 
 import Prelude hiding ( length, null, replicate, reverse, map, read,
                         take, drop, splitAt, init, tail )
@@ -75,7 +75,8 @@ data MVector s a = MVector {-# UNPACK #-} !Int
 type IOVector = MVector RealWorld
 type STVector s = MVector s
 
-instance NFData (MVector s a)
+instance NFData (MVector s a) where
+  rnf (MVector _ _ _) = ()
 
 instance Prim a => G.MVector MVector a where
   basicLength (MVector _ n _) = n
