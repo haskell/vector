@@ -43,6 +43,14 @@ class MVector v a where
   -- called directly, use 'unsafeNew' instead.
   basicUnsafeNew   :: PrimMonad m => Int -> m (v (PrimState m) a)
 
+  -- | Initialize a vector to a standard value. This is intended to be called as
+  -- part of the safe new operation (and similar operations), to properly blank
+  -- the newly allocated memory if necessary.
+  --
+  -- Vectors that are necessarily initialized as part of creation may implement
+  -- this as a no-op.
+  basicInitialize :: PrimMonad m => v (PrimState m) a -> m ()
+
   -- | Create a mutable vector of the given length and fill it with an
   -- initial value. This method should not be called directly, use
   -- 'replicate' instead.

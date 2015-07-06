@@ -52,6 +52,7 @@ module Data.Vector.Primitive.Mutable (
 import qualified Data.Vector.Generic.Mutable as G
 import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim, sizeOf )
+import           Data.Word ( Word8 )
 import           Control.Monad.Primitive
 import           Control.Monad ( liftM )
 
@@ -98,6 +99,13 @@ instance Prim a => G.MVector MVector a where
     where
       size = sizeOf (undefined :: a)
       mx = maxBound `div` size :: Int
+
+  {-# INLINE basicInitialize #-}
+  basicInitialize (MVector off n v) =
+      setByteArray v (off * size) (n * size) (0 :: Word8)
+    where
+      size = sizeOf (undefined :: a)
+
 
   {-# INLINE basicUnsafeRead #-}
   basicUnsafeRead (MVector i _ arr) j = readByteArray arr (i+j)
