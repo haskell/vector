@@ -100,6 +100,10 @@ instance G.MVector MVector a where
         arr <- newArray n uninitialised
         return (MVector 0 n arr)
 
+  {-# INLINE basicInitialize #-}
+  -- initialization is unnecessary for boxed vectors
+  basicInitialize _ = return ()
+
   {-# INLINE basicUnsafeReplicate #-}
   basicUnsafeReplicate n x
     = do

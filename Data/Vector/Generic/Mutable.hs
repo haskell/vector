@@ -582,7 +582,7 @@ overlaps = basicOverlaps
 new :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
 {-# INLINE new #-}
 new n = BOUNDS_CHECK(checkLength) "new" n
-      $ unsafeNew n
+      $ unsafeNew n >>= \v -> basicInitialize v >> return v
 
 -- | Create a mutable vector of the given length. The length is not checked.
 unsafeNew :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
@@ -619,13 +619,17 @@ grow :: (PrimMonad m, MVector v a)
                 => v (PrimState m) a -> Int -> m (v (PrimState m) a)
 {-# INLINE grow #-}
 grow v by = BOUNDS_CHECK(checkLength) "grow" by
-          $ unsafeGrow v by
+          $ do vnew <- unsafeGrow v by
+               basicInitialize $ basicUnsafeSlice (length v) by vnew
+               return vnew
 
 growFront :: (PrimMonad m, MVector v a)
                 => v (PrimState m) a -> Int -> m (v (PrimState m) a)
 {-# INLINE growFront #-}
 growFront v by = BOUNDS_CHECK(checkLength) "growFront" by
-               $ unsafeGrowFront v by
+               $ do vnew <- unsafeGrowFront v by
+                    basicInitialize $ basicUnsafeSlice 0 by vnew
+                    return vnew
 
 enlarge_delta :: MVector v a => v s a -> Int
 enlarge_delta v = max (length v) 1
@@ -634,13 +638,18 @@ enlarge_delta v = max (length v) 1
 enlarge :: (PrimMonad m, MVector v a)
                 => v (PrimState m) a -> m (v (PrimState m) a)
 {-# INLINE enlarge #-}
-enlarge v = unsafeGrow v (enlarge_delta v)
+enlarge v = do vnew <- unsafeGrow v by
+               basicInitialize $ basicUnsafeSlice (length v) by vnew
+               return vnew
+  where
+    by = enlarge_delta v
 
 enlargeFront :: (PrimMonad m, MVector v a)
                 => v (PrimState m) a -> m (v (PrimState m) a, Int)
 {-# INLINE enlargeFront #-}
 enlargeFront v = do
                    v' <- unsafeGrowFront v by
+                   basicInitialize $ basicUnsafeSlice 0 by v'
                    return (v', by)
   where
     by = enlarge_delta v

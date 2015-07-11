@@ -122,6 +122,9 @@ instance Storable a => G.MVector MVector a where
         fp <- mallocVector n
         return $ MVector n fp
 
+  {-# INLINE basicInitialize #-}
+  basicInitialize = storableZero
+
   {-# INLINE basicUnsafeRead #-}
   basicUnsafeRead (MVector _ fp) i
     = unsafePrimToPrim
@@ -148,6 +151,18 @@ instance Storable a => G.MVector MVector a where
     $ withForeignPtr fp $ \p ->
       withForeignPtr fq $ \q ->
       moveArray p q n
+
+storableZero :: forall a m. (Storable a, PrimMonad m) => MVector (PrimState m) a -> m ()
+{-# INLINE storableZero #-}
+storableZero (MVector n fp) = unsafePrimToPrim . withForeignPtr fp $ \(Ptr p) -> do
+  let q = Addr p
+  setAddr q byteSize (0 :: Word8)
+ where
+ x :: a
+ x = undefined
+
+ byteSize :: Int
+ byteSize = n * sizeOf x
 
 storableSet :: (Storable a, PrimMonad m) => MVector (PrimState m) a -> a -> m ()
 {-# INLINE storableSet #-}

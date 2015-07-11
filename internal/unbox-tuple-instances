@@ -23,6 +23,11 @@ instance (Unbox a, Unbox b) => M.MVector MVector (a, b) where
           as <- M.basicUnsafeNew n_
           bs <- M.basicUnsafeNew n_
           return $ MV_2 n_ as bs
+  {-# INLINE basicInitialize  #-}
+  basicInitialize (MV_2 _ as bs)
+      = do
+          M.basicInitialize as
+          M.basicInitialize bs
   {-# INLINE basicUnsafeReplicate  #-}
   basicUnsafeReplicate n_ (a, b)
       = do
@@ -162,6 +167,12 @@ instance (Unbox a,
           bs <- M.basicUnsafeNew n_
           cs <- M.basicUnsafeNew n_
           return $ MV_3 n_ as bs cs
+  {-# INLINE basicInitialize #-}
+  basicInitialize (MV_3 _ as bs cs)
+      = do
+          M.basicInitialize as
+          M.basicInitialize bs
+          M.basicInitialize cs
   {-# INLINE basicUnsafeReplicate  #-}
   basicUnsafeReplicate n_ (a, b, c)
       = do
@@ -337,6 +348,13 @@ instance (Unbox a,
           cs <- M.basicUnsafeNew n_
           ds <- M.basicUnsafeNew n_
           return $ MV_4 n_ as bs cs ds
+  {-# INLINE basicInitialize #-}
+  basicInitialize (MV_4 _ as bs cs ds)
+      = do
+          M.basicInitialize as
+          M.basicInitialize bs
+          M.basicInitialize cs
+          M.basicInitialize ds
   {-# INLINE basicUnsafeReplicate  #-}
   basicUnsafeReplicate n_ (a, b, c, d)
       = do
@@ -567,6 +585,14 @@ instance (Unbox a,
           ds <- M.basicUnsafeNew n_
           es <- M.basicUnsafeNew n_
           return $ MV_5 n_ as bs cs ds es
+  {-# INLINE basicInitialize #-}
+  basicInitialize (MV_5 _ as bs cs ds es)
+      = do
+          M.basicInitialize as
+          M.basicInitialize bs
+          M.basicInitialize cs
+          M.basicInitialize ds
+          M.basicInitialize es
   {-# INLINE basicUnsafeReplicate  #-}
   basicUnsafeReplicate n_ (a, b, c, d, e)
       = do
@@ -846,6 +872,15 @@ instance (Unbox a,
           es <- M.basicUnsafeNew n_
           fs <- M.basicUnsafeNew n_
           return $ MV_6 n_ as bs cs ds es fs
+  {-# INLINE basicInitialize #-}
+  basicInitialize (MV_6 _ as bs cs ds es fs)
+      = do
+          M.basicInitialize as
+          M.basicInitialize bs
+          M.basicInitialize cs
+          M.basicInitialize ds
+          M.basicInitialize es
+          M.basicInitialize fs
   {-# INLINE basicUnsafeReplicate  #-}
   basicUnsafeReplicate n_ (a, b, c, d, e, f)
       = do
