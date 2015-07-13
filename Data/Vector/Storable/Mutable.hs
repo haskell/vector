@@ -117,10 +117,14 @@ instance Storable a => G.MVector MVector a where
 
   {-# INLINE basicUnsafeNew #-}
   basicUnsafeNew n
-    = unsafePrimToPrim
-    $ do
+    | n < 0 = error $ "Storable.basicUnsafeNew: negative length: " ++ show n
+    | n > mx = error $ "Storable.basicUnsafeNew: length too large: " ++ show n
+    | otherwise = unsafePrimToPrim $ do
         fp <- mallocVector n
         return $ MVector n fp
+    where
+      size = sizeOf (undefined :: a)
+      mx = maxBound `quot` size :: Int
 
   {-# INLINE basicInitialize #-}
   basicInitialize = storableZero
