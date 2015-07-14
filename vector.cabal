@@ -38,6 +38,7 @@ Cabal-Version:  >=1.10
 Build-Type:     Simple
 
 Extra-Source-Files:
+      changelog
       README.md
       tests/LICENSE
       tests/Setup.hs
