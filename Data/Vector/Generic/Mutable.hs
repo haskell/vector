@@ -768,8 +768,9 @@ set = basicSet
 
 -- | Copy a vector. The two vectors must have the same length and may not
 -- overlap.
-copy :: (PrimMonad m, MVector v a)
-                => v (PrimState m) a -> v (PrimState m) a -> m ()
+copy :: (PrimMonad m, MVector v a) => v (PrimState m) a   -- ^ target
+                                   -> v (PrimState m) a   -- ^ source
+                                   -> m ()
 {-# INLINE copy #-}
 copy dst src = BOUNDS_CHECK(check) "copy" "overlapping vectors"
                                           (not (dst `overlaps` src))
