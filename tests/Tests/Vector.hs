@@ -105,6 +105,7 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_generate, 'prop_iterateN,
 
         -- Monadic initialisation (FIXME)
+        'prop_createT,
         {- 'prop_replicateM, 'prop_generateM, 'prop_create, -}
 
         -- Unfolding (FIXME)
@@ -216,6 +217,9 @@ testPolymorphicFunctions _ = $(testProperties [
               = (\n _ -> n < 1000) ===> V.generate `eq` Util.generate
     prop_iterateN  :: P (Int -> (a -> a) -> a -> v a)
               = (\n _ _ -> n < 1000) ===> V.iterateN `eq` (\n f -> take n . iterate f)
+
+    prop_createT :: P ((a, v a) -> (a, v a))
+    prop_createT = (\v -> V.createT (traverse V.thaw v)) `eq` id
 
     prop_head      :: P (v a -> a) = not . V.null ===> V.head `eq` head
     prop_last      :: P (v a -> a) = not . V.null ===> V.last `eq` last
@@ -649,4 +653,3 @@ tests = [
          testGroup "Data.Vector.Unboxed.Vector (Int,Bool,Int)" (testTupleUnboxedVector (undefined :: Data.Vector.Unboxed.Vector (Int,Bool,Int)))
 
     ]
-
