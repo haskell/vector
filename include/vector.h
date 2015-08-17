@@ -18,4 +18,3 @@ import qualified Data.Vector.Internal.Check as Ck
 
 #define PHASE_STREAM  Please use "PHASE_FUSED" instead
 #define INLINE_STREAM Please use "INLINE_FUSED" instead
-

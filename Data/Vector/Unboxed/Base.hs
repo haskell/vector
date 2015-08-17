@@ -30,9 +30,13 @@ import Control.DeepSeq ( NFData(rnf) )
 import Control.Monad.Primitive
 import Control.Monad ( liftM )
 
-import Data.Word ( Word, Word8, Word16, Word32, Word64 )
+import Data.Word ( Word8, Word16, Word32, Word64 )
 import Data.Int  ( Int8, Int16, Int32, Int64 )
 import Data.Complex
+
+#if !MIN_VERSION_base(4,8,0)
+import Data.Word ( Word )
+#endif
 
 #if __GLASGOW_HASKELL__ >= 707
 import Data.Typeable ( Typeable )

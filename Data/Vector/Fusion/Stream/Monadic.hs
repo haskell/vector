@@ -89,8 +89,12 @@ import Prelude hiding ( length, null,
                         scanl, scanl1,
                         enumFromTo, enumFromThenTo )
 
-import Data.Int  ( Int8, Int16, Int32, Int64 )
+import Data.Int  ( Int8, Int16, Int32 )
+import Data.Word ( Word8, Word16, Word32, Word64 )
+
+#if !MIN_VERSION_base(4,8,0)
 import Data.Word ( Word8, Word16, Word32, Word, Word64 )
+#endif
 
 #if __GLASGOW_HASKELL__ >= 708
 import GHC.Types ( SPEC(..) )
@@ -100,6 +104,10 @@ import GHC.Exts ( SpecConstrAnnotation(..) )
 
 #include "vector.h"
 #include "MachDeps.h"
+
+#if WORD_SIZE_IN_BITS > 32
+import Data.Int  ( Int64 )
+#endif
 
 #if __GLASGOW_HASKELL__ < 708
 data SPEC = SPEC | SPEC2
@@ -1403,6 +1411,8 @@ enumFromTo_big_word x y = x `seq` y `seq` Stream step x
 
 
 
+#if WORD_SIZE_IN_BITS > 32
+
 -- FIXME: the "too large" test is totally wrong
 enumFromTo_big_int :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_FUSED enumFromTo_big_int #-}
@@ -1411,8 +1421,6 @@ enumFromTo_big_int x y = x `seq` y `seq` Stream step x
     {-# INLINE_INNER step #-}
     step z | z <= y    = return $ Yield z (z+1)
            | otherwise = return $ Done
-
-#if WORD_SIZE_IN_BITS > 32
 
 {-# RULES
 
