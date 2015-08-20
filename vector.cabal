@@ -167,7 +167,7 @@ test-suite vector-tests-O0
   hs-source-dirs: tests
   Build-Depends: base >= 4 && < 5, template-haskell, vector,
                  random,
-                 QuickCheck >=  2.7  && < 2.8 , test-framework, test-framework-quickcheck2,
+                 QuickCheck >=  2.7  && < 2.9 , test-framework, test-framework-quickcheck2,
                  transformers >= 0.2.0.0
 
   default-extensions: CPP,
@@ -190,7 +190,7 @@ test-suite vector-tests-O2
   hs-source-dirs: tests
   Build-Depends: base >= 4 && < 5, template-haskell, vector,
                  random,
-                 QuickCheck  >= 2.7, test-framework, test-framework-quickcheck2,
+                 QuickCheck  >= 2.7 && < 2.9 , test-framework, test-framework-quickcheck2,
                  transformers >= 0.2.0.0
 
   default-extensions: CPP,
