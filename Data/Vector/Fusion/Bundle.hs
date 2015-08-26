@@ -111,7 +111,7 @@ type Bundle = M.Bundle Id
 type MBundle = M.Bundle
 
 inplace :: (forall m. Monad m => S.Stream m a -> S.Stream m b)
-	-> (Size -> Size) -> Bundle v a -> Bundle v b
+        -> (Size -> Size) -> Bundle v a -> Bundle v b
 {-# INLINE_FUSED inplace #-}
 inplace f g b = b `seq` M.fromStream (f (M.elements b)) (g (M.size b))
 
