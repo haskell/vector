@@ -164,7 +164,9 @@ import Data.Typeable ( Typeable )
 import Data.Data     ( Data(..) )
 import Text.Read     ( Read(..), readListPrecDefault )
 
+#if !MIN_VERSION_base(4,8,0)
 import Data.Monoid   ( Monoid(..) )
+#endif
 
 #if __GLASGOW_HASKELL__ >= 708
 import qualified GHC.Exts as Exts
