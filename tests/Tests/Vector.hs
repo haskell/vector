@@ -643,6 +643,7 @@ tests = [
         testGroup "Data.Vector.Storable.Vector (Double)" (testNumericStorableVector (undefined :: Data.Vector.Storable.Vector Double)),
 
         testGroup "Data.Vector.Unboxed.Vector ()"       (testUnitUnboxedVector (undefined :: Data.Vector.Unboxed.Vector ())),
+        testGroup "Data.Vector.Unboxed.Vector (Bool)"       (testBoolUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Bool)),
         testGroup "Data.Vector.Unboxed.Vector (Int)"    (testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Int)),
         testGroup "Data.Vector.Unboxed.Vector (Double)" (testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Double)),
        testGroup "Data.Vector.Unboxed.Vector (Int,Bool)" (testTupleUnboxedVector (undefined :: Data.Vector.Unboxed.Vector (Int,Bool))),
