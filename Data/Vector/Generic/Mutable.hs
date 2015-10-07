@@ -584,7 +584,7 @@ new :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
 new n = BOUNDS_CHECK(checkLength) "new" n
       $ unsafeNew n >>= \v -> basicInitialize v >> return v
 
--- | Create a mutable vector of the given length. The length is not checked.
+-- | Create a mutable vector of the given length. The memory is not initialized.
 unsafeNew :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
 {-# INLINE unsafeNew #-}
 unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n
