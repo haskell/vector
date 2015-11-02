@@ -1245,79 +1245,256 @@ ifoldr' = G.ifoldr'
 -- -----------------
 
 -- | /O(n)/ Check if all elements satisfy the predicate.
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> V.'all' (== "hello") $ V.'replicate' 10 ("hello")__
+-- True
+-- @
+--
+-- @
+-- __>>> V.'all' (== "foo") $ V.'fromList' []__
+-- True
+-- @
 all :: (a -> Bool) -> Vector a -> Bool
 {-# INLINE all #-}
 all = G.all
 
 -- | /O(n)/ Check if any element satisfies the predicate.
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> V.'any' (== 7) $ V.'fromList' [4,5,6 :: Integer]__
+-- False
+-- @
+--
+-- @
+-- __>>> V.'any' (\\i -> i > 1 && i < 3) $ V.'fromList' [1, 2, 3 :: Integer]__
+-- True
+-- @
+--
+-- @
+-- __>>> V.'any' (== "foo") $ V.'fromList' []__
+-- False
+-- @
 any :: (a -> Bool) -> Vector a -> Bool
 {-# INLINE any #-}
 any = G.any
 
 -- | /O(n)/ Check if all elements are 'True'
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> V.'and' $ V.'fromList' [True, False]__
+-- False
+-- @
+--
+-- @
+-- __>>> V.'and' V.'empty'__
+-- True
+-- @
 and :: Vector Bool -> Bool
 {-# INLINE and #-}
 and = G.and
 
 -- | /O(n)/ Check if any element is 'True'
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> V.'or' $ V.'fromList' [True, False]__
+-- True
+-- @
+--
+-- @
+-- __>>> V.'or' V.'empty'__
+-- False
+-- @
 or :: Vector Bool -> Bool
 {-# INLINE or #-}
 or = G.or
 
 -- | /O(n)/ Compute the sum of the elements
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> V.'sum' $ V.'replicate' 2 (1.5 :: Double)__
+-- 3.0
+-- @
+--
+-- @
+-- __>>> V.'sum' (V.'empty' :: Vector Integer)__
+-- 0
+-- @
 sum :: Num a => Vector a -> a
 {-# INLINE sum #-}
 sum = G.sum
 
--- | /O(n)/ Compute the produce of the elements
+-- | /O(n)/ Compute the product of the elements
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> V.'product' $ V.'fromList' [2,2,2 :: Integer]__
+-- 8
+-- @
+--
+-- @
+-- __>>> V.'product' (V.'empty' :: Vector Integer)__
+-- 1
+-- @
 product :: Num a => Vector a -> a
 {-# INLINE product #-}
 product = G.product
 
 -- | /O(n)/ Yield the maximum element of the vector. The vector may not be
 -- empty.
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> V.maximum $ V.fromList [1, 2, 3 :: Integer]__
+-- 3
+-- @
+--
+-- @
+-- __>>> V.maximum $ (V.'empty' :: Vector Char)__
+-- *** Exception: .\/Data\/Vector\/Fusion\/Stream\/Monadic.hs:924 (foldl1M'): empty stream
+-- @
 maximum :: Ord a => Vector a -> a
 {-# INLINE maximum #-}
 maximum = G.maximum
 
 -- | /O(n)/ Yield the maximum element of the vector according to the given
 -- comparison function. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> data Person = Person { age :: Integer } deriving Show__
+-- __>>> V.'maximumBy' ('comparing'  age) $ V.'fromList' [Person 13, Person 27]__
+-- Person {age = 27}
+-- @
+--
+-- @
+-- __>>> V.'maximumBy' 'compare' $ (V.'empty' :: Vector String)__
+-- *** Exception: .\/Data\/Vector\/Fusion\/Stream\/Monadic.hs:924 (foldl1M'): empty stream
+-- @
 maximumBy :: (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE maximumBy #-}
 maximumBy = G.maximumBy
 
 -- | /O(n)/ Yield the minimum element of the vector. The vector may not be
 -- empty.
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> V.'minimum' $ V.'fromList' ["c","a","b"]__
+-- "a"
+-- @
+--
+-- @
+-- __>>> V.'minimum' $ (V.'fromList' [] :: Vector Char)__
+-- *** Exception: .\/Data\/Vector\/Fusion\/Stream\/Monadic.hs:924 (foldl1M'): empty stream
+-- @
 minimum :: Ord a => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum
 
 -- | /O(n)/ Yield the minimum element of the vector according to the given
 -- comparison function. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> data Person = Person { age :: Integer } deriving Show__
+-- __>>> V.'minimumBy' ('comparing'  age) $ V.'fromList' [Person 13, Person 27]__
+-- Person {age = 13}
+-- @
+--
+-- @
+-- __>>> V.'minimumBy' 'compare' $ (V.'empty' :: 'Vector' String)__
+-- *** Exception: .\/Data\/Vector\/Fusion\/Stream\/Monadic.hs:924 (foldl1M'): empty stream
+-- @
 minimumBy :: (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE minimumBy #-}
 minimumBy = G.minimumBy
 
 -- | /O(n)/ Yield the index of the maximum element of the vector. The vector
 -- may not be empty.
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> V.'maxIndex' $ V.'fromList' ["c", "b", "a"]__
+-- 0
+-- @
+--
+-- @
+-- __>>> V.'maxIndex' $ V.'fromList' ([] :: [Integer])__
+-- *** Exception: .\/Data\/Vector\/Fusion\/Stream\/Monadic.hs:924 (foldl1M'): empty stream
+-- @
 maxIndex :: Ord a => Vector a -> Int
 {-# INLINE maxIndex #-}
 maxIndex = G.maxIndex
 
 -- | /O(n)/ Yield the index of the maximum element of the vector according to
 -- the given comparison function. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> data Person = Person { age :: Integer } deriving Show__
+-- __>>> V.'maxIndexBy' ('comparing'  age) $ V.'fromList' [Person 13, Person 27]__
+-- 1
+-- @
+--
+-- @
+-- __>>> V.'maxIndexBy' 'compare' $ (V.'empty' :: 'Vector' String)__
+-- *** Exception: .\/Data\/Vector\/Fusion\/Stream\/Monadic.hs:924 (foldl1M'): empty stream
+-- @
 maxIndexBy :: (a -> a -> Ordering) -> Vector a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy = G.maxIndexBy
 
 -- | /O(n)/ Yield the index of the minimum element of the vector. The vector
 -- may not be empty.
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> V.'minIndex' $ V.'fromList' ["c", "b", "a"]__
+-- 2
+-- @
+--
+-- @
+-- __>>> V.'minIndex' $ V.'fromList' ([] :: [Integer])__
+-- *** Exception: .\/Data\/Vector\/Fusion\/Stream\/Monadic.hs:924 (foldl1M'): empty stream
+-- @
 minIndex :: Ord a => Vector a -> Int
 {-# INLINE minIndex #-}
 minIndex = G.minIndex
 
 -- | /O(n)/ Yield the index of the minimum element of the vector according to
 -- the given comparison function. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> data Person = Person { age :: Integer } deriving Show__
+-- __>>> V.'minIndexBy' ('comparing'  age) $ V.'fromList' [Person 13, Person 27]__
+-- 0
+-- @
+--
+-- @
+-- __>>> V.'minIndexBy' 'compare' $ (V.'empty' :: 'Vector' String)__
+-- *** Exception: .\/Data\/Vector\/Fusion\/Stream\/Monadic.hs:924 (foldl1M'): empty stream
+-- @
 minIndexBy :: (a -> a -> Ordering) -> Vector a -> Int
 {-# INLINE minIndexBy #-}
 minIndexBy = G.minIndexBy
@@ -1521,11 +1698,25 @@ scanr1' = G.scanr1'
 -- ------------------------
 
 -- | /O(n)/ Convert a vector to a list
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> (V.'toList' $ V.'fromList' [1, 2, 3 :: Integer]) == [1, 2, 3]__
+-- True
+-- @
 toList :: Vector a -> [a]
 {-# INLINE toList #-}
 toList = G.toList
 
 -- | /O(n)/ Convert a list to a vector
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> V.'fromList' [1, 2, 3 :: Integer]__
+-- [1,2,3]
+-- @
 fromList :: [a] -> Vector a
 {-# INLINE fromList #-}
 fromList = G.fromList
@@ -1534,6 +1725,18 @@ fromList = G.fromList
 --
 -- @
 -- fromListN n xs = 'fromList' ('take' n xs)
+-- @
+--
+-- ==== __Examples__
+--
+-- @
+-- __>>> V.'fromListN' 2 [1, 2, 3 :: Integer]__
+-- [1,2]
+-- @
+--
+-- @
+-- __>>> V.'fromListN' 5 [1, 2, 3 :: Integer]__
+-- [1,2,3]
 -- @
 fromListN :: Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
