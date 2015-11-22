@@ -32,7 +32,7 @@ instance Applicative Id where
   Id f <*> Id x = Id (f x)
 
 instance Monad Id where
-  return     = Id
+  return = pure
   Id x >>= f = f x
 
 -- | Box monad
@@ -46,7 +46,7 @@ instance Applicative Box where
   Box f <*> Box x = Box (f x)
 
 instance Monad Box where
-  return      = Box
+  return = pure
   Box x >>= f = f x
 
 -- | Delay inlining a function until late in the game (simplifier phase 0).
