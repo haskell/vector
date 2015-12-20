@@ -300,7 +300,7 @@ instance Functor Vector where
 
 instance Monad Vector where
   {-# INLINE return #-}
-  return = singleton
+  return = Applicative.pure
 
   {-# INLINE (>>=) #-}
   (>>=) = flip concatMap
