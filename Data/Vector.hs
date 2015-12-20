@@ -150,7 +150,7 @@ module Data.Vector (
   -- * Conversions
 
   -- ** Lists
-  toList, fromList, fromListN,
+  toList, Data.Vector.fromList, Data.Vector.fromListN,
 
   -- ** Other vector types
   G.convert,
@@ -223,8 +223,8 @@ instance Read a => Read (Vector a) where
 
 instance Exts.IsList (Vector a) where
   type Item (Vector a) = a
-  fromList = fromList
-  fromListN = fromListN
+  fromList = Data.Vector.fromList
+  fromListN = Data.Vector.fromListN
   toList = toList
 #endif
 
@@ -344,7 +344,7 @@ instance Foldable.Foldable Vector where
 
 instance Traversable.Traversable Vector where
   {-# INLINE traverse #-}
-  traverse f xs = fromList Applicative.<$> Traversable.traverse f (toList xs)
+  traverse f xs = Data.Vector.fromList Applicative.<$> Traversable.traverse f (toList xs)
 
   {-# INLINE mapM #-}
   mapM = mapM
