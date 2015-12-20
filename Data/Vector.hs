@@ -161,7 +161,11 @@ module Data.Vector (
 
 import qualified Data.Vector.Generic as G
 import           Data.Vector.Mutable  ( MVector(..) )
+#if MIN_VERSION_primitive(0,6,2) || __GLASGOW_HASKELL__ >= 711
+import           Data.Primitive.Array hiding ( fromList, fromListN )
+#else
 import           Data.Primitive.Array
+#endif
 import qualified Data.Vector.Fusion.Bundle as Bundle
 
 import Control.DeepSeq ( NFData, rnf )
