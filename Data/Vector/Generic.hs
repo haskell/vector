@@ -705,7 +705,7 @@ generateM n f = unstreamM (MBundle.generateM n f)
 -- @
 -- create (do { v \<- 'M.new' 2; 'M.write' v 0 \'a\'; 'M.write' v 1 \'b\'; return v }) = \<'a','b'\>
 -- @
-create :: (Vector v a, MUTABLE_PURE(mv,v)) => (forall s. ST s (mv s a)) -> v a
+create :: (Vector v a, mv ~ Mutable v ) => (forall s. ST s (mv s a)) -> v a
 {-# INLINE create #-}
 create p = new (New.create p)
 
@@ -941,13 +941,13 @@ unsafeBackpermute v is = seq v
 -- @
 -- modify (\\v -> 'M.write' v 0 \'x\') ('replicate' 3 \'a\') = \<\'x\',\'a\',\'a\'\>
 -- @
-modify :: (Vector v a,MUTABLE_PURE(mv,v)) => (forall s. mv s a -> ST s ()) -> v a -> v a
+modify :: (Vector v a, mv ~ Mutable v ) => (forall s. mv s a -> ST s ()) -> v a -> v a
 {-# INLINE modify #-}
 modify p = new . New.modify p . clone
 
 -- We have to make sure that this is strict in the stream but we can't seq on
 -- it while fusion is happening. Hence this ugliness.
-modifyWithBundle :: (Vector v a, MUTABLE_PURE(mv,v)  )
+modifyWithBundle :: (Vector v a, mv ~ Mutable v )
                  => (forall s. mv s a -> Bundle u b -> ST s ())
                  -> v a -> Bundle u b -> v a
 {-# INLINE modifyWithBundle #-}
@@ -1834,7 +1834,7 @@ unsafeThaw :: (PrimMonad m, Vector v a,MUTABLE_PURE(mv,v)) => v a -> m (mv (Prim
 unsafeThaw = basicUnsafeThaw
 
 -- | /O(n)/ Yield a mutable copy of the immutable vector.
-thaw :: (PrimMonad m, Vector v a, MUTABLE_PURE(mv,v)) => v a -> m (Mutable v (PrimState m) a)
+thaw :: (PrimMonad m, Vector v a, MUTABLE_PURE(mv,v)) => v a -> m (mv (PrimState m) a)
 {-# INLINE_FUSED thaw #-}
 thaw v = do
            mv <- M.unsafeNew (length v)
