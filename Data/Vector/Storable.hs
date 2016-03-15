@@ -165,9 +165,10 @@ import Prelude hiding ( length, null,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_ )
 
-import Data.Typeable ( Typeable )
-import Data.Data     ( Data(..) )
-import Text.Read     ( Read(..), readListPrecDefault )
+import Data.Typeable  ( Typeable )
+import Data.Data      ( Data(..) )
+import Text.Read      ( Read(..), readListPrecDefault )
+import Data.Semigroup ( Semigroup(..) )
 
 #if !MIN_VERSION_base(4,8,0)
 import Data.Monoid   ( Monoid(..) )
@@ -258,6 +259,13 @@ instance (Storable a, Ord a) => Ord (Vector a) where
 
   {-# INLINE (>=) #-}
   xs >= ys = Bundle.cmp (G.stream xs) (G.stream ys) /= LT
+
+instance Storable a => Semigroup (Vector a) where
+  {-# INLINE (<>) #-}
+  (<>) = (++)
+
+  {-# INLINE sconcat #-}
+  sconcat = G.concatNE
 
 instance Storable a => Monoid (Vector a) where
   {-# INLINE mempty #-}
@@ -1434,5 +1442,3 @@ unsafeToForeignPtr0 (Vector n fp) = (fp, n)
 unsafeWith :: Storable a => Vector a -> (Ptr a -> IO b) -> IO b
 {-# INLINE unsafeWith #-}
 unsafeWith (Vector _ fp) = withForeignPtr fp
-
-

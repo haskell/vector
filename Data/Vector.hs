@@ -183,9 +183,10 @@ import Prelude hiding ( length, null,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_, sequence, sequence_ )
 
-import Data.Typeable ( Typeable )
-import Data.Data     ( Data(..) )
-import Text.Read     ( Read(..), readListPrecDefault )
+import Data.Typeable  ( Typeable )
+import Data.Data      ( Data(..) )
+import Text.Read      ( Read(..), readListPrecDefault )
+import Data.Semigroup ( Semigroup(..) )
 
 import qualified Control.Applicative as Applicative
 import qualified Data.Foldable as Foldable
@@ -283,6 +284,13 @@ instance Ord a => Ord (Vector a) where
 
   {-# INLINE (>=) #-}
   xs >= ys = Bundle.cmp (G.stream xs) (G.stream ys) /= LT
+
+instance Semigroup (Vector a) where
+  {-# INLINE (<>) #-}
+  (<>) = (++)
+
+  {-# INLINE sconcat #-}
+  sconcat = G.concatNE
 
 instance Monoid (Vector a) where
   {-# INLINE mempty #-}
@@ -1575,4 +1583,3 @@ unsafeCopy = G.unsafeCopy
 copy :: PrimMonad m => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE copy #-}
 copy = G.copy
-
