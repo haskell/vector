@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, DeriveDataTypeable, MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables #-}
+{-# LANGUAGE CPP, DeriveDataTypeable, FlexibleInstances, MagicHash, MultiParamTypeClasses, ScopedTypeVariables #-}
 
 -- |
 -- Module      : Data.Vector.Storable.Mutable
@@ -65,8 +65,13 @@ import Data.Vector.Storable.Internal
 import Foreign.Storable
 import Foreign.ForeignPtr
 
-#if __GLASGOW_HASKELL__ >= 605
-import GHC.ForeignPtr (mallocPlainForeignPtrBytes)
+#if __GLASGOW_HASKELL__ >= 706
+import GHC.ForeignPtr (mallocPlainForeignPtrAlignedBytes)
+#elif __GLASGOW_HASKELL__ >= 700
+import Data.Primitive.ByteArray (MutableByteArray(..), newAlignedPinnedByteArray,
+                                 unsafeFreezeByteArray)
+import GHC.Prim (byteArrayContents#, unsafeCoerce#)
+import GHC.ForeignPtr
 #endif
 
 import Foreign.Ptr
@@ -201,11 +206,26 @@ storableSetAsPrim n fp x y = withForeignPtr fp $ \(Ptr p) -> do
 {-# INLINE mallocVector #-}
 mallocVector :: Storable a => Int -> IO (ForeignPtr a)
 mallocVector =
-#if __GLASGOW_HASKELL__ >= 605
-    doMalloc undefined
-        where
-          doMalloc :: Storable b => b -> Int -> IO (ForeignPtr b)
-          doMalloc dummy size = mallocPlainForeignPtrBytes (size * sizeOf dummy)
+#if __GLASGOW_HASKELL__ >= 706
+  doMalloc undefined
+  where
+    doMalloc :: Storable b => b -> Int -> IO (ForeignPtr b)
+    doMalloc dummy size =
+      mallocPlainForeignPtrAlignedBytes (size * sizeOf dummy) (alignment dummy)
+#elif __GLASGOW_HASKELL__ >= 700
+  doMalloc undefined
+  where
+    doMalloc :: Storable b => b -> Int -> IO (ForeignPtr b)
+    doMalloc dummy size = do
+      arr@(MutableByteArray arr#) <- newAlignedPinnedByteArray arrSize arrAlign
+      newConcForeignPtr
+        (Ptr (byteArrayContents# (unsafeCoerce# arr#)))
+        -- Keep reference to mutable byte array until whole ForeignPtr goes out
+        -- of scope.
+        (touch arr)
+      where
+        arrSize  = size * sizeOf dummy
+        arrAlign = alignment dummy
 #else
     mallocForeignPtrArray
 #endif
@@ -322,14 +342,14 @@ clone = G.clone
 -- | Grow a vector by the given number of elements. The number must be
 -- positive.
 grow :: (PrimMonad m, Storable a)
-              => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
+     => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE grow #-}
 grow = G.grow
 
 -- | Grow a vector by the given number of elements. The number must be
 -- positive but this is not checked.
 unsafeGrow :: (PrimMonad m, Storable a)
-               => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
+           => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE unsafeGrow #-}
 unsafeGrow = G.unsafeGrow
 
@@ -401,7 +421,7 @@ set = G.set
 -- | Copy a vector. The two vectors must have the same length and may not
 -- overlap.
 copy :: (PrimMonad m, Storable a)
-                 => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
+     => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
 {-# INLINE copy #-}
 copy = G.copy
 
@@ -422,7 +442,7 @@ unsafeCopy = G.unsafeCopy
 -- copied to a temporary vector and then the temporary vector was copied
 -- to the target vector.
 move :: (PrimMonad m, Storable a)
-                 => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
+     => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
 {-# INLINE move #-}
 move = G.move
 
@@ -434,9 +454,9 @@ move = G.move
 -- copied to a temporary vector and then the temporary vector was copied
 -- to the target vector.
 unsafeMove :: (PrimMonad m, Storable a)
-                          => MVector (PrimState m) a   -- ^ target
-                          -> MVector (PrimState m) a   -- ^ source
-                          -> m ()
+           => MVector (PrimState m) a   -- ^ target
+           -> MVector (PrimState m) a   -- ^ source
+           -> m ()
 {-# INLINE unsafeMove #-}
 unsafeMove = G.unsafeMove
 
