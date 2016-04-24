@@ -775,7 +775,7 @@ mapM_ :: (Monad m, Prim a) => (a -> m b) -> Vector a -> m ()
 mapM_ = G.mapM_
 
 -- | /O(n)/ Apply the monadic action to all elements of the vector, yielding a
--- vector of results. Equvalent to @flip 'mapM'@.
+-- vector of results. Equivalent to @flip 'mapM'@.
 forM :: (Monad m, Prim a, Prim b) => Vector a -> (a -> m b) -> m (Vector b)
 {-# INLINE forM #-}
 forM = G.forM
