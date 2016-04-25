@@ -1038,7 +1038,7 @@ imapM_ :: (Monad m, Vector v a) => (Int -> a -> m b) -> v a -> m ()
 imapM_ f = Bundle.mapM_ (uncurry f) . Bundle.indexed . stream
 
 -- | /O(n)/ Apply the monadic action to all elements of the vector, yielding a
--- vector of results. Equvalent to @flip 'mapM'@.
+-- vector of results. Equivalent to @flip 'mapM'@.
 forM :: (Monad m, Vector v a, Vector v b) => v a -> (a -> m b) -> m (v b)
 {-# INLINE forM #-}
 forM as f = mapM f as
