@@ -168,6 +168,8 @@ import Text.Read     ( Read(..), readListPrecDefault )
 import Data.Monoid   ( Monoid(..) )
 #endif
 
+import Data.Hashable (Hashable(..))
+
 #if __GLASGOW_HASKELL__ >= 708
 import qualified GHC.Exts as Exts
 #endif
@@ -269,6 +271,10 @@ instance Prim a => Exts.IsList (Vector a) where
   toList = toList
 
 #endif
+
+instance (Hashable a, Prim a) => Hashable (Vector a) where
+  hashWithSalt salt = hashWithSalt salt . toList
+
 -- Length
 -- ------
 

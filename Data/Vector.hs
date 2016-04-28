@@ -195,6 +195,8 @@ import qualified Data.Traversable as Traversable
 import Data.Monoid   ( Monoid(..) )
 #endif
 
+import Data.Hashable (Hashable(..))
+
 #if __GLASGOW_HASKELL__ >= 708
 import qualified GHC.Exts as Exts (IsList(..))
 #endif
@@ -351,6 +353,9 @@ instance Traversable.Traversable Vector where
 
   {-# INLINE sequence #-}
   sequence = sequence
+
+instance (Hashable a) => Hashable (Vector a) where
+  hashWithSalt salt = hashWithSalt salt . toList
 
 -- Length information
 -- ------------------
