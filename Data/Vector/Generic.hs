@@ -126,9 +126,11 @@ module Data.Vector.Generic (
   prescanl, prescanl',
   postscanl, postscanl',
   scanl, scanl', scanl1, scanl1',
+  iscanl, iscanl',
   prescanr, prescanr',
   postscanr, postscanr',
   scanr, scanr', scanr1, scanr1',
+  iscanr, iscanr',
 
   -- * Conversions
 
@@ -1721,6 +1723,23 @@ scanl' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE scanl' #-}
 scanl' f z = unstream . Bundle.scanl' f z . stream
 
+-- | /O(n)/ Scan over a vector with its index
+iscanl :: (Vector v a, Vector v b) => (Int -> a -> b -> a) -> a -> v b -> v a
+{-# INLINE iscanl #-}
+iscanl f z =
+    unstream
+  . inplace (S.scanl (\a (i, b) -> f i a b) z . S.indexed) id
+  . stream
+
+-- | /O(n)/ Scan over a vector (strictly) with its index
+iscanl' :: (Vector v a, Vector v b) => (Int -> a -> b -> a) -> a -> v b -> v a
+{-# INLINE iscanl' #-}
+iscanl' f z =
+    unstream
+  . inplace (S.scanl' (\a (i, b) -> f i a b) z . S.indexed) id
+  . stream
+
+
 -- | /O(n)/ Scan over a non-empty vector
 --
 -- > scanl f <x1,...,xn> = <y1,...,yn>
@@ -1770,6 +1789,22 @@ scanr f z = unstreamR . Bundle.scanl (flip f) z . streamR
 scanr' :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
 {-# INLINE scanr' #-}
 scanr' f z = unstreamR . Bundle.scanl' (flip f) z . streamR
+
+-- | /O(n)/ Right-to-left scan over a vector with its index
+iscanr :: (Vector v a, Vector v b) => (Int -> a -> b -> b) -> b -> v a -> v b
+{-# INLINE iscanr #-}
+iscanr f z =
+    unstreamR
+  . inplace (S.scanl (flip $ uncurry f) z . S.indexed) id
+  . streamR
+
+-- | /O(n)/ Right-to-left scan over a vector (strictly) with its index
+iscanr' :: (Vector v a, Vector v b) => (Int -> a -> b -> b) -> b -> v a -> v b
+{-# INLINE iscanr' #-}
+iscanr' f z =
+    unstreamR
+  . inplace (S.scanl' (flip $ uncurry f) z . S.indexed) id
+  . streamR
 
 -- | /O(n)/ Right-to-left scan over a non-empty vector
 scanr1 :: Vector v a => (a -> a -> a) -> v a -> v a
