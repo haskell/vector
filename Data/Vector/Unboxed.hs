@@ -184,7 +184,8 @@ import Prelude hiding ( length, null,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_ )
 
-import Text.Read     ( Read(..), readListPrecDefault )
+import Text.Read      ( Read(..), readListPrecDefault )
+import Data.Semigroup ( Semigroup(..) )
 
 #if !MIN_VERSION_base(4,8,0)
 import Data.Monoid   ( Monoid(..) )
@@ -221,6 +222,13 @@ instance (Unbox a, Ord a) => Ord (Vector a) where
 
   {-# INLINE (>=) #-}
   xs >= ys = Bundle.cmp (G.stream xs) (G.stream ys) /= LT
+
+instance Unbox a => Semigroup (Vector a) where
+  {-# INLINE (<>) #-}
+  (<>) = (++)
+
+  {-# INLINE sconcat #-}
+  sconcat = G.concatNE
 
 instance Unbox a => Monoid (Vector a) where
   {-# INLINE mempty #-}
@@ -1433,4 +1441,3 @@ copy = G.copy
 
 #define DEFINE_IMMUTABLE
 #include "unbox-tuple-instances"
-

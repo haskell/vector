@@ -160,9 +160,10 @@ import Prelude hiding ( length, null,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_ )
 
-import Data.Typeable ( Typeable )
-import Data.Data     ( Data(..) )
-import Text.Read     ( Read(..), readListPrecDefault )
+import Data.Typeable  ( Typeable )
+import Data.Data      ( Data(..) )
+import Text.Read      ( Read(..), readListPrecDefault )
+import Data.Semigroup ( Semigroup(..) )
 
 #if !MIN_VERSION_base(4,8,0)
 import Data.Monoid   ( Monoid(..) )
@@ -249,6 +250,13 @@ instance (Prim a, Ord a) => Ord (Vector a) where
 
   {-# INLINE (>=) #-}
   xs >= ys = Bundle.cmp (G.stream xs) (G.stream ys) /= LT
+
+instance Prim a => Semigroup (Vector a) where
+  {-# INLINE (<>) #-}
+  (<>) = (++)
+
+  {-# INLINE sconcat #-}
+  sconcat = G.concatNE
 
 instance Prim a => Monoid (Vector a) where
   {-# INLINE mempty #-}
@@ -1338,5 +1346,3 @@ unsafeCopy = G.unsafeCopy
 copy :: (Prim a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE copy #-}
 copy = G.copy
-
-

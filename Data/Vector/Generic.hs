@@ -49,7 +49,7 @@ module Data.Vector.Generic (
   enumFromN, enumFromStepN, enumFromTo, enumFromThenTo,
 
   -- ** Concatenation
-  cons, snoc, (++), concat,
+  cons, snoc, (++), concat, concatNE,
 
   -- ** Restricting memory usage
   force,
@@ -196,6 +196,7 @@ import Prelude hiding ( length, null,
                         showsPrec )
 
 import qualified Text.Read as Read
+import qualified Data.List.NonEmpty as NonEmpty
 
 #if __GLASGOW_HASKELL__ >= 707
 import Data.Typeable ( Typeable, gcast1 )
@@ -686,6 +687,10 @@ concat vs = unstream (Bundle.flatten mk step (Exact n) (Bundle.fromList vs))
            in
            k `seq` (v,0,k)
 -}
+
+-- | /O(n)/ Concatenate all vectors in the non-empty list
+concatNE :: Vector v a => NonEmpty.NonEmpty (v a) -> v a
+concatNE = concat . NonEmpty.toList
 
 -- Monadic initialisation
 -- ----------------------
@@ -2119,4 +2124,3 @@ dataCast :: (Vector v a, Data a, Typeable1 v, Typeable1 t)
          => (forall d. Data  d => c (t d)) -> Maybe  (c (v a))
 {-# INLINE dataCast #-}
 dataCast f = gcast1 f
-
