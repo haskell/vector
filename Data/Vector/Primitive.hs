@@ -280,12 +280,12 @@ instance Prim a => Exts.IsList (Vector a) where
 -- Length
 -- ------
 
--- | /O(1)/ Yield the length of the vector.
+-- | /O(1)/ Yield the length of the vector
 length :: Prim a => Vector a -> Int
 {-# INLINE length #-}
 length = G.length
 
--- | /O(1)/ Test whether a vector if empty
+-- | /O(1)/ Test whether a vector is empty
 null :: Prim a => Vector a -> Bool
 {-# INLINE null #-}
 null = G.null
@@ -504,8 +504,8 @@ unfoldr :: Prim a => (b -> Maybe (a, b)) -> b -> Vector a
 {-# INLINE unfoldr #-}
 unfoldr = G.unfoldr
 
--- | /O(n)/ Construct a vector with at most @n@ by repeatedly applying the
--- generator function to the a seed. The generator function yields 'Just' the
+-- | /O(n)/ Construct a vector with at most @n@ elements by repeatedly applying
+-- the generator function to a seed. The generator function yields 'Just' the
 -- next element and the new seed or 'Nothing' if there are no more elements.
 --
 -- > unfoldrN 3 (\n -> Just (n,n-1)) 10 = <10,9,8>

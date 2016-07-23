@@ -218,12 +218,12 @@ mkNoRepType = mkNorepType
 -- Length information
 -- ------------------
 
--- | /O(1)/ Yield the length of the vector.
+-- | /O(1)/ Yield the length of the vector
 length :: Vector v a => v a -> Int
 {-# INLINE length #-}
 length = Bundle.length . stream
 
--- | /O(1)/ Test whether a vector if empty
+-- | /O(1)/ Test whether a vector is empty
 null :: Vector v a => v a -> Bool
 {-# INLINE null #-}
 null = Bundle.null . stream
@@ -538,8 +538,8 @@ unfoldr :: Vector v a => (b -> Maybe (a, b)) -> b -> v a
 {-# INLINE unfoldr #-}
 unfoldr f = unstream . Bundle.unfoldr f
 
--- | /O(n)/ Construct a vector with at most @n@ by repeatedly applying the
--- generator function to the a seed. The generator function yields 'Just' the
+-- | /O(n)/ Construct a vector with at most @n@ elements by repeatedly applying
+-- the generator function to a seed. The generator function yields 'Just' the
 -- next element and the new seed or 'Nothing' if there are no more elements.
 --
 -- > unfoldrN 3 (\n -> Just (n,n-1)) 10 = <10,9,8>
