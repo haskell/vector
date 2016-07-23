@@ -44,6 +44,7 @@ module Data.Vector.Generic.Mutable (
   unsafeRead, unsafeWrite, unsafeModify, unsafeSwap, unsafeExchange,
 
   -- * Modifying vectors
+  nextPermutation,
 
   -- ** Filling and copying
   set, copy, move, unsafeCopy, unsafeMove,
@@ -995,3 +996,38 @@ partitionUnknown f s
                       v2' <- unsafeAppend1 v2 i2 x
                       return (v1, i1, v2', i2+1)
 
+{-
+http://en.wikipedia.org/wiki/Permutation#Algorithms_to_generate_permutations
+
+The following algorithm generates the next permutation lexicographically after
+a given permutation. It changes the given permutation in-place.
+
+1. Find the largest index k such that a[k] < a[k + 1]. If no such index exists,
+   the permutation is the last permutation.
+2. Find the largest index l greater than k such that a[k] < a[l].
+3. Swap the value of a[k] with that of a[l].
+4. Reverse the sequence from a[k + 1] up to and including the final element a[n]
+-}
+
+-- | Compute the next (lexicographically) permutation of given vector in-place.
+--   Returns False when input is the last permtuation
+nextPermutation :: (PrimMonad m,Ord e,MVector v e) => v (PrimState m) e -> m Bool
+nextPermutation v
+    | dim < 2 = return False
+    | otherwise = do
+        val <- unsafeRead v 0
+        (k,l) <- loop val (-1) 0 val 1
+        if k < 0
+         then return False
+         else unsafeSwap v k l >>
+              reverse (unsafeSlice (k+1) (dim-k-1) v) >>
+              return True
+    where loop !kval !k !l !prev !i
+              | i == dim = return (k,l)
+              | otherwise  = do
+                  cur <- unsafeRead v i
+                  -- TODO: make tuple unboxed
+                  let (kval',k') = if prev < cur then (prev,i-1) else (kval,k)
+                      l' = if kval' < cur then i else l
+                  loop kval' k' l' cur (i+1)
+          dim = length v
