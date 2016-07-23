@@ -95,7 +95,9 @@ module Data.Vector.Generic (
   -- * Working with predicates
 
   -- ** Filtering
-  filter, ifilter, filterM,
+  filter, ifilter,
+  mapMaybe, imapMaybe,
+  filterM,
   takeWhile, dropWhile,
 
   -- ** Partitioning
@@ -1286,6 +1288,19 @@ ifilter :: Vector v a => (Int -> a -> Bool) -> v a -> v a
 ifilter f = unstream
           . inplace (S.map snd . S.filter (uncurry f) . S.indexed) toMax
           . stream
+
+-- | /O(n)/ Drop elements when predicate returns Nothing
+mapMaybe :: (Vector v a, Vector v b) => (a -> Maybe b) -> v a -> v b
+{-# INLINE mapMaybe #-}
+mapMaybe f = unstream . inplace (S.mapMaybe f) toMax . stream
+
+-- | /O(n)/ Drop elements when predicate, applied to index and value, returns Nothing
+imapMaybe :: (Vector v a, Vector v b) => (Int -> a -> Maybe b) -> v a -> v b
+{-# INLINE imapMaybe #-}
+imapMaybe f = unstream
+          . inplace (S.mapMaybe (uncurry f) . S.indexed) toMax
+          . stream
+
 
 -- | /O(n)/ Drop elements that do not satisfy the monadic predicate
 filterM :: (Monad m, Vector v a) => (a -> m Bool) -> v a -> m (v a)

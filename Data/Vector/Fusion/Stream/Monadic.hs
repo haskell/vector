@@ -40,7 +40,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   eq, cmp,
 
   -- * Filtering
-  filter, filterM, takeWhile, takeWhileM, dropWhile, dropWhileM,
+  filter, filterM, mapMaybe, takeWhile, takeWhileM, dropWhile, dropWhileM,
 
   -- * Searching
   elem, notElem, find, findM, findIndex, findIndexM,
@@ -687,6 +687,21 @@ cmp (Stream step1 t1) (Stream step2 t2) = cmp_loop0 SPEC t1 t2
 filter :: Monad m => (a -> Bool) -> Stream m a -> Stream m a
 {-# INLINE filter #-}
 filter f = filterM (return . f)
+
+mapMaybe :: Monad m => (a -> Maybe b) -> Stream m a -> Stream m b
+{-# INLINE_FUSED mapMaybe #-}
+mapMaybe f (Stream step t) = Stream step' t
+  where
+    {-# INLINE_INNER step' #-}
+    step' s = do
+                r <- step s
+                case r of
+                  Yield x s' -> do
+                                  return $ case f x of
+                                    Nothing -> Skip s'
+                                    Just b' -> Yield b' s'
+                  Skip    s' -> return $ Skip s'
+                  Done       -> return $ Done
 
 -- | Drop elements which do not satisfy the monadic predicate
 filterM :: Monad m => (a -> m Bool) -> Stream m a -> Stream m a

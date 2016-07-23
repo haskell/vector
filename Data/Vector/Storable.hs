@@ -88,7 +88,9 @@ module Data.Vector.Storable (
   -- * Working with predicates
 
   -- ** Filtering
-  filter, ifilter, filterM,
+  filter, ifilter,
+  mapMaybe, imapMaybe,
+  filterM,
   takeWhile, dropWhile,
 
   -- ** Partitioning
@@ -912,6 +914,16 @@ filter = G.filter
 ifilter :: Storable a => (Int -> a -> Bool) -> Vector a -> Vector a
 {-# INLINE ifilter #-}
 ifilter = G.ifilter
+
+-- | /O(n)/ Drop elements when predicate returns Nothing
+mapMaybe :: (Storable a, Storable b) => (a -> Maybe b) -> Vector a -> Vector b
+{-# INLINE mapMaybe #-}
+mapMaybe = G.mapMaybe
+
+-- | /O(n)/ Drop elements when predicate, applied to index and value, returns Nothing
+imapMaybe :: (Storable a, Storable b) => (Int -> a -> Maybe b) -> Vector a -> Vector b
+{-# INLINE imapMaybe #-}
+imapMaybe = G.imapMaybe
 
 -- | /O(n)/ Drop elements that do not satisfy the monadic predicate
 filterM :: (Monad m, Storable a) => (a -> m Bool) -> Vector a -> m (Vector a)

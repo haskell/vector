@@ -16,6 +16,7 @@ import Data.Function (on)
 import Data.Functor.Identity
 import Data.List ( sortBy )
 import Data.Monoid
+import Data.Maybe (catMaybes)
 
 instance Show a => Show (S.Bundle v a) where
     show s = "Data.Vector.Fusion.Bundle.fromList " ++ show (S.toList s)
@@ -291,6 +292,12 @@ izipWith3 = withIndexFirst zipWith3
 
 ifilter :: (Int -> a -> Bool) -> [a] -> [a]
 ifilter f = map snd . withIndexFirst filter f
+
+mapMaybe :: (a -> Maybe b) -> [a] -> [b]
+mapMaybe f = catMaybes . map f
+
+imapMaybe :: (Int -> a -> Maybe b) -> [a] -> [b]
+imapMaybe f = catMaybes . withIndexFirst map f
 
 indexedLeftFold fld f z = fld (uncurry . f) z . zip [0..]
 
