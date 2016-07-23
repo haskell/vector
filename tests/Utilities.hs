@@ -297,6 +297,12 @@ indexedLeftFold fld f z = fld (uncurry . f) z . zip [0..]
 ifoldl :: (a -> Int -> a -> a) -> a -> [a] -> a
 ifoldl = indexedLeftFold foldl
 
+iscanl :: (Int -> a -> b -> a) -> a -> [b] -> [a]
+iscanl f z = scanl (\a (i, b) -> f i a b) z . zip [0..]
+
+iscanr :: (Int -> a -> b -> b) -> b -> [a] -> [b]
+iscanr f z = scanr (uncurry f) z . zip [0..]
+
 ifoldr :: (Int -> a -> b -> b) -> b -> [a] -> b
 ifoldr f z = foldr (uncurry f) z . zip [0..]
 

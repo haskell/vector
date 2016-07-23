@@ -143,9 +143,11 @@ module Data.Vector (
   prescanl, prescanl',
   postscanl, postscanl',
   scanl, scanl', scanl1, scanl1',
+  iscanl, iscanl',
   prescanr, prescanr',
   postscanr, postscanr',
   scanr, scanr', scanr1, scanr1',
+  iscanr, iscanr',
 
   -- * Conversions
 
@@ -1456,6 +1458,16 @@ scanl' :: (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE scanl' #-}
 scanl' = G.scanl'
 
+-- | /O(n)/ Scan over a vector with its index
+iscanl :: (Int -> a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE iscanl #-}
+iscanl = G.iscanl
+
+-- | /O(n)/ Scan over a vector (strictly) with its index
+iscanl' :: (Int -> a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE iscanl' #-}
+iscanl' = G.iscanl'
+
 -- | /O(n)/ Scan over a non-empty vector
 --
 -- > scanl f <x1,...,xn> = <y1,...,yn>
@@ -1505,6 +1517,16 @@ scanr = G.scanr
 scanr' :: (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE scanr' #-}
 scanr' = G.scanr'
+
+-- | /O(n)/ Right-to-left scan over a vector with its index
+iscanr :: (Int -> a -> b -> b) -> b -> Vector a -> Vector b
+{-# INLINE iscanr #-}
+iscanr = G.iscanr
+
+-- | /O(n)/ Right-to-left scan over a vector (strictly) with its index
+iscanr' :: (Int -> a -> b -> b) -> b -> Vector a -> Vector b
+{-# INLINE iscanr' #-}
+iscanr' = G.iscanr'
 
 -- | /O(n)/ Right-to-left scan over a non-empty vector
 scanr1 :: (a -> a -> a) -> Vector a -> Vector a

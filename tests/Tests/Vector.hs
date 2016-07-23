@@ -191,10 +191,12 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_prescanl, 'prop_prescanl',
         'prop_postscanl, 'prop_postscanl',
         'prop_scanl, 'prop_scanl', 'prop_scanl1, 'prop_scanl1',
+        'prop_iscanl, 'prop_iscanl',
 
         'prop_prescanr, 'prop_prescanr',
         'prop_postscanr, 'prop_postscanr',
-        'prop_scanr, 'prop_scanr', 'prop_scanr1, 'prop_scanr1'
+        'prop_scanr, 'prop_scanr', 'prop_scanr1, 'prop_scanr1',
+        'prop_iscanr, 'prop_iscanr'
     ])
   where
     -- Prelude
@@ -357,6 +359,10 @@ testPolymorphicFunctions _ = $(testProperties [
                  V.scanl1 `eq` scanl1
     prop_scanl1' :: P ((a -> a -> a) -> v a -> v a) = notNull2 ===>
                  V.scanl1' `eq` scanl1
+    prop_iscanl :: P ((Int -> a -> a -> a) -> a -> v a -> v a)
+                = V.iscanl `eq` iscanl
+    prop_iscanl' :: P ((Int -> a -> a -> a) -> a -> v a -> v a)
+               = V.iscanl' `eq` iscanl
 
     prop_prescanr :: P ((a -> a -> a) -> a -> v a -> v a)
                 = V.prescanr `eq` prescanr
@@ -370,6 +376,10 @@ testPolymorphicFunctions _ = $(testProperties [
                 = V.scanr `eq` scanr
     prop_scanr' :: P ((a -> a -> a) -> a -> v a -> v a)
                = V.scanr' `eq` scanr
+    prop_iscanr :: P ((Int -> a -> a -> a) -> a -> v a -> v a)
+                = V.iscanr `eq` iscanr
+    prop_iscanr' :: P ((Int -> a -> a -> a) -> a -> v a -> v a)
+               = V.iscanr' `eq` iscanr
     prop_scanr1 :: P ((a -> a -> a) -> v a -> v a) = notNull2 ===>
                  V.scanr1 `eq` scanr1
     prop_scanr1' :: P ((a -> a -> a) -> v a -> v a) = notNull2 ===>
