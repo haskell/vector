@@ -39,7 +39,7 @@ module Data.Vector.Storable (
   empty, singleton, replicate, generate, iterateN,
 
   -- ** Monadic initialisation
-  replicateM, generateM, create,
+  replicateM, generateM, create, createT,
 
   -- ** Unfolding
   unfoldr, unfoldrN,
@@ -625,6 +625,11 @@ create :: Storable a => (forall s. ST s (MVector s a)) -> Vector a
 {-# INLINE create #-}
 -- NOTE: eta-expanded due to http://hackage.haskell.org/trac/ghc/ticket/4120
 create p = G.create p
+
+-- | Execute the monadic action and freeze the resulting vectors.
+createT :: (Traversable f, Storable a) => (forall s. ST s (f (MVector s a))) -> f (Vector a)
+{-# INLINE createT #-}
+createT p = G.createT p
 
 -- Restricting memory usage
 -- ------------------------

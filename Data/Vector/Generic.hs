@@ -39,7 +39,7 @@ module Data.Vector.Generic (
   empty, singleton, replicate, generate, iterateN,
 
   -- ** Monadic initialisation
-  replicateM, generateM, create,
+  replicateM, generateM, create, createT,
 
   -- ** Unfolding
   unfoldr, unfoldrN,
@@ -715,6 +715,11 @@ generateM n f = unstreamM (MBundle.generateM n f)
 create :: Vector v a => (forall s. ST s (Mutable v s a)) -> v a
 {-# INLINE create #-}
 create p = new (New.create p)
+
+-- | Execute the monadic action and freeze the resulting vectors.
+createT :: (Traversable f, Vector v a) => (forall s. ST s (f (Mutable v s a))) -> f (v a)
+{-# INLINE createT #-}
+createT p = runST (p >>= traverse unsafeFreeze)
 
 -- Restricting memory usage
 -- ------------------------
