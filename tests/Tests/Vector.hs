@@ -3,7 +3,7 @@ module Tests.Vector (tests) where
 import Boilerplater
 import Utilities as Util
 
-import Data.Traversable (Traversable(..))
+import qualified Data.Traversable as T (Traversable(..))
 import Data.Foldable (Foldable(foldMap))
 
 import qualified Data.Vector.Generic as V
@@ -73,7 +73,7 @@ import Control.Monad.Trans.Writer
 instance Foldable ((,) a) where
   foldMap f (_, b) = f b
 
-instance Traversable ((,) a) where
+instance T.Traversable ((,) a) where
   traverse f (a, b) = fmap ((,) a) $ f b
 #endif
 
@@ -233,7 +233,7 @@ testPolymorphicFunctions _ = $(testProperties [
               = (\n _ _ -> n < 1000) ===> V.iterateN `eq` (\n f -> take n . iterate f)
 
     prop_createT :: P ((a, v a) -> (a, v a))
-    prop_createT = (\v -> V.createT (traverse V.thaw v)) `eq` id
+    prop_createT = (\v -> V.createT (T.mapM V.thaw v)) `eq` id
 
     prop_head      :: P (v a -> a) = not . V.null ===> V.head `eq` head
     prop_last      :: P (v a -> a) = not . V.null ===> V.last `eq` last
