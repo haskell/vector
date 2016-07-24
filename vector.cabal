@@ -156,6 +156,9 @@ Library
 
   Ghc-Options: -O2 -Wall -fno-warn-orphans
 
+  if impl(ghc >= 8.0) && impl( ghc < 8.1)
+    Ghc-Options:   -Wno-redundant-constraints
+
   if flag(BoundsChecks)
     cpp-options: -DVECTOR_BOUNDS_CHECKS
 
@@ -178,7 +181,7 @@ test-suite vector-tests-O0
   hs-source-dirs: tests
   Build-Depends: base >= 4 && < 5, template-haskell, vector,
                  random,
-                 QuickCheck >=  2.7  && < 2.8 , test-framework, test-framework-quickcheck2,
+                 QuickCheck >= 2.9 && < 2.10 , test-framework, test-framework-quickcheck2,
                  transformers >= 0.2.0.0
 
   default-extensions: CPP,
@@ -193,6 +196,9 @@ test-suite vector-tests-O0
 
   Ghc-Options: -O0
   Ghc-Options: -Wall -fno-warn-orphans -fno-warn-missing-signatures
+  if impl(ghc >= 8.0) && impl( ghc < 8.1)
+    Ghc-Options:   -Wno-redundant-constraints
+
 
 test-suite vector-tests-O2
   Default-Language: Haskell2010
@@ -201,7 +207,7 @@ test-suite vector-tests-O2
   hs-source-dirs: tests
   Build-Depends: base >= 4 && < 5, template-haskell, vector,
                  random,
-                 QuickCheck  >= 2.7, test-framework, test-framework-quickcheck2,
+                 QuickCheck >= 2.9 && < 2.10 , test-framework, test-framework-quickcheck2,
                  transformers >= 0.2.0.0
 
   default-extensions: CPP,
@@ -215,4 +221,7 @@ test-suite vector-tests-O2
               TemplateHaskell
 
   Ghc-Options: -O2
+  if impl(ghc >= 8.0) && impl( ghc < 8.1)
+    Ghc-Options:   -Wno-redundant-constraints
+
   Ghc-Options: -Wall -fno-warn-orphans -fno-warn-missing-signatures
