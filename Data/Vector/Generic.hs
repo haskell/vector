@@ -1822,18 +1822,22 @@ scanr' f z = unstreamR . Bundle.scanl' (flip f) z . streamR
 -- | /O(n)/ Right-to-left scan over a vector with its index
 iscanr :: (Vector v a, Vector v b) => (Int -> a -> b -> b) -> b -> v a -> v b
 {-# INLINE iscanr #-}
-iscanr f z =
+iscanr f z v =
     unstreamR
-  . inplace (S.scanl (flip $ uncurry f) z . S.indexed) (+1)
+  . inplace (S.scanl (flip $ uncurry f) z . S.indexedR n) (+1)
   . streamR
+  $ v
+ where n = length v
 
 -- | /O(n)/ Right-to-left scan over a vector (strictly) with its index
 iscanr' :: (Vector v a, Vector v b) => (Int -> a -> b -> b) -> b -> v a -> v b
 {-# INLINE iscanr' #-}
-iscanr' f z =
+iscanr' f z v =
     unstreamR
-  . inplace (S.scanl' (flip $ uncurry f) z . S.indexed) (+1)
+  . inplace (S.scanl' (flip $ uncurry f) z . S.indexedR n) (+1)
   . streamR
+  $ v
+ where n = length v
 
 -- | /O(n)/ Right-to-left scan over a non-empty vector
 scanr1 :: Vector v a => (a -> a -> a) -> v a -> v a
