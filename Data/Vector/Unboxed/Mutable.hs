@@ -256,7 +256,9 @@ set = G.set
 -- | Copy a vector. The two vectors must have the same length and may not
 -- overlap.
 copy :: (PrimMonad m, Unbox a)
-                 => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
+     => MVector (PrimState m) a   -- ^ target
+     -> MVector (PrimState m) a   -- ^ source
+     -> m ()
 {-# INLINE copy #-}
 copy = G.copy
 
