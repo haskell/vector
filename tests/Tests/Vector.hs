@@ -69,6 +69,9 @@ import Control.Monad.Trans.Writer
 -- TODO: test non-IVector stuff?
 
 #if !MIN_VERSION_base(4,7,0)
+instance Foldable ((,) a) where
+  foldMap f (_, b) = f b
+
 instance Traversable ((,) a) where
   traverse f (a, b) = fmap ((,) a) $ f b
 #endif
