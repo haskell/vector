@@ -3,7 +3,7 @@ module Tests.Vector (tests) where
 import Boilerplater
 import Utilities as Util
 
-import Data.Traversable (traverse)
+import Data.Traversable (Traversable(..))
 
 import qualified Data.Vector.Generic as V
 import qualified Data.Vector
