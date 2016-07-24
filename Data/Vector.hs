@@ -354,6 +354,40 @@ instance Foldable.Foldable Vector where
   {-# INLINE foldl1 #-}
   foldl1 = foldl1
 
+#if MIN_VERSION_base(4,6,0)
+  {-# INLINE foldr' #-}
+  foldr' = foldr'
+
+  {-# INLINE foldl' #-}
+  foldl' = foldl'
+#endif
+
+#if MIN_VERSION_base(4,8,0)
+  {-# INLINE toList #-}
+  toList = toList
+
+  {-# INLINE length #-}
+  length = length
+
+  {-# INLINE null #-}
+  null = null
+
+  {-# INLINE elem #-}
+  elem = elem
+
+  {-# INLINE maximum #-}
+  maximum = maximum
+
+  {-# INLINE minimum #-}
+  minimum = minimum
+
+  {-# INLINE sum #-}
+  sum = sum
+
+  {-# INLINE product #-}
+  product = product
+#endif
+
 instance Traversable.Traversable Vector where
   {-# INLINE traverse #-}
   traverse f xs = Data.Vector.fromList Applicative.<$> Traversable.traverse f (toList xs)
