@@ -4,6 +4,7 @@ import Boilerplater
 import Utilities as Util
 
 import Data.Traversable (Traversable(..))
+import Data.Foldable (Foldable(foldMap))
 
 import qualified Data.Vector.Generic as V
 import qualified Data.Vector
