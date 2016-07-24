@@ -217,9 +217,7 @@ mkNoRepType :: String -> DataType
 mkNoRepType = mkNorepType
 #endif
 
-#if !MIN_VERSION_base(4,8,0)
-import Data.Traversable (Traversable, traverse)
-#endif
+import qualified Data.Traversable as T (Traversable(mapM))
 
 -- Length information
 -- ------------------
@@ -723,9 +721,11 @@ create :: Vector v a => (forall s. ST s (Mutable v s a)) -> v a
 create p = new (New.create p)
 
 -- | Execute the monadic action and freeze the resulting vectors.
-createT :: (Traversable f, Vector v a) => (forall s. ST s (f (Mutable v s a))) -> f (v a)
+createT
+  :: (T.Traversable f, Vector v a)
+  => (forall s. ST s (f (Mutable v s a))) -> f (v a)
 {-# INLINE createT #-}
-createT p = runST (p >>= traverse unsafeFreeze)
+createT p = runST (p >>= T.mapM unsafeFreeze)
 
 -- Restricting memory usage
 -- ------------------------
