@@ -217,6 +217,10 @@ mkNoRepType :: String -> DataType
 mkNoRepType = mkNorepType
 #endif
 
+#if !MIN_VERSION_base(4,8,0)
+import Data.Traversable (Traversable, traverse)
+#endif
+
 -- Length information
 -- ------------------
 

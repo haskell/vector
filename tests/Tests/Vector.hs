@@ -3,6 +3,9 @@ module Tests.Vector (tests) where
 import Boilerplater
 import Utilities as Util
 
+import Data.Traversable (Traversable(..))
+import Data.Foldable (Foldable(foldMap))
+
 import qualified Data.Vector.Generic as V
 import qualified Data.Vector
 import qualified Data.Vector.Primitive
@@ -65,6 +68,14 @@ import Control.Monad.Trans.Writer
 --  vlength, vnew
 
 -- TODO: test non-IVector stuff?
+
+#if !MIN_VERSION_base(4,7,0)
+instance Foldable ((,) a) where
+  foldMap f (_, b) = f b
+
+instance Traversable ((,) a) where
+  traverse f (a, b) = fmap ((,) a) $ f b
+#endif
 
 testSanity :: forall a v. (COMMON_CONTEXT(a, v)) => v a -> [Test]
 testSanity _ = [

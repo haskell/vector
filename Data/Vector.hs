@@ -703,7 +703,7 @@ create :: (forall s. ST s (MVector s a)) -> Vector a
 create p = G.create p
 
 -- | Execute the monadic action and freeze the resulting vectors.
-createT :: Traversable f => (forall s. ST s (f (MVector s a))) -> f (Vector a)
+createT :: Traversable.Traversable f => (forall s. ST s (f (MVector s a))) -> f (Vector a)
 {-# INLINE createT #-}
 createT p = G.createT p
 
