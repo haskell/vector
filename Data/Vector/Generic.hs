@@ -1757,7 +1757,7 @@ iscanl :: (Vector v a, Vector v b) => (Int -> a -> b -> a) -> a -> v b -> v a
 {-# INLINE iscanl #-}
 iscanl f z =
     unstream
-  . inplace (S.scanl (\a (i, b) -> f i a b) z . S.indexed) id
+  . inplace (S.scanl (\a (i, b) -> f i a b) z . S.indexed) (+1)
   . stream
 
 -- | /O(n)/ Scan over a vector (strictly) with its index
@@ -1765,7 +1765,7 @@ iscanl' :: (Vector v a, Vector v b) => (Int -> a -> b -> a) -> a -> v b -> v a
 {-# INLINE iscanl' #-}
 iscanl' f z =
     unstream
-  . inplace (S.scanl' (\a (i, b) -> f i a b) z . S.indexed) id
+  . inplace (S.scanl' (\a (i, b) -> f i a b) z . S.indexed) (+1)
   . stream
 
 
@@ -1824,7 +1824,7 @@ iscanr :: (Vector v a, Vector v b) => (Int -> a -> b -> b) -> b -> v a -> v b
 {-# INLINE iscanr #-}
 iscanr f z =
     unstreamR
-  . inplace (S.scanl (flip $ uncurry f) z . S.indexed) id
+  . inplace (S.scanl (flip $ uncurry f) z . S.indexed) (+1)
   . streamR
 
 -- | /O(n)/ Right-to-left scan over a vector (strictly) with its index
@@ -1832,7 +1832,7 @@ iscanr' :: (Vector v a, Vector v b) => (Int -> a -> b -> b) -> b -> v a -> v b
 {-# INLINE iscanr' #-}
 iscanr' f z =
     unstreamR
-  . inplace (S.scanl' (flip $ uncurry f) z . S.indexed) id
+  . inplace (S.scanl' (flip $ uncurry f) z . S.indexed) (+1)
   . streamR
 
 -- | /O(n)/ Right-to-left scan over a non-empty vector
