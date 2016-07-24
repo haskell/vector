@@ -52,12 +52,6 @@ instance Arbitrary a => Arbitrary (S.Bundle v a) where
 instance CoArbitrary a => CoArbitrary (S.Bundle v a) where
     coarbitrary = coarbitrary . S.toList
 
-instance Arbitrary a => Arbitrary (Identity a) where
-    arbitrary = fmap Identity arbitrary
-
-instance CoArbitrary a => CoArbitrary (Identity a) where
-    coarbitrary = coarbitrary . runIdentity
-
 instance Arbitrary a => Arbitrary (Writer a ()) where
     arbitrary = fmap (writer . ((,) ())) arbitrary
 
@@ -219,7 +213,7 @@ notNullS2 _ s = not $ S.null s
 
 -- Generators
 index_value_pairs :: Arbitrary a => Int -> Gen [(Int,a)]
-index_value_pairs 0 = return [] 
+index_value_pairs 0 = return []
 index_value_pairs m = sized $ \n ->
   do
     len <- choose (0,n)
@@ -254,7 +248,7 @@ accum f xs ps = go xs ps' 0
     go (x:xs) ((i,y) : ps) j
       | i == j     = go (f x y : xs) ps j
     go (x:xs) ps j = x : go xs ps (j+1)
-    go [] _ _      = []  
+    go [] _ _      = []
 
 (//) :: [a] -> [(Int, a)] -> [a]
 xs // ps = go xs ps' 0
