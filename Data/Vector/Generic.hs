@@ -96,7 +96,7 @@ module Data.Vector.Generic (
   -- * Working with predicates
 
   -- ** Filtering
-  filter, ifilter,
+  filter, ifilter, uniq,
   mapMaybe, imapMaybe,
   filterM,
   takeWhile, dropWhile,
@@ -1314,6 +1314,11 @@ ifilter :: Vector v a => (Int -> a -> Bool) -> v a -> v a
 ifilter f = unstream
           . inplace (S.map snd . S.filter (uncurry f) . S.indexed) toMax
           . stream
+
+-- | /O(n)/ Drop repeated adjacent elements.
+uniq :: (Vector v a, Eq a) => v a -> v a
+{-# INLINE uniq #-}
+uniq = unstream . inplace S.uniq toMax . stream
 
 -- | /O(n)/ Drop elements when predicate returns Nothing
 mapMaybe :: (Vector v a, Vector v b) => (a -> Maybe b) -> v a -> v b

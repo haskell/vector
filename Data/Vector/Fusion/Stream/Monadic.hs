@@ -40,7 +40,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   eq, cmp,
 
   -- * Filtering
-  filter, filterM, mapMaybe, takeWhile, takeWhileM, dropWhile, dropWhileM,
+  filter, filterM, uniq, mapMaybe, takeWhile, takeWhileM, dropWhile, dropWhileM,
 
   -- * Searching
   elem, notElem, find, findM, findIndex, findIndexM,
@@ -718,6 +718,24 @@ filterM f (Stream step t) = Stream step' t
                                                 else Skip    s'
                   Skip    s' -> return $ Skip s'
                   Done       -> return $ Done
+
+-- | Drop repeated adjacent elements.
+uniq :: (Eq a, Monad m) => Stream m a -> Stream m a
+{-# INLINE_FUSED uniq #-}
+uniq (Stream step st) = Stream step' (Nothing,st)
+  where
+    {-# INLINE_INNER step' #-}
+    step' (Nothing, s) = do r <- step s
+                            case r of
+                              Yield x s' -> return $ Yield x (Just x , s')
+                              Skip  s'   -> return $ Skip  (Nothing, s')
+                              Done       -> return   Done
+    step' (Just x0, s) = do r <- step s
+                            case r of
+                              Yield x s' | x == x0   -> return $ Skip    (Just x0, s')
+                                         | otherwise -> return $ Yield x (Just x , s')
+                              Skip  s'   -> return $ Skip (Just x0, s')
+                              Done       -> return   Done
 
 -- | Longest prefix of elements that satisfy the predicate
 takeWhile :: Monad m => (a -> Bool) -> Stream m a -> Stream m a

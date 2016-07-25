@@ -89,7 +89,7 @@ module Data.Vector.Storable (
   -- * Working with predicates
 
   -- ** Filtering
-  filter, ifilter,
+  filter, ifilter, uniq,
   mapMaybe, imapMaybe,
   filterM,
   takeWhile, dropWhile,
@@ -937,6 +937,11 @@ filter = G.filter
 ifilter :: Storable a => (Int -> a -> Bool) -> Vector a -> Vector a
 {-# INLINE ifilter #-}
 ifilter = G.ifilter
+
+-- | /O(n)/ Drop repeated adjacent elements.
+uniq :: (Storable a, Eq a) => Vector a -> Vector a
+{-# INLINE uniq #-}
+uniq = G.uniq
 
 -- | /O(n)/ Drop elements when predicate returns Nothing
 mapMaybe :: (Storable a, Storable b) => (a -> Maybe b) -> Vector a -> Vector b
