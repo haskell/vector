@@ -424,12 +424,17 @@ testPolymorphicFunctions _ = $(testProperties [
         constructrN xs n f = constructrN (f xs : xs) (n-1) f
 
 testTuplyFunctions:: forall a v. (COMMON_CONTEXT(a, v), VECTOR_CONTEXT((a, a), v), VECTOR_CONTEXT((a, a, a), v)) => v a -> [Test]
-testTuplyFunctions _ = $(testProperties ['prop_zip, 'prop_zip3, 'prop_unzip, 'prop_unzip3])
+testTuplyFunctions _ = $(testProperties [ 'prop_zip, 'prop_zip3, 'prop_mzip
+                                        , 'prop_unzip, 'prop_unzip3, 'prop_munzip])
   where
     prop_zip    :: P (v a -> v a -> v (a, a))           = V.zip `eq` zip
     prop_zip3   :: P (v a -> v a -> v a -> v (a, a, a)) = V.zip3 `eq` zip3
+    prop_mzip   :: P (Data.Vector.Vector a -> Data.Vector.Vector a -> Data.Vector.Vector (a, a))
+        = V.zip `eq` zip
     prop_unzip  :: P (v (a, a) -> (v a, v a))           = V.unzip `eq` unzip
     prop_unzip3 :: P (v (a, a, a) -> (v a, v a, v a))   = V.unzip3 `eq` unzip3
+    prop_munzip :: P (Data.Vector.Vector (a, a) -> (Data.Vector.Vector a, Data.Vector.Vector a))
+        = V.unzip `eq` unzip
 
 testOrdFunctions :: forall a v. (COMMON_CONTEXT(a, v), Ord a, Ord (v a)) => v a -> [Test]
 testOrdFunctions _ = $(testProperties
