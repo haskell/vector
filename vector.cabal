@@ -93,6 +93,10 @@ Flag InternalChecks
   Default: False
   Manual: True
 
+Flag Wall
+  Description: Enable all -Wall warnings
+  Default: False
+  Manual: True
 
 Library
   Default-Language: Haskell2010
@@ -154,10 +158,13 @@ Library
   if !impl(ghc > 8.0)
     Build-Depends: semigroups >= 0.18 && < 0.19
 
-  Ghc-Options: -O2 -Wall -fno-warn-orphans
+  Ghc-Options: -O2 -Wall
 
-  if impl(ghc >= 8.0) && impl( ghc < 8.1)
-    Ghc-Options:   -Wno-redundant-constraints
+  if !flag(Wall)
+    Ghc-Options: -fno-warn-orphans
+
+    if impl(ghc >= 8.0) && impl(ghc < 8.1)
+      Ghc-Options:   -Wno-redundant-constraints
 
   if flag(BoundsChecks)
     cpp-options: -DVECTOR_BOUNDS_CHECKS
@@ -195,9 +202,12 @@ test-suite vector-tests-O0
               TemplateHaskell
 
   Ghc-Options: -O0
-  Ghc-Options: -Wall -fno-warn-orphans -fno-warn-missing-signatures
-  if impl(ghc >= 8.0) && impl( ghc < 8.1)
-    Ghc-Options:   -Wno-redundant-constraints
+  Ghc-Options: -Wall
+
+  if !flag(Wall)
+    Ghc-Options: -fno-warn-orphans -fno-warn-missing-signatures
+    if impl(ghc >= 8.0) && impl( ghc < 8.1)
+      Ghc-Options: -Wno-redundant-constraints
 
 
 test-suite vector-tests-O2
@@ -220,8 +230,10 @@ test-suite vector-tests-O2
               TypeFamilies,
               TemplateHaskell
 
-  Ghc-Options: -O2
-  if impl(ghc >= 8.0) && impl( ghc < 8.1)
-    Ghc-Options:   -Wno-redundant-constraints
+  Ghc-Options: -O2 -Wall
 
-  Ghc-Options: -Wall -fno-warn-orphans -fno-warn-missing-signatures
+  if !flag(Wall)
+    Ghc-Options: -fno-warn-orphans -fno-warn-missing-signatures
+    if impl(ghc >= 8.0) && impl(ghc < 8.1)
+      Ghc-Options: -Wno-redundant-constraints
+
