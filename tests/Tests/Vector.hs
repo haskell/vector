@@ -24,6 +24,10 @@ import System.Random       (Random)
 import Data.Functor.Identity
 import Control.Monad.Trans.Writer
 
+#if MIN_VERSION_base(4,4,0)
+import Control.Monad.Zip
+#endif
+
 #define COMMON_CONTEXT(a, v) \
  VANILLA_CONTEXT(a, v), VECTOR_CONTEXT(a, v)
 
