@@ -37,7 +37,7 @@ Description:
 Tested-With:
   GHC == 7.0.4,
   GHC == 7.2.2,
-  GHC == 7.4.3,
+  GHC == 7.4.2,
   GHC == 7.6.3,
   GHC == 7.8.4,
   GHC == 7.10.3,
@@ -151,7 +151,7 @@ Library
   Install-Includes:
         vector.h
 
-  Build-Depends: base >= 4.3 && < 4.10
+  Build-Depends: base >= 4.5 && < 4.10
                , primitive >= 0.5.0.1 && < 0.7
                , ghc-prim >= 0.2 && < 0.6
                , deepseq >= 1.1 && < 1.5
@@ -186,7 +186,7 @@ test-suite vector-tests-O0
   type: exitcode-stdio-1.0
   Main-Is:  Main.hs
   hs-source-dirs: tests
-  Build-Depends: base >= 4 && < 5, template-haskell, vector,
+  Build-Depends: base >= 4.5 && < 5, template-haskell, vector,
                  random,
                  QuickCheck >= 2.9 && < 2.10 , test-framework, test-framework-quickcheck2,
                  transformers >= 0.2.0.0
@@ -215,7 +215,7 @@ test-suite vector-tests-O2
   type: exitcode-stdio-1.0
   Main-Is:  Main.hs
   hs-source-dirs: tests
-  Build-Depends: base >= 4 && < 5, template-haskell, vector,
+  Build-Depends: base >= 4.5 && < 5, template-haskell, vector,
                  random,
                  QuickCheck >= 2.9 && < 2.10 , test-framework, test-framework-quickcheck2,
                  transformers >= 0.2.0.0

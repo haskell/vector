@@ -42,11 +42,7 @@ import Data.Word ( Word )
 import Data.Typeable ( Typeable )
 #else
 import Data.Typeable ( Typeable1(..), Typeable2(..), mkTyConApp,
-#if MIN_VERSION_base(4,4,0)
                        mkTyCon3
-#else
-                       mkTyCon
-#endif
                      )
 #endif
 
@@ -76,11 +72,7 @@ instance NFData (MVector s a) where rnf !_ = ()
 deriving instance Typeable Vector
 deriving instance Typeable MVector
 #else
-#if MIN_VERSION_base(4,4,0)
 vectorTyCon = mkTyCon3 "vector"
-#else
-vectorTyCon m s = mkTyCon $ m ++ "." ++ s
-#endif
 
 instance Typeable1 Vector where
   typeOf1 _ = mkTyConApp (vectorTyCon "Data.Vector.Unboxed" "Vector") []

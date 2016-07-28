@@ -175,9 +175,7 @@ import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
 
 
-#if MIN_VERSION_base(4,4,0)
 import Control.Monad.Zip
-#endif
 
 import Prelude hiding ( length, null,
                         replicate, (++), concat,
@@ -333,8 +331,6 @@ instance MonadPlus Vector where
   {-# INLINE mplus #-}
   mplus = (++)
 
--- MonadZip was added in base-4.4.0
-#if MIN_VERSION_base(4,4,0)
 instance MonadZip Vector where
   {-# INLINE mzip #-}
   mzip = zip
@@ -344,7 +340,6 @@ instance MonadZip Vector where
 
   {-# INLINE munzip #-}
   munzip = unzip
-#endif
 
 
 instance Applicative.Applicative Vector where
