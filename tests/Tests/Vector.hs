@@ -172,6 +172,7 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Filtering
         'prop_filter, 'prop_ifilter, {- prop_filterM, -}
+        'prop_uniq,
         'prop_mapMaybe, 'prop_imapMaybe,
         'prop_takeWhile, 'prop_dropWhile,
 
@@ -410,6 +411,8 @@ testPolymorphicFunctions _ = $(testProperties [
       where
         prop :: P ((a -> v a) -> v a -> v a) = V.concatMap `eq` concatMap
 
+    prop_uniq :: P (v a -> v a)
+      = V.uniq `eq` (map head . group)
     --prop_span         = (V.span :: (a -> Bool) -> v a -> (v a, v a))  `eq2` span
     --prop_break        = (V.break :: (a -> Bool) -> v a -> (v a, v a)) `eq2` break
     --prop_splitAt      = (V.splitAt :: Int -> v a -> (v a, v a))       `eq2` splitAt
