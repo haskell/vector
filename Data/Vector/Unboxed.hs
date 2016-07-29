@@ -119,7 +119,7 @@ module Data.Vector.Unboxed (
   -- * Working with predicates
 
   -- ** Filtering
-  filter, ifilter,
+  filter, ifilter, uniq,
   mapMaybe, imapMaybe,
   filterM,
   takeWhile, dropWhile,
@@ -978,6 +978,11 @@ izipWithM_ = G.izipWithM_
 filter :: Unbox a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE filter #-}
 filter = G.filter
+
+-- | /O(n)/ Drop repeated adjacent elements.
+uniq :: (Unbox a, Eq a) => Vector a -> Vector a
+{-# INLINE uniq #-}
+uniq = G.uniq
 
 -- | /O(n)/ Drop elements that do not satisfy the predicate which is applied to
 -- values and their indices

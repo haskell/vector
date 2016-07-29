@@ -92,7 +92,7 @@ module Data.Vector.Primitive (
   -- * Working with predicates
 
   -- ** Filtering
-  filter, ifilter,
+  filter, ifilter, uniq,
   mapMaybe, imapMaybe,
   filterM,
   takeWhile, dropWhile,
@@ -927,6 +927,11 @@ filter = G.filter
 ifilter :: Prim a => (Int -> a -> Bool) -> Vector a -> Vector a
 {-# INLINE ifilter #-}
 ifilter = G.ifilter
+
+-- | /O(n)/ Drop repeated adjacent elements.
+uniq :: (Prim a, Eq a) => Vector a -> Vector a
+{-# INLINE uniq #-}
+uniq = G.uniq
 
 -- | /O(n)/ Drop elements when predicate returns Nothing
 mapMaybe :: (Prim a, Prim b) => (a -> Maybe b) -> Vector a -> Vector b
