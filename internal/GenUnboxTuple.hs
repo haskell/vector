@@ -177,6 +177,9 @@ generate n =
                                  <+> parens (var 'm' <> char '+' <> var 'n')
                                  <+> sep (map (<> char '\'') varss))
 
+    gen_initialize rec
+      = (pat "MV", mk_do [qM rec <+> vs | vs <- varss] empty)
+
     gen_unsafeFreeze rec
       = (pat "MV",
          mk_do [vs <> char '\'' <+> text "<-" <+> qG rec <+> vs | vs <- varss]
@@ -224,7 +227,8 @@ generate n =
                       ,("basicSet",               gen_set)
                       ,("basicUnsafeCopy",        gen_unsafeCopy "MV" qM)
                       ,("basicUnsafeMove",        gen_unsafeMove)
-                      ,("basicUnsafeGrow",        gen_unsafeGrow)]
+                      ,("basicUnsafeGrow",        gen_unsafeGrow)
+                      ,("basicInitialize",        gen_initialize)]
 
     methods_Vector  = [("basicUnsafeFreeze",      gen_unsafeFreeze)
                       ,("basicUnsafeThaw",        gen_unsafeThaw)
