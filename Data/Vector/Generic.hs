@@ -104,6 +104,10 @@ module Data.Vector.Generic (
   -- ** Partitioning
   partition, unstablePartition, span, break,
 
+  -- ** Grouping
+  groupBy
+
+
   -- ** Searching
   elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
 
@@ -2179,3 +2183,24 @@ dataCast :: (Vector v a, Data a, Typeable1 v, Typeable1 t)
          => (forall d. Data  d => c (t d)) -> Maybe  (c (v a))
 {-# INLINE dataCast #-}
 dataCast f = gcast1 f
+
+{-# INLINE groupBy #-}
+groupBy k xs =
+  switchL []
+  (\h t ->
+      let n = 1 + findIndexOrEnd (not . k h) t
+      in  unsafeTake n xs : groupBy k (unsafeDrop n xs))
+  xs
+
+-- | 'findIndexOrEnd' is a variant of findIndex, that returns the length
+-- of the string if no element is found, rather than Nothing.
+findIndexOrEnd p xs =
+  foldr
+    (\x k n ->
+       if p x then n else k (succ n))
+    id xs 0
+
+switchL n j x =
+  if null x
+    then n
+    else j (unsafeHead x) (unsafeTail x)
