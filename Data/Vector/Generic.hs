@@ -1349,7 +1349,7 @@ takeWhile f = unstream . Bundle.takeWhile f . stream
 dropWhile :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE dropWhile #-}
 -- We don't want to use the streaming method because it results in a copy
-dropWhile f v = case findIndex f v of
+dropWhile f v = case findIndex (not . f) v of
   Nothing -> empty
   Just n  -> drop n v
 
