@@ -1,3 +1,12 @@
+Changes in version 0.12.0.0
+
+ * Documentation fixes/additions
+ * New functions: createT, iscanl/r, iterateNM, unfoldrM, uniq
+ * New instances for various vector types: Semigroup, MonadZip
+ * Made `Storable` vectors respect memory alignment
+ * Changed some macros to ConstraintKinds
+   - Dropped compatibility with old GHCs to support this
+
 Changes in version 0.11.0.0
 
  * Define `Applicative` instances for `Data.Vector.Fusion.Util.{Box,Id}`
