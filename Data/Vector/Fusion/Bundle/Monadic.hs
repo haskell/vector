@@ -40,7 +40,7 @@ module Data.Vector.Fusion.Bundle.Monadic (
   zip, zip3, zip4, zip5, zip6,
 
   -- * Comparisons
-  eq, cmp,
+  eqBy, cmpBy,
 
   -- * Filtering
   filter, filterM, takeWhile, takeWhileM, dropWhile, dropWhileM,
@@ -424,14 +424,14 @@ zip6 = zipWith6 (,,,,,)
 -- -----------
 
 -- | Check if two 'Bundle's are equal
-eq :: (Monad m, Eq a) => Bundle m v a -> Bundle m v a -> m Bool
-{-# INLINE_FUSED eq #-}
-eq x y = sElems x `S.eq` sElems y
+eqBy :: (Monad m) => (a -> b -> Bool) -> Bundle m v a -> Bundle m v b -> m Bool
+{-# INLINE_FUSED eqBy #-}
+eqBy eq x y = S.eqBy eq (sElems x) (sElems y)
 
 -- | Lexicographically compare two 'Bundle's
-cmp :: (Monad m, Ord a) => Bundle m v a -> Bundle m v a -> m Ordering
-{-# INLINE_FUSED cmp #-}
-cmp x y = sElems x `S.cmp` sElems y
+cmpBy :: (Monad m) => (a -> b -> Ordering) -> Bundle m v a -> Bundle m v b -> m Ordering
+{-# INLINE_FUSED cmpBy #-}
+cmpBy cmp x y = S.cmpBy cmp (sElems x) (sElems y)
 
 -- Filtering
 -- ---------
