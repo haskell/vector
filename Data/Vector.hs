@@ -192,7 +192,7 @@ import Prelude hiding ( length, null,
                         mapM, mapM_, sequence, sequence_ )
 
 #if MIN_VERSION_base(4,9,0)
-import Data.Functor.Classes (Eq1 (..), Ord1 (..))
+import Data.Functor.Classes (Eq1 (..), Ord1 (..), Read1 (..), Show1 (..))
 #endif
 
 import Data.Typeable  ( Typeable )
@@ -231,6 +231,14 @@ instance Show a => Show (Vector a) where
 instance Read a => Read (Vector a) where
   readPrec = G.readPrec
   readListPrec = readListPrecDefault
+
+#if MIN_VERSION_base(4,9,0)
+instance Show1 Vector where
+    liftShowsPrec = G.liftShowsPrec
+
+instance Read1 Vector where
+    liftReadsPrec = G.liftReadsPrec
+#endif
 
 #if __GLASGOW_HASKELL__ >= 708
 

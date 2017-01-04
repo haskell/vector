@@ -162,6 +162,7 @@ module Data.Vector.Generic (
 
   -- ** Show and Read
   showsPrec, readPrec,
+  liftShowsPrec, liftReadsPrec,
 
   -- ** @Data@ and @Typeable@
   gfoldl, dataCast, mkType
@@ -2157,12 +2158,20 @@ showsPrec :: (Vector v a, Show a) => Int -> v a -> ShowS
 {-# INLINE showsPrec #-}
 showsPrec _ = shows . toList
 
+liftShowsPrec :: (Vector v a) => (Int -> a -> ShowS) -> ([a] -> ShowS) -> Int -> v a -> ShowS
+{-# INLINE liftShowsPrec #-}
+liftShowsPrec _ s _ = s . toList
+
 -- | Generic definition of 'Text.Read.readPrec'
 readPrec :: (Vector v a, Read a) => Read.ReadPrec (v a)
 {-# INLINE readPrec #-}
 readPrec = do
   xs <- Read.readPrec
   return (fromList xs)
+
+-- | /Note:/ uses 'ReadS'
+liftReadsPrec :: (Vector v a) => (Int -> Read.ReadS a) -> ReadS [a] -> Int -> Read.ReadS (v a)
+liftReadsPrec _ r _ s = [ (fromList v, s') | (v, s') <- r s ]
 
 -- Data and Typeable
 -- -----------------
