@@ -158,6 +158,7 @@ module Data.Vector.Generic (
 
   -- ** Comparisons
   eq, cmp,
+  eqBy, cmpBy,
 
   -- ** Show and Read
   showsPrec, readPrec,
@@ -2131,6 +2132,11 @@ eq :: (Vector v a, Eq a) => v a -> v a -> Bool
 {-# INLINE eq #-}
 xs `eq` ys = stream xs == stream ys
 
+-- | /O(n)/
+eqBy :: (Vector v a, Vector v b) => (a -> b -> Bool) -> v a -> v b -> Bool
+{-# INLINE eqBy #-}
+eqBy e xs ys = Bundle.eqBy e (stream xs) (stream ys)
+
 -- | /O(n)/ Compare two vectors lexicographically. All 'Vector' instances are
 -- also instances of 'Ord' and it is usually more appropriate to use those. This
 -- function is primarily intended for implementing 'Ord' instances for new
@@ -2138,6 +2144,10 @@ xs `eq` ys = stream xs == stream ys
 cmp :: (Vector v a, Ord a) => v a -> v a -> Ordering
 {-# INLINE cmp #-}
 cmp xs ys = compare (stream xs) (stream ys)
+
+-- | /O(n)/
+cmpBy :: (Vector v a, Vector v b) => (a -> b -> Ordering) -> v a -> v b -> Ordering
+cmpBy c xs ys = Bundle.cmpBy c (stream xs) (stream ys)
 
 -- Show
 -- ----
