@@ -353,9 +353,9 @@ instance G.Vector Vector Bool where
 newtype instance MVector s (Complex a) = MV_Complex (MVector s (a,a))
 newtype instance Vector    (Complex a) = V_Complex  (Vector    (a,a))
 
-instance (RealFloat a, Unbox a) => Unbox (Complex a)
+instance (Unbox a) => Unbox (Complex a)
 
-instance (RealFloat a, Unbox a) => M.MVector MVector (Complex a) where
+instance (Unbox a) => M.MVector MVector (Complex a) where
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
   {-# INLINE basicOverlaps #-}
@@ -382,7 +382,7 @@ instance (RealFloat a, Unbox a) => M.MVector MVector (Complex a) where
   basicUnsafeMove (MV_Complex v1) (MV_Complex v2) = M.basicUnsafeMove v1 v2
   basicUnsafeGrow (MV_Complex v) n = MV_Complex `liftM` M.basicUnsafeGrow v n
 
-instance (RealFloat a, Unbox a) => G.Vector Vector (Complex a) where
+instance (Unbox a) => G.Vector Vector (Complex a) where
   {-# INLINE basicUnsafeFreeze #-}
   {-# INLINE basicUnsafeThaw #-}
   {-# INLINE basicLength #-}
@@ -406,4 +406,3 @@ instance (RealFloat a, Unbox a) => G.Vector Vector (Complex a) where
 
 #define DEFINE_INSTANCES
 #include "unbox-tuple-instances"
-
