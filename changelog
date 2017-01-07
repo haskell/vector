@@ -1,3 +1,8 @@
+Changes in version 0.12.0.0
+
+ * Add `Eq1`, `Ord1`, `Show1`, and `Read1` `Vector` instances, and related
+   helper functions.
+
 Changes in version 0.11.0.0
 
  * Define `Applicative` instances for `Data.Vector.Fusion.Util.{Box,Id}`

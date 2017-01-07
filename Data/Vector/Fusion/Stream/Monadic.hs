@@ -37,7 +37,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   zip, zip3, zip4, zip5, zip6,
 
   -- * Comparisons
-  eq, cmp,
+  eqBy, cmpBy,
 
   -- * Filtering
   filter, filterM, uniq, mapMaybe, takeWhile, takeWhileM, dropWhile, dropWhileM,
@@ -625,9 +625,9 @@ zip6 = zipWith6 (,,,,,)
 -- -----------
 
 -- | Check if two 'Stream's are equal
-eq :: (Monad m, Eq a) => Stream m a -> Stream m a -> m Bool
-{-# INLINE_FUSED eq #-}
-eq (Stream step1 t1) (Stream step2 t2) = eq_loop0 SPEC t1 t2
+eqBy :: (Monad m) => (a -> b -> Bool) -> Stream m a -> Stream m b -> m Bool
+{-# INLINE_FUSED eqBy #-}
+eqBy eq (Stream step1 t1) (Stream step2 t2) = eq_loop0 SPEC t1 t2
   where
     eq_loop0 !_ s1 s2 = do
       r <- step1 s1
@@ -640,7 +640,7 @@ eq (Stream step1 t1) (Stream step2 t2) = eq_loop0 SPEC t1 t2
       r <- step2 s2
       case r of
         Yield y s2'
-          | x == y    -> eq_loop0 SPEC   s1 s2'
+          | eq x y    -> eq_loop0 SPEC   s1 s2'
           | otherwise -> return False
         Skip    s2'   -> eq_loop1 SPEC x s1 s2'
         Done          -> return False
@@ -653,9 +653,9 @@ eq (Stream step1 t1) (Stream step2 t2) = eq_loop0 SPEC t1 t2
         Done      -> return True
 
 -- | Lexicographically compare two 'Stream's
-cmp :: (Monad m, Ord a) => Stream m a -> Stream m a -> m Ordering
-{-# INLINE_FUSED cmp #-}
-cmp (Stream step1 t1) (Stream step2 t2) = cmp_loop0 SPEC t1 t2
+cmpBy :: (Monad m) => (a -> b -> Ordering) -> Stream m a -> Stream m b -> m Ordering
+{-# INLINE_FUSED cmpBy #-}
+cmpBy cmp (Stream step1 t1) (Stream step2 t2) = cmp_loop0 SPEC t1 t2
   where
     cmp_loop0 !_ s1 s2 = do
       r <- step1 s1
@@ -667,7 +667,7 @@ cmp (Stream step1 t1) (Stream step2 t2) = cmp_loop0 SPEC t1 t2
     cmp_loop1 !_ x s1 s2 = do
       r <- step2 s2
       case r of
-        Yield y s2' -> case x `compare` y of
+        Yield y s2' -> case x `cmp` y of
                          EQ -> cmp_loop0 SPEC s1 s2'
                          c  -> return c
         Skip    s2' -> cmp_loop1 SPEC x s1 s2'
