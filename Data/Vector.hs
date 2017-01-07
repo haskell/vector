@@ -191,6 +191,10 @@ import Prelude hiding ( length, null,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_, sequence, sequence_ )
 
+#if MIN_VERSION_base(4,9,0)
+import Data.Functor.Classes (Eq1 (..), Ord1 (..), Read1 (..), Show1 (..))
+#endif
+
 import Data.Typeable  ( Typeable )
 import Data.Data      ( Data(..) )
 import Text.Read      ( Read(..), readListPrecDefault )
@@ -227,6 +231,14 @@ instance Show a => Show (Vector a) where
 instance Read a => Read (Vector a) where
   readPrec = G.readPrec
   readListPrec = readListPrecDefault
+
+#if MIN_VERSION_base(4,9,0)
+instance Show1 Vector where
+    liftShowsPrec = G.liftShowsPrec
+
+instance Read1 Vector where
+    liftReadsPrec = G.liftReadsPrec
+#endif
 
 #if __GLASGOW_HASKELL__ >= 708
 
@@ -292,6 +304,14 @@ instance Ord a => Ord (Vector a) where
 
   {-# INLINE (>=) #-}
   xs >= ys = Bundle.cmp (G.stream xs) (G.stream ys) /= LT
+
+#if MIN_VERSION_base(4,9,0)
+instance Eq1 Vector where
+  liftEq eq xs ys = Bundle.eqBy eq (G.stream xs) (G.stream ys)
+
+instance Ord1 Vector where
+  liftCompare cmp xs ys = Bundle.cmpBy cmp (G.stream xs) (G.stream ys)
+#endif
 
 instance Semigroup (Vector a) where
   {-# INLINE (<>) #-}
