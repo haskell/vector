@@ -50,11 +50,6 @@ Extra-Source-Files:
       tests/LICENSE
       tests/Setup.hs
       tests/Main.hs
-      tests/Boilerplater.hs
-      tests/Utilities.hs
-      tests/Tests/Move.hs
-      tests/Tests/Bundle.hs
-      tests/Tests/Vector.hs
       benchmarks/vector-benchmarks.cabal
       benchmarks/LICENSE
       benchmarks/Setup.hs
@@ -183,6 +178,14 @@ test-suite vector-tests-O0
   Default-Language: Haskell2010
   type: exitcode-stdio-1.0
   Main-Is:  Main.hs
+
+  other-modules: Boilerplater
+                 Tests.Bundle
+                 Tests.Move
+                 Tests.Vector
+                 Tests.Vector.UnitTests
+                 Utilities
+
   hs-source-dirs: tests
   Build-Depends: base >= 4.5 && < 5, template-haskell, vector,
                  random,
@@ -213,6 +216,14 @@ test-suite vector-tests-O2
   Default-Language: Haskell2010
   type: exitcode-stdio-1.0
   Main-Is:  Main.hs
+
+  other-modules: Boilerplater
+                 Tests.Bundle
+                 Tests.Move
+                 Tests.Vector
+                 Tests.Vector.UnitTests
+                 Utilities
+
   hs-source-dirs: tests
   Build-Depends: base >= 4.5 && < 5, template-haskell, vector,
                  random,
