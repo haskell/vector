@@ -228,7 +228,7 @@ import qualified Data.Traversable as T (Traversable(mapM))
 -- | /O(1)/ Yield the length of the vector
 length :: Vector v a => v a -> Int
 {-# INLINE length #-}
-length = Bundle.length . stream
+length = Bundle.length . stream'
 
 -- | /O(1)/ Test whether a vector is empty
 null :: Vector v a => v a -> Bool
@@ -1995,7 +1995,13 @@ unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
 -- | /O(1)/ Convert a vector to a 'Bundle'
 stream :: Vector v a => v a -> Bundle v a
 {-# INLINE_FUSED stream #-}
-stream v = Bundle.fromVector v
+stream v = stream' v
+
+-- Same as 'stream', but can be used to avoid having a cycle in the dependency
+-- graph of functions, which forces GHC to create a loop breaker.
+stream' :: Vector v a => v a -> Bundle v a
+{-# INLINE stream' #-}
+stream' v = Bundle.fromVector v
 
 {-
 stream v = v `seq` n `seq` (Bundle.unfoldr get 0 `Bundle.sized` Exact n)
