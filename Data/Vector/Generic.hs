@@ -102,7 +102,7 @@ module Data.Vector.Generic (
   takeWhile, dropWhile,
 
   -- ** Partitioning
-  partition, unstablePartition, span, break,
+  partition, partitionWith, unstablePartition, span, break,
 
   -- ** Searching
   elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
@@ -1371,6 +1371,19 @@ partition_stream :: Vector v a => (a -> Bool) -> Bundle u a -> (v a, v a)
 partition_stream f s = s `seq` runST (
   do
     (mv1,mv2) <- M.partitionBundle f s
+    v1 <- unsafeFreeze mv1
+    v2 <- unsafeFreeze mv2
+    return (v1,v2))
+
+partitionWith :: (Vector v a, Vector v b, Vector v c) => (a -> Either b c) -> v a -> (v b, v c)
+{-# INLINE partitionWith #-}
+partitionWith f = partition_with_stream f . stream
+
+partition_with_stream :: (Vector v a, Vector v b, Vector v c) => (a -> Either b c) -> Bundle u a -> (v b, v c)
+{-# INLINE_FUSED partition_with_stream #-}
+partition_with_stream f s = s `seq` runST (
+  do
+    (mv1,mv2) <- M.partitionWithBundle f s
     v1 <- unsafeFreeze mv1
     v2 <- unsafeFreeze mv2
     return (v1,v2))

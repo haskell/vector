@@ -56,7 +56,8 @@ module Data.Vector.Generic.Mutable (
   transform, transformR,
   fill, fillR,
   unsafeAccum, accum, unsafeUpdate, update, reverse,
-  unstablePartition, unstablePartitionBundle, partitionBundle
+  unstablePartition, unstablePartitionBundle, partitionBundle,
+  partitionWithBundle
 ) where
 
 import           Data.Vector.Generic.Mutable.Base
@@ -996,6 +997,60 @@ partitionUnknown f s
       | otherwise = do
                       v2' <- unsafeAppend1 v2 i2 x
                       return (v1, i1, v2', i2+1)
+
+
+partitionWithBundle :: (PrimMonad m, MVector v a, MVector v b, MVector v c)
+        => (a -> Either b c) -> Bundle u a -> m (v (PrimState m) b, v (PrimState m) c)
+{-# INLINE partitionWithBundle #-}
+partitionWithBundle f s
+  = case upperBound (Bundle.size s) of
+      Just n  -> partitionWithMax f s n
+      Nothing -> partitionWithUnknown f s
+
+partitionWithMax :: (PrimMonad m, MVector v a, MVector v b, MVector v c)
+  => (a -> Either b c) -> Bundle u a -> Int -> m (v (PrimState m) b, v (PrimState m) c)
+{-# INLINE partitionWithMax #-}
+partitionWithMax f s n
+  = do
+      v1 <- unsafeNew n
+      v2 <- unsafeNew n
+      let {-# INLINE_INNER put #-}
+          put (i1, i2) x = case f x of
+            Left b -> do
+              unsafeWrite v1 i1 b
+              return (i1+1, i2)
+            Right c -> do
+              unsafeWrite v2 i2 c
+              return (i1, i2+1)
+      (n1, n2) <- Bundle.foldM' put (0, 0) s
+      INTERNAL_CHECK(checkSlice) "partitionEithersMax" 0 n1 (length v1)
+        $ INTERNAL_CHECK(checkSlice) "partitionEithersMax" 0 n2 (length v2)
+        $ return (unsafeSlice 0 n1 v1, unsafeSlice 0 n2 v2)
+
+partitionWithUnknown :: forall m v u a b c.
+     (PrimMonad m, MVector v a, MVector v b, MVector v c)
+  => (a -> Either b c) -> Bundle u a -> m (v (PrimState m) b, v (PrimState m) c)
+{-# INLINE partitionWithUnknown #-}
+partitionWithUnknown f s
+  = do
+      v1 <- unsafeNew 0
+      v2 <- unsafeNew 0
+      (v1', n1, v2', n2) <- Bundle.foldM' put (v1, 0, v2, 0) s
+      INTERNAL_CHECK(checkSlice) "partitionEithersUnknown" 0 n1 (length v1')
+        $ INTERNAL_CHECK(checkSlice) "partitionEithersUnknown" 0 n2 (length v2')
+        $ return (unsafeSlice 0 n1 v1', unsafeSlice 0 n2 v2')
+  where
+    put :: (v (PrimState m) b, Int, v (PrimState m) c, Int)
+        -> a
+        -> m (v (PrimState m) b, Int, v (PrimState m) c, Int)
+    {-# INLINE_INNER put #-}
+    put (v1, i1, v2, i2) x = case f x of
+      Left b -> do
+        v1' <- unsafeAppend1 v1 i1 b
+        return (v1', i1+1, v2, i2)
+      Right c -> do
+        v2' <- unsafeAppend1 v2 i2 c
+        return (v1, i1, v2', i2+1)
 
 {-
 http://en.wikipedia.org/wiki/Permutation#Algorithms_to_generate_permutations
