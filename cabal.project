@@ -1,1 +1,1 @@
-packages: vector.cabal
+packages: vector.cabal, benchmarks/vector-benchmarks.cabal

@@ -133,14 +133,12 @@ instance Prim a => G.MVector MVector a where
   basicSet (MVector i n arr) x = setByteArray arr i n x
 
   {-# INLINE basicUnsafeGrow #-}
-  basicUnsafeGrow (MVector i _ (MutableByteArray arr1)) x = primitive
-    (\s1 -> case getSizeofMutableByteArray# arr1 s1 of
-      (# s2, arrSize #) -> 
-        let !(I# requiredBytes) = (i + x) * sizeOf (undefined :: a) in
-        if (I# arrSize) < (I# requiredBytes)
-          then case resizeMutableByteArray# arr1 requiredBytes s2 of
-            (# s3, arr2 #) -> (# s3, MVector i x (MutableByteArray arr2) #)
-          else (# s2, MVector i (i + x) (MutableByteArray arr1) #)
+  basicUnsafeGrow (MVector i n (MutableByteArray arr1)) x = primitive
+    (\s1 -> 
+      let !newLen = x + n
+          !(I# requiredBytes) = (i + newLen) * sizeOf (undefined :: a)
+      in case resizeMutableByteArray# arr1 requiredBytes s1 of
+           (# s2, arr2 #) -> (# s2, MVector i newLen (MutableByteArray arr2) #)
     )
 
 -- Length information
