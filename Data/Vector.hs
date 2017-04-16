@@ -119,7 +119,7 @@ module Data.Vector (
   takeWhile, dropWhile,
 
   -- ** Partitioning
-  partition, unstablePartition, span, break,
+  partition, unstablePartition, span, break, groupBy,
 
   -- ** Searching
   elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
@@ -1251,6 +1251,9 @@ span = G.span
 break :: (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE break #-}
 break = G.break
+
+groupBy :: (a -> a -> Bool) -> Vector a -> [Vector a]
+groupBy = G.groupBy
 
 -- Searching
 -- ---------
