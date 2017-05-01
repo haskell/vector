@@ -123,6 +123,7 @@ instance Storable a => G.MVector MVector a where
   {-# INLINE basicUnsafeNew #-}
   basicUnsafeNew n
     | n < 0 = error $ "Storable.basicUnsafeNew: negative length: " ++ show n
+    | size < 1 = error $ "Storable.basicUnsafeNew: length of element type too small: " ++ show size
     | n > mx = error $ "Storable.basicUnsafeNew: length too large: " ++ show n
     | otherwise = unsafePrimToPrim $ do
         fp <- mallocVector n
