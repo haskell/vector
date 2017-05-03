@@ -128,7 +128,7 @@ instance Storable a => G.MVector MVector a where
         fp <- mallocVector n
         return $ MVector n fp
     where
-      size = sizeOf (undefined :: a)
+      size = sizeOf (undefined :: a) `max` 1
       mx = maxBound `quot` size :: Int
 
   {-# INLINE basicInitialize #-}
