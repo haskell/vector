@@ -210,6 +210,7 @@ import Data.Monoid   ( Monoid(..) )
 
 #if __GLASGOW_HASKELL__ >= 708
 import qualified GHC.Exts as Exts (IsList(..))
+import GHC.Generics
 #endif
 
 
@@ -432,6 +433,30 @@ instance Traversable.Traversable Vector where
 
   {-# INLINE sequence #-}
   sequence = sequence
+
+type Rep1Vector = D1 D1Vector (C1 C1Vector (S1 NoSelector (Rec1 [])))
+
+instance Generic1 Vector where
+  type Rep1 Vector = Rep1Vector
+  from1 v = M1 (M1 (M1 (Rec1 $ toList v)))
+  to1 (M1 (M1 (M1 (Rec1 l)))) = fromList l
+
+data D1Vector
+data C1Vector
+
+instance Datatype D1Vector where
+  datatypeName _ = "Vector"
+  moduleName   _ = "Data.Vector"
+
+instance Constructor C1Vector  where
+  conName _ = "Vector.fromList"
+
+type Rep0Vector a = D1 D1Vector (C1 C1Vector (S1 NoSelector (Rec0 [a])))
+
+instance Generic (Vector a) where
+  type Rep (Vector a) = Rep0Vector a
+  from v = M1 (M1 (M1 (K1 $ toList v)))
+  to (M1 (M1 (M1 (K1 l)))) = fromList l
 
 -- Length information
 -- ------------------
