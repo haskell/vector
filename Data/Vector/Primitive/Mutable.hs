@@ -1,4 +1,5 @@
-{-# LANGUAGE CPP, DeriveDataTypeable, MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables #-}
+{-# LANGUAGE CPP, DeriveDataTypeable, MultiParamTypeClasses, FlexibleInstances #-}
+{-# LANGUAGE ScopedTypeVariables, MagicHash, UnboxedTuples, BangPatterns #-}
 
 -- |
 -- Module      : Data.Vector.Primitive.Mutable
@@ -63,6 +64,8 @@ import Prelude hiding ( length, null, replicate, reverse, map, read,
                         take, drop, splitAt, init, tail )
 
 import Data.Typeable ( Typeable )
+import GHC.Int (Int(I#))
+import GHC.Prim (resizeMutableByteArray#,getSizeofMutableByteArray#)
 
 -- Data.Vector.Internal.Check is unnecessary
 #define NOT_VECTOR_MODULE
@@ -128,6 +131,15 @@ instance Prim a => G.MVector MVector a where
 
   {-# INLINE basicSet #-}
   basicSet (MVector i n arr) x = setByteArray arr i n x
+
+  {-# INLINE basicUnsafeGrow #-}
+  basicUnsafeGrow (MVector i n (MutableByteArray arr1)) x = primitive
+    (\s1 -> 
+      let !newLen = x + n
+          !(I# requiredBytes) = (i + newLen) * sizeOf (undefined :: a)
+      in case resizeMutableByteArray# arr1 requiredBytes s1 of
+           (# s2, arr2 #) -> (# s2, MVector i newLen (MutableByteArray arr2) #)
+    )
 
 -- Length information
 -- ------------------

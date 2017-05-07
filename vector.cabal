@@ -62,6 +62,7 @@ Extra-Source-Files:
       benchmarks/Algo/Rootfix.hs
       benchmarks/Algo/Spectral.hs
       benchmarks/Algo/Tridiag.hs
+      benchmarks/Algo/StressGrow.hs
       benchmarks/TestData/Graph.hs
       benchmarks/TestData/ParenTree.hs
       benchmarks/TestData/Random.hs

@@ -10,6 +10,7 @@ import Algo.HybCC     (hybcc)
 import Algo.Quickhull (quickhull)
 import Algo.Spectral  ( spectral )
 import Algo.Tridiag   ( tridiag )
+import Algo.StressGrow ( stressGrow )
 
 import TestData.ParenTree ( parenTree )
 import TestData.Graph     ( randomGraph )
@@ -38,6 +39,7 @@ main = lparens `seq` rparens `seq`
                        , bench "quickhull" $ whnf quickhull (as,bs)
                        , bench "spectral"  $ whnf spectral sp
                        , bench "tridiag"   $ whnf tridiag (as,bs,cs,ds)
+                       , bench "stressGrow" $ whnf stressGrow 400
                        ]
   where
     (lparens, rparens) = parenTree size
