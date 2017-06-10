@@ -332,6 +332,10 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_find    :: P ((a -> Bool) -> v a -> Maybe a) = V.find `eq` find
     prop_findIndex :: P ((a -> Bool) -> v a -> Maybe Int)
       = V.findIndex `eq` findIndex
+    prop_findIndexR :: P ((a -> Bool) -> v a -> Maybe Int)
+      = V.findIndexR `eq` \p l -> case filter (p . snd) . reverse $ zip [0..] l of
+                                     (i,_):_ -> Just i
+                                     []      -> Nothing
     prop_findIndices :: P ((a -> Bool) -> v a -> v Int)
         = V.findIndices `eq` findIndices
     prop_elemIndex :: P (a -> v a -> Maybe Int) = V.elemIndex `eq` elemIndex
