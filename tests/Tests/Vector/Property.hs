@@ -174,7 +174,7 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Searching
         'prop_elem, 'prop_notElem,
-        'prop_find, 'prop_findIndex, 'prop_findIndices,
+        'prop_find, 'prop_findIndex, 'prop_findIndexR, 'prop_findIndices,
         'prop_elemIndex, 'prop_elemIndices,
 
         -- Folding
