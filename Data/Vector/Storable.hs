@@ -95,7 +95,7 @@ module Data.Vector.Storable (
   takeWhile, dropWhile,
 
   -- ** Partitioning
-  partition, unstablePartition, span, break,
+  partition, unstablePartition, partitionWith, span, break,
 
   -- ** Searching
   elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
@@ -988,6 +988,13 @@ partition = G.partition
 unstablePartition :: Storable a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE unstablePartition #-}
 unstablePartition = G.unstablePartition
+
+-- | /O(n)/ Split the vector in two parts, the first one containing the
+--   @Right@ elements and the second containing the @Left@ elements.
+--   The relative order of the elements is preserved.
+partitionWith :: (Storable a, Storable b, Storable c) => (a -> Either b c) -> Vector a -> (Vector b, Vector c)
+{-# INLINE partitionWith #-}
+partitionWith = G.partitionWith
 
 -- | /O(n)/ Split the vector into the longest prefix of elements that satisfy
 -- the predicate and the rest without copying.
