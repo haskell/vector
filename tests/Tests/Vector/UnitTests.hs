@@ -3,6 +3,8 @@
 module Tests.Vector.UnitTests (tests) where
 
 import Control.Applicative as Applicative
+import Control.Monad.Fix (mfix)
+import qualified Data.Vector as Vector
 import qualified Data.Vector.Storable as Storable
 import Foreign.Ptr
 import Foreign.Storable
@@ -20,6 +22,19 @@ instance (Storable a) => Storable (Aligned a) where
   peek ptr    = Aligned Applicative.<$> peek (castPtr ptr)
   poke ptr    = poke (castPtr ptr) . getAligned
 
+tests :: [Test]
+tests =
+  [ testGroup "Data.Vector.Storable.Vector"
+      [ testCase "Aligned Double" $
+          checkAddressAlignment alignedDoubleVec
+      , testCase "Aligned Int" $
+          checkAddressAlignment alignedIntVec
+      ]
+  , testGroup "Data.Vector"
+      [ testCase "MonadFix" checkMonadFix
+      ]
+  ]
+
 checkAddressAlignment :: forall a. (Storable a) => Storable.Vector a -> Assertion
 checkAddressAlignment xs = Storable.unsafeWith xs $ \ptr -> do
   let ptr'  = ptrToWordPtr ptr
@@ -31,18 +46,22 @@ checkAddressAlignment xs = Storable.unsafeWith xs $ \ptr -> do
     dummy :: a
     dummy = undefined
 
-tests :: [Test]
-tests =
-  [ testGroup "Data.Vector.Storable.Vector Alignment"
-      [ testCase "Aligned Double" $
-          checkAddressAlignment alignedDoubleVec
-      , testCase "Aligned Int" $
-          checkAddressAlignment alignedIntVec
-      ]
-  ]
-
 alignedDoubleVec :: Storable.Vector (Aligned Double)
 alignedDoubleVec = Storable.fromList $ map Aligned [1, 2, 3, 4, 5]
 
 alignedIntVec :: Storable.Vector (Aligned Int)
 alignedIntVec = Storable.fromList $ map Aligned [1, 2, 3, 4, 5]
+
+checkMonadFix :: Assertion
+checkMonadFix = assertBool "checkMonadFix" $
+    Vector.toList fewV == fewL &&
+    Vector.toList none == []
+  where
+    facty _ 0 = 1; facty f n = n * f (n - 1)
+    fewV :: Vector.Vector Int
+    fewV = fmap ($ 12) $ mfix (\i -> Vector.fromList [facty i, facty (+1), facty (+2)])
+    fewL :: [Int]
+    fewL = fmap ($ 12) $ mfix (\i -> [facty i, facty (+1), facty (+2)])
+
+    none :: Vector.Vector Int
+    none = mfix (const Vector.empty)

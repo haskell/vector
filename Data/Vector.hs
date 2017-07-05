@@ -171,11 +171,12 @@ import qualified Data.Vector.Fusion.Bundle as Bundle
 
 import Control.DeepSeq ( NFData, rnf )
 import Control.Monad ( MonadPlus(..), liftM, ap )
-import Control.Monad.ST ( ST )
+import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
 
-
+import Control.Monad.Fix ( MonadFix (mfix) )
 import Control.Monad.Zip
+import Data.Function ( fix )
 
 import Prelude hiding ( length, null,
                         replicate, (++), concat,
@@ -361,6 +362,24 @@ instance MonadZip Vector where
   {-# INLINE munzip #-}
   munzip = unzip
 
+instance MonadFix Vector where
+  -- We take care to dispose of v0 as soon as possible.
+  -- We also avoid setting up the result vector to refer to
+  -- itself. These measures should prevent memory leaks.
+  -- It's perfectly safe to use non-monadic indexing within
+  -- each element, as the result of indexing will be demanded
+  -- as soon as the vector is produced.
+  {-# INLINE mfix #-}
+  mfix f
+    | null v0 = empty
+    | otherwise = runST $ do
+        h <- headM v0
+        return $ cons h $
+          generate (lv0 - 1) $
+            \i -> fix (\a -> f a ! (i + 1))
+    where
+      v0 = fix (f . head)
+      !lv0 = length v0
 
 instance Applicative.Applicative Vector where
   {-# INLINE pure #-}
