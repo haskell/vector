@@ -15,7 +15,6 @@ import Control.Monad.Trans.Writer
 import Data.Function (on)
 import Data.Functor.Identity
 import Data.List ( sortBy )
-import Data.Monoid
 import Data.Maybe (catMaybes)
 
 instance Show a => Show (S.Bundle v a) where
@@ -231,7 +230,7 @@ index_value_pairs 0 = return []
 index_value_pairs m = sized $ \n ->
   do
     len <- choose (0,n)
-    is <- sequence [choose (0,m-1) | i <- [1..len]]
+    is <- sequence [choose (0,m-1) | _ <- [1..len]]
     xs <- vector len
     return $ zip is xs
 
@@ -240,7 +239,7 @@ indices 0 = return []
 indices m = sized $ \n ->
   do
     len <- choose (0,n)
-    sequence [choose (0,m-1) | i <- [1..len]]
+    sequence [choose (0,m-1) | _ <- [1..len]]
 
 
 -- Additional list functions
@@ -255,9 +254,9 @@ prescanr f z = tail . scanr f z
 postscanr f z = init . scanr f z
 
 accum :: (a -> b -> a) -> [a] -> [(Int,b)] -> [a]
-accum f xs ps = go xs ps' 0
+accum f xs' ps'' = go xs' ps' 0
   where
-    ps' = sortBy (\p q -> compare (fst p) (fst q)) ps
+    ps' = sortBy (\p q -> compare (fst p) (fst q)) ps''
 
     go (x:xs) ((i,y) : ps) j
       | i == j     = go (f x y : xs) ps j
@@ -265,11 +264,11 @@ accum f xs ps = go xs ps' 0
     go [] _ _      = []
 
 (//) :: [a] -> [(Int, a)] -> [a]
-xs // ps = go xs ps' 0
+xs' // ps'' = go xs' ps' 0
   where
-    ps' = sortBy (\p q -> compare (fst p) (fst q)) ps
+    ps' = sortBy (\p q -> compare (fst p) (fst q)) ps''
 
-    go (x:xs) ((i,y) : ps) j
+    go (_:xs) ((i,y) : ps) j
       | i == j     = go (y:xs) ps j
     go (x:xs) ps j = x : go xs ps (j+1)
     go [] _ _      = []
@@ -356,7 +355,14 @@ unfoldrM step b0 = do
                        return (a : as)
 
 
+-- Because the vectors are strict, we need to be totally sure that the unfold eventually terminates. This
+-- is achieved by injecting our own bit of state into the unfold - the maximum number of unfolds allowed.
 limitUnfolds f (theirs, ours)
-    | ours >= 0
+    | ours > 0
     , Just (out, theirs') <- f theirs = Just (out, (theirs', ours - 1))
     | otherwise                       = Nothing
+
+limitUnfoldsM f (theirs, ours)
+  | ours >  0 = do r <- f theirs
+                   return $ (\(a,b) -> (a,(b,ours - 1))) `fmap` r
+  | otherwise = return Nothing
