@@ -12,7 +12,6 @@ import Test.Framework.Providers.QuickCheck2
 
 import Text.Show.Functions ()
 import Data.List           (foldl', foldl1', unfoldr, find, findIndex)
-import System.Random       (Random)
 
 #define COMMON_CONTEXT(a) \
  VANILLA_CONTEXT(a)
@@ -142,9 +141,6 @@ testPolymorphicFunctions _ = $(testProperties [
       where
         prop :: P ((a -> S.Bundle v a) -> S.Bundle v a -> S.Bundle v a) = S.concatMap `eq` concatMap
 
-    limitUnfolds f (theirs, ours) | ours >= 0
-                                  , Just (out, theirs') <- f theirs = Just (out, (theirs', ours - 1))
-                                  | otherwise                       = Nothing
     prop_unfoldr :: P (Int -> (Int -> Maybe (a,Int)) -> Int -> S.Bundle v a)
          = (\n f a -> S.unfoldr (limitUnfolds f) (a, n))
            `eq` (\n f a -> unfoldr (limitUnfolds f) (a, n))
