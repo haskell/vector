@@ -74,7 +74,6 @@ import GHC.Prim (byteArrayContents#, unsafeCoerce#)
 import GHC.ForeignPtr
 #endif
 
-import Foreign.Ptr
 import Foreign.Marshal.Array ( advancePtr, copyArray, moveArray )
 
 import Control.Monad.Primitive
