@@ -1636,8 +1636,8 @@ maxIndexBy cmpr = fst . Bundle.foldl1' imax . Bundle.indexed . stream
   where
     imax (i,x) (j,y) = i `seq` j `seq`
                        case cmpr x y of
-                         LT -> (j,y)
-                         _  -> (i,x)
+                         GT -> (i,x)
+                         _  -> (j,y)
 
 -- | /O(n)/ Yield the index of the minimum element of the vector. The vector
 -- may not be empty.
