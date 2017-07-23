@@ -500,13 +500,23 @@ testOrdFunctions :: forall a v. (CommonContext a v, Ord a, Ord (v a)) => v a -> 
 testOrdFunctions _ = $(testProperties
   ['prop_compare,
    'prop_maximum, 'prop_minimum,
-   'prop_minIndex, 'prop_maxIndex ])
+   'prop_minIndex, 'prop_maxIndex,
+   'prop_maximumBy, 'prop_minimumBy,
+   'prop_maxIndexBy, 'prop_minIndexBy])
   where
     prop_compare :: P (v a -> v a -> Ordering) = compare `eq` compare
     prop_maximum :: P (v a -> a) = not . V.null ===> V.maximum `eq` maximum
     prop_minimum :: P (v a -> a) = not . V.null ===> V.minimum `eq` minimum
     prop_minIndex :: P (v a -> Int) = not . V.null ===> V.minIndex `eq` minIndex
     prop_maxIndex :: P (v a -> Int) = not . V.null ===> V.maxIndex `eq` maxIndex
+    prop_maximumBy :: P (v a -> a) =
+      not . V.null ===> V.maximumBy compare `eq` maximum
+    prop_minimumBy :: P (v a -> a) =
+      not . V.null ===> V.minimumBy compare `eq` minimum
+    prop_maxIndexBy :: P (v a -> Int) =
+      not . V.null ===> V.maxIndexBy compare `eq` maxIndex
+    prop_minIndexBy :: P (v a -> Int) =
+      not . V.null ===> V.minIndexBy compare `eq` minIndex
 
 testEnumFunctions :: forall a v. (CommonContext a v, Enum a, Ord a, Num a, Random a) => v a -> [Test]
 testEnumFunctions _ = $(testProperties
