@@ -1,7 +1,7 @@
 {-# LANGUAGE Rank2Types, MultiParamTypeClasses, FlexibleContexts,
              TypeFamilies, ScopedTypeVariables, BangPatterns #-}
 {-# LANGUAGE CPP #-}
-#if MIN_VERSION_base(4,9,0)
+#if __GLASGOW_HASKELL__ >= 800
 {-# LANGUAGE TypeFamilyDependencies #-}
 #endif
 {-# OPTIONS_HADDOCK hide #-}
