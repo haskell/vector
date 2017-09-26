@@ -202,6 +202,9 @@ import qualified GHC.Exts as Exts (IsList(..))
 #define NOT_VECTOR_MODULE
 #include "vector.h"
 
+#include "stacktracetools.h"
+
+
 -- See http://trac.haskell.org/vector/ticket/12
 instance (Unbox a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
@@ -278,7 +281,7 @@ null = G.null
 -- --------
 
 -- | O(1) Indexing
-(!) :: Unbox a => Vector a -> Int -> a
+(!) :: (Unbox a, HasCallStack) => Vector a -> Int -> a
 {-# INLINE (!) #-}
 (!) = (G.!)
 
@@ -288,12 +291,12 @@ null = G.null
 (!?) = (G.!?)
 
 -- | /O(1)/ First element
-head :: Unbox a => Vector a -> a
+head :: (Unbox a, HasCallStack) => Vector a -> a
 {-# INLINE head #-}
 head = G.head
 
 -- | /O(1)/ Last element
-last :: Unbox a => Vector a -> a
+last :: (Unbox a, HasCallStack) => Vector a -> a
 {-# INLINE last #-}
 last = G.last
 
@@ -334,19 +337,19 @@ unsafeLast = G.unsafeLast
 -- Here, no references to @v@ are retained because indexing (but /not/ the
 -- elements) is evaluated eagerly.
 --
-indexM :: (Unbox a, Monad m) => Vector a -> Int -> m a
+indexM :: (Unbox a, Monad m, HasCallStack) => Vector a -> Int -> m a
 {-# INLINE indexM #-}
 indexM = G.indexM
 
 -- | /O(1)/ First element of a vector in a monad. See 'indexM' for an
 -- explanation of why this is useful.
-headM :: (Unbox a, Monad m) => Vector a -> m a
+headM :: (Unbox a, Monad m, HasCallStack) => Vector a -> m a
 {-# INLINE headM #-}
 headM = G.headM
 
 -- | /O(1)/ Last element of a vector in a monad. See 'indexM' for an
 -- explanation of why this is useful.
-lastM :: (Unbox a, Monad m) => Vector a -> m a
+lastM :: (Unbox a, Monad m, HasCallStack) => Vector a -> m a
 {-# INLINE lastM #-}
 lastM = G.lastM
 
@@ -373,7 +376,8 @@ unsafeLastM = G.unsafeLastM
 
 -- | /O(1)/ Yield a slice of the vector without copying it. The vector must
 -- contain at least @i+n@ elements.
-slice :: Unbox a => Int   -- ^ @i@ starting index
+slice :: (Unbox a, HasCallStack)
+                 => Int   -- ^ @i@ starting index
                  -> Int   -- ^ @n@ length
                  -> Vector a
                  -> Vector a
@@ -382,13 +386,13 @@ slice = G.slice
 
 -- | /O(1)/ Yield all but the last element without copying. The vector may not
 -- be empty.
-init :: Unbox a => Vector a -> Vector a
+init :: (Unbox a, HasCallStack) => Vector a -> Vector a
 {-# INLINE init #-}
 init = G.init
 
 -- | /O(1)/ Yield all but the first element without copying. The vector may not
 -- be empty.
-tail :: Unbox a => Vector a -> Vector a
+tail :: (Unbox a, HasCallStack) => Vector a -> Vector a
 {-# INLINE tail #-}
 tail = G.tail
 
@@ -782,7 +786,7 @@ reverse = G.reverse
 -- often much more efficient.
 --
 -- > backpermute <a,b,c,d> <0,3,2,3,1,0> = <a,d,c,d,b,a>
-backpermute :: Unbox a => Vector a -> Vector Int -> Vector a
+backpermute :: (Unbox a, HasCallStack) => Vector a -> Vector Int -> Vector a
 {-# INLINE backpermute #-}
 backpermute = G.backpermute
 

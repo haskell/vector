@@ -213,6 +213,9 @@ import qualified GHC.Exts as Exts (IsList(..))
 #endif
 
 
+#include "stacktracetools.h"
+
+
 -- | Boxed vectors, supporting efficient slicing.
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
@@ -450,7 +453,7 @@ null = G.null
 -- --------
 
 -- | O(1) Indexing
-(!) :: Vector a -> Int -> a
+(!) :: HasCallStack => Vector a -> Int -> a
 {-# INLINE (!) #-}
 (!) = (G.!)
 
@@ -460,12 +463,12 @@ null = G.null
 (!?) = (G.!?)
 
 -- | /O(1)/ First element
-head :: Vector a -> a
+head :: HasCallStack => Vector a -> a
 {-# INLINE head #-}
 head = G.head
 
 -- | /O(1)/ Last element
-last :: Vector a -> a
+last :: HasCallStack => Vector a -> a
 {-# INLINE last #-}
 last = G.last
 
@@ -506,19 +509,19 @@ unsafeLast = G.unsafeLast
 -- Here, no references to @v@ are retained because indexing (but /not/ the
 -- elements) is evaluated eagerly.
 --
-indexM :: Monad m => Vector a -> Int -> m a
+indexM :: (Monad m, HasCallStack) => Vector a -> Int -> m a
 {-# INLINE indexM #-}
 indexM = G.indexM
 
 -- | /O(1)/ First element of a vector in a monad. See 'indexM' for an
 -- explanation of why this is useful.
-headM :: Monad m => Vector a -> m a
+headM :: (Monad m, HasCallStack) => Vector a -> m a
 {-# INLINE headM #-}
 headM = G.headM
 
 -- | /O(1)/ Last element of a vector in a monad. See 'indexM' for an
 -- explanation of why this is useful.
-lastM :: Monad m => Vector a -> m a
+lastM :: (Monad m, HasCallStack) => Vector a -> m a
 {-# INLINE lastM #-}
 lastM = G.lastM
 
@@ -545,7 +548,8 @@ unsafeLastM = G.unsafeLastM
 
 -- | /O(1)/ Yield a slice of the vector without copying it. The vector must
 -- contain at least @i+n@ elements.
-slice :: Int   -- ^ @i@ starting index
+slice :: HasCallStack
+                 => Int   -- ^ @i@ starting index
                  -> Int   -- ^ @n@ length
                  -> Vector a
                  -> Vector a
@@ -554,13 +558,13 @@ slice = G.slice
 
 -- | /O(1)/ Yield all but the last element without copying. The vector may not
 -- be empty.
-init :: Vector a -> Vector a
+init :: HasCallStack => Vector a -> Vector a
 {-# INLINE init #-}
 init = G.init
 
 -- | /O(1)/ Yield all but the first element without copying. The vector may not
 -- be empty.
-tail :: Vector a -> Vector a
+tail ::  HasCallStack => Vector a -> Vector a
 {-# INLINE tail #-}
 tail = G.tail
 
