@@ -222,6 +222,9 @@ mkNoRepType = mkNorepType
 
 import qualified Data.Traversable as T (Traversable(mapM))
 
+GHC_STACKTRACE_IMPORTS
+
+
 -- Length information
 -- ------------------
 
@@ -240,7 +243,7 @@ null = Bundle.null . stream
 
 infixl 9 !
 -- | O(1) Indexing
-(!) :: Vector v a => v a -> Int -> a
+(!) :: (Vector v a, HasCallStack) => v a -> Int -> a
 {-# INLINE_FUSED (!) #-}
 (!) v i = BOUNDS_CHECK(checkIndex) "(!)" i (length v)
         $ unId (basicUnsafeIndexM v i)
@@ -253,7 +256,7 @@ v !? i | i < 0 || i >= length v = Nothing
        | otherwise              = Just $ unsafeIndex v i
 
 -- | /O(1)/ First element
-head :: Vector v a => v a -> a
+head :: (Vector v a, HasCallStack) => v a -> a
 {-# INLINE_FUSED head #-}
 head v = v ! 0
 
@@ -325,20 +328,20 @@ unsafeLast v = unsafeIndex v (length v - 1)
 -- Here, no references to @v@ are retained because indexing (but /not/ the
 -- elements) is evaluated eagerly.
 --
-indexM :: (Vector v a, Monad m) => v a -> Int -> m a
+indexM :: (Vector v a, Monad m, HasCallStack) => v a -> Int -> m a
 {-# INLINE_FUSED indexM #-}
 indexM v i = BOUNDS_CHECK(checkIndex) "indexM" i (length v)
            $ basicUnsafeIndexM v i
 
 -- | /O(1)/ First element of a vector in a monad. See 'indexM' for an
 -- explanation of why this is useful.
-headM :: (Vector v a, Monad m) => v a -> m a
+headM :: (Vector v a, Monad m, HasCallStack) => v a -> m a
 {-# INLINE_FUSED headM #-}
 headM v = indexM v 0
 
 -- | /O(1)/ Last element of a vector in a monad. See 'indexM' for an
 -- explanation of why this is useful.
-lastM :: (Vector v a, Monad m) => v a -> m a
+lastM :: (Vector v a, Monad m, HasCallStack) => v a -> m a
 {-# INLINE_FUSED lastM #-}
 lastM v = indexM v (length v - 1)
 
@@ -388,7 +391,8 @@ unsafeLastM v = unsafeIndexM v (length v - 1)
 
 -- | /O(1)/ Yield a slice of the vector without copying it. The vector must
 -- contain at least @i+n@ elements.
-slice :: Vector v a => Int   -- ^ @i@ starting index
+slice :: (Vector v a, HasCallStack)
+                    => Int   -- ^ @i@ starting index
                     -> Int   -- ^ @n@ length
                     -> v a
                     -> v a
@@ -398,13 +402,13 @@ slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
 
 -- | /O(1)/ Yield all but the last element without copying. The vector may not
 -- be empty.
-init :: Vector v a => v a -> v a
+init :: (Vector v a, HasCallStack) => v a -> v a
 {-# INLINE_FUSED init #-}
 init v = slice 0 (length v - 1) v
 
 -- | /O(1)/ Yield all but the first element without copying. The vector may not
 -- be empty.
-tail :: Vector v a => v a -> v a
+tail :: (Vector v a, HasCallStack) => v a -> v a
 {-# INLINE_FUSED tail #-}
 tail v = slice 1 (length v - 1) v
 
@@ -932,7 +936,7 @@ reverse = unstream . streamR
 -- often much more efficient.
 --
 -- > backpermute <a,b,c,d> <0,3,2,3,1,0> = <a,d,c,d,b,a>
-backpermute :: (Vector v a, Vector v Int)
+backpermute :: (Vector v a, Vector v Int, HasCallStack)
             => v a   -- ^ @xs@ value vector
             -> v Int -- ^ @is@ index vector (of length @n@)
             -> v a
@@ -1987,7 +1991,7 @@ thawMany vs = do
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length.
 copy
-  :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
+  :: (PrimMonad m, Vector v a, HasCallStack) => Mutable v (PrimState m) a -> v a -> m ()
 {-# INLINE copy #-}
 copy dst src = BOUNDS_CHECK(check) "copy" "length mismatch"
                                           (M.length dst == length src)

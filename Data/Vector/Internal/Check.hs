@@ -26,6 +26,9 @@ import GHC.Prim( Int# )
 import Prelude hiding( error, (&&), (||), not )
 import qualified Prelude as P
 
+
+#include "stacktracetools.h"
+
 -- NOTE: This is a workaround for GHC's weird behaviour where it doesn't inline
 -- these functions into unfoldings which makes the intermediate code size
 -- explode. See http://hackage.haskell.org/trac/ghc/ticket/5539.
@@ -81,12 +84,12 @@ doChecks Internal = doInternalChecks
 error_msg :: String -> Int -> String -> String -> String
 error_msg file line loc msg = file ++ ":" ++ show line ++ " (" ++ loc ++ "): " ++ msg
 
-error :: String -> Int -> String -> String -> a
+error :: HasCallStack => String -> Int -> String -> String -> a
 {-# NOINLINE error #-}
 error file line loc msg
   = P.error $ error_msg file line loc msg
 
-internalError :: String -> Int -> String -> String -> a
+internalError :: HasCallStack => String -> Int -> String -> String -> a
 {-# NOINLINE internalError #-}
 internalError file line loc msg
   = P.error $ unlines
@@ -95,14 +98,14 @@ internalError file line loc msg
         ,error_msg file line loc msg]
 
 
-checkError :: String -> Int -> Checks -> String -> String -> a
+checkError :: HasCallStack => String -> Int -> Checks -> String -> String -> a
 {-# NOINLINE checkError #-}
 checkError file line kind loc msg
   = case kind of
       Internal -> internalError file line loc msg
       _ -> error file line loc msg
 
-check :: String -> Int -> Checks -> String -> String -> Bool -> a -> a
+check :: HasCallStack => String -> Int -> Checks -> String -> String -> Bool -> a -> a
 {-# INLINE check #-}
 check file line kind loc msg cond x
   | not (doChecks kind) || cond = x
@@ -116,7 +119,7 @@ checkIndex_msg# :: Int# -> Int# -> String
 {-# NOINLINE checkIndex_msg# #-}
 checkIndex_msg# i# n# = "index out of bounds " ++ show (I# i#, I# n#)
 
-checkIndex :: String -> Int -> Checks -> String -> Int -> Int -> a -> a
+checkIndex :: HasCallStack => String -> Int -> Checks -> String -> Int -> Int -> a -> a
 {-# INLINE checkIndex #-}
 checkIndex file line kind loc i n x
   = check file line kind loc (checkIndex_msg i n) (i >= 0 && i<n) x
@@ -130,7 +133,7 @@ checkLength_msg# :: Int# -> String
 {-# NOINLINE checkLength_msg# #-}
 checkLength_msg# n# = "negative length " ++ show (I# n#)
 
-checkLength :: String -> Int -> Checks -> String -> Int -> a -> a
+checkLength :: HasCallStack => String -> Int -> Checks -> String -> Int -> a -> a
 {-# INLINE checkLength #-}
 checkLength file line kind loc n x
   = check file line kind loc (checkLength_msg n) (n >= 0) x
@@ -144,7 +147,7 @@ checkSlice_msg# :: Int# -> Int# -> Int# -> String
 {-# NOINLINE checkSlice_msg# #-}
 checkSlice_msg# i# m# n# = "invalid slice " ++ show (I# i#, I# m#, I# n#)
 
-checkSlice :: String -> Int -> Checks -> String -> Int -> Int -> Int -> a -> a
+checkSlice :: HasCallStack => String -> Int -> Checks -> String -> Int -> Int -> Int -> a -> a
 {-# INLINE checkSlice #-}
 checkSlice file line kind loc i m n x
   = check file line kind loc (checkSlice_msg i m n)

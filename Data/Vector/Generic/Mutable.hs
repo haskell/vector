@@ -78,6 +78,8 @@ import Prelude hiding ( length, null, replicate, reverse, map, read,
 
 #include "vector.h"
 
+GHC_STACKTRACE_IMPORTS
+
 {-
 type family Immutable (v :: * -> * -> *) :: * -> *
 
@@ -509,7 +511,7 @@ null v = length v == 0
 -- ---------------------
 
 -- | Yield a part of the mutable vector without copying it.
-slice :: MVector v a => Int -> Int -> v s a -> v s a
+slice :: (MVector v a, HasCallStack) => Int -> Int -> v s a -> v s a
 {-# INLINE slice #-}
 slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
             $ unsafeSlice i n v
