@@ -2,6 +2,9 @@
 #if __GLASGOW_HASKELL__ >= 707
 {-# LANGUAGE DeriveDataTypeable, StandaloneDeriving #-}
 #endif
+#if __GLASGOW_HASKELL__ >= 706
+{-# LANGUAGE PolyKinds #-}
+#endif
 {-# OPTIONS_HADDOCK hide #-}
 
 -- |
