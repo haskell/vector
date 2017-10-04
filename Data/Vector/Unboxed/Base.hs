@@ -25,10 +25,16 @@ import qualified Data.Vector.Generic.Mutable as M
 
 import qualified Data.Vector.Primitive as P
 
+import Control.Applicative (Const(..))
+
 import Control.DeepSeq ( NFData(rnf) )
 
 import Control.Monad.Primitive
 import Control.Monad ( liftM )
+
+#if MIN_VERSION_base(4,8,0)
+import Data.Functor.Identity
+#endif
 
 import Data.Word ( Word8, Word16, Word32, Word64 )
 import Data.Int  ( Int8, Int16, Int32, Int64 )
@@ -399,6 +405,109 @@ instance (Unbox a) => G.Vector Vector (Complex a) where
                 = G.basicUnsafeCopy mv v
   elemseq _ (x :+ y) z = G.elemseq (undefined :: Vector a) x
                        $ G.elemseq (undefined :: Vector a) y z
+
+-- -------
+-- Identity
+-- -------
+#if MIN_VERSION_base(4,8,0)
+newtype instance MVector s (Identity a) = MV_Identity (MVector s a)
+newtype instance Vector (Identity a) = V_Identity (Vector a)
+
+instance (Unbox a) => M.MVector MVector (Identity a) where
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicOverlaps #-}
+  {-# INLINE basicUnsafeNew #-}
+  {-# INLINE basicInitialize #-}
+  {-# INLINE basicUnsafeReplicate #-}
+  {-# INLINE basicUnsafeRead #-}
+  {-# INLINE basicUnsafeWrite #-}
+  {-# INLINE basicClear #-}
+  {-# INLINE basicSet #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeGrow #-}
+  basicLength (MV_Identity v) = M.basicLength v
+  basicUnsafeSlice i n (MV_Identity v) = MV_Identity $ M.basicUnsafeSlice i n v
+  basicOverlaps (MV_Identity v1) (MV_Identity v2) = M.basicOverlaps v1 v2
+  basicUnsafeNew n = MV_Identity `liftM` M.basicUnsafeNew n
+  basicInitialize (MV_Identity v) = M.basicInitialize v
+  basicUnsafeReplicate n (Identity x) = MV_Identity `liftM` M.basicUnsafeReplicate n x
+  basicUnsafeRead (MV_Identity v) i = Identity `liftM` M.basicUnsafeRead v i
+  basicUnsafeWrite (MV_Identity v) i (Identity x) = M.basicUnsafeWrite v i x
+  basicClear (MV_Identity v) = M.basicClear v
+  basicSet (MV_Identity v) (Identity x) = M.basicSet v x
+  basicUnsafeCopy (MV_Identity v1) (MV_Identity v2) = M.basicUnsafeCopy v1 v2
+  basicUnsafeMove (MV_Identity v1) (MV_Identity v2) = M.basicUnsafeMove v1 v2
+  basicUnsafeGrow (MV_Identity v) n = MV_Identity `liftM` M.basicUnsafeGrow v n
+
+instance (Unbox a) => G.Vector Vector (Identity a) where
+  {-# INLINE basicUnsafeFreeze #-}
+  {-# INLINE basicUnsafeThaw #-}
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE elemseq #-}
+  basicUnsafeFreeze (MV_Identity v) = V_Identity `liftM` G.basicUnsafeFreeze v
+  basicUnsafeThaw (V_Identity v) = MV_Identity `liftM` G.basicUnsafeThaw v
+  basicLength (V_Identity v) = G.basicLength v
+  basicUnsafeSlice i n (V_Identity v) = V_Identity $ G.basicUnsafeSlice i n v
+  basicUnsafeIndexM (V_Identity v) i = Identity `liftM` G.basicUnsafeIndexM v i
+  basicUnsafeCopy (MV_Identity mv) (V_Identity v) = G.basicUnsafeCopy mv v
+  elemseq _ (Identity a) = G.elemseq (undefined :: Vector a) a
+
+instance (Unbox a) => Unbox (Identity a)
+#endif
+
+-- -------
+-- Const
+-- -------
+
+newtype instance MVector s (Const a b) = MV_Const (MVector s a)
+newtype instance Vector (Const a b) = V_Const (Vector a)
+
+instance (Unbox a) => M.MVector MVector (Const a b) where
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicOverlaps #-}
+  {-# INLINE basicUnsafeNew #-}
+  {-# INLINE basicInitialize #-}
+  {-# INLINE basicUnsafeReplicate #-}
+  {-# INLINE basicUnsafeRead #-}
+  {-# INLINE basicUnsafeWrite #-}
+  {-# INLINE basicClear #-}
+  {-# INLINE basicSet #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeGrow #-}
+  basicLength (MV_Const v) = M.basicLength v
+  basicUnsafeSlice i n (MV_Const v) = MV_Const $ M.basicUnsafeSlice i n v
+  basicOverlaps (MV_Const v1) (MV_Const v2) = M.basicOverlaps v1 v2
+  basicUnsafeNew n = MV_Const `liftM` M.basicUnsafeNew n
+  basicInitialize (MV_Const v) = M.basicInitialize v
+  basicUnsafeReplicate n (Const x) = MV_Const `liftM` M.basicUnsafeReplicate n x
+  basicUnsafeRead (MV_Const v) i = Const `liftM` M.basicUnsafeRead v i
+  basicUnsafeWrite (MV_Const v) i (Const x) = M.basicUnsafeWrite v i x
+  basicClear (MV_Const v) = M.basicClear v
+  basicSet (MV_Const v) (Const x) = M.basicSet v x
+  basicUnsafeCopy (MV_Const v1) (MV_Const v2) = M.basicUnsafeCopy v1 v2
+  basicUnsafeMove (MV_Const v1) (MV_Const v2) = M.basicUnsafeMove v1 v2
+  basicUnsafeGrow (MV_Const v) n = MV_Const `liftM` M.basicUnsafeGrow v n
+
+instance (Unbox a) => G.Vector Vector (Const a b) where
+  {-# INLINE basicUnsafeFreeze #-}
+  {-# INLINE basicUnsafeThaw #-}
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE elemseq #-}
+  basicUnsafeFreeze (MV_Const v) = V_Const `liftM` G.basicUnsafeFreeze v
+  basicUnsafeThaw (V_Const v) = MV_Const `liftM` G.basicUnsafeThaw v
+  basicLength (V_Const v) = G.basicLength v
+  basicUnsafeSlice i n (V_Const v) = V_Const $ G.basicUnsafeSlice i n v
+  basicUnsafeIndexM (V_Const v) i = Const `liftM` G.basicUnsafeIndexM v i
+  basicUnsafeCopy (MV_Const mv) (V_Const v) = G.basicUnsafeCopy mv v
+  elemseq _ (Const a) = G.elemseq (undefined :: Vector a) a
+
+instance (Unbox a) => Unbox (Const a b)
 
 -- ------
 -- Tuples
