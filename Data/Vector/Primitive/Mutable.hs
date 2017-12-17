@@ -22,8 +22,9 @@ module Data.Vector.Primitive.Mutable (
   length, null,
 
   -- ** Extracting subvectors
-  slice, init, tail, take, drop, splitAt,
+  slice, init, tail, take, takeEnd, drop, dropEnd, splitAt,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
+  unsafeTakeEnd, unsafeDropEnd,
 
   -- ** Overlapping
   overlaps,
@@ -154,9 +155,17 @@ take :: Prim a => Int -> MVector s a -> MVector s a
 {-# INLINE take #-}
 take = G.take
 
+takeEnd :: Prim a => Int -> MVector s a -> MVector s a
+{-# INLINE takeEnd #-}
+takeEnd = G.takeEnd
+
 drop :: Prim a => Int -> MVector s a -> MVector s a
 {-# INLINE drop #-}
 drop = G.drop
+
+dropEnd :: Prim a => Int -> MVector s a -> MVector s a
+{-# INLINE dropEnd #-}
+dropEnd = G.dropEnd
 
 splitAt :: Prim a => Int -> MVector s a -> (MVector s a, MVector s a)
 {-# INLINE splitAt #-}
@@ -184,9 +193,17 @@ unsafeTake :: Prim a => Int -> MVector s a -> MVector s a
 {-# INLINE unsafeTake #-}
 unsafeTake = G.unsafeTake
 
+unsafeTakeEnd :: Prim a => Int -> MVector s a -> MVector s a
+{-# INLINE unsafeTakeEnd #-}
+unsafeTakeEnd = G.unsafeTakeEnd
+
 unsafeDrop :: Prim a => Int -> MVector s a -> MVector s a
 {-# INLINE unsafeDrop #-}
 unsafeDrop = G.unsafeDrop
+
+unsafeDropEnd :: Prim a => Int -> MVector s a -> MVector s a
+{-# INLINE unsafeDropEnd #-}
+unsafeDropEnd = G.unsafeDropEnd
 
 unsafeInit :: Prim a => MVector s a -> MVector s a
 {-# INLINE unsafeInit #-}

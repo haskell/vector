@@ -33,8 +33,9 @@ module Data.Vector.Primitive (
   unsafeIndexM, unsafeHeadM, unsafeLastM,
 
   -- ** Extracting subvectors (slicing)
-  slice, init, tail, take, drop, splitAt,
+  slice, init, tail, take, takeEnd, drop, dropEnd, splitAt,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
+  unsafeTakeEnd, unsafeDropEnd,
 
   -- * Construction
 
@@ -413,17 +414,29 @@ tail :: Prim a => Vector a -> Vector a
 {-# INLINE tail #-}
 tail = G.tail
 
--- | /O(1)/ Yield at the first @n@ elements without copying. The vector may
+-- | /O(1)/ Yield the first @n@ elements without copying. The vector may
 -- contain less than @n@ elements in which case it is returned unchanged.
 take :: Prim a => Int -> Vector a -> Vector a
 {-# INLINE take #-}
 take = G.take
+
+-- | /O(1)/ Yield the last @n@ elements without copying. The vector may
+-- contain less than @n@ elements in which case it is returned unchanged.
+takeEnd :: Prim a => Int -> Vector a -> Vector a
+{-# INLINE takeEnd #-}
+takeEnd = G.takeEnd
 
 -- | /O(1)/ Yield all but the first @n@ elements without copying. The vector may
 -- contain less than @n@ elements in which case an empty vector is returned.
 drop :: Prim a => Int -> Vector a -> Vector a
 {-# INLINE drop #-}
 drop = G.drop
+
+-- | /O(1)/ Yield all but the last @n@ elements without copying. The vector may
+-- contain less than @n@ elements in which case an empty vector is returned.
+dropEnd :: Prim a => Int -> Vector a -> Vector a
+{-# INLINE dropEnd #-}
+dropEnd = G.dropEnd
 
 -- | /O(1)/ Yield the first @n@ elements paired with the remainder without copying.
 --
@@ -460,11 +473,23 @@ unsafeTake :: Prim a => Int -> Vector a -> Vector a
 {-# INLINE unsafeTake #-}
 unsafeTake = G.unsafeTake
 
+-- | /O(1)/ Yield the last @n@ elements without copying. The vector must
+-- contain at least @n@ elements but this is not checked.
+unsafeTakeEnd :: Prim a => Int -> Vector a -> Vector a
+{-# INLINE unsafeTakeEnd #-}
+unsafeTakeEnd = G.unsafeTakeEnd
+
 -- | /O(1)/ Yield all but the first @n@ elements without copying. The vector
 -- must contain at least @n@ elements but this is not checked.
 unsafeDrop :: Prim a => Int -> Vector a -> Vector a
 {-# INLINE unsafeDrop #-}
 unsafeDrop = G.unsafeDrop
+
+-- | /O(1)/ Yield all but the last @n@ elements without copying. The vector
+-- must contain at least @n@ elements but this is not checked.
+unsafeDropEnd :: Prim a => Int -> Vector a -> Vector a
+{-# INLINE unsafeDropEnd #-}
+unsafeDropEnd = G.unsafeDropEnd
 
 -- Initialisation
 -- --------------

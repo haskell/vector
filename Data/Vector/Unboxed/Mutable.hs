@@ -22,8 +22,9 @@ module Data.Vector.Unboxed.Mutable (
   length, null,
 
   -- ** Extracting subvectors
-  slice, init, tail, take, drop, splitAt,
+  slice, init, tail, take, takeEnd, drop, dropEnd, splitAt,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
+  unsafeTakeEnd, unsafeDropEnd,
 
   -- ** Overlapping
   overlaps,
@@ -92,9 +93,17 @@ take :: Unbox a => Int -> MVector s a -> MVector s a
 {-# INLINE take #-}
 take = G.take
 
+takeEnd :: Unbox a => Int -> MVector s a -> MVector s a
+{-# INLINE takeEnd #-}
+takeEnd = G.takeEnd
+
 drop :: Unbox a => Int -> MVector s a -> MVector s a
 {-# INLINE drop #-}
 drop = G.drop
+
+dropEnd :: Unbox a => Int -> MVector s a -> MVector s a
+{-# INLINE dropEnd #-}
+dropEnd = G.dropEnd
 
 splitAt :: Unbox a => Int -> MVector s a -> (MVector s a, MVector s a)
 {-# INLINE splitAt #-}
@@ -122,9 +131,17 @@ unsafeTake :: Unbox a => Int -> MVector s a -> MVector s a
 {-# INLINE unsafeTake #-}
 unsafeTake = G.unsafeTake
 
+unsafeTakeEnd :: Unbox a => Int -> MVector s a -> MVector s a
+{-# INLINE unsafeTakeEnd #-}
+unsafeTakeEnd = G.unsafeTakeEnd
+
 unsafeDrop :: Unbox a => Int -> MVector s a -> MVector s a
 {-# INLINE unsafeDrop #-}
 unsafeDrop = G.unsafeDrop
+
+unsafeDropEnd :: Unbox a => Int -> MVector s a -> MVector s a
+{-# INLINE unsafeDropEnd #-}
+unsafeDropEnd = G.unsafeDropEnd
 
 unsafeInit :: Unbox a => MVector s a -> MVector s a
 {-# INLINE unsafeInit #-}

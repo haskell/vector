@@ -360,3 +360,9 @@ limitUnfolds f (theirs, ours)
     | ours >= 0
     , Just (out, theirs') <- f theirs = Just (out, (theirs', ours - 1))
     | otherwise                       = Nothing
+
+naiveTakeEnd :: Int -> [a] -> [a]
+naiveTakeEnd n = reverse . take n . reverse
+
+naiveDropEnd :: Int -> [a] -> [a]
+naiveDropEnd n = reverse . drop n . reverse

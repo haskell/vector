@@ -12,6 +12,8 @@ import Testsuite.Utils.Generator
 import Test.QuickCheck
 import Text.Show.Functions ()
 
+import qualified Utilities as Util
+
 instance Modelled (Vector a) where
   type Model (Vector a) = [a]
 
@@ -43,10 +45,12 @@ prop_slice = forAll arbitrary $ \xs ->
              forAll (choose (0,length xs)) $ \i ->
              forAll (choose (0,length xs - i)) $ \n ->
              V.slice (V.fromList (xs :: [A])) i n ==? take n (drop i xs)
-prop_init    = arg (not . null) $ arg_ty [A] $ V.init ==? init
-prop_tail    = arg (not . null) $ arg_ty [A] $ V.tail ==? tail
-prop_take    = arg2_ty [A] $ V.take ==? take
-prop_drop    = arg2_ty [A] $ V.drop ==? drop
+prop_init      = arg (not . null) $ arg_ty [A] $ V.init ==? init
+prop_tail      = arg (not . null) $ arg_ty [A] $ V.tail ==? tail
+prop_take      = arg2_ty [A] $ V.take ==? take
+prop_takeEnd = arg2_ty [A] $ V.takeEnd ==? Util.naiveTakeEnd
+prop_drop      = arg2_ty [A] $ V.drop ==? drop
+prop_dropEnd = arg2_ty [A] $ V.drop ==? Util.naiveDropEnd
 
 prop_accum  = forAll arbitrary $ \f ->
               forAll arbitrary $ \xs ->
