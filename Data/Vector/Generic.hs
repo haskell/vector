@@ -573,7 +573,7 @@ unfoldrNM n f = unstreamM . MBundle.unfoldrNM n f
 -- | /O(n)/ Construct a vector with @n@ elements by repeatedly applying the
 -- generator function to the already constructed part of the vector.
 --
--- > constructN 3 f = let a = f <> ; b = f <a> ; c = f <a,b> in f <a,b,c>
+-- > constructN 3 f = let a = f <> ; b = f <a> ; c = f <a,b> in <a,b,c>
 --
 constructN :: forall v a. Vector v a => Int -> (v a -> a) -> v a
 {-# INLINE constructN #-}
@@ -602,7 +602,7 @@ constructN !n f = runST (
 -- repeatedly applying the generator function to the already constructed part
 -- of the vector.
 --
--- > constructrN 3 f = let a = f <> ; b = f<a> ; c = f <b,a> in f <c,b,a>
+-- > constructrN 3 f = let a = f <> ; b = f<a> ; c = f <b,a> in <c,b,a>
 --
 constructrN :: forall v a. Vector v a => Int -> (v a -> a) -> v a
 {-# INLINE constructrN #-}
