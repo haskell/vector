@@ -22,6 +22,7 @@ Executable algorithms
   Ghc-Options: -O2
 
   Other-Modules:
+        Algo.MutableSet
         Algo.ListRank
         Algo.Rootfix
         Algo.Leaffix
@@ -34,4 +35,3 @@ Executable algorithms
         TestData.ParenTree
         TestData.Graph
         TestData.Random
-
