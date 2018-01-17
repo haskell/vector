@@ -7,6 +7,7 @@ import Utilities as Util
 import Data.Functor.Identity
 import qualified Data.Traversable as T (Traversable(..))
 import Data.Foldable (Foldable(foldMap))
+import Data.Orphans ()
 
 import qualified Data.Vector.Generic as V
 import qualified Data.Vector
@@ -69,14 +70,6 @@ type VectorContext  a v = ( Eq (v a), Show (v a), Arbitrary (v a), CoArbitrary (
 --  vlength, vnew
 
 -- TODO: test non-IVector stuff?
-
-#if !MIN_VERSION_base(4,7,0)
-instance Foldable ((,) a) where
-  foldMap f (_, b) = f b
-
-instance T.Traversable ((,) a) where
-  traverse f (a, b) = fmap ((,) a) $ f b
-#endif
 
 testSanity :: forall a v. (CommonContext a v) => v a -> [Test]
 testSanity _ = [
