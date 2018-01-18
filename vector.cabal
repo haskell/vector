@@ -189,7 +189,7 @@ test-suite vector-tests-O0
                  Utilities
 
   hs-source-dirs: tests
-  Build-Depends: base >= 4.5 && < 5, template-haskell, base-orphan >= 0.6, vector,
+  Build-Depends: base >= 4.5 && < 5, template-haskell, base-orphans >= 0.6, vector,
                  primitive, random,
                  QuickCheck >= 2.9 && < 2.10 , HUnit, test-framework,
                  test-framework-hunit, test-framework-quickcheck2,
@@ -227,7 +227,7 @@ test-suite vector-tests-O2
                  Utilities
 
   hs-source-dirs: tests
-  Build-Depends: base >= 4.5 && < 5, template-haskell, base-orphan >= 0.6, vector,
+  Build-Depends: base >= 4.5 && < 5, template-haskell, base-orphans >= 0.6, vector,
                  primitive, random,
                  QuickCheck >= 2.9 && < 2.10 , HUnit, test-framework,
                  test-framework-hunit, test-framework-quickcheck2,
