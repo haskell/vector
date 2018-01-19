@@ -788,7 +788,9 @@ copy dst src = BOUNDS_CHECK(check) "copy" "overlapping vectors"
 -- copied to a temporary vector and then the temporary vector was copied
 -- to the target vector.
 move :: (PrimMonad m, MVector v a)
-                => v (PrimState m) a -> v (PrimState m) a -> m ()
+     => v (PrimState m) a   -- ^ target
+     -> v (PrimState m) a   -- ^ source
+     -> m ()
 {-# INLINE move #-}
 move dst src = BOUNDS_CHECK(check) "move" "length mismatch"
                                           (length dst == length src)
