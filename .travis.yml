@@ -29,28 +29,28 @@ before_cache:
 matrix:
   include:
     - compiler: "ghc-7.4.2"
-    # env: TEST=--disable-tests BENCH=--disable-benchmarks
+      env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-head,ghc-7.4.2], sources: [hvr-ghc]}}
     - compiler: "ghc-7.6.3"
-    # env: TEST=--disable-tests BENCH=--disable-benchmarks
+      env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-head,ghc-7.6.3], sources: [hvr-ghc]}}
     - compiler: "ghc-7.8.4"
-    # env: TEST=--disable-tests BENCH=--disable-benchmarks
+      env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-head,ghc-7.8.4], sources: [hvr-ghc]}}
     - compiler: "ghc-7.10.3"
-      env: TEST=--disable-tests
+      env: TESTTARGETS="vector:vector-tests-O0"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-head,ghc-7.10.3], sources: [hvr-ghc]}}
     - compiler: "ghc-8.0.2"
-    # env: TEST=--disable-tests BENCH=--disable-benchmarks
+      env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-head,ghc-8.0.2], sources: [hvr-ghc]}}
     - compiler: "ghc-8.2.2"
-      env: TEST=--disable-tests # https://ghc.haskell.org/trac/ghc/ticket/13535
+      env: TESTTARGETS="vector:vector-tests-O0" # https://ghc.haskell.org/trac/ghc/ticket/13535
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-head,ghc-8.2.2], sources: [hvr-ghc]}}
     - compiler: "ghc-8.4.1"
-      env: GHCHEAD=true TEST=--disable-tests # https://ghc.haskell.org/trac/ghc/ticket/13535
+      env: GHCHEAD=true TESTTARGETS="vector:vector-tests-O0" # https://ghc.haskell.org/trac/ghc/ticket/13535
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-head,ghc-8.4.1], sources: [hvr-ghc]}}
     - compiler: "ghc-head"
-      env: GHCHEAD=true TEST=--disable-tests # https://ghc.haskell.org/trac/ghc/ticket/13535
+      env: GHCHEAD=true TESTTARGETS="vector:vector-tests-O0" # https://ghc.haskell.org/trac/ghc/ticket/13535
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-head,ghc-head], sources: [hvr-ghc]}}
 
   allow_failures:
@@ -75,6 +75,7 @@ install:
   - HADDOCK=${HADDOCK-true}
   - INSTALLED=${INSTALLED-true}
   - GHCHEAD=${GHCHEAD-false}
+  - TARGETS="vector ${TESTTARGETS}"
   - travis_retry cabal update -v
   - "sed -i.bak 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config"
   - rm -fv cabal.project cabal.project.local
@@ -100,8 +101,8 @@ install:
       (cd "." && autoreconf -i);
     fi
   - rm -f cabal.project.freeze
-  - cabal new-build -w ${HC} ${TEST} ${BENCH} --project-file="cabal.project" --dep -j2 all
-  - cabal new-build -w ${HC} --disable-tests --disable-benchmarks --project-file="cabal.project" --dep -j2 all
+  - cabal new-build -w ${HC} ${TEST} ${BENCH} --project-file="cabal.project" --dep -j2 ${TARGETS}
+  - cabal new-build -w ${HC} --disable-tests --disable-benchmarks --project-file="cabal.project" --dep -j2 ${TARGETS}
   - rm -rf "."/.ghc.environment.* "."/dist
   - DISTDIR=$(mktemp -d /tmp/dist-test.XXXX)
 
@@ -116,21 +117,21 @@ script:
   - "printf 'packages: vector-*/*.cabal\\n' > cabal.project"
   - cat cabal.project
   # this builds all libraries and executables (without tests/benchmarks)
-  - cabal new-build -w ${HC} --disable-tests --disable-benchmarks all
+  - cabal new-build -w ${HC} --disable-tests --disable-benchmarks ${TARGETS}
 
   # Build with installed constraints for packages in global-db
-  - if $INSTALLED; then echo cabal new-build -w ${HC} --disable-tests --disable-benchmarks $(${HCPKG} list --global --simple-output --names-only | sed 's/\([a-zA-Z0-9-]\{1,\}\) */--constraint="\1 installed" /g') all | sh; else echo "Not building with installed constraints"; fi
+  - if $INSTALLED; then echo cabal new-build -w ${HC} --disable-tests --disable-benchmarks $(${HCPKG} list --global --simple-output --names-only | sed 's/\([a-zA-Z0-9-]\{1,\}\) */--constraint="\1 installed" /g') ${TARGETS} | sh; else echo "Not building with installed constraints"; fi
 
   # build & run tests, build benchmarks
-  - cabal new-build -w ${HC} ${TEST} ${BENCH} all
-  - if [ "x$TEST" = "x--enable-tests" ]; then cabal new-test -w ${HC} ${TEST} ${BENCH} all; fi
+  - cabal new-build -w ${HC} ${TEST} ${BENCH} ${TARGETS}
+  - if [ "x$TEST" = "x--enable-tests" ]; then cabal new-test -w ${HC} ${TEST} ${BENCH} ${TESTTARGETS}; fi
 
   # cabal check
   - (cd vector-* && cabal check)
 
   # haddock
   - rm -rf ./dist-newstyle
-  - if $HADDOCK; then cabal new-haddock -w ${HC} ${TEST} ${BENCH} all; else echo "Skipping haddock generation";fi
+  - if $HADDOCK; then cabal new-haddock -w ${HC} ${TEST} ${BENCH} ${TARGETS}; else echo "Skipping haddock generation";fi
 
 # REGENDATA ["-o",".travis.yml","cabal.project"]
 # EOF
