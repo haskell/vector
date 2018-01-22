@@ -101,7 +101,7 @@ install:
       (cd "." && autoreconf -i);
     fi
   - rm -f cabal.project.freeze
-  - cabal new-build -w ${HC} ${TEST} ${BENCH} --project-file="cabal.project" --dep -j2 ${TARGETS}
+  - cabal new-build -w ${HC} ${TEST} ${BENCH} --project-file="cabal.project" --dep -j2 ${TESTTARGETS}
   - cabal new-build -w ${HC} --disable-tests --disable-benchmarks --project-file="cabal.project" --dep -j2 vector
   - rm -rf "."/.ghc.environment.* "."/dist
   - DISTDIR=$(mktemp -d /tmp/dist-test.XXXX)
@@ -123,7 +123,7 @@ script:
   - if $INSTALLED; then echo cabal new-build -w ${HC} --disable-tests --disable-benchmarks $(${HCPKG} list --global --simple-output --names-only | sed 's/\([a-zA-Z0-9-]\{1,\}\) */--constraint="\1 installed" /g') vector | sh; else echo "Not building with installed constraints"; fi
 
   # build & run tests, build benchmarks
-  - cabal new-build -w ${HC} ${TEST} ${BENCH} ${TARGETS}
+  - cabal new-build -w ${HC} ${TEST} ${BENCH} ${TESTTARGETS}
   - if [ "x$TEST" = "x--enable-tests" ]; then cabal new-test -w ${HC} ${TEST} ${BENCH} ${TESTTARGETS}; fi
 
   # cabal check
@@ -131,7 +131,7 @@ script:
 
   # haddock
   - rm -rf ./dist-newstyle
-  - if $HADDOCK; then cabal new-haddock -w ${HC} ${TEST} ${BENCH} ${TARGETS}; else echo "Skipping haddock generation";fi
+  - if $HADDOCK; then cabal new-haddock -w ${HC} ${TEST} ${BENCH} vector; else echo "Skipping haddock generation";fi
 
 # REGENDATA ["-o",".travis.yml","cabal.project"]
 # EOF
