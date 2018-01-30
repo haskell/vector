@@ -300,7 +300,7 @@ unsafeMove :: (PrimMonad m, Unbox a)
 unsafeMove = G.unsafeMove
 
 -- | Compute the next (lexicographically) permutation of given vector in-place.
---   Returns False when input is the last permtuation
+--   Returns False when input is the last permutation
 nextPermutation :: (PrimMonad m,Ord e,Unbox e) => MVector (PrimState m) e -> m Bool
 {-# INLINE nextPermutation #-}
 nextPermutation = G.nextPermutation

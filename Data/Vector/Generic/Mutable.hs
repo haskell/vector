@@ -1068,7 +1068,7 @@ a given permutation. It changes the given permutation in-place.
 -}
 
 -- | Compute the next (lexicographically) permutation of given vector in-place.
---   Returns False when input is the last permtuation
+--   Returns False when input is the last permutation
 nextPermutation :: (PrimMonad m,Ord e,MVector v e) => v (PrimState m) e -> m Bool
 nextPermutation v
     | dim < 2 = return False
