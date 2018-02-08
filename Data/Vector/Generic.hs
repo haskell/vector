@@ -30,8 +30,9 @@ module Data.Vector.Generic (
   unsafeIndexM, unsafeHeadM, unsafeLastM,
 
   -- ** Extracting subvectors (slicing)
-  slice, init, tail, take, drop, splitAt,
+  slice, init, tail, take, takeEnd, drop, dropEnd, splitAt,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
+  unsafeTakeEnd, unsafeDropEnd,
 
   -- * Construction
 
@@ -415,6 +416,16 @@ take :: Vector v a => Int -> v a -> v a
 take n v = unsafeSlice 0 (delay_inline min n' (length v)) v
   where n' = max n 0
 
+-- | /O(1)/ Yield the last @n@ elements without copying. The vector may
+-- contain less than @n@ elements in which case it is returned unchanged.
+takeEnd :: Vector v a => Int -> v a -> v a
+{-# INLINE_FUSED takeEnd #-}
+takeEnd n v = unsafeSlice i (delay_inline min n' m) v
+  where
+    n' = max n 0
+    m = length v
+    i = delay_inline max 0 (m - n')
+
 -- | /O(1)/ Yield all but the first @n@ elements without copying. The vector may
 -- contain less than @n@ elements in which case an empty vector is returned.
 drop :: Vector v a => Int -> v a -> v a
@@ -423,6 +434,15 @@ drop n v = unsafeSlice (delay_inline min n' len)
                        (delay_inline max 0 (len - n')) v
   where n' = max n 0
         len = length v
+
+-- | /O(1)/ Yield all but the last @n@ elements without copying. The vector may
+-- contain less than @n@ elements in which case an empty vector is returned.
+dropEnd :: Vector v a => Int -> v a -> v a
+{-# INLINE_FUSED dropEnd #-}
+dropEnd n v = unsafeSlice 0 (delay_inline max 0 (m - n')) v
+  where
+    n' = max n 0
+    m = length v
 
 -- | /O(1)/ Yield the first @n@ elements paired with the remainder without copying.
 --
@@ -466,11 +486,24 @@ unsafeTake :: Vector v a => Int -> v a -> v a
 {-# INLINE unsafeTake #-}
 unsafeTake n v = unsafeSlice 0 n v
 
+-- | /O(1)/ Yield the last @n@ elements without copying. The vector must
+-- contain at least @n@ elements but this is not checked.
+unsafeTakeEnd :: Vector v a => Int -> v a -> v a
+{-# INLINE unsafeTakeEnd #-}
+unsafeTakeEnd n v = unsafeSlice (m - n) n v
+  where m = length v
+
 -- | /O(1)/ Yield all but the first @n@ elements without copying. The vector
 -- must contain at least @n@ elements but this is not checked.
 unsafeDrop :: Vector v a => Int -> v a -> v a
 {-# INLINE unsafeDrop #-}
 unsafeDrop n v = unsafeSlice n (length v - n) v
+
+-- | /O(1)/ Yield all but the last @n@ elements without copying. The vector
+-- must contain at least @n@ elements but this is not checked.
+unsafeDropEnd :: Vector v a => Int -> v a -> v a
+{-# INLINE unsafeDropEnd #-}
+unsafeDropEnd n v = unsafeSlice 0 (length v - n) v
 
 {-# RULES
 

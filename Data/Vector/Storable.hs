@@ -30,8 +30,9 @@ module Data.Vector.Storable (
   unsafeIndexM, unsafeHeadM, unsafeLastM,
 
   -- ** Extracting subvectors (slicing)
-  slice, init, tail, take, drop, splitAt,
+  slice, init, tail, take, takeEnd, drop, dropEnd, splitAt,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
+  unsafeTakeEnd, unsafeDropEnd,
 
   -- * Construction
 
@@ -429,11 +430,23 @@ take :: Storable a => Int -> Vector a -> Vector a
 {-# INLINE take #-}
 take = G.take
 
+-- | /O(1)/ Yield the last @n@ elements without copying. The vector may
+-- contain less than @n@ elements in which case it is returned unchanged.
+takeEnd :: Storable a => Int -> Vector a -> Vector a
+{-# INLINE takeEnd #-}
+takeEnd = G.takeEnd
+
 -- | /O(1)/ Yield all but the first @n@ elements without copying. The vector may
 -- contain less than @n@ elements in which case an empty vector is returned.
 drop :: Storable a => Int -> Vector a -> Vector a
 {-# INLINE drop #-}
 drop = G.drop
+
+-- | /O(1)/ Yield all but the last @n@ elements without copying. The vector may
+-- contain less than @n@ elements in which case an empty vector is returned.
+dropEnd :: Storable a => Int -> Vector a -> Vector a
+{-# INLINE dropEnd #-}
+dropEnd = G.dropEnd
 
 -- | /O(1)/ Yield the first @n@ elements paired with the remainder without copying.
 --
@@ -470,11 +483,23 @@ unsafeTake :: Storable a => Int -> Vector a -> Vector a
 {-# INLINE unsafeTake #-}
 unsafeTake = G.unsafeTake
 
+-- | /O(1)/ Yield the last @n@ elements without copying. The vector must
+-- contain at least @n@ elements but this is not checked.
+unsafeTakeEnd :: Storable a => Int -> Vector a -> Vector a
+{-# INLINE unsafeTakeEnd #-}
+unsafeTakeEnd = G.unsafeTakeEnd
+
 -- | /O(1)/ Yield all but the first @n@ elements without copying. The vector
 -- must contain at least @n@ elements but this is not checked.
 unsafeDrop :: Storable a => Int -> Vector a -> Vector a
 {-# INLINE unsafeDrop #-}
 unsafeDrop = G.unsafeDrop
+
+-- | /O(1)/ Yield all but the last @n@ elements without copying. The vector
+-- must contain at least @n@ elements but this is not checked.
+unsafeDropEnd :: Storable a => Int -> Vector a -> Vector a
+{-# INLINE unsafeDropEnd #-}
+unsafeDropEnd = G.unsafeDropEnd
 
 -- Initialisation
 -- --------------

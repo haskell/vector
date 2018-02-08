@@ -15,7 +15,7 @@
 module Data.Vector.Generic.New (
   New(..), create, run, runPrim, apply, modify, modifyWithBundle,
   unstream, transform, unstreamR, transformR,
-  slice, init, tail, take, drop,
+  slice, init, tail, take, takeEnd, drop, dropEnd,
   unsafeSlice, unsafeInit, unsafeTail
 ) where
 
@@ -132,9 +132,17 @@ take :: Vector v a => Int -> New v a -> New v a
 {-# INLINE_FUSED take #-}
 take n m = apply (MVector.take n) m
 
+takeEnd :: Vector v a => Int -> New v a -> New v a
+{-# INLINE_FUSED takeEnd #-}
+takeEnd n m = apply (MVector.takeEnd n) m
+
 drop :: Vector v a => Int -> New v a -> New v a
 {-# INLINE_FUSED drop #-}
 drop n m = apply (MVector.drop n) m
+
+dropEnd :: Vector v a => Int -> New v a -> New v a
+{-# INLINE_FUSED dropEnd #-}
+dropEnd n m = apply (MVector.dropEnd n) m
 
 unsafeSlice :: Vector v a => Int -> Int -> New v a -> New v a
 {-# INLINE_FUSED unsafeSlice #-}

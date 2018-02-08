@@ -261,10 +261,12 @@ testPolymorphicFunctions _ = $(testProperties [
       where
         prop :: P (Int -> Int -> v a -> v a) = V.slice `eq` slice
 
-    prop_tail :: P (v a -> v a) = not . V.null ===> V.tail `eq` tail
-    prop_init :: P (v a -> v a) = not . V.null ===> V.init `eq` init
-    prop_take :: P (Int -> v a -> v a) = V.take `eq` take
-    prop_drop :: P (Int -> v a -> v a) = V.drop `eq` drop
+    prop_tail    :: P (v a -> v a) = not . V.null ===> V.tail `eq` tail
+    prop_init    :: P (v a -> v a) = not . V.null ===> V.init `eq` init
+    prop_take    :: P (Int -> v a -> v a) = V.take `eq` take
+    prop_takeEnd :: P (Int -> v a -> v a) = V.take `eq` Util.naiveTakeEnd
+    prop_drop    :: P (Int -> v a -> v a) = V.drop `eq` drop
+    prop_dropEnd :: P (Int -> v a -> v a) = V.drop `eq` Util.naiveDropEnd
     prop_splitAt :: P (Int -> v a -> (v a, v a)) = V.splitAt `eq` splitAt
 
     prop_accum = \f xs ->

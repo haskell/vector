@@ -21,8 +21,9 @@ module Data.Vector.Generic.Mutable (
   length, null,
 
   -- ** Extracting subvectors
-  slice, init, tail, take, drop, splitAt,
+  slice, init, tail, take, takeEnd, drop, dropEnd, splitAt,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
+  unsafeTakeEnd, unsafeDropEnd,
 
   -- ** Overlapping
   overlaps,
@@ -518,12 +519,27 @@ take :: MVector v a => Int -> v s a -> v s a
 {-# INLINE take #-}
 take n v = unsafeSlice 0 (min (max n 0) (length v)) v
 
+takeEnd :: MVector v a => Int -> v s a -> v s a
+{-# INLINE takeEnd #-}
+takeEnd n v = unsafeSlice i (min n' m) v
+  where
+    n' = max n 0
+    m = length v
+    i = max 0 (m - n')
+
 drop :: MVector v a => Int -> v s a -> v s a
 {-# INLINE drop #-}
 drop n v = unsafeSlice (min m n') (max 0 (m - n')) v
   where
     n' = max n 0
     m  = length v
+
+dropEnd :: MVector v a => Int -> v s a -> v s a
+{-# INLINE dropEnd #-}
+dropEnd n v = unsafeSlice 0 (max 0 (m - n')) v
+  where
+    n' = max n 0
+    m = length v
 
 {-# INLINE splitAt #-}
 splitAt :: MVector v a => Int -> v s a -> (v s a, v s a)
@@ -565,9 +581,18 @@ unsafeTake :: MVector v a => Int -> v s a -> v s a
 {-# INLINE unsafeTake #-}
 unsafeTake n v = unsafeSlice 0 n v
 
+unsafeTakeEnd :: MVector v a => Int -> v s a -> v s a
+{-# INLINE unsafeTakeEnd #-}
+unsafeTakeEnd n v = unsafeSlice (m - n) n v
+  where m = length v
+
 unsafeDrop :: MVector v a => Int -> v s a -> v s a
 {-# INLINE unsafeDrop #-}
 unsafeDrop n v = unsafeSlice n (length v - n) v
+
+unsafeDropEnd :: MVector v a => Int -> v s a -> v s a
+{-# INLINE unsafeDropEnd #-}
+unsafeDropEnd n v = unsafeSlice 0 (length v - n) v
 
 -- Overlapping
 -- -----------
