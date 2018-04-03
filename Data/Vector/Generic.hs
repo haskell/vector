@@ -165,7 +165,7 @@ module Data.Vector.Generic (
   liftShowsPrec, liftReadsPrec,
 
   -- ** @Data@ and @Typeable@
-  gfoldl, dataCast, mkType
+  gfoldl, gunfold, dataCast, mkTypeConstr
 ) where
 
 import           Data.Vector.Generic.Base
@@ -211,14 +211,8 @@ import Data.Typeable ( Typeable1, gcast1 )
 
 #include "vector.h"
 
-import Data.Data ( Data, DataType )
-#if MIN_VERSION_base(4,2,0)
-import Data.Data ( mkNoRepType )
-#else
-import Data.Data ( mkNorepType )
-mkNoRepType :: String -> DataType
-mkNoRepType = mkNorepType
-#endif
+import Data.Data ( Data, DataType, Constr, Fixity(Prefix),
+                   mkDataType, mkConstr, constrIndex )
 
 import qualified Data.Traversable as T (Traversable(mapM))
 
@@ -2205,9 +2199,19 @@ gfoldl :: (Vector v a, Data a)
 {-# INLINE gfoldl #-}
 gfoldl f z v = z fromList `f` toList v
 
-mkType :: String -> DataType
-{-# INLINE mkType #-}
-mkType = mkNoRepType
+mkTypeConstr :: String -> (DataType, Constr)
+{-# INLINE mkTypeConstr #-}
+mkTypeConstr name = (datatype, constr)
+  where datatype = mkDataType name [constr]
+        constr   = mkConstr datatype "fromList" [] Prefix
+
+gunfold :: (Vector v a, Data a)
+        => (forall b r. Data b => c (b -> r) -> c r)
+        -> (forall r. r -> c r)
+        -> Constr -> c (v a)
+gunfold k z c = case constrIndex c of
+  1 -> k (z fromList)
+  _ -> error "gunfold"
 
 #if __GLASGOW_HASKELL__ >= 707
 dataCast :: (Vector v a, Data a, Typeable v, Typeable t)

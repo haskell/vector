@@ -32,6 +32,8 @@ import Control.Monad.Trans.Writer
 
 import Control.Monad.Zip
 
+import Data.Data
+
 type CommonContext  a v = (VanillaContext a, VectorContext a v)
 type VanillaContext a   = ( Eq a , Show a, Arbitrary a, CoArbitrary a
                           , TestData a, Model a ~ a, EqTest a ~ Property)
@@ -604,7 +606,18 @@ testNestedVectorFunctions _ = $(testProperties [])
     --prop_inits        = V.inits       `eq1` (inits       :: v a -> [v a])
     --prop_tails        = V.tails       `eq1` (tails       :: v a -> [v a])
 
-testGeneralBoxedVector :: forall a. (CommonContext a Data.Vector.Vector, Ord a) => Data.Vector.Vector a -> [Test]
+testDataFunctions :: forall a v. (CommonContext a v, Data a, Data (v a)) => v a -> [Test]
+testDataFunctions _ = $(testProperties ['prop_glength])
+  where
+    prop_glength :: P (v a -> Int) = glength `eq` glength
+      where
+        glength :: Data b => b -> Int
+        glength xs = gmapQl (+) 0 toA xs
+
+        toA :: Data b => b -> Int
+        toA x = maybe (glength x) (const 1) (cast x :: Maybe a)
+
+testGeneralBoxedVector :: forall a. (CommonContext a Data.Vector.Vector, Ord a, Data a) => Data.Vector.Vector a -> [Test]
 testGeneralBoxedVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
@@ -615,7 +628,8 @@ testGeneralBoxedVector dummy = concatMap ($ dummy) [
         testFunctorFunctions,
         testMonadFunctions,
         testApplicativeFunctions,
-        testAlternativeFunctions
+        testAlternativeFunctions,
+        testDataFunctions
     ]
 
 testBoolBoxedVector dummy = concatMap ($ dummy)
@@ -624,7 +638,7 @@ testBoolBoxedVector dummy = concatMap ($ dummy)
   , testBoolFunctions
   ]
 
-testNumericBoxedVector :: forall a. (CommonContext a Data.Vector.Vector, Ord a, Num a, Enum a, Random a) => Data.Vector.Vector a -> [Test]
+testNumericBoxedVector :: forall a. (CommonContext a Data.Vector.Vector, Ord a, Num a, Enum a, Random a, Data a) => Data.Vector.Vector a -> [Test]
 testNumericBoxedVector dummy = concatMap ($ dummy)
   [
     testGeneralBoxedVector
@@ -633,15 +647,16 @@ testNumericBoxedVector dummy = concatMap ($ dummy)
   ]
 
 
-testGeneralPrimitiveVector :: forall a. (CommonContext a Data.Vector.Primitive.Vector, Data.Vector.Primitive.Prim a, Ord a) => Data.Vector.Primitive.Vector a -> [Test]
+testGeneralPrimitiveVector :: forall a. (CommonContext a Data.Vector.Primitive.Vector, Data.Vector.Primitive.Prim a, Ord a, Data a) => Data.Vector.Primitive.Vector a -> [Test]
 testGeneralPrimitiveVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
         testOrdFunctions,
-        testMonoidFunctions
+        testMonoidFunctions,
+        testDataFunctions
     ]
 
-testNumericPrimitiveVector :: forall a. (CommonContext a Data.Vector.Primitive.Vector, Data.Vector.Primitive.Prim a, Ord a, Num a, Enum a, Random a) => Data.Vector.Primitive.Vector a -> [Test]
+testNumericPrimitiveVector :: forall a. (CommonContext a Data.Vector.Primitive.Vector, Data.Vector.Primitive.Prim a, Ord a, Num a, Enum a, Random a, Data a) => Data.Vector.Primitive.Vector a -> [Test]
 testNumericPrimitiveVector dummy = concatMap ($ dummy)
  [
    testGeneralPrimitiveVector
@@ -650,15 +665,16 @@ testNumericPrimitiveVector dummy = concatMap ($ dummy)
  ]
 
 
-testGeneralStorableVector :: forall a. (CommonContext a Data.Vector.Storable.Vector, Data.Vector.Storable.Storable a, Ord a) => Data.Vector.Storable.Vector a -> [Test]
+testGeneralStorableVector :: forall a. (CommonContext a Data.Vector.Storable.Vector, Data.Vector.Storable.Storable a, Ord a, Data a) => Data.Vector.Storable.Vector a -> [Test]
 testGeneralStorableVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
         testOrdFunctions,
-        testMonoidFunctions
+        testMonoidFunctions,
+        testDataFunctions
     ]
 
-testNumericStorableVector :: forall a. (CommonContext a Data.Vector.Storable.Vector, Data.Vector.Storable.Storable a, Ord a, Num a, Enum a, Random a) => Data.Vector.Storable.Vector a -> [Test]
+testNumericStorableVector :: forall a. (CommonContext a Data.Vector.Storable.Vector, Data.Vector.Storable.Storable a, Ord a, Num a, Enum a, Random a, Data a) => Data.Vector.Storable.Vector a -> [Test]
 testNumericStorableVector dummy = concatMap ($ dummy)
   [
     testGeneralStorableVector
@@ -667,12 +683,13 @@ testNumericStorableVector dummy = concatMap ($ dummy)
   ]
 
 
-testGeneralUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a) => Data.Vector.Unboxed.Vector a -> [Test]
+testGeneralUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Data a) => Data.Vector.Unboxed.Vector a -> [Test]
 testGeneralUnboxedVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
         testOrdFunctions,
-        testMonoidFunctions
+        testMonoidFunctions,
+        testDataFunctions
     ]
 
 testUnitUnboxedVector dummy = concatMap ($ dummy)
@@ -686,7 +703,7 @@ testBoolUnboxedVector dummy = concatMap ($ dummy)
   , testBoolFunctions
   ]
 
-testNumericUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Num a, Enum a, Random a) => Data.Vector.Unboxed.Vector a -> [Test]
+testNumericUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Num a, Enum a, Random a, Data a) => Data.Vector.Unboxed.Vector a -> [Test]
 testNumericUnboxedVector dummy = concatMap ($ dummy)
   [
     testGeneralUnboxedVector
@@ -694,7 +711,7 @@ testNumericUnboxedVector dummy = concatMap ($ dummy)
   , testEnumFunctions
   ]
 
-testTupleUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a) => Data.Vector.Unboxed.Vector a -> [Test]
+testTupleUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Data a) => Data.Vector.Unboxed.Vector a -> [Test]
 testTupleUnboxedVector dummy = concatMap ($ dummy)
   [
     testGeneralUnboxedVector
