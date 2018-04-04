@@ -165,7 +165,7 @@ module Data.Vector.Generic (
   liftShowsPrec, liftReadsPrec,
 
   -- ** @Data@ and @Typeable@
-  gfoldl, gunfold, dataCast, mkTypeConstr
+  gfoldl, gunfold, dataCast, mkVecType, mkVecConstr
 ) where
 
 import           Data.Vector.Generic.Base
@@ -2199,11 +2199,13 @@ gfoldl :: (Vector v a, Data a)
 {-# INLINE gfoldl #-}
 gfoldl f z v = z fromList `f` toList v
 
-mkTypeConstr :: String -> (DataType, Constr)
-{-# INLINE mkTypeConstr #-}
-mkTypeConstr name = (datatype, constr)
-  where datatype = mkDataType name [constr]
-        constr   = mkConstr datatype "fromList" [] Prefix
+mkVecConstr :: String -> Constr
+{-# INLINE mkVecConstr #-}
+mkVecConstr name = mkConstr (mkVecType name) "fromList" [] Prefix
+
+mkVecType :: String -> DataType
+{-# INLINE mkVecType #-}
+mkVecType name = mkDataType name [mkVecConstr name]
 
 gunfold :: (Vector v a, Data a)
         => (forall b r. Data b => c (b -> r) -> c r)

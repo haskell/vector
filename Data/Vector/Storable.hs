@@ -203,9 +203,9 @@ instance (Read a, Storable a) => Read (Vector a) where
 
 instance (Data a, Storable a) => Data (Vector a) where
   gfoldl       = G.gfoldl
-  toConstr _   = snd $ G.mkTypeConstr "Data.Vector.Storable.Vector"
+  toConstr _   = G.mkVecConstr "Data.Vector.Storable.Vector"
   gunfold      = G.gunfold
-  dataTypeOf _ = fst $ G.mkTypeConstr "Data.Vector.Storable.Vector"
+  dataTypeOf _ = G.mkVecType "Data.Vector.Storable.Vector"
   dataCast1    = G.dataCast
 
 
