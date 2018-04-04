@@ -101,9 +101,9 @@ instance Typeable2 MVector where
 
 instance (Data a, Unbox a) => Data (Vector a) where
   gfoldl       = G.gfoldl
-  toConstr _   = error "toConstr"
-  gunfold _ _  = error "gunfold"
-  dataTypeOf _ = G.mkType "Data.Vector.Unboxed.Vector"
+  toConstr _   = G.mkVecConstr "Data.Vector.Unboxed.Vector"
+  gunfold      = G.gunfold
+  dataTypeOf _ = G.mkVecType "Data.Vector.Unboxed.Vector"
   dataCast1    = G.dataCast
 
 -- ----
