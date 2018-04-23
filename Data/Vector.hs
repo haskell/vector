@@ -158,6 +158,9 @@ module Data.Vector (
   -- ** Lists
   toList, Data.Vector.fromList, Data.Vector.fromListN,
 
+  -- ** Arrays
+  fromArray,
+
   -- ** Other vector types
   G.convert,
 
@@ -1788,6 +1791,13 @@ fromList = G.fromList
 fromListN :: Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
 fromListN = G.fromListN
+
+-- Conversions - Arrays
+-- -----------------------------
+
+-- | /O(1)/ Convert an array to a vector.
+fromArray :: Array a -> Vector a
+fromArray x = Vector 0 (sizeofArray x) x
 
 -- Conversions - Mutable vectors
 -- -----------------------------
