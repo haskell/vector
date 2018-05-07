@@ -30,7 +30,7 @@ module Data.Vector.Generic (
   unsafeIndexM, unsafeHeadM, unsafeLastM,
 
   -- ** Extracting subvectors (slicing)
-  slice, init, tail, take, drop, splitAt,
+  slice, init, tail, take, drop, splitAt, uncons, unsnoc,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
 
   -- * Construction
@@ -431,6 +431,14 @@ splitAt n v = ( unsafeSlice 0 m v
       m   = delay_inline min n' len
       n'  = max n 0
       len = length v
+
+-- | /O(1)/ Yield the 'head' and 'tail' of the vector, or 'Nothing' if empty.
+uncons :: Vector v a => v a -> Maybe (a, v a)
+uncons xs = flip (,) (tail xs) <$> xs !? 0
+
+-- | /O(1)/ Yield the 'last' and 'init' of the vector, or 'Nothing' if empty.
+unsnoc :: Vector v a => v a -> Maybe (v a, a)
+unsnoc xs = (,) (init xs) <$> xs !? (length xs - 1)
 
 -- | /O(1)/ Yield a slice of the vector without copying. The vector must
 -- contain at least @i+n@ elements but this is not checked.
