@@ -203,6 +203,8 @@ import Prelude hiding ( length, null,
 import qualified Text.Read as Read
 import qualified Data.List.NonEmpty as NonEmpty
 
+import Data.Functor ((<$>))
+
 #if __GLASGOW_HASKELL__ >= 707
 import Data.Typeable ( Typeable, gcast1 )
 #else
