@@ -6,6 +6,9 @@
            , Rank2Types
            , BangPatterns
   #-}
+#if __GLASGOW_HASKELL__ >= 707
+{-# LANGUAGE RoleAnnotations #-}
+#endif
 
 -- |
 -- Module      : Data.Vector
@@ -212,6 +215,10 @@ import Data.Monoid   ( Monoid(..) )
 import qualified GHC.Exts as Exts (IsList(..))
 #endif
 
+
+#if __GLASGOW_HASKELL__ >= 707
+type role Vector representational
+#endif
 
 -- | Boxed vectors, supporting efficient slicing.
 data Vector a = Vector {-# UNPACK #-} !Int
