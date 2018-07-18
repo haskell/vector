@@ -1,3 +1,21 @@
+Changes in version next
+
+ * `maximumBy` now behaves like its counterpart in `Data.List` in that if
+   `maximumBy` has to choose between several elements which could be
+   considered the maximum, it will now choose the last element (previously,
+   it would choose the first element). Similarly, `maxIndexBy` will also
+   now pick the last element if several elements could be considered the
+   maximum.
+ * The `Mutable` type family is now injective on GHC 8.0 or later.
+ * Using empty `Storable` vectors no longer results in division-by-zero
+   errors.
+ * The `Data` instances for `Vector` types now have well defined
+   implementations for `toConstr`, `gunfold`, and `dataTypeOf`.
+ * New function: `partitionWith`.
+ * Add `Unbox` instances for `Identity`, `Const`, `Down`, `Dual`, `Sum`,
+   `Product`, `Min`, `Max`, `First`, `Last`, `WrappedMonoid`, `Arg`, `Any`,
+   `All`, `Alt`, and `Compose`.
+
 Changes in version 0.12.0.1
 
  * Make sure `length` can be inlined
