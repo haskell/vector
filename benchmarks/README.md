@@ -7,3 +7,4 @@ To avoid misleading results:
 * Verify the results by running the benchmark with different seeds.
 
 Seeds can be given by using `./algorithms --seed 42`
+Any seed given MUST be the first argument to the executable or it will be ignored.
