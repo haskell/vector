@@ -17,17 +17,31 @@ import TestData.Random    ( randomVector )
 
 import Data.Vector.Unboxed ( Vector )
 
+import System.Environment
+import Data.Word
+
 size :: Int
 size = 100000
 
-main = lparens `seq` rparens `seq`
+seed :: Word32
+seed = 42
+
+main = do
+  args <- getArgs
+  case args of
+    ("--seed":s:args') -> do
+      withArgs args' (main' (read s))
+    _ -> main' seed
+
+main' seed =
+       lparens `seq` rparens `seq`
        nodes `seq` edges1 `seq` edges2 `seq`
        do
-         as <- randomVector size :: IO (Vector Double)
-         bs <- randomVector size :: IO (Vector Double)
-         cs <- randomVector size :: IO (Vector Double)
-         ds <- randomVector size :: IO (Vector Double)
-         sp <- randomVector (floor $ sqrt $ fromIntegral size)
+         as <- randomVector seed size :: IO (Vector Double)
+         bs <- randomVector seed size :: IO (Vector Double)
+         cs <- randomVector seed size :: IO (Vector Double)
+         ds <- randomVector seed size :: IO (Vector Double)
+         sp <- randomVector seed (floor $ sqrt $ fromIntegral size)
                                  :: IO (Vector Double)
          as `seq` bs `seq` cs `seq` ds `seq` sp `seq`
            defaultMain [ bench "listRank"  $ whnf listRank size
@@ -41,6 +55,6 @@ main = lparens `seq` rparens `seq`
                        ]
   where
     (lparens, rparens) = parenTree size
-    (nodes, edges1, edges2) = randomGraph size
-    
+    (nodes, edges1, edges2) = randomGraph seed size
+
 
