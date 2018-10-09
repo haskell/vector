@@ -425,7 +425,12 @@ instance Foldable.Foldable Vector where
 
 instance Traversable.Traversable Vector where
   {-# INLINE traverse #-}
-  traverse f xs = Data.Vector.fromList Applicative.<$> Traversable.traverse f (toList xs)
+  traverse f xs =
+      -- Get the length of the vector in /O(1)/ time
+      let !n = G.length xs
+      -- Use fromListN to be more efficient in construction of resulting vector
+      -- Also behaves better with compact regions, preventing runtime exceptions
+      in  Data.Vector.fromListN n Applicative.<$> Traversable.traverse f (toList xs)
 
   {-# INLINE mapM #-}
   mapM = mapM
