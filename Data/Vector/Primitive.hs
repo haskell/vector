@@ -1,5 +1,9 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, FlexibleInstances, MultiParamTypeClasses, TypeFamilies, ScopedTypeVariables, Rank2Types #-}
 
+#if __GLASGOW_HASKELL__ >= 708
+{-# LANGUAGE RoleAnnotations #-}
+#endif
+
 -- |
 -- Module      : Data.Vector.Primitive
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -175,6 +179,10 @@ import Data.Traversable ( Traversable )
 
 #if __GLASGOW_HASKELL__ >= 708
 import qualified GHC.Exts as Exts
+#endif
+
+#if __GLASGOW_HASKELL__ >= 708
+type role Vector representational
 #endif
 
 -- | Unboxed vectors of primitive types

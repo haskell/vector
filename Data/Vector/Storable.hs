@@ -1,5 +1,9 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, MultiParamTypeClasses, FlexibleInstances, TypeFamilies, Rank2Types, ScopedTypeVariables #-}
 
+#if __GLASGOW_HASKELL__ >= 708
+{-# LANGUAGE RoleAnnotations #-}
+#endif
+
 -- |
 -- Module      : Data.Vector.Storable
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010
@@ -185,6 +189,10 @@ import qualified GHC.Exts as Exts
 -- Data.Vector.Internal.Check is unused
 #define NOT_VECTOR_MODULE
 #include "vector.h"
+
+#if __GLASGOW_HASKELL__ >= 708
+type role Vector representational
+#endif
 
 -- | 'Storable'-based vectors
 data Vector a = Vector {-# UNPACK #-} !Int
