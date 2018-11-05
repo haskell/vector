@@ -115,8 +115,8 @@ module Data.Vector (
 
   -- ** Filtering
   filter, ifilter, uniq,
-  mapMaybe, imapMaybe, catMaybes,
-  filterM,
+  mapMaybe, imapMaybe, imapMaybeM, catMaybes,
+  filterM, mapMaybeM,
   takeWhile, dropWhile,
 
   -- ** Partitioning
@@ -1320,6 +1320,14 @@ catMaybes = mapMaybe id
 filterM :: Monad m => (a -> m Bool) -> Vector a -> m (Vector a)
 {-# INLINE filterM #-}
 filterM = G.filterM
+
+mapMaybeM :: Monad m => (a -> m (Maybe b)) -> Vector a -> m (Vector b)
+{-# INLINE mapMaybeM #-}
+mapMaybeM = G.mapMaybeM
+
+imapMaybeM :: Monad m => (Int -> a -> m (Maybe b)) -> Vector a -> m (Vector b)
+{-# INLINE imapMaybeM #-}
+imapMaybeM = G.imapMaybeM
 
 -- | /O(n)/ Yield the longest prefix of elements satisfying the predicate
 -- without copying.

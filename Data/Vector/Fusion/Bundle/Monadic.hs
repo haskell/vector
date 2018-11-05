@@ -43,7 +43,7 @@ module Data.Vector.Fusion.Bundle.Monadic (
   eqBy, cmpBy,
 
   -- * Filtering
-  filter, filterM, takeWhile, takeWhileM, dropWhile, dropWhileM,
+  filter, filterM, mapMaybeM, takeWhile, takeWhileM, dropWhile, dropWhileM,
 
   -- * Searching
   elem, notElem, find, findM, findIndex, findIndexM,
@@ -463,6 +463,10 @@ filter f = filterM (return . f)
 filterM :: Monad m => (a -> m Bool) -> Bundle m v a -> Bundle m v a
 {-# INLINE_FUSED filterM #-}
 filterM f Bundle{sElems = s, sSize = n} = fromStream (S.filterM f s) (toMax n)
+
+mapMaybeM :: Monad m => (a -> m (Maybe b)) -> Bundle m v a -> Bundle m v b
+{-# INLINE_FUSED mapMaybeM #-}
+mapMaybeM f Bundle{sElems = s, sSize = n} = fromStream (S.mapMaybeM f s) (toMax n)
 
 -- | Longest prefix of elements that satisfy the predicate
 takeWhile :: Monad m => (a -> Bool) -> Bundle m v a -> Bundle m v a
