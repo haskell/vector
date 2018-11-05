@@ -98,6 +98,7 @@ module Data.Vector.Primitive (
   -- ** Filtering
   filter, ifilter, uniq,
   mapMaybe, imapMaybe,
+  mapMaybeM, imapMaybeM,
   filterM,
   takeWhile, dropWhile,
 
@@ -946,10 +947,22 @@ mapMaybe :: (Prim a, Prim b) => (a -> Maybe b) -> Vector a -> Vector b
 {-# INLINE mapMaybe #-}
 mapMaybe = G.mapMaybe
 
+mapMaybeM
+  :: (Monad m, Prim a, Prim b)
+  => (a -> m (Maybe b)) -> Vector a -> m (Vector b)
+{-# INLINE mapMaybeM #-}
+mapMaybeM = G.mapMaybeM
+
 -- | /O(n)/ Drop elements when predicate, applied to index and value, returns Nothing
 imapMaybe :: (Prim a, Prim b) => (Int -> a -> Maybe b) -> Vector a -> Vector b
 {-# INLINE imapMaybe #-}
 imapMaybe = G.imapMaybe
+
+imapMaybeM
+  :: (Monad m, Prim a, Prim b)
+  => (Int -> a -> m (Maybe b)) -> Vector a -> m (Vector b)
+{-# INLINE imapMaybeM #-}
+imapMaybeM = G.imapMaybeM
 
 -- | /O(n)/ Drop elements that do not satisfy the monadic predicate
 filterM :: (Monad m, Prim a) => (a -> m Bool) -> Vector a -> m (Vector a)

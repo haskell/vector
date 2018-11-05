@@ -95,6 +95,7 @@ module Data.Vector.Storable (
   -- ** Filtering
   filter, ifilter, uniq,
   mapMaybe, imapMaybe,
+  mapMaybeM, imapMaybeM,
   filterM,
   takeWhile, dropWhile,
 
@@ -961,6 +962,18 @@ mapMaybe = G.mapMaybe
 imapMaybe :: (Storable a, Storable b) => (Int -> a -> Maybe b) -> Vector a -> Vector b
 {-# INLINE imapMaybe #-}
 imapMaybe = G.imapMaybe
+
+mapMaybeM
+  :: (Monad m, Storable a, Storable b)
+  => (a -> m (Maybe b)) -> Vector a -> m (Vector b)
+{-# INLINE mapMaybeM #-}
+mapMaybeM = G.mapMaybeM
+
+imapMaybeM
+  :: (Monad m, Storable a, Storable b)
+  => (Int -> a -> m (Maybe b)) -> Vector a -> m (Vector b)
+{-# INLINE imapMaybeM #-}
+imapMaybeM = G.imapMaybeM
 
 -- | /O(n)/ Drop elements that do not satisfy the monadic predicate
 filterM :: (Monad m, Storable a) => (a -> m Bool) -> Vector a -> m (Vector a)
