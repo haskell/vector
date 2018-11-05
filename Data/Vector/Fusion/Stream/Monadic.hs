@@ -40,7 +40,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   eqBy, cmpBy,
 
   -- * Filtering
-  filter, filterM, uniq, mapMaybe, catMaybes, takeWhile, takeWhileM, dropWhile, dropWhileM,
+  filter, filterM, uniq, mapMaybe, mapMaybeM, catMaybes, takeWhile, takeWhileM, dropWhile, dropWhileM,
 
   -- * Searching
   elem, notElem, find, findM, findIndex, findIndexM,
@@ -700,6 +700,22 @@ filterM f (Stream step t) = Stream step' t
                                   b <- f x
                                   return $ if b then Yield x s'
                                                 else Skip    s'
+                  Skip    s' -> return $ Skip s'
+                  Done       -> return $ Done
+
+mapMaybeM :: Monad m => (a -> m (Maybe b)) -> Stream m a -> Stream m b
+{-# INLINE_FUSED mapMaybeM #-}
+mapMaybeM f (Stream step t) = Stream step' t
+  where
+    {-# INLINE_INNER step' #-}
+    step' s = do
+                r <- step s
+                case r of
+                  Yield x s' -> do
+                                  fx <- f x
+                                  return $ case fx of
+                                    Nothing -> Skip s'
+                                    Just b  -> Yield b s'
                   Skip    s' -> return $ Skip s'
                   Done       -> return $ Done
 
