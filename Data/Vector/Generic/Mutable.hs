@@ -508,8 +508,13 @@ null v = length v == 0
 -- Extracting subvectors
 -- ---------------------
 
--- | Yield a part of the mutable vector without copying it.
-slice :: MVector v a => Int -> Int -> v s a -> v s a
+-- | Yield a part of the mutable vector without copying it. The vector must
+-- contain at least @i+n@ elements.
+slice :: MVector v a
+      => Int  -- ^ @i@ starting index
+      -> Int  -- ^ @n@ length
+      -> v s a
+      -> v s a
 {-# INLINE slice #-}
 slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
             $ unsafeSlice i n v
