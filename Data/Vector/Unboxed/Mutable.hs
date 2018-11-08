@@ -83,8 +83,13 @@ null = G.null
 -- Extracting subvectors
 -- ---------------------
 
--- | Yield a part of the mutable vector without copying it.
-slice :: Unbox a => Int -> Int -> MVector s a -> MVector s a
+-- | Yield a part of the mutable vector without copying it. The vector must
+-- contain at least @i+n@ elements.
+slice :: Unbox a
+      => Int  -- ^ @i@ starting index
+      -> Int  -- ^ @n@ length
+      -> MVector s a
+      -> MVector s a
 {-# INLINE slice #-}
 slice = G.slice
 
