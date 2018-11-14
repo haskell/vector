@@ -21,7 +21,7 @@ import System.Environment
 import Data.Word
 
 size :: Int
-size = 100000
+size = 2000000
 
 seed :: Word32
 seed = 42
