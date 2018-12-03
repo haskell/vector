@@ -82,12 +82,14 @@ import GHC.Prim (byteArrayContents#, unsafeCoerce#)
 import GHC.ForeignPtr
 #endif
 
+import GHC.Base ( Int(..) )
+
 import Foreign.Ptr ()
 import Foreign.Marshal.Array ( advancePtr, copyArray, moveArray )
 
 import Control.Monad.Primitive
-import Data.Primitive.Addr
 import Data.Primitive.Types (Prim)
+import qualified Data.Primitive.Types as DPT
 
 import GHC.Word (Word8, Word16, Word32, Word64)
 import GHC.Ptr (Ptr(..))
@@ -180,13 +182,11 @@ instance Storable a => G.MVector MVector a where
 
 storableZero :: forall a m. (Storable a, PrimMonad m) => MVector (PrimState m) a -> m ()
 {-# INLINE storableZero #-}
-storableZero (MVector n fp) = unsafePrimToPrim . withForeignPtr fp $ \(Ptr p) -> do
-  let q = Addr p
-  setAddr q byteSize (0 :: Word8)
+storableZero (MVector n fp) = unsafePrimToPrim . withForeignPtr fp $ \ptr-> do
+  memsetPrimPtr_vector (castPtr ptr) byteSize (0 :: Word8)
  where
  x :: a
  x = undefined
-
  byteSize :: Int
  byteSize = n * sizeOf x
 
@@ -212,13 +212,34 @@ storableSet (MVector n fp) x
                        do_set 1
 
 storableSetAsPrim
-  :: (Storable a, Prim b) => Int -> ForeignPtr a -> a -> b -> IO ()
+  :: forall a b . (Storable a, Prim b) => Int -> ForeignPtr a -> a -> b -> IO ()
 {-# INLINE [0] storableSetAsPrim #-}
-storableSetAsPrim n fp x y = withForeignPtr fp $ \(Ptr p) -> do
-  poke (Ptr p) x
-  let q = Addr p
-  w <- readOffAddr q 0
-  setAddr (q `plusAddr` sizeOf x) (n-1) (w `asTypeOf` y)
+storableSetAsPrim n fp x y = withForeignPtr fp $ \ ptr  -> do
+    poke ptr x
+     -- we dont equate storable and prim reps, so we need to write to a slot
+     -- in storable
+     -- then read it back as a prim
+    w<- peakPrimPtr_vector ((castPtr ptr) :: Ptr  b) 0
+    memsetPrimPtr_vector ((castPtr ptr) `plusPtr` sizeOf x ) (n-1)  w
+
+
+
+{-
+AFTER primitive 0.7 is pretty old, move to using setPtr. which is really
+a confusing misnomer for whats often called memset (intialize )
+-}
+-- Fill a memory block with the given value. The length is in
+-- elements of type @a@ rather than in bytes.
+memsetPrimPtr_vector :: forall a c m. (Prim c, PrimMonad m) => Ptr a -> Int -> c -> m ()
+memsetPrimPtr_vector (Ptr addr#) (I# n#) x = primitive_ (DPT.setOffAddr# addr# 0# n# x)
+{-# INLINE memsetPrimPtr_vector #-}
+
+
+-- Read a value from a memory position given by an address and an offset.
+-- The offset is in elements of type @a@ rather than in bytes.
+peakPrimPtr_vector :: (Prim a, PrimMonad m) => Ptr a -> Int -> m a
+peakPrimPtr_vector (Ptr addr#) (I# i#) = primitive (DPT.readOffAddr# addr# i#)
+{-# INLINE peakPrimPtr_vector #-}
 
 {-# INLINE mallocVector #-}
 mallocVector :: Storable a => Int -> IO (ForeignPtr a)
