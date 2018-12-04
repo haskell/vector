@@ -197,7 +197,7 @@ storableSet (MVector n fp) x
 storableSetAsPrim
   :: forall a b . (Storable a, Prim b) => Int -> ForeignPtr a -> a -> b -> IO ()
 {-# INLINE [0] storableSetAsPrim #-}
-storableSetAsPrim n fp x y = withForeignPtr fp $ \ ptr  -> do
+storableSetAsPrim n fp x _y = withForeignPtr fp $ \ ptr  -> do
     poke ptr x
      -- we dont equate storable and prim reps, so we need to write to a slot
      -- in storable
