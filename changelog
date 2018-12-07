@@ -3,6 +3,7 @@ Changes in version 0.12.0.2
     using traverse.
   * remove usage of Data.Primitive.Address and clarify the memset Prim Storable
     smuggling trick in Vector.Storable.Mutable
+  * backport injective type family support
 
 Changes in version 0.12.0.1
 
