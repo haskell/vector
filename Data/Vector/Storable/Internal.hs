@@ -14,8 +14,7 @@ module Data.Vector.Storable.Internal (
   getPtr, setPtr, updPtr
 ) where
 
-import Foreign.ForeignPtr
-import Foreign.Ptr
+
 import GHC.ForeignPtr   ( ForeignPtr(..) )
 import GHC.Ptr          ( Ptr(..) )
 
