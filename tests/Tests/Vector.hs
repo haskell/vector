@@ -173,7 +173,6 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Paritioning
         'prop_partition, {- 'prop_unstablePartition, -}
-        'prop_partitionWith,
         'prop_span, 'prop_break,
 
         -- Searching
@@ -315,8 +314,6 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_dropWhile :: P ((a -> Bool) -> v a -> v a) = V.dropWhile `eq` dropWhile
     prop_partition :: P ((a -> Bool) -> v a -> (v a, v a))
       = V.partition `eq` partition
-    prop_partitionWith :: P ((a -> Either a a) -> v a -> (v a, v a))
-      = V.partitionWith `eq` partitionWith
     prop_span :: P ((a -> Bool) -> v a -> (v a, v a)) = V.span `eq` span
     prop_break :: P ((a -> Bool) -> v a -> (v a, v a)) = V.break `eq` break
 
@@ -468,13 +465,7 @@ testPolymorphicFunctions _ = $(testProperties [
         constructrN xs 0 _ = xs
         constructrN xs n f = constructrN (f xs : xs) (n-1) f
 
--- copied from GHC source code
-partitionWith :: (a -> Either b c) -> [a] -> ([b], [c])
-partitionWith _ [] = ([],[])
-partitionWith f (x:xs) = case f x of
-                         Left  b -> (b:bs, cs)
-                         Right c -> (bs, c:cs)
-    where (bs,cs) = partitionWith f xs
+
 
 testTuplyFunctions:: forall a v. (CommonContext a v, VectorContext (a, a) v, VectorContext (a, a, a) v) => v a -> [Test]
 testTuplyFunctions _ = $(testProperties [ 'prop_zip, 'prop_zip3
