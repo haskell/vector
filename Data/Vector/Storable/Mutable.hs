@@ -201,7 +201,8 @@ storableSetAsPrim n fp x _y = withForeignPtr fp $ \ ptr  -> do
     poke ptr x
      -- we dont equate storable and prim reps, so we need to write to a slot
      -- in storable
-     -- then read it back as a prim
+     -- then read it back as a prim type
+     -- then use prim memset
     w<- peakPrimPtr_vector ((castPtr ptr) :: Ptr  b) 0
     memsetPrimPtr_vector ((castPtr ptr) `plusPtr` sizeOf x ) (n-1)  w
 
@@ -209,7 +210,8 @@ storableSetAsPrim n fp x _y = withForeignPtr fp $ \ ptr  -> do
 
 {-
 AFTER primitive 0.7 is pretty old, move to using setPtr. which is really
-a confusing misnomer for whats often called memset (intialize )
+a confusing misnomer for whats often called memset (initialize an array with a
+default value)
 -}
 -- Fill a memory block with the given value. The length is in
 -- elements of type @a@ rather than in bytes.

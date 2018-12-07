@@ -1,6 +1,8 @@
 Changes in version 0.12.0.2
   * Fixes issue #220, compact heap operations crashing on boxed vectors constructed
     using traverse.
+  * remove usage of Data.Primitive.Address and clarify the memset Prim Storable
+    smuggling trick in Vector.Storable.Mutable
 
 Changes in version 0.12.0.1
 
