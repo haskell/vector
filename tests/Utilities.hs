@@ -124,6 +124,10 @@ id_TestData(Float)
 id_TestData(Double)
 id_TestData(Ordering)
 
+bimapEither :: (a -> b) -> (c -> d) -> Either a c -> Either b d
+bimapEither f _ (Left a) = Left (f a)
+bimapEither _ g (Right c) = Right (g c)
+
 -- Functorish models
 -- All of these need UndecidableInstances although they are actually well founded. Oh well.
 instance (Eq a, TestData a) => TestData (Maybe a) where
@@ -132,6 +136,14 @@ instance (Eq a, TestData a) => TestData (Maybe a) where
   unmodel = fmap unmodel
 
   type EqTest (Maybe a) = Property
+  equal x y = property (x == y)
+
+instance (Eq a, TestData a, Eq b, TestData b) => TestData (Either a b) where
+  type Model (Either a b) = Either (Model a) (Model b)
+  model = bimapEither model model
+  unmodel = bimapEither unmodel unmodel
+
+  type EqTest (Either a b) = Property
   equal x y = property (x == y)
 
 instance (Eq a, TestData a) => TestData [a] where
@@ -324,7 +336,7 @@ minIndex = fst . foldr1 imin . zip [0..]
 maxIndex :: Ord a => [a] -> Int
 maxIndex = fst . foldr1 imax . zip [0..]
   where
-    imax (i,x) (j,y) | x >= y    = (i,x)
+    imax (i,x) (j,y) | x >  y    = (i,x)
                      | otherwise = (j,y)
 
 iterateNM :: Monad m => Int -> (a -> m a) -> a -> m [a]

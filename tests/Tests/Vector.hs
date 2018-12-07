@@ -7,6 +7,7 @@ import Utilities as Util
 import Data.Functor.Identity
 import qualified Data.Traversable as T (Traversable(..))
 import Data.Foldable (Foldable(foldMap))
+import Data.Orphans ()
 
 import qualified Data.Vector.Generic as V
 import qualified Data.Vector
@@ -30,6 +31,8 @@ import Data.Functor.Identity
 import Control.Monad.Trans.Writer
 
 import Control.Monad.Zip
+
+import Data.Data
 
 type CommonContext  a v = (VanillaContext a, VectorContext a v)
 type VanillaContext a   = ( Eq a , Show a, Arbitrary a, CoArbitrary a
@@ -69,14 +72,6 @@ type VectorContext  a v = ( Eq (v a), Show (v a), Arbitrary (v a), CoArbitrary (
 --  vlength, vnew
 
 -- TODO: test non-IVector stuff?
-
-#if !MIN_VERSION_base(4,7,0)
-instance Foldable ((,) a) where
-  foldMap f (_, b) = f b
-
-instance T.Traversable ((,) a) where
-  traverse f (a, b) = fmap ((,) a) $ f b
-#endif
 
 testSanity :: forall a v. (CommonContext a v) => v a -> [Test]
 testSanity _ = [
@@ -178,6 +173,7 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Paritioning
         'prop_partition, {- 'prop_unstablePartition, -}
+        'prop_partitionWith,
         'prop_span, 'prop_break,
 
         -- Searching
@@ -319,6 +315,8 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_dropWhile :: P ((a -> Bool) -> v a -> v a) = V.dropWhile `eq` dropWhile
     prop_partition :: P ((a -> Bool) -> v a -> (v a, v a))
       = V.partition `eq` partition
+    prop_partitionWith :: P ((a -> Either a a) -> v a -> (v a, v a))
+      = V.partitionWith `eq` partitionWith
     prop_span :: P ((a -> Bool) -> v a -> (v a, v a)) = V.span `eq` span
     prop_break :: P ((a -> Bool) -> v a -> (v a, v a)) = V.break `eq` break
 
@@ -470,6 +468,14 @@ testPolymorphicFunctions _ = $(testProperties [
         constructrN xs 0 _ = xs
         constructrN xs n f = constructrN (f xs : xs) (n-1) f
 
+-- copied from GHC source code
+partitionWith :: (a -> Either b c) -> [a] -> ([b], [c])
+partitionWith _ [] = ([],[])
+partitionWith f (x:xs) = case f x of
+                         Left  b -> (b:bs, cs)
+                         Right c -> (bs, c:cs)
+    where (bs,cs) = partitionWith f xs
+
 testTuplyFunctions:: forall a v. (CommonContext a v, VectorContext (a, a) v, VectorContext (a, a, a) v) => v a -> [Test]
 testTuplyFunctions _ = $(testProperties [ 'prop_zip, 'prop_zip3
                                         , 'prop_unzip, 'prop_unzip3
@@ -489,13 +495,23 @@ testOrdFunctions :: forall a v. (CommonContext a v, Ord a, Ord (v a)) => v a -> 
 testOrdFunctions _ = $(testProperties
   ['prop_compare,
    'prop_maximum, 'prop_minimum,
-   'prop_minIndex, 'prop_maxIndex ])
+   'prop_minIndex, 'prop_maxIndex,
+   'prop_maximumBy, 'prop_minimumBy,
+   'prop_maxIndexBy, 'prop_minIndexBy])
   where
     prop_compare :: P (v a -> v a -> Ordering) = compare `eq` compare
     prop_maximum :: P (v a -> a) = not . V.null ===> V.maximum `eq` maximum
     prop_minimum :: P (v a -> a) = not . V.null ===> V.minimum `eq` minimum
     prop_minIndex :: P (v a -> Int) = not . V.null ===> V.minIndex `eq` minIndex
     prop_maxIndex :: P (v a -> Int) = not . V.null ===> V.maxIndex `eq` maxIndex
+    prop_maximumBy :: P (v a -> a) =
+      not . V.null ===> V.maximumBy compare `eq` maximum
+    prop_minimumBy :: P (v a -> a) =
+      not . V.null ===> V.minimumBy compare `eq` minimum
+    prop_maxIndexBy :: P (v a -> Int) =
+      not . V.null ===> V.maxIndexBy compare `eq` maxIndex
+    prop_minIndexBy :: P (v a -> Int) =
+      not . V.null ===> V.minIndexBy compare `eq` minIndex
 
 testEnumFunctions :: forall a v. (CommonContext a v, Enum a, Ord a, Num a, Random a) => v a -> [Test]
 testEnumFunctions _ = $(testProperties
@@ -590,7 +606,18 @@ testNestedVectorFunctions _ = $(testProperties [])
     --prop_inits        = V.inits       `eq1` (inits       :: v a -> [v a])
     --prop_tails        = V.tails       `eq1` (tails       :: v a -> [v a])
 
-testGeneralBoxedVector :: forall a. (CommonContext a Data.Vector.Vector, Ord a) => Data.Vector.Vector a -> [Test]
+testDataFunctions :: forall a v. (CommonContext a v, Data a, Data (v a)) => v a -> [Test]
+testDataFunctions _ = $(testProperties ['prop_glength])
+  where
+    prop_glength :: P (v a -> Int) = glength `eq` glength
+      where
+        glength :: Data b => b -> Int
+        glength xs = gmapQl (+) 0 toA xs
+
+        toA :: Data b => b -> Int
+        toA x = maybe (glength x) (const 1) (cast x :: Maybe a)
+
+testGeneralBoxedVector :: forall a. (CommonContext a Data.Vector.Vector, Ord a, Data a) => Data.Vector.Vector a -> [Test]
 testGeneralBoxedVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
@@ -601,7 +628,8 @@ testGeneralBoxedVector dummy = concatMap ($ dummy) [
         testFunctorFunctions,
         testMonadFunctions,
         testApplicativeFunctions,
-        testAlternativeFunctions
+        testAlternativeFunctions,
+        testDataFunctions
     ]
 
 testBoolBoxedVector dummy = concatMap ($ dummy)
@@ -610,7 +638,7 @@ testBoolBoxedVector dummy = concatMap ($ dummy)
   , testBoolFunctions
   ]
 
-testNumericBoxedVector :: forall a. (CommonContext a Data.Vector.Vector, Ord a, Num a, Enum a, Random a) => Data.Vector.Vector a -> [Test]
+testNumericBoxedVector :: forall a. (CommonContext a Data.Vector.Vector, Ord a, Num a, Enum a, Random a, Data a) => Data.Vector.Vector a -> [Test]
 testNumericBoxedVector dummy = concatMap ($ dummy)
   [
     testGeneralBoxedVector
@@ -619,15 +647,16 @@ testNumericBoxedVector dummy = concatMap ($ dummy)
   ]
 
 
-testGeneralPrimitiveVector :: forall a. (CommonContext a Data.Vector.Primitive.Vector, Data.Vector.Primitive.Prim a, Ord a) => Data.Vector.Primitive.Vector a -> [Test]
+testGeneralPrimitiveVector :: forall a. (CommonContext a Data.Vector.Primitive.Vector, Data.Vector.Primitive.Prim a, Ord a, Data a) => Data.Vector.Primitive.Vector a -> [Test]
 testGeneralPrimitiveVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
         testOrdFunctions,
-        testMonoidFunctions
+        testMonoidFunctions,
+        testDataFunctions
     ]
 
-testNumericPrimitiveVector :: forall a. (CommonContext a Data.Vector.Primitive.Vector, Data.Vector.Primitive.Prim a, Ord a, Num a, Enum a, Random a) => Data.Vector.Primitive.Vector a -> [Test]
+testNumericPrimitiveVector :: forall a. (CommonContext a Data.Vector.Primitive.Vector, Data.Vector.Primitive.Prim a, Ord a, Num a, Enum a, Random a, Data a) => Data.Vector.Primitive.Vector a -> [Test]
 testNumericPrimitiveVector dummy = concatMap ($ dummy)
  [
    testGeneralPrimitiveVector
@@ -636,15 +665,16 @@ testNumericPrimitiveVector dummy = concatMap ($ dummy)
  ]
 
 
-testGeneralStorableVector :: forall a. (CommonContext a Data.Vector.Storable.Vector, Data.Vector.Storable.Storable a, Ord a) => Data.Vector.Storable.Vector a -> [Test]
+testGeneralStorableVector :: forall a. (CommonContext a Data.Vector.Storable.Vector, Data.Vector.Storable.Storable a, Ord a, Data a) => Data.Vector.Storable.Vector a -> [Test]
 testGeneralStorableVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
         testOrdFunctions,
-        testMonoidFunctions
+        testMonoidFunctions,
+        testDataFunctions
     ]
 
-testNumericStorableVector :: forall a. (CommonContext a Data.Vector.Storable.Vector, Data.Vector.Storable.Storable a, Ord a, Num a, Enum a, Random a) => Data.Vector.Storable.Vector a -> [Test]
+testNumericStorableVector :: forall a. (CommonContext a Data.Vector.Storable.Vector, Data.Vector.Storable.Storable a, Ord a, Num a, Enum a, Random a, Data a) => Data.Vector.Storable.Vector a -> [Test]
 testNumericStorableVector dummy = concatMap ($ dummy)
   [
     testGeneralStorableVector
@@ -653,12 +683,13 @@ testNumericStorableVector dummy = concatMap ($ dummy)
   ]
 
 
-testGeneralUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a) => Data.Vector.Unboxed.Vector a -> [Test]
+testGeneralUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Data a) => Data.Vector.Unboxed.Vector a -> [Test]
 testGeneralUnboxedVector dummy = concatMap ($ dummy) [
         testSanity,
         testPolymorphicFunctions,
         testOrdFunctions,
-        testMonoidFunctions
+        testMonoidFunctions,
+        testDataFunctions
     ]
 
 testUnitUnboxedVector dummy = concatMap ($ dummy)
@@ -672,7 +703,7 @@ testBoolUnboxedVector dummy = concatMap ($ dummy)
   , testBoolFunctions
   ]
 
-testNumericUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Num a, Enum a, Random a) => Data.Vector.Unboxed.Vector a -> [Test]
+testNumericUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Num a, Enum a, Random a, Data a) => Data.Vector.Unboxed.Vector a -> [Test]
 testNumericUnboxedVector dummy = concatMap ($ dummy)
   [
     testGeneralUnboxedVector
@@ -680,7 +711,7 @@ testNumericUnboxedVector dummy = concatMap ($ dummy)
   , testEnumFunctions
   ]
 
-testTupleUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a) => Data.Vector.Unboxed.Vector a -> [Test]
+testTupleUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Data a) => Data.Vector.Unboxed.Vector a -> [Test]
 testTupleUnboxedVector dummy = concatMap ($ dummy)
   [
     testGeneralUnboxedVector
