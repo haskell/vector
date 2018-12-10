@@ -1,6 +1,8 @@
 module Main where
 
 import Criterion.Main
+import Criterion.Main.Options
+import Options.Applicative
 
 import Algo.ListRank  (listRank)
 import Algo.Rootfix   (rootfix)
@@ -20,41 +22,62 @@ import Data.Vector.Unboxed ( Vector )
 import System.Environment
 import Data.Word
 
-size :: Int
-size = 2000000
+import Data.Word
 
-seed :: Word32
-seed = 42
+data BenchArgs = BenchArgs
+  { seed      :: Word32
+  , size      :: Int
+  , otherArgs :: Mode
+  }
 
+defaultSize :: Int
+defaultSize = 2000000
+
+defaultSeed :: Word32
+defaultSeed = 42
+
+parseBenchArgs :: Parser BenchArgs
+parseBenchArgs = BenchArgs
+  <$> option auto
+      (  long "seed"
+      <> metavar "NUM"
+      <> value defaultSeed
+      <> help "A value with which to initialize the PRNG" )
+  <*> option auto
+      (  long "size"
+      <> metavar "NUM"
+      <> value defaultSize
+      <> help "A value to use as the default entries in data structures. Benchmarks are broken for very small numbers." )
+  <*> parseWith defaultConfig
+
+main :: IO ()
 main = do
-  args <- getArgs
-  case args of
-    ("--seed":s:args') -> do
-      withArgs args' (main' (read s))
-    _ -> main' seed
+  args <- execParser $ info (helper <*> parseBenchArgs) $
+          header "vector benchmark suite" <> fullDesc
 
-main' seed =
-       lparens `seq` rparens `seq`
-       nodes `seq` edges1 `seq` edges2 `seq`
-       do
-         as <- randomVector seed size :: IO (Vector Double)
-         bs <- randomVector seed size :: IO (Vector Double)
-         cs <- randomVector seed size :: IO (Vector Double)
-         ds <- randomVector seed size :: IO (Vector Double)
-         sp <- randomVector seed (floor $ sqrt $ fromIntegral size)
-                                 :: IO (Vector Double)
-         as `seq` bs `seq` cs `seq` ds `seq` sp `seq`
-           defaultMain [ bench "listRank"  $ whnf listRank size
-                       , bench "rootfix"   $ whnf rootfix (lparens, rparens)
-                       , bench "leaffix"   $ whnf leaffix (lparens, rparens)
-                       , bench "awshcc"    $ whnf awshcc (nodes, edges1, edges2)
-                       , bench "hybcc"     $ whnf hybcc  (nodes, edges1, edges2)
-                       , bench "quickhull" $ whnf quickhull (as,bs)
-                       , bench "spectral"  $ whnf spectral sp
-                       , bench "tridiag"   $ whnf tridiag (as,bs,cs,ds)
-                       ]
-  where
-    (lparens, rparens) = parenTree size
-    (nodes, edges1, edges2) = randomGraph seed size
+  let useSeed = seed args
+  let useSize = size args
 
+  let (lparens, rparens) = parenTree useSize
+  let (nodes, edges1, edges2) = randomGraph useSeed useSize
+  lparens `seq` rparens `seq`
+    nodes `seq` edges1 `seq` edges2 `seq` return ()
 
+  as <- randomVector useSeed useSize :: IO (Vector Double)
+  bs <- randomVector useSeed useSize :: IO (Vector Double)
+  cs <- randomVector useSeed useSize :: IO (Vector Double)
+  ds <- randomVector useSeed useSize :: IO (Vector Double)
+  sp <- randomVector useSeed (floor $ sqrt $ fromIntegral useSize)
+                          :: IO (Vector Double)
+  as `seq` bs `seq` cs `seq` ds `seq` sp `seq` return ()
+  putStrLn "foo"
+  runMode (otherArgs args)
+                [ bench "listRank"  $ whnf listRank useSize
+                , bench "rootfix"   $ whnf rootfix (lparens, rparens)
+                , bench "leaffix"   $ whnf leaffix (lparens, rparens)
+                , bench "awshcc"    $ whnf awshcc (nodes, edges1, edges2)
+                , bench "hybcc"     $ whnf hybcc  (nodes, edges1, edges2)
+                , bench "quickhull" $ whnf quickhull (as,bs)
+                , bench "spectral"  $ whnf spectral sp
+                , bench "tridiag"   $ whnf tridiag (as,bs,cs,ds)
+                ]
