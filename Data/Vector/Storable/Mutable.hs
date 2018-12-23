@@ -53,7 +53,7 @@ module Data.Vector.Storable.Mutable(
   set, copy, move, unsafeCopy, unsafeMove,
 
   -- * Unsafe conversions
-  unsafeCast,
+  unsafeCast, unsafeCoerceMVector,
 
   -- * Raw pointers
   unsafeFromForeignPtr, unsafeFromForeignPtr0,
@@ -93,12 +93,28 @@ import Prelude hiding ( length, null, replicate, reverse, map, read,
 
 import Data.Typeable ( Typeable )
 
+#if __GLASGOW_HASKELL__ >= 708
+import Data.Coerce
+import Unsafe.Coerce
+#endif
+
 -- Data.Vector.Internal.Check is not needed
 #define NOT_VECTOR_MODULE
 #include "vector.h"
 
 #if __GLASGOW_HASKELL__ >= 708
-type role MVector nominal representational
+type role MVector nominal nominal
+
+-- | /O(1)/ Unsafely coerce a mutable vector from one element type to another,
+-- representationally equal type. The operation just changes the type of the
+-- underlying pointer and does not modify the elements.
+--
+-- This is marginally safer than 'unsafeCast', since this function imposes an
+-- extra 'Coercible' constraint. This function is still not safe, however,
+-- since it cannot guarantee that the two types have memory-compatible
+-- 'Storable' instances.
+unsafeCoerceMVector :: Coercible a b => MVector s a -> MVector s b
+unsafeCoerceMVector = unsafeCoerce
 #endif
 
 -- | Mutable 'Storable'-based vectors

@@ -6,6 +6,31 @@ Changes in version next
    it would choose the first element). Similarly, `maxIndexBy` will also
    now pick the last element if several elements could be considered the
    maximum.
+ * The role signatures on several `Vector` types were too permissive, so they
+   have been tightened up:
+   * The role signature for `Data.Vector.Mutable.MVector` is now
+     `type role MVector nominal representational` (previously, both arguments
+     were `phantom`).
+   * The role signature for `Data.Vector.Primitive.Vector` is now
+     `type role Vector representational` (previously, it was `phantom`).
+   * The role signature for `Data.Vector.Storable.Vector` is now
+     `type role Vector nominal` (previous, it was `phantom`), and the signature
+     for `Data.Vector.Storable.Mutable.MVector` is now
+     `type role MVector nominal nominal` (previous, both arguments were
+     `phantom`).
+
+     We pick `nominal` for the role of the last argument instead of
+     `representational` since the internal structure of a `Storable` vector
+     is determined by the `Storable` instance of the element type, and it is
+     not guaranteed that the `Storable` instances between two
+     representationally equal types will preserve this internal structure.
+     One consequence of this choice is that it is no longer possible to
+     `coerce` between `Storable.Vector a` and `Storable.Vector b` if `a` and
+     `b` are nominally distinct but representationally equal types. We now
+     provide `unsafeCoerce{M}Vector` functions in
+     `Data.Vector.Storable{.Mutable}` to allow this (the onus is on the user
+     to ensure that no `Storable` invariants are broken when using these
+     functions).
  * The `Mutable` type family is now injective on GHC 8.0 or later.
  * Using empty `Storable` vectors no longer results in division-by-zero
    errors.
