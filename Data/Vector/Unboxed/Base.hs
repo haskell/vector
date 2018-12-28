@@ -30,7 +30,11 @@ import qualified Data.Vector.Primitive as P
 
 import Control.Applicative (Const(..))
 
-import Control.DeepSeq ( NFData(rnf) )
+import Control.DeepSeq ( NFData(rnf)
+#if MIN_VERSION_deepseq(1,4,3)
+                       , NFData1(liftRnf)
+#endif
+                       )
 
 import Control.Monad.Primitive
 import Control.Monad ( liftM )
@@ -82,6 +86,13 @@ class (G.Vector Vector a, M.MVector MVector a) => Unbox a
 
 instance NFData (Vector a) where rnf !_ = ()
 instance NFData (MVector s a) where rnf !_ = ()
+
+#if MIN_VERSION_deepseq(1,4,3)
+instance NFData1 Vector where
+  liftRnf _ !_ = ()
+instance NFData1 (MVector s) where
+  liftRnf _ !_ = ()
+#endif
 
 -- -----------------
 -- Data and Typeable

@@ -169,7 +169,12 @@ import           Data.Vector.Mutable  ( MVector(..) )
 import           Data.Primitive.Array
 import qualified Data.Vector.Fusion.Bundle as Bundle
 
-import Control.DeepSeq ( NFData, rnf )
+import Control.DeepSeq ( NFData(rnf)
+#if MIN_VERSION_deepseq(1,4,3)
+                       , NFData1(liftRnf)
+#endif
+                       )
+
 import Control.Monad ( MonadPlus(..), liftM, ap )
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
@@ -219,11 +224,18 @@ data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !(Array a)
         deriving ( Typeable )
 
+liftRnfV :: (a -> ()) -> Vector a -> ()
+liftRnfV elemRnf = foldl' (\_ -> elemRnf) ()
+
 instance NFData a => NFData (Vector a) where
-    rnf (Vector i n arr) = rnfAll i
-        where
-          rnfAll ix | ix < n    = rnf (indexArray arr ix) `seq` rnfAll (ix+1)
-                    | otherwise = ()
+  rnf = liftRnfV rnf
+  {-# INLINEABLE rnf #-}
+
+#if MIN_VERSION_deepseq(1,4,3)
+instance NFData1 Vector where
+  liftRnf = liftRnfV
+  {-# INLINEABLE liftRnf #-}
+#endif
 
 instance Show a => Show (Vector a) where
   showsPrec = G.showsPrec
