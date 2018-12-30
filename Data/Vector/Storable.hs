@@ -132,7 +132,10 @@ module Data.Vector.Storable (
   toList, fromList, fromListN,
 
   -- ** Other vector types
-  G.convert, unsafeCast, unsafeCoerceVector,
+  G.convert, unsafeCast,
+#if __GLASGOW_HASKELL__ >= 708
+  unsafeCoerceVector,
+#endif
 
   -- ** Mutable vectors
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,

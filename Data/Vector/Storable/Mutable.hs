@@ -53,7 +53,10 @@ module Data.Vector.Storable.Mutable(
   set, copy, move, unsafeCopy, unsafeMove,
 
   -- * Unsafe conversions
-  unsafeCast, unsafeCoerceMVector,
+  unsafeCast,
+#if __GLASGOW_HASKELL__ >= 708
+  unsafeCoerceMVector,
+#endif
 
   -- * Raw pointers
   unsafeFromForeignPtr, unsafeFromForeignPtr0,
