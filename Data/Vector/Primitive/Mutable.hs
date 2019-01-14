@@ -57,7 +57,11 @@ import           Data.Word ( Word8 )
 import           Control.Monad.Primitive
 import           Control.Monad ( liftM )
 
-import Control.DeepSeq ( NFData(rnf) )
+import Control.DeepSeq ( NFData(rnf)
+#if MIN_VERSION_deepseq(1,4,3)
+                       , NFData1(liftRnf)
+#endif
+                       )
 
 import Prelude hiding ( length, null, replicate, reverse, map, read,
                         take, drop, splitAt, init, tail )
@@ -79,6 +83,11 @@ type STVector s = MVector s
 
 instance NFData (MVector s a) where
   rnf (MVector _ _ _) = ()
+
+#if MIN_VERSION_deepseq(1,4,3)
+instance NFData1 (MVector s) where
+  liftRnf _ (MVector _ _ _) = ()
+#endif
 
 instance Prim a => G.MVector MVector a where
   basicLength (MVector _ n _) = n
