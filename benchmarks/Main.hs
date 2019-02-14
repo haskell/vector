@@ -52,8 +52,7 @@ parseBenchArgs = BenchArgs
 
 main :: IO ()
 main = do
-  args <- execParser $ info (helper <*> parseBenchArgs) $
-          header "vector benchmark suite" <> fullDesc
+  args <- execParser $ describeWith parseBenchArgs
 
   let useSeed = seed args
   let useSize = size args
