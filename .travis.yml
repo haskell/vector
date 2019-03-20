@@ -30,28 +30,28 @@ matrix:
   include:
     - compiler: "ghc-8.6.4"
       env: TESTTARGETS="vector:vector-tests-O0" # https://ghc.haskell.org/trac/ghc/ticket/13535
-      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-head,ghc-8.6.4], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-8.6.4], sources: [hvr-ghc]}}
     - compiler: "ghc-8.4.4"
       env: TESTTARGETS="vector:vector-tests-O0" # https://ghc.haskell.org/trac/ghc/ticket/13535
-      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.2,ghc-8.4.4], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-8.4.4], sources: [hvr-ghc]}}
     - compiler: "ghc-8.2.2"
       env: TESTTARGETS="vector:vector-tests-O0" # https://ghc.haskell.org/trac/ghc/ticket/13535
-      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.2,ghc-8.2.2], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-8.2.2], sources: [hvr-ghc]}}
     - compiler: "ghc-8.0.2"
       env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
-      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.2,ghc-8.0.2], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-8.0.2], sources: [hvr-ghc]}}
     - compiler: "ghc-7.10.3"
       env: TESTTARGETS="vector:vector-tests-O0"
-      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.2,ghc-7.10.3], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-7.10.3], sources: [hvr-ghc]}}
     - compiler: "ghc-7.8.4"
       env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
-      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.2,ghc-7.8.4], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-7.8.4], sources: [hvr-ghc]}}
     - compiler: "ghc-7.6.3"
       env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
-      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.2,ghc-7.6.3], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-7.6.3], sources: [hvr-ghc]}}
     - compiler: "ghc-7.4.2"
       env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
-      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.2,ghc-7.4.2], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-7.4.2], sources: [hvr-ghc]}}
     - compiler: "ghc-head"
       env: GHCHEAD=true TESTTARGETS="vector:vector-tests-O0" # https://ghc.haskell.org/trac/ghc/ticket/13535
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-head,ghc-head], sources: [hvr-ghc]}}
@@ -119,8 +119,8 @@ install:
 # any command which exits with a non-zero exit code causes the build to fail.
 script:
   # test that source-distributions can be generated
-  - (cd "." && cabal sdist)
-  - mv "."/dist/vector-*.tar.gz ${DISTDIR}/
+  - cabal new-sdist all
+  - mv dist-newstyle/sdist/*.tar.gz ${DISTDIR}/
   - cd ${DISTDIR} || false
   - find . -maxdepth 1 -name '*.tar.gz' -exec tar -xvf '{}' \;
   - "printf 'packages: vector-*/*.cabal\\n' > cabal.project"
