@@ -175,9 +175,10 @@ import Control.DeepSeq ( NFData(rnf)
 #endif
                        )
 
-import Control.Monad ( MonadPlus(..), liftM, ap )
-import Control.Monad.ST ( ST )
-import Control.Monad.Primitive
+import           Control.Monad ( MonadPlus(..), liftM, ap )
+import qualified Control.Monad.Fail as Fail
+import           Control.Monad.ST ( ST )
+import           Control.Monad.Primitive
 
 
 import Control.Monad.Zip
@@ -353,6 +354,12 @@ instance Monad Vector where
   {-# INLINE (>>=) #-}
   (>>=) = flip concatMap
 
+#if !(MIN_VERSION_base(4,13,0))
+  {-# INLINE fail #-}
+  fail = Fail.fail
+#endif
+
+instance Fail.MonadFail Vector where
   {-# INLINE fail #-}
   fail _ = empty
 
