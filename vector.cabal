@@ -1,5 +1,5 @@
 Name:           vector
-Version:        0.12.0.2
+Version:        0.12.0.3
 -- don't forget to update the changelog file!
 License:        BSD3
 License-File:   LICENSE
@@ -149,7 +149,8 @@ Library
                , ghc-prim >= 0.2 && < 0.6
                , deepseq >= 1.1 && < 1.5
   if !impl(ghc > 8.0)
-    Build-Depends: semigroups >= 0.18 && < 0.19
+    Build-Depends: fail == 4.9.*
+                 , semigroups >= 0.18 && < 0.19
 
   Ghc-Options: -O2 -Wall
 
