@@ -147,13 +147,13 @@ Library
   Install-Includes:
         vector.h
 
-  Build-Depends: base >= 4.5 && < 4.13
+  Build-Depends: base >= 4.5 && < 4.14
                , primitive >= 0.5.0.1 && < 0.7
                , ghc-prim >= 0.2 && < 0.6
                , deepseq >= 1.1 && < 1.5
   if !impl(ghc > 8.0)
     Build-Depends: fail == 4.9.*
-                 , semigroups >= 0.18 && < 0.19
+                 , semigroups >= 0.18 && < 0.20
 
   Ghc-Options: -O2 -Wall
 
