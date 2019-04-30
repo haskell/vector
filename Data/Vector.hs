@@ -355,7 +355,7 @@ instance Monad Vector where
 
 #if !(MIN_VERSION_base(4,13,0))
   {-# INLINE fail #-}
-  fail _ = empty
+  fail = Fail.fail -- == \ _str -> empty
 #endif
 
 instance Fail.MonadFail Vector where
