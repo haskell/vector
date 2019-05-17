@@ -153,7 +153,7 @@ Library
                , deepseq >= 1.1 && < 1.5
   if !impl(ghc > 8.0)
     Build-Depends: fail == 4.9.*
-                 , semigroups >= 0.18 && < 0.19
+                 , semigroups >= 0.18 && < 0.20
 
   Ghc-Options: -O2 -Wall
 
