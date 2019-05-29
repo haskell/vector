@@ -383,8 +383,9 @@ set = G.set
 
 -- | Copy a vector. The two vectors must have the same length and may not
 -- overlap.
-copy :: PrimMonad m
-                 => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
+copy :: PrimMonad m => MVector (PrimState m) a   -- ^ target
+                    -> MVector (PrimState m) a   -- ^ source
+                    -> m ()
 {-# INLINE copy #-}
 copy = G.copy
 
@@ -403,8 +404,9 @@ unsafeCopy = G.unsafeCopy
 -- Otherwise, the copying is performed as if the source vector were
 -- copied to a temporary vector and then the temporary vector was copied
 -- to the target vector.
-move :: PrimMonad m
-                 => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
+move :: PrimMonad m => MVector (PrimState m) a   -- ^ target
+                    -> MVector (PrimState m) a   -- ^ source
+                    -> m ()
 {-# INLINE move #-}
 move = G.move
 
