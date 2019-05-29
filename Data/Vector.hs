@@ -346,6 +346,9 @@ instance Functor Vector where
   {-# INLINE fmap #-}
   fmap = map
 
+  {-# INLINE (<$) #-}
+  (<$) a v = replicate (length v) a
+
 instance Monad Vector where
   {-# INLINE return #-}
   return = Applicative.pure
