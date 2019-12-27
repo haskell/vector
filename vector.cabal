@@ -1,5 +1,5 @@
 Name:           vector
-Version:        0.12.0.1
+Version:        0.13.0.1
 -- don't forget to update the changelog file!
 License:        BSD3
 License-File:   LICENSE
@@ -44,6 +44,7 @@ Tested-With:
   GHC == 8.4.4,
   GHC == 8.6.4
 
+
 Cabal-Version:  >=1.10
 Build-Type:     Simple
 
@@ -71,6 +72,17 @@ Extra-Source-Files:
       changelog
       internal/GenUnboxTuple.hs
       internal/unbox-tuple-instances
+
+FLAG TestOptO2
+  Description: with current GHC, can't run test suite on machines with less than 30gb of random
+  Default: False
+  Manual: True
+
+FLAG EnoughRamToTest
+  Description: Both O1 and O2 builds of test suite require north of 8gb of ram to build
+  Default: False
+  Manual: True
+
 
 Flag BoundsChecks
   Description: Enable bounds checking
@@ -148,7 +160,7 @@ Library
         vector.h
 
   Build-Depends: base >= 4.5 && < 4.14
-               , primitive >= 0.5.0.1 && < 0.7
+               , primitive >= 0.5.0.1 && < 0.8
                , ghc-prim >= 0.2 && < 0.6
                , deepseq >= 1.1 && < 1.5
   if !impl(ghc > 8.0)
@@ -216,7 +228,7 @@ test-suite vector-tests-O0
       Ghc-Options: -Wno-redundant-constraints
 
 
-test-suite vector-tests-O2
+test-suite vector-tests-Optimized
   Default-Language: Haskell2010
   type: exitcode-stdio-1.0
   Main-Is:  Main.hs
@@ -244,8 +256,15 @@ test-suite vector-tests-O2
               TypeSynonymInstances,
               TypeFamilies,
               TemplateHaskell
+  if !flag(TestOptO2)
+    Ghc-Options: -O1
 
-  Ghc-Options: -O2 -Wall
+  if flag(TestOptO2)
+    Ghc-Options: -O2
+  if !flag(EnoughRamToTest)
+    Buildable: False
+
+  Ghc-Options: -Wall
 
   if !flag(Wall)
     Ghc-Options: -fno-warn-orphans -fno-warn-missing-signatures
