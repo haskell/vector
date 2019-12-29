@@ -231,7 +231,7 @@ index_value_pairs 0 = return []
 index_value_pairs m = sized $ \n ->
   do
     len <- choose (0,n)
-    is <- sequence [choose (0,m-1) | i <- [1..len]]
+    is <- sequence [choose (0,m-1) | _i <- [1..len]]
     xs <- vector len
     return $ zip is xs
 
@@ -240,7 +240,7 @@ indices 0 = return []
 indices m = sized $ \n ->
   do
     len <- choose (0,n)
-    sequence [choose (0,m-1) | i <- [1..len]]
+    sequence [choose (0,m-1) | _i <- [1..len]]
 
 
 -- Additional list functions
@@ -259,9 +259,9 @@ accum f xs ps = go xs ps' 0
   where
     ps' = sortBy (\p q -> compare (fst p) (fst q)) ps
 
-    go (x:xs) ((i,y) : ps) j
-      | i == j     = go (f x y : xs) ps j
-    go (x:xs) ps j = x : go xs ps (j+1)
+    go (x:xxs) ((i,y) : pps) j
+      | i == j     = go (f x y : xxs) pps j
+    go (x:xxs) pps j = x : go xxs pps (j+1)
     go [] _ _      = []
 
 (//) :: [a] -> [(Int, a)] -> [a]
@@ -269,9 +269,9 @@ xs // ps = go xs ps' 0
   where
     ps' = sortBy (\p q -> compare (fst p) (fst q)) ps
 
-    go (x:xs) ((i,y) : ps) j
-      | i == j     = go (y:xs) ps j
-    go (x:xs) ps j = x : go xs ps (j+1)
+    go (_x:xxs) ((i,y) : pps) j
+      | i == j     = go (y:xxs) pps j
+    go (x:xxs) pps j = x : go xxs pps (j+1)
     go [] _ _      = []
 
 

@@ -2,7 +2,7 @@
 module Tests.Vector (tests) where
 
 import Boilerplater
-import Utilities as Util
+import Utilities as Util hiding (limitUnfolds)
 
 import Data.Functor.Identity
 import qualified Data.Traversable as T (Traversable(..))
