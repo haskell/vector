@@ -133,6 +133,9 @@ module Data.Vector.Storable (
 
   -- ** Other vector types
   G.convert, unsafeCast,
+#if __GLASGOW_HASKELL__ >= 708
+  unsafeCoerceVector,
+#endif
 
   -- ** Mutable vectors
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
@@ -187,7 +190,9 @@ import Data.Traversable ( Traversable )
 #endif
 
 #if __GLASGOW_HASKELL__ >= 708
+import Data.Coerce
 import qualified GHC.Exts as Exts
+import Unsafe.Coerce
 #endif
 
 -- Data.Vector.Internal.Check is unused
@@ -195,7 +200,18 @@ import qualified GHC.Exts as Exts
 #include "vector.h"
 
 #if __GLASGOW_HASKELL__ >= 708
-type role Vector representational
+type role Vector nominal
+
+-- | /O(1)/ Unsafely coerce a mutable vector from one element type to another,
+-- representationally equal type. The operation just changes the type of the
+-- underlying pointer and does not modify the elements.
+--
+-- This is marginally safer than 'unsafeCast', since this function imposes an
+-- extra 'Coercible' constraint. This function is still not safe, however,
+-- since it cannot guarantee that the two types have memory-compatible
+-- 'Storable' instances.
+unsafeCoerceVector :: Coercible a b => Vector a -> Vector b
+unsafeCoerceVector = unsafeCoerce
 #endif
 
 -- | 'Storable'-based vectors
@@ -1414,7 +1430,6 @@ unsafeCast :: forall a b. (Storable a, Storable b) => Vector a -> Vector b
 unsafeCast (Vector n fp)
   = Vector ((n * sizeOf (undefined :: a)) `div` sizeOf (undefined :: b))
            (castForeignPtr fp)
-
 
 -- Conversions - Mutable vectors
 -- -----------------------------
