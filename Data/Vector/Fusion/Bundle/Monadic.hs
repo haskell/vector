@@ -427,7 +427,7 @@ zip6 = zipWith6 (,,,,,)
 eqBy :: (Monad m) => (a -> b -> Bool) -> Bundle m v a -> Bundle m v b -> m Bool
 {-# INLINE_FUSED eqBy #-}
 eqBy eq x y
-  | sizesAreDifferent (sSize x) (sSize y) = pure False
+  | sizesAreDifferent (sSize x) (sSize y) = return False
   | otherwise                             = S.eqBy eq (sElems x) (sElems y)
   where
     sizesAreDifferent :: Size -> Size -> Bool
