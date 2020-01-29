@@ -31,7 +31,6 @@ import Data.Foldable (Foldable(foldMap))
 import Data.Orphans ()
 
 import qualified Data.Vector.Generic as V
-import qualified Data.Vector
 import qualified Data.Vector.Fusion.Bundle as S
 
 import Test.QuickCheck
@@ -501,17 +500,12 @@ testTuplyFunctions :: forall a v. (CommonContext a v, VectorContext (a, a) v, Ve
 {-# INLINE testTuplyFunctions #-}
 testTuplyFunctions _ = $(testProperties [ 'prop_zip, 'prop_zip3
                                         , 'prop_unzip, 'prop_unzip3
-                                        , 'prop_mzip, 'prop_munzip
                                         ])
   where
     prop_zip    :: P (v a -> v a -> v (a, a))           = V.zip `eq` zip
     prop_zip3   :: P (v a -> v a -> v a -> v (a, a, a)) = V.zip3 `eq` zip3
     prop_unzip  :: P (v (a, a) -> (v a, v a))           = V.unzip `eq` unzip
     prop_unzip3 :: P (v (a, a, a) -> (v a, v a, v a))   = V.unzip3 `eq` unzip3
-    prop_mzip   :: P (Data.Vector.Vector a -> Data.Vector.Vector a -> Data.Vector.Vector (a, a))
-        = mzip `eq` zip
-    prop_munzip :: P (Data.Vector.Vector (a, a) -> (Data.Vector.Vector a, Data.Vector.Vector a))
-        = munzip `eq` unzip
 
 testOrdFunctions :: forall a v. (CommonContext a v, Ord a, Ord (v a)) => v a -> [Test]
 {-# INLINE testOrdFunctions #-}
@@ -584,13 +578,15 @@ testFunctorFunctions _ = $(testProperties
   where
     prop_fmap :: P ((a -> a) -> v a -> v a) = fmap `eq` fmap
 
-testMonadFunctions :: forall a v. (CommonContext a v, Monad v) => v a -> [Test]
+testMonadFunctions :: forall a v. (CommonContext a v, VectorContext (a, a) v, MonadZip v) => v a -> [Test]
 {-# INLINE testMonadFunctions #-}
-testMonadFunctions _ = $(testProperties
-  [ 'prop_return, 'prop_bind ])
+testMonadFunctions _ = $(testProperties [ 'prop_return, 'prop_bind
+                                        , 'prop_mzip, 'prop_munzip])
   where
     prop_return :: P (a -> v a) = return `eq` return
     prop_bind   :: P (v a -> (a -> v a) -> v a) = (>>=) `eq` (>>=)
+    prop_mzip   :: P (v a -> v a -> v (a, a)) = mzip `eq` zip
+    prop_munzip :: P (v (a, a) -> (v a, v a)) = munzip `eq` unzip
 
 testApplicativeFunctions :: forall a v. (CommonContext a v, V.Vector v (a -> a), Applicative.Applicative v) => v a -> [Test]
 {-# INLINE testApplicativeFunctions #-}
