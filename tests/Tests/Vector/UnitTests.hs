@@ -53,17 +53,17 @@ tests =
       ]
   , testGroup "Regression tests"
     [ testGroup "enumFromTo crash #188" $
-      [ regression188 (Proxy :: Proxy Word8)
-      , regression188 (Proxy :: Proxy Word16)
-      , regression188 (Proxy :: Proxy Word32)
-      , regression188 (Proxy :: Proxy Word64)
-      , regression188 (Proxy :: Proxy Word)
-      , regression188 (Proxy :: Proxy Int8)
-      , regression188 (Proxy :: Proxy Int16)
-      , regression188 (Proxy :: Proxy Int32)
-      , regression188 (Proxy :: Proxy Int64)
-      , regression188 (Proxy :: Proxy Int)
-      , regression188 (Proxy :: Proxy Char)
+      [ regression188 ([] :: [Word8])
+      , regression188 ([] :: [Word16])
+      , regression188 ([] :: [Word32])
+      , regression188 ([] :: [Word64])
+      , regression188 ([] :: [Word])
+      , regression188 ([] :: [Int8])
+      , regression188 ([] :: [Int16])
+      , regression188 ([] :: [Int32])
+      , regression188 ([] :: [Int64])
+      , regression188 ([] :: [Int])
+      , regression188 ([] :: [Char])
       ]
     ]
   , testGroup "Negative tests"
@@ -125,8 +125,8 @@ sliceTest sliceWith i m xs = do
 
 
 regression188
-  :: forall a. (Typeable a, Enum a, Bounded a, Eq a, Show a)
-  => Proxy a -> Test
+  :: forall proxy a. (Typeable a, Enum a, Bounded a, Eq a, Show a)
+  => proxy a -> Test
 regression188 _ = testCase (show (typeOf (undefined :: a)))
   $ Vector.fromList [maxBound::a] @=? Vector.enumFromTo maxBound maxBound
 {-# INLINE regression188 #-}

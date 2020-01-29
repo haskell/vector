@@ -1325,11 +1325,13 @@ enumFromTo x y = fromList [x .. y]
 -- FIXME: add "too large" test for Int
 enumFromTo_small :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_FUSED enumFromTo_small #-}
-enumFromTo_small x y = x `seq` y `seq` Stream step x
+enumFromTo_small x y = x `seq` y `seq` Stream step (Just x)
   where
     {-# INLINE_INNER step #-}
-    step w | w <= y    = return $ Yield w (w+1)
-           | otherwise = return $ Done
+    step Nothing              = return $ Done
+    step (Just z) | z == y    = return $ Yield z Nothing
+                  | z <  y    = return $ Yield z (Just (z+1))
+                  | otherwise = return $ Done
 
 {-# RULES
 
@@ -1373,7 +1375,7 @@ enumFromTo_small x y = x `seq` y `seq` Stream step x
 
 enumFromTo_int :: forall m. Monad m => Int -> Int -> Stream m Int
 {-# INLINE_FUSED enumFromTo_int #-}
-enumFromTo_int x y = x `seq` y `seq` Stream step x
+enumFromTo_int x y = x `seq` y `seq` Stream step (Just x)
   where
     -- {-# INLINE [0] len #-}
     -- len :: Int -> Int -> Int
@@ -1385,16 +1387,21 @@ enumFromTo_int x y = x `seq` y `seq` Stream step x
     --     n = v-u+1
 
     {-# INLINE_INNER step #-}
-    step z | z <= y    = return $ Yield z (z+1)
-           | otherwise = return $ Done
+    step Nothing              = return $ Done
+    step (Just z) | z == y    = return $ Yield z Nothing
+                  | z <  y    = return $ Yield z (Just (z+1))
+                  | otherwise = return $ Done
+
 
 enumFromTo_intlike :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_FUSED enumFromTo_intlike #-}
-enumFromTo_intlike x y = x `seq` y `seq` Stream step x
+enumFromTo_intlike x y = x `seq` y `seq` Stream step (Just x)
   where
     {-# INLINE_INNER step #-}
-    step z | z <= y    = return $ Yield z (z+1)
-           | otherwise = return $ Done
+    step Nothing              = return $ Done
+    step (Just z) | z == y    = return $ Yield z Nothing
+                  | z <  y    = return $ Yield z (Just (z+1))
+                  | otherwise = return $ Done
 
 {-# RULES
 
@@ -1415,11 +1422,13 @@ enumFromTo_intlike x y = x `seq` y `seq` Stream step x
 
 enumFromTo_big_word :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_FUSED enumFromTo_big_word #-}
-enumFromTo_big_word x y = x `seq` y `seq` Stream step x
+enumFromTo_big_word x y = x `seq` y `seq` Stream step (Just x)
   where
     {-# INLINE_INNER step #-}
-    step z | z <= y    = return $ Yield z (z+1)
-           | otherwise = return $ Done
+    step Nothing              = return $ Done
+    step (Just z) | z == y    = return $ Yield z Nothing
+                  | z <  y    = return $ Yield z (Just (z+1))
+                  | otherwise = return $ Done
 
 {-# RULES
 
@@ -1449,11 +1458,13 @@ enumFromTo_big_word x y = x `seq` y `seq` Stream step x
 -- FIXME: the "too large" test is totally wrong
 enumFromTo_big_int :: (Integral a, Monad m) => a -> a -> Stream m a
 {-# INLINE_FUSED enumFromTo_big_int #-}
-enumFromTo_big_int x y = x `seq` y `seq` Stream step x
+enumFromTo_big_int x y = x `seq` y `seq` Stream step (Just x)
   where
     {-# INLINE_INNER step #-}
-    step z | z <= y    = return $ Yield z (z+1)
-           | otherwise = return $ Done
+    step Nothing              = return $ Done
+    step (Just z) | z == y    = return $ Yield z Nothing
+                  | z <  y    = return $ Yield z (Just (z+1))
+                  | otherwise = return $ Done
 
 {-# RULES
 
