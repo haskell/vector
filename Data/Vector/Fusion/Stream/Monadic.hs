@@ -1489,13 +1489,27 @@ enumFromTo_char x y = x `seq` y `seq` Stream step xn
 
 enumFromTo_double :: (Monad m, Ord a, RealFrac a) => a -> a -> Stream m a
 {-# INLINE_FUSED enumFromTo_double #-}
-enumFromTo_double n m = n `seq` m `seq` Stream step n
+enumFromTo_double n m = n `seq` m `seq` Stream step ini
   where
     lim = m + 1/2 -- important to float out
 
-    {-# INLINE_INNER step #-}
+-- GHC changed definition of Enum for Double in GHC8.6 so we have to
+-- accomodate both definitions in order to preserve validity of
+-- rewrite rule
+--
+--  ISSUE:  https://gitlab.haskell.org/ghc/ghc/issues/15081
+--  COMMIT: https://gitlab.haskell.org/ghc/ghc/commit/4ffaf4b67773af4c72d92bb8b6c87b1a7d34ac0f
+#if MIN_VERSION_base(4,12,0)
+    ini = 0
+    step x | x' <= lim = return $ Yield x' (x+1)
+           | otherwise = return $ Done
+           where
+             x' = x + n
+#else
+    ini = n
     step x | x <= lim  = return $ Yield x (x+1)
            | otherwise = return $ Done
+#endif
 
 {-# RULES
 
