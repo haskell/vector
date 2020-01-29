@@ -198,6 +198,11 @@ test-suite vector-tests-O0
                  Tests.Bundle
                  Tests.Move
                  Tests.Vector
+                 Tests.Vector.Property
+                 Tests.Vector.Boxed
+                 Tests.Vector.Storable
+                 Tests.Vector.Primitive
+                 Tests.Vector.Unboxed
                  Tests.Vector.UnitTests
                  Utilities
 
@@ -236,6 +241,11 @@ test-suite vector-tests-O2
                  Tests.Bundle
                  Tests.Move
                  Tests.Vector
+                 Tests.Vector.Property
+                 Tests.Vector.Boxed
+                 Tests.Vector.Storable
+                 Tests.Vector.Primitive
+                 Tests.Vector.Unboxed
                  Tests.Vector.UnitTests
                  Utilities
 
