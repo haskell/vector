@@ -6,19 +6,23 @@ module Tests.Vector.UnitTests (tests) where
 import Control.Applicative as Applicative
 import Control.Exception
 import Control.Monad.Primitive
+import Data.Int
+import Data.Word
+import Data.Typeable
 import qualified Data.List as List
 import qualified Data.Vector.Generic  as Generic
 import qualified Data.Vector as Boxed
 import qualified Data.Vector.Primitive as Primitive
 import qualified Data.Vector.Storable as Storable
 import qualified Data.Vector.Unboxed as Unboxed
+import qualified Data.Vector         as Vector
 import Foreign.Ptr
 import Foreign.Storable
 import Text.Printf
 
 import Test.Framework
 import Test.Framework.Providers.HUnit (testCase)
-import Test.HUnit (Assertion, assertBool, assertFailure)
+import Test.HUnit (Assertion, assertBool, (@=?),assertFailure)
 
 newtype Aligned a = Aligned { getAligned :: a }
 
@@ -47,6 +51,21 @@ tests =
       , testCase "Aligned Int" $
           checkAddressAlignment alignedIntVec
       ]
+  , testGroup "Regression tests"
+    [ testGroup "enumFromTo crash #188" $
+      [ regression188 (Proxy :: Proxy Word8)
+      , regression188 (Proxy :: Proxy Word16)
+      , regression188 (Proxy :: Proxy Word32)
+      , regression188 (Proxy :: Proxy Word64)
+      , regression188 (Proxy :: Proxy Word)
+      , regression188 (Proxy :: Proxy Int8)
+      , regression188 (Proxy :: Proxy Int16)
+      , regression188 (Proxy :: Proxy Int32)
+      , regression188 (Proxy :: Proxy Int64)
+      , regression188 (Proxy :: Proxy Int)
+      , regression188 (Proxy :: Proxy Char)
+      ]
+    ]
   , testGroup "Negative tests"
     [ testGroup "slice out of bounds #257"
       [ testGroup "Boxed" $ testsSliceOutOfBounds Boxed.slice
@@ -104,6 +123,13 @@ sliceTest sliceWith i m xs = do
 {-# INLINE sliceTest #-}
 
 
+
+regression188
+  :: forall a. (Typeable a, Enum a, Bounded a, Eq a, Show a)
+  => Proxy a -> Test
+regression188 _ = testCase (show (typeOf (undefined :: a)))
+  $ Vector.fromList [maxBound::a] @=? Vector.enumFromTo maxBound maxBound
+{-# INLINE regression188 #-}
 
 alignedDoubleVec :: Storable.Vector (Aligned Double)
 alignedDoubleVec = Storable.fromList $ map Aligned [1, 2, 3, 4, 5]
