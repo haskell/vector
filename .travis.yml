@@ -29,25 +29,25 @@ before_cache:
 matrix:
   include:
     - compiler: "ghc-8.10.1"
-      env: GHCHEAD=true  TESTTARGETS="vector:vector-tests-O0" # https://ghc.haskell.org/trac/ghc/ticket/13535
+      env: GHCHEAD=true  TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-8.10.1], sources: [hvr-ghc]}}
     - compiler: "ghc-8.8.1"
-      env: TESTTARGETS="vector:vector-tests-O0" # https://ghc.haskell.org/trac/ghc/ticket/13535
+      env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-8.8.1], sources: [hvr-ghc]}}
     - compiler: "ghc-8.6.5"
-      env: TESTTARGETS="vector:vector-tests-O0" # https://ghc.haskell.org/trac/ghc/ticket/13535
+      env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-8.6.5], sources: [hvr-ghc]}}
     - compiler: "ghc-8.4.4"
-      env: TESTTARGETS="vector:vector-tests-O0" # https://ghc.haskell.org/trac/ghc/ticket/13535
+      env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-8.4.4], sources: [hvr-ghc]}}
     - compiler: "ghc-8.2.2"
-      env: TESTTARGETS="vector:vector-tests-O0" # https://ghc.haskell.org/trac/ghc/ticket/13535
+      env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-8.2.2], sources: [hvr-ghc]}}
     - compiler: "ghc-8.0.2"
       env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-8.0.2], sources: [hvr-ghc]}}
     - compiler: "ghc-7.10.3"
-      env: TESTTARGETS="vector:vector-tests-O0"
+      env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-7.10.3], sources: [hvr-ghc]}}
     - compiler: "ghc-7.8.4"
       env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
@@ -59,7 +59,7 @@ matrix:
       env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-7.4.2], sources: [hvr-ghc]}}
     - compiler: "ghc-head"
-      env: GHCHEAD=true TESTTARGETS="vector:vector-tests-O0" # https://ghc.haskell.org/trac/ghc/ticket/13535
+      env: GHCHEAD=true TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-head,ghc-head], sources: [hvr-ghc]}}
 
   allow_failures:
