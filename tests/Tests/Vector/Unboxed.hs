@@ -48,6 +48,8 @@ tests =
     testBoolUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Bool)
   , testGroup "(Int)" $
     testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Int)
+  , testGroup "(Float)" $
+  testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Float)
   , testGroup "(Double)" $
     testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Double)
   , testGroup "(Int,Bool)" $

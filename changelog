@@ -1,5 +1,9 @@
 Changes in version next
 
+ * updated specialization rule for EnumFromTo on Float and Double
+  to make sure it always matches the version in GHC Base (which changed as of 8.6)
+  Thanks to Aleksey Khudyakov @Shimuuar for this fix.
+ * fast rejection short circuiting in eqBy operations
  * the O2 test suite now has reasonable memory usage on every GHC version,
     special thanks to Alexey Kuleshevich (@lehins).
  * `maximumBy` now behaves like its counterpart in `Data.List` in that if
@@ -8,6 +12,8 @@ Changes in version next
    it would choose the first element). Similarly, `maxIndexBy` will also
    now pick the last element if several elements could be considered the
    maximum.
+
+TODO: should this be in the next release
  * The role signatures on several `Vector` types were too permissive, so they
    have been tightened up:
    * The role signature for `Data.Vector.Mutable.MVector` is now
