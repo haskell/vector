@@ -58,9 +58,6 @@ matrix:
     - compiler: "ghc-7.4.2"
       env: TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
       addons: {apt: {packages: [ghc-ppa-tools,cabal-install-2.4,ghc-7.4.2], sources: [hvr-ghc]}}
-    - compiler: "ghc-head"
-      env: GHCHEAD=true TESTTARGETS="vector:vector-tests-O0 vector:vector-tests-O2"
-      addons: {apt: {packages: [ghc-ppa-tools,cabal-install-head,ghc-head], sources: [hvr-ghc]}}
 
   allow_failures:
     - compiler: "8.10.1"
