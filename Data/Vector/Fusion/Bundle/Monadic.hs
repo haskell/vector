@@ -426,7 +426,15 @@ zip6 = zipWith6 (,,,,,)
 -- | Check if two 'Bundle's are equal
 eqBy :: (Monad m) => (a -> b -> Bool) -> Bundle m v a -> Bundle m v b -> m Bool
 {-# INLINE_FUSED eqBy #-}
-eqBy eq x y = S.eqBy eq (sElems x) (sElems y)
+eqBy eq x y
+  | sizesAreDifferent (sSize x) (sSize y) = return False
+  | otherwise                             = S.eqBy eq (sElems x) (sElems y)
+  where
+    sizesAreDifferent :: Size -> Size -> Bool
+    sizesAreDifferent (Exact a) (Exact b) = a /= b
+    sizesAreDifferent (Exact a) (Max b)   = a > b
+    sizesAreDifferent (Max a)   (Exact b) = a < b
+    sizesAreDifferent _         _         = False
 
 -- | Lexicographically compare two 'Bundle's
 cmpBy :: (Monad m) => (a -> b -> Ordering) -> Bundle m v a -> Bundle m v b -> m Ordering
