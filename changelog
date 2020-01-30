@@ -1,5 +1,7 @@
 Changes in version next
 
+ * the O2 test suite now has reasonable memory usage on every GHC version,
+    special thanks to Alexey Kuleshevich (@lehins).
  * `maximumBy` now behaves like its counterpart in `Data.List` in that if
    `maximumBy` has to choose between several elements which could be
    considered the maximum, it will now choose the last element (previously,
