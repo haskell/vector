@@ -269,7 +269,7 @@ tail Bundle{sElems = s, sSize = sz} = fromStream (S.tail s) (sz-1)
 -- | The first @n@ elements
 take :: Monad m => Int -> Bundle m v a -> Bundle m v a
 {-# INLINE_FUSED take #-}
-take n Bundle{sElems = s, sSize = sz} = fromStream (S.take n s) (smaller (Exact n) sz)
+take n Bundle{sElems = s, sSize = sz} = fromStream (S.take n s) (smallerThan n sz)
 
 -- | All but the first @n@ elements
 drop :: Monad m => Int -> Bundle m v a -> Bundle m v a
