@@ -51,6 +51,17 @@ TODO: should this be in the next release
    `All`, `Alt`, and `Compose`.
  * Add `NFData1` instances for applicable `Vector` types.
 
+Changes in version 0.12.0.3
+  * Monad Fail support
+
+Changes in version 0.12.0.2
+  * Fixes issue #220, compact heap operations crashing on boxed vectors constructed
+    using traverse.
+  * backport injective type family support
+  * Cleanup the memset code internal to storable vector modules to be
+    compatible with future Primitive releases
+
+
 Changes in version 0.12.0.1
 
  * Make sure `length` can be inlined
