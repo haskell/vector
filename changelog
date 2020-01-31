@@ -1,6 +1,7 @@
 Changes in version next
 
  * Fix integer overflows in specializations of Bundle/Stream enumFromTo on Integral types
+ * Fix possibility of OutOfMemory with `take` and very large arguments.
  * Fix `slice` function causing segfault and not checking the bounds properly.
  * updated specialization rule for EnumFromTo on Float and Double
   to make sure it always matches the version in GHC Base (which changed as of 8.6)
