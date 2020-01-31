@@ -466,10 +466,12 @@ unsafeDrop :: Vector v a => Int -> v a -> v a
 {-# INLINE unsafeDrop #-}
 unsafeDrop n v = unsafeSlice n (length v - n) v
 
-{-# RULES
 
-"slice/new [Vector]" forall i n p.
-  slice i n (new p) = new (New.slice i n p)
+-- Turned off due to: https://github.com/haskell/vector/issues/257
+-- "slice/new [Vector]" forall i n p.
+--   slice i n (new p) = new (New.slice i n p)
+
+{-# RULES
 
 "init/new [Vector]" forall p.
   init (new p) = new (New.init p)
