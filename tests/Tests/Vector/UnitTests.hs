@@ -22,7 +22,7 @@ import Text.Printf
 
 import Test.Framework
 import Test.Framework.Providers.HUnit (testCase)
-import Test.HUnit (Assertion, assertBool, (@=?),assertFailure)
+import Test.HUnit (Assertion, assertBool, (@=?), assertFailure)
 
 newtype Aligned a = Aligned { getAligned :: a }
 
@@ -52,7 +52,7 @@ tests =
           checkAddressAlignment alignedIntVec
       ]
   , testGroup "Regression tests"
-    [ testGroup "enumFromTo crash #188" $
+    [ testGroup "enumFromTo crash #188"
       [ regression188 ([] :: [Word8])
       , regression188 ([] :: [Word16])
       , regression188 ([] :: [Word32])
@@ -72,6 +72,12 @@ tests =
       , testGroup "Primitive" $ testsSliceOutOfBounds Primitive.slice
       , testGroup "Storable" $ testsSliceOutOfBounds Storable.slice
       , testGroup "Unboxed" $ testsSliceOutOfBounds Unboxed.slice
+      ]
+    , testGroup "take #282"
+      [ testCase "Boxed" $ testTakeOutOfMemory Boxed.take
+      , testCase "Primitive" $ testTakeOutOfMemory Primitive.take
+      , testCase "Storable" $ testTakeOutOfMemory Storable.take
+      , testCase "Unboxed" $ testTakeOutOfMemory Unboxed.take
       ]
     ]
   ]
@@ -122,7 +128,14 @@ sliceTest sliceWith i m xs = do
       show i ++ "," ++ show m ++ "," ++ show (List.length xs) ++ ")"
 {-# INLINE sliceTest #-}
 
-
+testTakeOutOfMemory ::
+     (Show (v Int), Eq (v Int), Generic.Vector v Int) => (Int -> v Int -> v Int) -> Assertion
+testTakeOutOfMemory takeWith =
+  takeWith (maxBound `div` intSize) (Generic.fromList xs) @=? Generic.fromList xs
+  where
+    intSize = sizeOf (undefined :: Int)
+    xs = [1, 2, 3, 4, 5] :: [Int]
+{-# INLINE testTakeOutOfMemory #-}
 
 regression188
   :: forall proxy a. (Typeable a, Enum a, Bounded a, Eq a, Show a)
