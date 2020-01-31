@@ -4,7 +4,7 @@ module Tests.Vector.Unboxed (tests) where
 import Test.Framework
 import qualified Data.Vector.Unboxed
 import Tests.Vector.Property
-import Data.Data
+
 
 testGeneralUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Data a) => Data.Vector.Unboxed.Vector a -> [Test]
 testGeneralUnboxedVector dummy = concatMap ($ dummy)
