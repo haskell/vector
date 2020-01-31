@@ -1598,8 +1598,8 @@ maximumBy cmpr = Bundle.foldl1' maxBy . stream
   where
     {-# INLINE maxBy #-}
     maxBy x y = case cmpr x y of
-                  GT -> x
-                  _  -> y
+                  LT -> y
+                  _  -> x
 
 -- | /O(n)/ Yield the minimum element of the vector. The vector may not be
 -- empty.
