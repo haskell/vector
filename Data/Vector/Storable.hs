@@ -1,8 +1,5 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, MultiParamTypeClasses, FlexibleInstances, TypeFamilies, Rank2Types, ScopedTypeVariables #-}
 
-#if __GLASGOW_HASKELL__ >= 708
-{-# LANGUAGE RoleAnnotations #-}
-#endif
 
 -- |
 -- Module      : Data.Vector.Storable
@@ -199,20 +196,7 @@ import Unsafe.Coerce
 #define NOT_VECTOR_MODULE
 #include "vector.h"
 
-#if __GLASGOW_HASKELL__ >= 708
-type role Vector nominal
 
--- | /O(1)/ Unsafely coerce a mutable vector from one element type to another,
--- representationally equal type. The operation just changes the type of the
--- underlying pointer and does not modify the elements.
---
--- This is marginally safer than 'unsafeCast', since this function imposes an
--- extra 'Coercible' constraint. This function is still not safe, however,
--- since it cannot guarantee that the two types have memory-compatible
--- 'Storable' instances.
-unsafeCoerceVector :: Coercible a b => Vector a -> Vector b
-unsafeCoerceVector = unsafeCoerce
-#endif
 
 -- | 'Storable'-based vectors
 data Vector a = Vector {-# UNPACK #-} !Int

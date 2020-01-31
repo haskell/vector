@@ -1,9 +1,5 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, MultiParamTypeClasses, FlexibleInstances, BangPatterns, TypeFamilies #-}
 
-#if __GLASGOW_HASKELL__ >= 708
-{-# LANGUAGE RoleAnnotations #-}
-#endif
-
 -- |
 -- Module      : Data.Vector.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -66,9 +62,7 @@ import Data.Typeable ( Typeable )
 
 #include "vector.h"
 
-#if __GLASGOW_HASKELL__ >= 708
-type role MVector nominal representational
-#endif
+
 
 -- | Mutable boxed vectors keyed on the monad they live in ('IO' or @'ST' s@).
 data MVector s a = MVector {-# UNPACK #-} !Int
