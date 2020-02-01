@@ -1,7 +1,7 @@
 {-# LANGUAGE ConstraintKinds #-}
 module Tests.Vector.Storable (tests) where
 
-import Test.Framework
+import Test.Tasty
 import qualified Data.Vector.Storable
 import Tests.Vector.Property
 
