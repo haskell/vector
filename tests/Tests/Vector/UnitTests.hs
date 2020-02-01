@@ -20,9 +20,9 @@ import Foreign.Ptr
 import Foreign.Storable
 import Text.Printf
 
-import Test.Framework
-import Test.Framework.Providers.HUnit (testCase)
-import Test.HUnit (Assertion, assertBool, (@=?), assertFailure)
+import Test.Tasty
+import Test.Tasty.HUnit (testCase,Assertion, assertBool, (@=?), assertFailure)
+-- import Test.HUnit ()
 
 newtype Aligned a = Aligned { getAligned :: a }
 
@@ -43,7 +43,7 @@ checkAddressAlignment xs = Storable.unsafeWith xs $ \ptr -> do
     dummy :: a
     dummy = undefined
 
-tests :: [Test]
+tests :: [TestTree]
 tests =
   [ testGroup "Data.Vector.Storable.Vector Alignment"
       [ testCase "Aligned Double" $
@@ -83,7 +83,7 @@ tests =
   ]
 
 testsSliceOutOfBounds ::
-     (Show (v Int), Generic.Vector v Int) => (Int -> Int -> v Int -> v Int) -> [Test]
+     (Show (v Int), Generic.Vector v Int) => (Int -> Int -> v Int -> v Int) -> [TestTree]
 testsSliceOutOfBounds sliceWith =
   [ testCase "Negative ix" $ sliceTest sliceWith (-2) 2 xs
   , testCase "Negative size" $ sliceTest sliceWith 2 (-2) xs
@@ -139,7 +139,7 @@ testTakeOutOfMemory takeWith =
 
 regression188
   :: forall proxy a. (Typeable a, Enum a, Bounded a, Eq a, Show a)
-  => proxy a -> Test
+  => proxy a -> TestTree
 regression188 _ = testCase (show (typeOf (undefined :: a)))
   $ Vector.fromList [maxBound::a] @=? Vector.enumFromTo maxBound maxBound
 {-# INLINE regression188 #-}

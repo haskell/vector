@@ -1,7 +1,7 @@
 {-# LANGUAGE ConstraintKinds #-}
 module Tests.Vector.Primitive (tests) where
 
-import Test.Framework
+import Test.Tasty
 import qualified Data.Vector.Primitive
 import Tests.Vector.Property
 
