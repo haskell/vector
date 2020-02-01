@@ -99,7 +99,6 @@ Flag Wall
   Manual: True
 
 
-
 Library
   Default-Language: Haskell2010
   Other-Extensions:
