@@ -202,6 +202,7 @@ instance NFData (Vector a) where
   rnf (Vector _ _) = ()
 
 #if MIN_VERSION_deepseq(1,4,3)
+-- | @since 0.12.1.0
 instance NFData1 Vector where
   liftRnf _ (Vector _ _) = ()
 #endif
@@ -1005,6 +1006,8 @@ unstablePartition = G.unstablePartition
 -- | /O(n)/ Split the vector in two parts, the first one containing the
 --   @Right@ elements and the second containing the @Left@ elements.
 --   The relative order of the elements is preserved.
+--
+--   @since 0.12.1.0
 partitionWith :: (Storable a, Storable b, Storable c) => (a -> Either b c) -> Vector a -> (Vector b, Vector c)
 {-# INLINE partitionWith #-}
 partitionWith = G.partitionWith

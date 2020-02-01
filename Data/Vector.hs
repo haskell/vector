@@ -232,6 +232,7 @@ instance NFData a => NFData (Vector a) where
   {-# INLINEABLE rnf #-}
 
 #if MIN_VERSION_deepseq(1,4,3)
+-- | @since 0.12.1.0
 instance NFData1 Vector where
   liftRnf = liftRnfV
   {-# INLINEABLE liftRnf #-}
@@ -358,6 +359,7 @@ instance Monad Vector where
   fail = Fail.fail -- == \ _str -> empty
 #endif
 
+-- | @since 0.12.1.0
 instance Fail.MonadFail Vector where
   {-# INLINE fail #-}
   fail _ = empty
@@ -1266,6 +1268,8 @@ unstablePartition = G.unstablePartition
 -- | /O(n)/ Split the vector in two parts, the first one containing the
 --   @Right@ elements and the second containing the @Left@ elements.
 --   The relative order of the elements is preserved.
+--
+--   @since 0.12.1.0
 partitionWith :: (a -> Either b c) -> Vector a -> (Vector b, Vector c)
 {-# INLINE partitionWith #-}
 partitionWith = G.partitionWith
