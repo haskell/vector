@@ -165,7 +165,7 @@ module Data.Vector.Generic (
   liftShowsPrec, liftReadsPrec,
 
   -- ** @Data@ and @Typeable@
-  gfoldl, gunfold, dataCast, mkVecType, mkVecConstr
+  gfoldl, gunfold, dataCast, mkVecType, mkVecConstr, mkType
 ) where
 
 import           Data.Vector.Generic.Base
@@ -203,6 +203,8 @@ import Prelude hiding ( length, null,
 import qualified Text.Read as Read
 import qualified Data.List.NonEmpty as NonEmpty
 
+import qualified Data.Traversable as T (Traversable(mapM))
+
 #if __GLASGOW_HASKELL__ >= 707
 import Data.Typeable ( Typeable, gcast1 )
 #else
@@ -212,9 +214,15 @@ import Data.Typeable ( Typeable1, gcast1 )
 #include "vector.h"
 
 import Data.Data ( Data, DataType, Constr, Fixity(Prefix),
-                   mkDataType, mkConstr, constrIndex )
+                   mkDataType, mkConstr, constrIndex,
+#if MIN_VERSION_base(4,2,0)
+                   mkNoRepType )
+#else
+                   mkNorepType )
+mkNoRepType :: String -> DataType
+mkNoRepType = mkNorepType
+#endif
 
-import qualified Data.Traversable as T (Traversable(mapM))
 
 -- Length information
 -- ------------------
@@ -2208,6 +2216,10 @@ mkVecConstr name = mkConstr (mkVecType name) "fromList" [] Prefix
 mkVecType :: String -> DataType
 {-# INLINE mkVecType #-}
 mkVecType name = mkDataType name [mkVecConstr name]
+
+mkType :: String -> DataType
+{-# INLINE mkType #-}
+mkType = mkNoRepType
 
 gunfold :: (Vector v a, Data a)
         => (forall b r. Data b => c (b -> r) -> c r)
