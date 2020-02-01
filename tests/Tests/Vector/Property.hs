@@ -42,6 +42,7 @@ import Test.Tasty.QuickCheck hiding (testProperties)
 import Text.Show.Functions ()
 import Data.List
 
+import Data.Monoid
 
 import qualified Control.Applicative as Applicative
 import System.Random       (Random)
