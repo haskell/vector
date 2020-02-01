@@ -145,3 +145,6 @@ class MVector v a where
     where
       n = basicLength v
 
+  {-# MINIMAL basicLength, basicUnsafeSlice, basicOverlaps,
+              basicUnsafeNew, basicInitialize, basicUnsafeRead,
+              basicUnsafeWrite #-}
