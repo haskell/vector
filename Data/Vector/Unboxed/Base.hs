@@ -88,8 +88,10 @@ instance NFData (Vector a) where rnf !_ = ()
 instance NFData (MVector s a) where rnf !_ = ()
 
 #if MIN_VERSION_deepseq(1,4,3)
+-- | @since 0.12.1.0
 instance NFData1 Vector where
   liftRnf _ !_ = ()
+-- | @since 0.12.1.0
 instance NFData1 (MVector s) where
   liftRnf _ !_ = ()
 #endif
