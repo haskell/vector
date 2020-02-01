@@ -1,5 +1,5 @@
 Name:           vector
-Version:        0.12.1.0
+Version:        0.12.1.1
 -- don't forget to update the changelog file!
 License:        BSD3
 License-File:   LICENSE
@@ -205,7 +205,7 @@ test-suite vector-tests-O0
                  primitive, random,
                  QuickCheck >= 2.9 && < 2.14 , HUnit, tasty,
                  tasty-hunit, tasty-quickcheck,
-                 transformers >= 0.2.0.0
+                 transformers >= 0.2.0.0,semigroups
 
   default-extensions: CPP,
               ScopedTypeVariables,
@@ -248,7 +248,7 @@ test-suite vector-tests-O2
                  primitive, random,
                  QuickCheck >= 2.9 && < 2.14 , HUnit,  tasty,
                  tasty-hunit, tasty-quickcheck,
-                 transformers >= 0.2.0.0
+                 transformers >= 0.2.0.0,semigroups
 
   default-extensions: CPP,
               ScopedTypeVariables,
