@@ -98,11 +98,6 @@ Flag Wall
   Default: False
   Manual: True
 
-Flag MyComputerIsSmall
-  Description: on some ghc versions, O1/O2 test suites require lots of RAM.
-               This flag allows running vector testuite on smaller computers.
-  Default: False
-  Manual: True
 
 Library
   Default-Language: Haskell2010
