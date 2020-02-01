@@ -7,11 +7,14 @@ import qualified Data.Vector.Fusion.Bundle as S
 
 import Test.QuickCheck
 
-import Test.Framework
-import Test.Framework.Providers.QuickCheck2
+import Test.Tasty
+import Test.Tasty.QuickCheck hiding (testProperties)
 
 import Text.Show.Functions ()
 import Data.List           (foldl', foldl1', unfoldr, find, findIndex)
+
+-- migration from testframework to tasty
+type Test = TestTree
 
 #define COMMON_CONTEXT(a) \
  VANILLA_CONTEXT(a)
