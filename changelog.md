@@ -1,3 +1,6 @@
+# Changes in version 0.12.1.1
+ * add semigrioups dep to test suite so CI actually runs again on GHC < 8
+
 # Changes in version 0.12.1.0
  * Fix integer overflows in specializations of Bundle/Stream enumFromTo on Integral types
  * Fix possibility of OutOfMemory with `take` and very large arguments.
