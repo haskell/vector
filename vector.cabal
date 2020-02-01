@@ -71,7 +71,6 @@ Extra-Source-Files:
       benchmarks/TestData/Graph.hs
       benchmarks/TestData/ParenTree.hs
       benchmarks/TestData/Random.hs
-      changelog
       internal/GenUnboxTuple.hs
       internal/unbox-tuple-instances
 
@@ -99,11 +98,7 @@ Flag Wall
   Default: False
   Manual: True
 
-Flag MyComputerIsSmall
-  Description: on some ghc versions, O1/O2 test suites require lots of RAM.
-               This flag allows running vector testuite on smaller computers.
-  Default: False
-  Manual: True
+
 
 Library
   Default-Language: Haskell2010
@@ -266,8 +261,6 @@ test-suite vector-tests-O2
               TypeFamilies,
               TemplateHaskell
 
-  if flag(MyComputerIsSmall)
-    Buildable: False
   Ghc-Options: -Wall
   Ghc-Options:  -O2
   if !flag(Wall)
