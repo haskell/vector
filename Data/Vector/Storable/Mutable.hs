@@ -52,9 +52,7 @@ module Data.Vector.Storable.Mutable(
 
   -- * Unsafe conversions
   unsafeCast,
-#if __GLASGOW_HASKELL__ >= 708
-  unsafeCoerceMVector,
-#endif
+
 
   -- * Raw pointers
   unsafeFromForeignPtr, unsafeFromForeignPtr0,
@@ -100,10 +98,6 @@ import Prelude hiding ( length, null, replicate, reverse, map, read,
 
 import Data.Typeable ( Typeable )
 
-#if __GLASGOW_HASKELL__ >= 708
-import Data.Coerce
-import Unsafe.Coerce
-#endif
 
 -- Data.Vector.Internal.Check is not needed
 #define NOT_VECTOR_MODULE

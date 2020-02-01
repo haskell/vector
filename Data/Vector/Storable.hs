@@ -130,9 +130,6 @@ module Data.Vector.Storable (
 
   -- ** Other vector types
   G.convert, unsafeCast,
-#if __GLASGOW_HASKELL__ >= 708
-  unsafeCoerceVector,
-#endif
 
   -- ** Mutable vectors
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
@@ -187,9 +184,7 @@ import Data.Traversable ( Traversable )
 #endif
 
 #if __GLASGOW_HASKELL__ >= 708
-import Data.Coerce
 import qualified GHC.Exts as Exts
-import Unsafe.Coerce
 #endif
 
 -- Data.Vector.Internal.Check is unused

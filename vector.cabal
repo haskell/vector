@@ -1,5 +1,5 @@
 Name:           vector
-Version:        0.13.0.1
+Version:        0.12.1.0
 -- don't forget to update the changelog file!
 License:        BSD3
 License-File:   LICENSE
@@ -266,8 +266,7 @@ test-suite vector-tests-O2
               TypeFamilies,
               TemplateHaskell
 
-  if flag(MyComputerIsSmall)
-    Buildable: False
+
   Ghc-Options: -Wall
   Ghc-Options:  -O2
   if !flag(Wall)
