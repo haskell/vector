@@ -1,5 +1,6 @@
 # Changes in NEXT_VERSION
 
+ * New functions: `unfoldrExactN` and `unfoldrExactNM`
  * `mkType` from `Data.Vector.Generic` is deprecated in favor of
    `Data.Data.mkNoRepType`
  * `maximumBy` now behaves like its counterpart in `Data.List` in that if
