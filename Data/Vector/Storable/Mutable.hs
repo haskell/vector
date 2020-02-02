@@ -375,7 +375,12 @@ new :: (PrimMonad m, Storable a) => Int -> m (MVector (PrimState m) a)
 {-# INLINE new #-}
 new = G.new
 
--- | Create a mutable vector of the given length. The memory is not initialized.
+-- | Create a mutable vector of the given length. The vector content
+--   should be presumed uninitialized. However exact semantics depends
+--   on vector implementation. For example unboxed and storable
+--   vectors will create vector filled with whatever underlying memory
+--   buffer happens to contain, while boxed vector initializes every
+--   element to @error "..."@.
 unsafeNew :: (PrimMonad m, Storable a) => Int -> m (MVector (PrimState m) a)
 {-# INLINE unsafeNew #-}
 unsafeNew = G.unsafeNew
