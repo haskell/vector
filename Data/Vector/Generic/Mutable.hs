@@ -591,7 +591,12 @@ new :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
 new n = BOUNDS_CHECK(checkLength) "new" n
       $ unsafeNew n >>= \v -> basicInitialize v >> return v
 
--- | Create a mutable vector of the given length. The memory is not initialized.
+-- | Create a mutable vector of the given length. The vector content
+--   should be presumed uninitialized. However exact semantics depends
+--   on vector implementation. For example unboxed and storable
+--   vectors will create vector filled with whatever underlying memory
+--   buffer happens to contain, while boxed vector initializes every
+--   element to @error "..."@.
 unsafeNew :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
 {-# INLINE unsafeNew #-}
 unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n
