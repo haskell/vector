@@ -49,6 +49,8 @@ class MVector v a where
   --
   -- Vectors that are necessarily initialized as part of creation may implement
   -- this as a no-op.
+  --
+  -- @since 0.11.0.0
   basicInitialize :: PrimMonad m => v (PrimState m) a -> m ()
 
   -- | Create a mutable vector of the given length and fill it with an
