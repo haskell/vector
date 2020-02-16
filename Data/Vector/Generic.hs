@@ -149,7 +149,7 @@ module Data.Vector.Generic (
   -- * Fusion support
 
   -- ** Conversion to/from Bundles
-  stream, unstream, streamR, unstreamR,
+  stream, unstream, unstreamM, streamR, unstreamR,
 
   -- ** Recycling support
   new, clone,
