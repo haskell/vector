@@ -1,3 +1,8 @@
+# Changes in NEXT_VERSION
+
+ * `mkType` from `Data.Vector.Generic` is deprecated in favor of
+   `Data.Data.mkNoRepType`
+
 # Changes in version 0.12.1.2
 
  * Fix for lost function `Data.Vector.Generic.mkType`: [#287](https://github.com/haskell/vector/issues/287)
