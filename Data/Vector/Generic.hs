@@ -212,18 +212,8 @@ import Data.Typeable ( Typeable1, gcast1 )
 #include "vector.h"
 
 import Data.Data ( Data, DataType, Constr, Fixity(Prefix),
-                   mkDataType, mkConstr, constrIndex,
-#if MIN_VERSION_base(4,2,0)
-                   mkNoRepType )
-#else
-                   mkNorepType )
-#endif
+                   mkDataType, mkConstr, constrIndex, mkNoRepType )
 import qualified Data.Traversable as T (Traversable(mapM))
-
-#if !MIN_VERSION_base(4,2,0)
-mkNoRepType :: String -> DataType
-mkNoRepType = mkNorepType
-#endif
 
 -- Length information
 -- ------------------
