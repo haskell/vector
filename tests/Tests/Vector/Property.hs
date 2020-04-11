@@ -528,14 +528,13 @@ testOrdFunctions _ = $(testProperties
     prop_maximum :: P (v a -> a) = not . V.null ===> V.maximum `eq` maximum
     prop_minimum :: P (v a -> a) = not . V.null ===> V.minimum `eq` minimum
     prop_minIndex :: P (v a -> Int) = not . V.null ===> V.minIndex `eq` minIndex
-    prop_maxIndex :: P (v a -> Int) = not . V.null ===> V.maxIndex `eq` listMaxIndexFMW
+    prop_maxIndex :: P (v a -> Int) = not . V.null ===> V.maxIndex `eq` maxIndex
     prop_maximumBy :: P (v a -> a) =
       not . V.null ===> V.maximumBy compare `eq` maximum
     prop_minimumBy :: P (v a -> a) =
       not . V.null ===> V.minimumBy compare `eq` minimum
     prop_maxIndexBy :: P (v a -> Int) =
-      not . V.null ===> V.maxIndexBy compare `eq`  listMaxIndexFMW
-                                          ---   (maxIndex)
+      not . V.null ===> V.maxIndexBy compare `eq` maxIndex
     prop_ListLastMaxIndexWins ::  P (v a -> Int) =
         not . V.null ===> ( maxIndex . V.toList) `eq` listMaxIndexLMW
     prop_FalseListFirstMaxIndexWinsDesc ::  P (v a -> Int) =
