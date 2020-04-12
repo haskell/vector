@@ -30,7 +30,7 @@ import Data.Functor.Identity
 import qualified Data.Traversable as T (Traversable(..))
 import Data.Foldable (Foldable(foldMap))
 import Data.Orphans ()
-
+import Data.Monoid
 import qualified Data.Vector.Generic as V
 import qualified Data.Vector.Fusion.Bundle as S
 
