@@ -2210,7 +2210,7 @@ mkVecType name = mkDataType name [mkVecConstr name]
 
 mkType :: String -> DataType
 {-# INLINE mkType #-}
-{-# DEPRECATE mkType "Use Data.Data.mkNoRepType: #-}
+{-# DEPRECATED mkType "Use Data.Data.mkNoRepType" #-}
 mkType = mkNoRepType
 
 gunfold :: (Vector v a, Data a)
