@@ -666,7 +666,8 @@ generate :: Int -> (Int -> a) -> Vector a
 {-# INLINE generate #-}
 generate = G.generate
 
--- | /O(n)/ Apply function n times to value. Zeroth element is original value.
+-- | /O(n)/ Apply function \(\max\{n - 1, 0\}\) times to value, producing a 
+-- vector of length /n/. Zeroth element is original value.
 iterateN :: Int -> (a -> a) -> a -> Vector a
 {-# INLINE iterateN #-}
 iterateN = G.iterateN
