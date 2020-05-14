@@ -20,6 +20,7 @@ module Tests.Vector.Property
   -- re-exports
   , Data
   , Random
+  ,Test
   ) where
 
 import Boilerplater
@@ -35,8 +36,8 @@ import qualified Data.Vector.Fusion.Bundle as S
 
 import Test.QuickCheck
 
-import Test.Framework
-import Test.Framework.Providers.QuickCheck2
+import Test.Tasty
+import Test.Tasty.QuickCheck hiding (testProperties)
 
 import Text.Show.Functions ()
 import Data.List
@@ -57,6 +58,8 @@ type VanillaContext a   = ( Eq a , Show a, Arbitrary a, CoArbitrary a
 type VectorContext  a v = ( Eq (v a), Show (v a), Arbitrary (v a), CoArbitrary (v a)
                           , TestData (v a), Model (v a) ~ [a],  EqTest (v a) ~ Property, V.Vector v a)
 
+-- | migration hack for moving from TestFramework to Tasty
+type Test = TestTree
 -- TODO: implement Vector equivalents of list functions for some of the commented out properties
 
 -- TODO: test and implement some of these other Prelude functions:
@@ -514,7 +517,7 @@ testOrdFunctions _ = $(testProperties
    'prop_maximum, 'prop_minimum,
    'prop_minIndex, 'prop_maxIndex,
    'prop_maximumBy, 'prop_minimumBy,
-   'prop_maxIndexBy, 'prop_minIndexBy])
+   'prop_maxIndexBy, 'prop_minIndexBy,
   where
     prop_compare :: P (v a -> v a -> Ordering) = compare `eq` compare
     prop_maximum :: P (v a -> a) = not . V.null ===> V.maximum `eq` maximum

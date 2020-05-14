@@ -42,6 +42,25 @@ TODO: should this be in the next release
      `Data.Vector.Storable{.Mutable}` to allow this (the onus is on the user
      to ensure that no `Storable` invariants are broken when using these
      functions).
+
+# Changes in version 0.12.1.2
+
+ * Fix for lost function `Data.Vector.Generic.mkType`: [#287](https://github.com/haskell/vector/issues/287)
+ * all the changes in 0.12.1.0 and 0.12.1.1
+
+# Changes in version 0.12.1.1 (deprecated)
+ * add semigrioups dep to test suite so CI actually runs again on GHC < 8
+
+# Changes in version 0.12.1.0 (deprecated)
+ * Fix integer overflows in specializations of Bundle/Stream enumFromTo on Integral types
+ * Fix possibility of OutOfMemory with `take` and very large arguments.
+ * Fix `slice` function causing segfault and not checking the bounds properly.
+ * updated specialization rule for EnumFromTo on Float and Double
+  to make sure it always matches the version in GHC Base (which changed as of 8.6)
+  Thanks to Aleksey Khudyakov @Shimuuar for this fix.
+ * fast rejection short circuiting in eqBy operations
+ * the O2 test suite now has reasonable memory usage on every GHC version,
+    special thanks to Alexey Kuleshevich (@lehins).
  * The `Mutable` type family is now injective on GHC 8.0 or later.
  * Using empty `Storable` vectors no longer results in division-by-zero
    errors.
@@ -53,23 +72,22 @@ TODO: should this be in the next release
    `All`, `Alt`, and `Compose`.
  * Add `NFData1` instances for applicable `Vector` types.
 
-Changes in version 0.12.0.3
+# Changes in version 0.12.0.3
   * Monad Fail support
 
-Changes in version 0.12.0.2
+# Changes in version 0.12.0.2
   * Fixes issue #220, compact heap operations crashing on boxed vectors constructed
     using traverse.
   * backport injective type family support
   * Cleanup the memset code internal to storable vector modules to be
     compatible with future Primitive releases
 
-
-Changes in version 0.12.0.1
+# Changes in version 0.12.0.1
 
  * Make sure `length` can be inlined
  * Include modules that test-suites depend on in other-modules
 
-Changes in version 0.12.0.0
+# Changes in version 0.12.0.0
 
  * Documentation fixes/additions
  * New functions: createT, iscanl/r, iterateNM, unfoldrM, uniq
@@ -81,7 +99,7 @@ Changes in version 0.12.0.0
    helper functions.
  * Relax context for `Unbox (Complex a)`.
 
-Changes in version 0.11.0.0
+# Changes in version 0.11.0.0
 
  * Define `Applicative` instances for `Data.Vector.Fusion.Util.{Box,Id}`
  * Define non-bottom `fail` for `instance Monad Vector`
@@ -91,50 +109,50 @@ Changes in version 0.11.0.0
    - Memory is initialized on creation of unboxed vectors
  * Changes to SPEC usage to allow building under more conditions
 
-Changes in version 0.10.12.3
+# Changes in version 0.10.12.3
 
  * Allow building with `primtive-0.6`
 
-Changes in version 0.10.12.2
+# Changes in version 0.10.12.2
 
  * Add support for `deepseq-1.4.0.0`
 
-Changes in version 0.10.12.1
+# Changes in version 0.10.12.1
 
  * Fixed compilation on non-head GHCs
 
-Changes in version 0.10.12.0
+# Changes in version 0.10.12.0
 
  * Export MVector constructor from Data.Vector.Primitive to match Vector's
    (which was already exported).
 
  * Fix building on GHC 7.9 by adding Applicative instances for Id and Box
 
-Changes in version 0.10.11.0
+# Changes in version 0.10.11.0
 
  * Support OverloadedLists for boxed Vector in GHC >= 7.8
 
-Changes in version 0.10.10.0
+# Changes in version 0.10.10.0
 
  * Minor version bump to rectify PVP violation occured in 0.10.9.3 release
 
-Changes in version 0.10.9.3 (deprecated)
+# Changes in version 0.10.9.3 (deprecated)
 
  * Add support for OverloadedLists in GHC >= 7.8
 
-Changes in version 0.10.9.2
+# Changes in version 0.10.9.2
 
  * Fix compilation with GHC 7.9
 
-Changes in version 0.10.9.1
+# Changes in version 0.10.9.1
 
  * Implement poly-kinded Typeable
 
-Changes in version 0.10.0.1
+# Changes in version 0.10.0.1
 
  * Require `primitive` to include workaround for a GHC array copying bug
 
-Changes in version 0.10
+# Changes in version 0.10
 
  * `NFData` instances
  * More efficient block fills

@@ -1,7 +1,7 @@
 {-# LANGUAGE ConstraintKinds #-}
 module Tests.Vector.Boxed (tests) where
 
-import Test.Framework
+import Test.Tasty
 import qualified Data.Vector
 import Tests.Vector.Property
 
