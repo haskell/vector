@@ -525,7 +525,9 @@ testOrdFunctions _ = $(testProperties
    'prop_minIndex, 'prop_maxIndex,
    'prop_maximumBy, 'prop_minimumBy,
    'prop_maxIndexBy, 'prop_minIndexBy,
-   'prop_ListLastMaxIndexWins, 'prop_FalseListFirstMaxIndexWins ])
+   'prop_ListLastMaxIndexWins
+   -- 'prop_FalseListFirstMaxIndexWins
+    ])
   where
     prop_compare :: P (v a -> v a -> Ordering) = compare `eq` compare
     prop_maximum :: P (v a -> a) = not . V.null ===> V.maximum `eq` maximum
