@@ -52,6 +52,9 @@ import Control.Monad.Zip
 
 import Data.Data
 
+import qualified Data.List.NonEmpty as DLE
+import Data.Semigroup (Semigroup(..))
+
 type CommonContext  a v = (VanillaContext a, VectorContext a v)
 type VanillaContext a   = ( Eq a , Show a, Arbitrary a, CoArbitrary a
                           , TestData a, Model a ~ a, EqTest a ~ Property)
@@ -510,6 +513,10 @@ testTuplyFunctions _ = $(testProperties [ 'prop_zip, 'prop_zip3
     prop_unzip  :: P (v (a, a) -> (v a, v a))           = V.unzip `eq` unzip
     prop_unzip3 :: P (v (a, a, a) -> (v a, v a, v a))   = V.unzip3 `eq` unzip3
 
+
+--- because of default value range of QC float/double generators,
+--- the maxIndexby and minIndexBy properties will fail if they use the more precise
+--- (\x -> ( not $ V.null x) && (V.uniq x /= x ) ) ==> constraint
 testOrdFunctions :: forall a v. (CommonContext a v, Ord a, Ord (v a)) => v a -> [Test]
 {-# INLINE testOrdFunctions #-}
 testOrdFunctions _ = $(testProperties
@@ -518,20 +525,64 @@ testOrdFunctions _ = $(testProperties
    'prop_minIndex, 'prop_maxIndex,
    'prop_maximumBy, 'prop_minimumBy,
    'prop_maxIndexBy, 'prop_minIndexBy,
+   'prop_ListLastMaxIndexWins, 'prop_FalseListFirstMaxIndexWins ])
   where
     prop_compare :: P (v a -> v a -> Ordering) = compare `eq` compare
     prop_maximum :: P (v a -> a) = not . V.null ===> V.maximum `eq` maximum
     prop_minimum :: P (v a -> a) = not . V.null ===> V.minimum `eq` minimum
     prop_minIndex :: P (v a -> Int) = not . V.null ===> V.minIndex `eq` minIndex
-    prop_maxIndex :: P (v a -> Int) = not . V.null ===> V.maxIndex `eq` maxIndex
+    prop_maxIndex :: P (v a -> Int) = not . V.null ===> V.maxIndex `eq` listMaxIndexLMW
+
+   -- Note the maxBy tests dont make sense on Double and  Floats, the value space
+   -- is too big and wont get exercised (Definitely fails with Double and Float, why not
+   -- the issue lies with how the Double/Float QC instances ignore the size parameter
+   -- see
+   -- Strangely, only Float and Double, not Int
+   -- This makes me think the default quickcheck generator isn't so good
+   -- For further info see https://github.com/nick8325/quickcheck/issues/295
     prop_maximumBy :: P (v a -> a) =
       not . V.null ===> V.maximumBy compare `eq` maximum
     prop_minimumBy :: P (v a -> a) =
-      not . V.null ===> V.minimumBy compare `eq` minimum
+      --(\x -> ( not $ V.null x) && (V.uniq x /= x ) )
+             (not . V.null )   ===> V.minimumBy compare `eq` minimum
     prop_maxIndexBy :: P (v a -> Int) =
-      not . V.null ===> V.maxIndexBy compare `eq` maxIndex
+      --(\x -> ( not $ V.null x) && (V.uniq x /= x ) )
+              (not . V.null )  ===> V.maxIndexBy compare `eq`  listMaxIndexLMW
+                                          ---   (maxIndex)
+
+    prop_ListLastMaxIndexWins ::  P (v a -> Int) =
+        not . V.null
+          ===> ( maxIndex . V.toList) `eq` listMaxIndexLMW
+
+    prop_FalseListFirstMaxIndexWinsDesc ::  P (v a -> Int) =
+        (\x ->( not $ V.null x) && (V.uniq x /= x ) )
+           ===>
+           ( maxIndex . V.toList) `eq` listMaxIndexFMW
+
+    prop_FalseListFirstMaxIndexWins :: Property
+    prop_FalseListFirstMaxIndexWins = expectFailure prop_FalseListFirstMaxIndexWinsDesc
     prop_minIndexBy :: P (v a -> Int) =
       not . V.null ===> V.minIndexBy compare `eq` minIndex
+
+listMaxIndexFMW :: Ord a => [a] -> Int
+listMaxIndexFMW  = ( fst  . extractFMW .  sconcat . DLE.fromList . fmap FMW . zip [0 :: Int ..])
+
+listMaxIndexLMW :: Ord a => [a] -> Int
+listMaxIndexLMW = ( fst  . extractLMW .  sconcat . DLE.fromList . fmap LMW . zip [0 :: Int ..])
+
+newtype LastMaxWith a i = LMW {extractLMW:: (i,a)}
+    deriving(Eq,Show,Read)
+instance (Ord a) => Semigroup  (LastMaxWith a i)   where
+    (<>) x y | snd (extractLMW x) > snd (extractLMW y) = x
+             | snd (extractLMW x) < snd (extractLMW y) = y
+             | otherwise = y
+newtype FirstMaxWith a i = FMW {extractFMW:: (i,a)}
+    deriving(Eq,Show,Read)
+instance (Ord a) => Semigroup  (FirstMaxWith a i)   where
+    (<>) x y | snd (extractFMW x) > snd (extractFMW y) = x
+             | snd (extractFMW x) < snd (extractFMW y) = y
+             | otherwise = x
+
 
 testEnumFunctions :: forall a v. (CommonContext a v, Enum a, Ord a, Num a, Random a) => v a -> [Test]
 {-# INLINE testEnumFunctions #-}
