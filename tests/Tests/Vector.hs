@@ -1,7 +1,7 @@
 {-# LANGUAGE ConstraintKinds #-}
 module Tests.Vector (tests) where
 
-import Test.Framework (testGroup)
+import Test.Tasty (testGroup)
 import qualified Tests.Vector.Boxed
 import qualified Tests.Vector.Primitive
 import qualified Tests.Vector.Storable

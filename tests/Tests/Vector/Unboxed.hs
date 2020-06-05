@@ -1,9 +1,10 @@
 {-# LANGUAGE ConstraintKinds #-}
 module Tests.Vector.Unboxed (tests) where
 
-import Test.Framework
+import Test.Tasty
 import qualified Data.Vector.Unboxed
 import Tests.Vector.Property
+
 
 
 testGeneralUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Data a) => Data.Vector.Unboxed.Vector a -> [Test]

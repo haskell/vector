@@ -20,6 +20,7 @@ module Tests.Vector.Property
   -- re-exports
   , Data
   , Random
+  ,Test
   ) where
 
 import Boilerplater
@@ -29,18 +30,19 @@ import Data.Functor.Identity
 import qualified Data.Traversable as T (Traversable(..))
 import Data.Foldable (Foldable(foldMap))
 import Data.Orphans ()
-
+import Data.Monoid
 import qualified Data.Vector.Generic as V
 import qualified Data.Vector.Fusion.Bundle as S
 
 import Test.QuickCheck
 
-import Test.Framework
-import Test.Framework.Providers.QuickCheck2
+import Test.Tasty
+import Test.Tasty.QuickCheck hiding (testProperties)
 
 import Text.Show.Functions ()
 import Data.List
-import Data.Monoid
+
+
 import qualified Control.Applicative as Applicative
 import System.Random       (Random)
 
@@ -51,12 +53,17 @@ import Control.Monad.Zip
 
 import Data.Data
 
+import qualified Data.List.NonEmpty as DLE
+import Data.Semigroup (Semigroup(..))
+
 type CommonContext  a v = (VanillaContext a, VectorContext a v)
 type VanillaContext a   = ( Eq a , Show a, Arbitrary a, CoArbitrary a
                           , TestData a, Model a ~ a, EqTest a ~ Property)
 type VectorContext  a v = ( Eq (v a), Show (v a), Arbitrary (v a), CoArbitrary (v a)
                           , TestData (v a), Model (v a) ~ [a],  EqTest (v a) ~ Property, V.Vector v a)
 
+-- | migration hack for moving from TestFramework to Tasty
+type Test = TestTree
 -- TODO: implement Vector equivalents of list functions for some of the commented out properties
 
 -- TODO: test and implement some of these other Prelude functions:
@@ -514,7 +521,8 @@ testOrdFunctions _ = $(testProperties
    'prop_maximum, 'prop_minimum,
    'prop_minIndex, 'prop_maxIndex,
    'prop_maximumBy, 'prop_minimumBy,
-   'prop_maxIndexBy, 'prop_minIndexBy])
+   'prop_maxIndexBy, 'prop_minIndexBy,
+   'prop_ListLastMaxIndexWins, 'prop_FalseListFirstMaxIndexWins ])
   where
     prop_compare :: P (v a -> v a -> Ordering) = compare `eq` compare
     prop_maximum :: P (v a -> a) = not . V.null ===> V.maximum `eq` maximum
@@ -527,8 +535,34 @@ testOrdFunctions _ = $(testProperties
       not . V.null ===> V.minimumBy compare `eq` minimum
     prop_maxIndexBy :: P (v a -> Int) =
       not . V.null ===> V.maxIndexBy compare `eq` maxIndex
+    prop_ListLastMaxIndexWins ::  P (v a -> Int) =
+        not . V.null ===> ( maxIndex . V.toList) `eq` listMaxIndexLMW
+    prop_FalseListFirstMaxIndexWinsDesc ::  P (v a -> Int) =
+        (\x -> not $ V.null x && (V.uniq x /= x ) )===> ( maxIndex . V.toList) `eq` listMaxIndexFMW
+    prop_FalseListFirstMaxIndexWins :: Property
+    prop_FalseListFirstMaxIndexWins = expectFailure prop_FalseListFirstMaxIndexWinsDesc
     prop_minIndexBy :: P (v a -> Int) =
       not . V.null ===> V.minIndexBy compare `eq` minIndex
+
+listMaxIndexFMW :: Ord a => [a] -> Int
+listMaxIndexFMW  = ( fst  . extractFMW .  sconcat . DLE.fromList . fmap FMW . zip [0 :: Int ..])
+
+listMaxIndexLMW :: Ord a => [a] -> Int
+listMaxIndexLMW = ( fst  . extractLMW .  sconcat . DLE.fromList . fmap LMW . zip [0 :: Int ..])
+
+newtype LastMaxWith a i = LMW {extractLMW:: (i,a)}
+    deriving(Eq,Show,Read)
+instance (Ord a) => Semigroup  (LastMaxWith a i)   where
+    (<>) x y | snd (extractLMW x) > snd (extractLMW y) = x
+             | snd (extractLMW x) < snd (extractLMW y) = y
+             | otherwise = y
+newtype FirstMaxWith a i = FMW {extractFMW:: (i,a)}
+    deriving(Eq,Show,Read)
+instance (Ord a) => Semigroup  (FirstMaxWith a i)   where
+    (<>) x y | snd (extractFMW x) > snd (extractFMW y) = x
+             | snd (extractFMW x) < snd (extractFMW y) = y
+             | otherwise = x
+
 
 testEnumFunctions :: forall a v. (CommonContext a v, Enum a, Ord a, Num a, Random a) => v a -> [Test]
 {-# INLINE testEnumFunctions #-}

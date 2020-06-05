@@ -165,7 +165,7 @@ module Data.Vector.Generic (
   liftShowsPrec, liftReadsPrec,
 
   -- ** @Data@ and @Typeable@
-  gfoldl, gunfold, dataCast, mkVecType, mkVecConstr
+  gfoldl, gunfold, dataCast, mkVecType, mkVecConstr, mkType
 ) where
 
 import           Data.Vector.Generic.Base
@@ -212,8 +212,7 @@ import Data.Typeable ( Typeable1, gcast1 )
 #include "vector.h"
 
 import Data.Data ( Data, DataType, Constr, Fixity(Prefix),
-                   mkDataType, mkConstr, constrIndex )
-
+                   mkDataType, mkConstr, constrIndex, mkNoRepType )
 import qualified Data.Traversable as T (Traversable(mapM))
 
 -- Length information
@@ -2208,6 +2207,11 @@ mkVecConstr name = mkConstr (mkVecType name) "fromList" [] Prefix
 mkVecType :: String -> DataType
 {-# INLINE mkVecType #-}
 mkVecType name = mkDataType name [mkVecConstr name]
+
+mkType :: String -> DataType
+{-# INLINE mkType #-}
+{-# DEPRECATED mkType "Use Data.Data.mkNoRepType" #-}
+mkType = mkNoRepType
 
 gunfold :: (Vector v a, Data a)
         => (forall b r. Data b => c (b -> r) -> c r)
