@@ -556,19 +556,22 @@ testOrdFunctions _ = $(testProperties
         not . V.null
           ===> ( maxIndex . V.toList) `eq` listMaxIndexLMW
 
-    prop_FalseListFirstMaxIndexWinsDesc ::  P (v a -> Int) =
+    prop_minIndexBy :: P (v a -> Int) =
+      not . V.null ===> V.minIndexBy compare `eq` minIndex
+     {-
+     prop_FalseListFirstMaxIndexWinsDesc ::  P (v a -> Int) =
         --(\x ->( not $ V.null x) && (V.uniq x /= x ) )
         (not . V.null)
            ===>
            ( maxIndex . V.toList) `eq` listMaxIndexFMW
 
-    ---TODO: can't use vanilla quickech instances for this contra positive
-    --- property until either in the test suite we copy the genreator from
+    ---TODO: can't use vanilla quickech instances for this negative
+    --- property until either in the test suite we copy the generator from
     --- https://github.com/nick8325/quickcheck/issues/295 is in our QC release version
-    --prop_FalseListFirstMaxIndexWins :: Property
-    --prop_FalseListFirstMaxIndexWins = expectFailure prop_FalseListFirstMaxIndexWinsDesc
-    --prop_minIndexBy :: P (v a -> Int) =
-    --  not . V.null ===> V.minIndexBy compare `eq` minIndex
+    prop_FalseListFirstMaxIndexWins :: Property
+    prop_FalseListFirstMaxIndexWins = expectFailure prop_FalseListFirstMaxIndexWinsDesc-}
+
+
 
 listMaxIndexFMW :: Ord a => [a] -> Int
 listMaxIndexFMW  = ( fst  . extractFMW .  sconcat . DLE.fromList . fmap FMW . zip [0 :: Int ..])
