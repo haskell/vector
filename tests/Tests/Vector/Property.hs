@@ -52,7 +52,7 @@ import Control.Monad.Zip
 import Data.Data
 
 type CommonContext  a v = (VanillaContext a, VectorContext a v)
-type VanillaContext a   = ( Eq a , Show a, Arbitrary a, CoArbitrary a
+type VanillaContext a   = ( Eq a , Ord a, Show a, Arbitrary a, CoArbitrary a
                           , TestData a, Model a ~ a, EqTest a ~ Property)
 type VectorContext  a v = ( Eq (v a), Show (v a), Arbitrary (v a), CoArbitrary (v a)
                           , TestData (v a), Model (v a) ~ [a],  EqTest (v a) ~ Property, V.Vector v a)
@@ -190,6 +190,7 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_uniq,
         'prop_mapMaybe, 'prop_imapMaybe,
         'prop_takeWhile, 'prop_dropWhile,
+        'prop_nubOrd,
 
         -- Paritioning
         'prop_partition, {- 'prop_unstablePartition, -}
@@ -431,6 +432,8 @@ testPolymorphicFunctions _ = $(testProperties [
 
     prop_uniq :: P (v a -> v a)
       = V.uniq `eq` (map head . group)
+
+    prop_nubOrd :: P (v a -> v a) = V.nubOrd `eq` nub
     --prop_span         = (V.span :: (a -> Bool) -> v a -> (v a, v a))  `eq2` span
     --prop_break        = (V.break :: (a -> Bool) -> v a -> (v a, v a)) `eq2` break
     --prop_splitAt      = (V.splitAt :: Int -> v a -> (v a, v a))       `eq2` splitAt
