@@ -2,6 +2,7 @@
 
  * Export `unstreamM` from`from Data.Vector.Generic`
  * New functions: `unfoldrExactN` and `unfoldrExactNM`
+ * Added `iforM` and `iforM_`
 
 # Changes in version 0.12.1.2
 
