@@ -81,6 +81,7 @@ module Data.Vector.Generic (
 
   -- ** Monadic mapping
   mapM, imapM, mapM_, imapM_, forM, forM_,
+  iforM, iforM_,
 
   -- ** Zipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
@@ -1085,6 +1086,18 @@ forM as f = mapM f as
 forM_ :: (Monad m, Vector v a) => v a -> (a -> m b) -> m ()
 {-# INLINE forM_ #-}
 forM_ as f = mapM_ f as
+
+-- | /O(n)/ Apply the monadic action to all elements of the vector and their indices, yielding a
+-- vector of results. Equivalent to 'flip' 'imapM'.
+iforM :: (Monad m, Vector v a, Vector v b) => v a -> (Int -> a -> m b) -> m (v b)
+{-# INLINE iforM #-}
+iforM as f = imapM f as
+
+-- | /O(n)/ Apply the monadic action to all elements of the vector and their indices and ignore the
+-- results. Equivalent to 'flip' 'imapM_'.
+iforM_ :: (Monad m, Vector v a) => v a -> (Int -> a -> m b) -> m ()
+{-# INLINE iforM_ #-}
+iforM_ as f = imapM_ f as
 
 -- Zipping
 -- -------

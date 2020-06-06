@@ -33,6 +33,7 @@
      `Data.Vector.Storable{.Mutable}` to allow this (the onus is on the user
      to ensure that no `Storable` invariants are broken when using these
      functions).
+ * Added `iforM` and `iforM_`
 
 # Changes in version 0.12.1.2
 
