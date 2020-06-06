@@ -1351,11 +1351,26 @@ dropWhile f = unstream . Bundle.dropWhile f . stream
 
 
 -- | /O(n * log n)/ Remove duplicate elements.
+--
+-- nubOrd may have unexpected behaviour for `Ord` instances
+-- which do not implement a partial ordering meaning they satisfy the following
+-- properties:
+--
+-- [__Transitivity__]: if @x <= y && y <= z@ = 'True', then @x <= z@ = 'True'
+-- [__Reflexivity__]: @x <= x@ = 'True'
+-- [__Antisymmetry__]: if @x <= y && y <= x@ = 'True', then @x == y@ = 'True'
 nubOrd :: (Vector v a, Ord a) => v a -> v a
 {-# INLINE nubOrd #-}
 nubOrd = unstream . inplace S.nubOrd toMax . stream
 
 -- | /O(n * log n)/ Remove duplicate elements using a custom predicate.
+--
+-- nubOrd may have unexpected behaviour for comparison functions `cmp`
+-- which do not satisfy the following properties:
+--
+-- 1. if @cmp x y == LT && cmp y z == LT@ = 'True', then @cmp x z@ = 'True'
+-- 2. @cmp x x@ = 'EQ'
+-- 3. if @cmp x y@ = 'LT', then @cmp y x@ = 'GT'
 nubOrdBy :: (Vector v a) => (a -> a -> Ordering) -> v a -> v a
 {-# INLINE nubOrdBy #-}
 nubOrdBy comp = unstream . inplace (S.nubOrdBy comp) toMax . stream
