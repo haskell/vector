@@ -164,16 +164,21 @@ module Data.Vector (
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy
 ) where
 
-import qualified Data.Vector.Generic as G
-import           Data.Vector.Mutable  ( MVector(..) )
-import           Data.Primitive.Array
+import Data.Vector.Mutable  ( MVector(..) )
+import Data.Primitive.Array
 import qualified Data.Vector.Fusion.Bundle as Bundle
+import qualified Data.Vector.Generic as G
 
-import Control.DeepSeq ( NFData, rnf )
+import Control.DeepSeq ( NFData(rnf)
+#if MIN_VERSION_deepseq(1,4,3)
+                       , NFData1(liftRnf)
+#endif
+                       )
+
 import Control.Monad ( MonadPlus(..), liftM, ap )
 import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
-
+import qualified Control.Monad.Fail as Fail
 import Control.Monad.Fix ( MonadFix (mfix) )
 import Control.Monad.Zip
 import Data.Function ( fix )
@@ -220,11 +225,19 @@ data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !(Array a)
         deriving ( Typeable )
 
+liftRnfV :: (a -> ()) -> Vector a -> ()
+liftRnfV elemRnf = foldl' (\_ -> elemRnf) ()
+
 instance NFData a => NFData (Vector a) where
-    rnf (Vector i n arr) = rnfAll i
-        where
-          rnfAll ix | ix < n    = rnf (indexArray arr ix) `seq` rnfAll (ix+1)
-                    | otherwise = ()
+  rnf = liftRnfV rnf
+  {-# INLINEABLE rnf #-}
+
+#if MIN_VERSION_deepseq(1,4,3)
+-- | @since 0.12.1.0
+instance NFData1 Vector where
+  liftRnf = liftRnfV
+  {-# INLINEABLE liftRnf #-}
+#endif
 
 instance Show a => Show (Vector a) where
   showsPrec = G.showsPrec
@@ -252,9 +265,9 @@ instance Exts.IsList (Vector a) where
 
 instance Data a => Data (Vector a) where
   gfoldl       = G.gfoldl
-  toConstr _   = error "toConstr"
-  gunfold _ _  = error "gunfold"
-  dataTypeOf _ = G.mkType "Data.Vector.Vector"
+  toConstr _   = G.mkVecConstr "Data.Vector.Vector"
+  gunfold      = G.gunfold
+  dataTypeOf _ = G.mkVecType "Data.Vector.Vector"
   dataCast1    = G.dataCast
 
 type instance G.Mutable Vector = MVector
@@ -342,6 +355,13 @@ instance Monad Vector where
   {-# INLINE (>>=) #-}
   (>>=) = flip concatMap
 
+#if !(MIN_VERSION_base(4,13,0))
+  {-# INLINE fail #-}
+  fail = Fail.fail -- == \ _str -> empty
+#endif
+
+-- | @since 0.12.1.0
+instance Fail.MonadFail Vector where
   {-# INLINE fail #-}
   fail _ = empty
 
@@ -444,7 +464,12 @@ instance Foldable.Foldable Vector where
 
 instance Traversable.Traversable Vector where
   {-# INLINE traverse #-}
-  traverse f xs = Data.Vector.fromList Applicative.<$> Traversable.traverse f (toList xs)
+  traverse f xs =
+      -- Get the length of the vector in /O(1)/ time
+      let !n = G.length xs
+      -- Use fromListN to be more efficient in construction of resulting vector
+      -- Also behaves better with compact regions, preventing runtime exceptions
+      in  Data.Vector.fromListN n Applicative.<$> Traversable.traverse f (toList xs)
 
   {-# INLINE mapM #-}
   mapM = mapM
@@ -706,7 +731,7 @@ unfoldrNM = G.unfoldrNM
 -- | /O(n)/ Construct a vector with @n@ elements by repeatedly applying the
 -- generator function to the already constructed part of the vector.
 --
--- > constructN 3 f = let a = f <> ; b = f <a> ; c = f <a,b> in f <a,b,c>
+-- > constructN 3 f = let a = f <> ; b = f <a> ; c = f <a,b> in <a,b,c>
 --
 constructN :: Int -> (Vector a -> a) -> Vector a
 {-# INLINE constructN #-}
@@ -716,7 +741,7 @@ constructN = G.constructN
 -- repeatedly applying the generator function to the already constructed part
 -- of the vector.
 --
--- > constructrN 3 f = let a = f <> ; b = f<a> ; c = f <b,a> in f <c,b,a>
+-- > constructrN 3 f = let a = f <> ; b = f<a> ; c = f <b,a> in <c,b,a>
 --
 constructrN :: Int -> (Vector a -> a) -> Vector a
 {-# INLINE constructrN #-}
@@ -1262,6 +1287,8 @@ unstablePartition = G.unstablePartition
 -- | /O(n)/ Split the vector in two parts, the first one containing the
 --   @Right@ elements and the second containing the @Left@ elements.
 --   The relative order of the elements is preserved.
+--
+--   @since 0.12.1.0
 partitionWith :: (a -> Either b c) -> Vector a -> (Vector b, Vector c)
 {-# INLINE partitionWith #-}
 partitionWith = G.partitionWith

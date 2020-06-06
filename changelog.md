@@ -1,0 +1,149 @@
+# Changes in NEXT_VERSION
+
+ * `mkType` from `Data.Vector.Generic` is deprecated in favor of
+   `Data.Data.mkNoRepType`
+ * `maximumBy` now behaves like its counterpart in `Data.List` in that if
+   `maximumBy` has to choose between several elements which could be
+   considered the maximum, it will now choose the last element (previously,
+   it would choose the first element). Similarly, `maxIndexBy` will also
+   now pick the last element if several elements could be considered the
+   maximum.
+ * The role signatures on several `Vector` types were too permissive, so they
+   have been tightened up:
+   * The role signature for `Data.Vector.Mutable.MVector` is now
+     `type role MVector nominal representational` (previously, both arguments
+     were `phantom`).
+   * The role signature for `Data.Vector.Primitive.Vector` is now
+     `type role Vector representational` (previously, it was `phantom`).
+   * The role signature for `Data.Vector.Storable.Vector` is now
+     `type role Vector nominal` (previous, it was `phantom`), and the signature
+     for `Data.Vector.Storable.Mutable.MVector` is now
+     `type role MVector nominal nominal` (previous, both arguments were
+     `phantom`).
+
+     We pick `nominal` for the role of the last argument instead of
+     `representational` since the internal structure of a `Storable` vector
+     is determined by the `Storable` instance of the element type, and it is
+     not guaranteed that the `Storable` instances between two
+     representationally equal types will preserve this internal structure.
+     One consequence of this choice is that it is no longer possible to
+     `coerce` between `Storable.Vector a` and `Storable.Vector b` if `a` and
+     `b` are nominally distinct but representationally equal types. We now
+     provide `unsafeCoerce{M}Vector` functions in
+     `Data.Vector.Storable{.Mutable}` to allow this (the onus is on the user
+     to ensure that no `Storable` invariants are broken when using these
+     functions).
+
+# Changes in version 0.12.1.2
+
+ * Fix for lost function `Data.Vector.Generic.mkType`: [#287](https://github.com/haskell/vector/issues/287)
+
+# Changes in version 0.12.1.1 (deprecated)
+ * add semigrioups dep to test suite so CI actually runs again on GHC < 8
+
+# Changes in version 0.12.1.0 (deprecated)
+ * Fix integer overflows in specializations of Bundle/Stream enumFromTo on Integral types
+ * Fix possibility of OutOfMemory with `take` and very large arguments.
+ * Fix `slice` function causing segfault and not checking the bounds properly.
+ * updated specialization rule for EnumFromTo on Float and Double
+  to make sure it always matches the version in GHC Base (which changed as of 8.6)
+  Thanks to Aleksey Khudyakov @Shimuuar for this fix.
+ * fast rejection short circuiting in eqBy operations
+ * the O2 test suite now has reasonable memory usage on every GHC version,
+    special thanks to Alexey Kuleshevich (@lehins).
+ * The `Mutable` type family is now injective on GHC 8.0 or later.
+ * Using empty `Storable` vectors no longer results in division-by-zero
+   errors.
+ * The `Data` instances for `Vector` types now have well defined
+   implementations for `toConstr`, `gunfold`, and `dataTypeOf`.
+ * New function: `partitionWith`.
+ * Add `Unbox` instances for `Identity`, `Const`, `Down`, `Dual`, `Sum`,
+   `Product`, `Min`, `Max`, `First`, `Last`, `WrappedMonoid`, `Arg`, `Any`,
+   `All`, `Alt`, and `Compose`.
+ * Add `NFData1` instances for applicable `Vector` types.
+
+# Changes in version 0.12.0.3
+  * Monad Fail support
+
+# Changes in version 0.12.0.2
+  * Fixes issue #220, compact heap operations crashing on boxed vectors constructed
+    using traverse.
+  * backport injective type family support
+  * Cleanup the memset code internal to storable vector modules to be
+    compatible with future Primitive releases
+
+# Changes in version 0.12.0.1
+
+ * Make sure `length` can be inlined
+ * Include modules that test-suites depend on in other-modules
+
+# Changes in version 0.12.0.0
+
+ * Documentation fixes/additions
+ * New functions: createT, iscanl/r, iterateNM, unfoldrM, uniq
+ * New instances for various vector types: Semigroup, MonadZip
+ * Made `Storable` vectors respect memory alignment
+ * Changed some macros to ConstraintKinds
+   - Dropped compatibility with old GHCs to support this
+ * Add `Eq1`, `Ord1`, `Show1`, and `Read1` `Vector` instances, and related
+   helper functions.
+ * Relax context for `Unbox (Complex a)`.
+
+# Changes in version 0.11.0.0
+
+ * Define `Applicative` instances for `Data.Vector.Fusion.Util.{Box,Id}`
+ * Define non-bottom `fail` for `instance Monad Vector`
+ * New generalized stream fusion framework
+ * Various safety fixes
+   - Various overflows due to vector size have been eliminated
+   - Memory is initialized on creation of unboxed vectors
+ * Changes to SPEC usage to allow building under more conditions
+
+# Changes in version 0.10.12.3
+
+ * Allow building with `primtive-0.6`
+
+# Changes in version 0.10.12.2
+
+ * Add support for `deepseq-1.4.0.0`
+
+# Changes in version 0.10.12.1
+
+ * Fixed compilation on non-head GHCs
+
+# Changes in version 0.10.12.0
+
+ * Export MVector constructor from Data.Vector.Primitive to match Vector's
+   (which was already exported).
+
+ * Fix building on GHC 7.9 by adding Applicative instances for Id and Box
+
+# Changes in version 0.10.11.0
+
+ * Support OverloadedLists for boxed Vector in GHC >= 7.8
+
+# Changes in version 0.10.10.0
+
+ * Minor version bump to rectify PVP violation occured in 0.10.9.3 release
+
+# Changes in version 0.10.9.3 (deprecated)
+
+ * Add support for OverloadedLists in GHC >= 7.8
+
+# Changes in version 0.10.9.2
+
+ * Fix compilation with GHC 7.9
+
+# Changes in version 0.10.9.1
+
+ * Implement poly-kinded Typeable
+
+# Changes in version 0.10.0.1
+
+ * Require `primitive` to include workaround for a GHC array copying bug
+
+# Changes in version 0.10
+
+ * `NFData` instances
+ * More efficient block fills
+ * Safe Haskell support removed

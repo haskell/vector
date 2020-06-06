@@ -83,8 +83,13 @@ null = G.null
 -- Extracting subvectors
 -- ---------------------
 
--- | Yield a part of the mutable vector without copying it.
-slice :: Unbox a => Int -> Int -> MVector s a -> MVector s a
+-- | Yield a part of the mutable vector without copying it. The vector must
+-- contain at least @i+n@ elements.
+slice :: Unbox a
+      => Int  -- ^ @i@ starting index
+      -> Int  -- ^ @n@ length
+      -> MVector s a
+      -> MVector s a
 {-# INLINE slice #-}
 slice = G.slice
 
@@ -279,7 +284,9 @@ unsafeCopy = G.unsafeCopy
 -- copied to a temporary vector and then the temporary vector was copied
 -- to the target vector.
 move :: (PrimMonad m, Unbox a)
-                 => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
+     => MVector (PrimState m) a   -- ^ target
+     -> MVector (PrimState m) a   -- ^ source
+     -> m ()
 {-# INLINE move #-}
 move = G.move
 
@@ -298,7 +305,7 @@ unsafeMove :: (PrimMonad m, Unbox a)
 unsafeMove = G.unsafeMove
 
 -- | Compute the next (lexicographically) permutation of given vector in-place.
---   Returns False when input is the last permtuation
+--   Returns False when input is the last permutation
 nextPermutation :: (PrimMonad m,Ord e,Unbox e) => MVector (PrimState m) e -> m Bool
 {-# INLINE nextPermutation #-}
 nextPermutation = G.nextPermutation

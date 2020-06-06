@@ -149,7 +149,7 @@ module Data.Vector.Generic (
   -- * Fusion support
 
   -- ** Conversion to/from Bundles
-  stream, unstream, streamR, unstreamR,
+  stream, unstream, unstreamM, streamR, unstreamR,
 
   -- ** Recycling support
   new, clone,
@@ -165,7 +165,7 @@ module Data.Vector.Generic (
   liftShowsPrec, liftReadsPrec,
 
   -- ** @Data@ and @Typeable@
-  gfoldl, dataCast, mkType
+  gfoldl, gunfold, dataCast, mkVecType, mkVecConstr, mkType
 ) where
 
 import           Data.Vector.Generic.Base
@@ -211,15 +211,8 @@ import Data.Typeable ( Typeable1, gcast1 )
 
 #include "vector.h"
 
-import Data.Data ( Data, DataType )
-#if MIN_VERSION_base(4,2,0)
-import Data.Data ( mkNoRepType )
-#else
-import Data.Data ( mkNorepType )
-mkNoRepType :: String -> DataType
-mkNoRepType = mkNorepType
-#endif
-
+import Data.Data ( Data, DataType, Constr, Fixity(Prefix),
+                   mkDataType, mkConstr, constrIndex, mkNoRepType )
 import qualified Data.Traversable as T (Traversable(mapM))
 
 -- Length information
@@ -472,10 +465,12 @@ unsafeDrop :: Vector v a => Int -> v a -> v a
 {-# INLINE unsafeDrop #-}
 unsafeDrop n v = unsafeSlice n (length v - n) v
 
-{-# RULES
 
-"slice/new [Vector]" forall i n p.
-  slice i n (new p) = new (New.slice i n p)
+-- Turned off due to: https://github.com/haskell/vector/issues/257
+-- "slice/new [Vector]" forall i n p.
+--   slice i n (new p) = new (New.slice i n p)
+
+{-# RULES
 
 "init/new [Vector]" forall p.
   init (new p) = new (New.init p)
@@ -573,7 +568,7 @@ unfoldrNM n f = unstreamM . MBundle.unfoldrNM n f
 -- | /O(n)/ Construct a vector with @n@ elements by repeatedly applying the
 -- generator function to the already constructed part of the vector.
 --
--- > constructN 3 f = let a = f <> ; b = f <a> ; c = f <a,b> in f <a,b,c>
+-- > constructN 3 f = let a = f <> ; b = f <a> ; c = f <a,b> in <a,b,c>
 --
 constructN :: forall v a. Vector v a => Int -> (v a -> a) -> v a
 {-# INLINE constructN #-}
@@ -602,7 +597,7 @@ constructN !n f = runST (
 -- repeatedly applying the generator function to the already constructed part
 -- of the vector.
 --
--- > constructrN 3 f = let a = f <> ; b = f<a> ; c = f <b,a> in f <c,b,a>
+-- > constructrN 3 f = let a = f <> ; b = f<a> ; c = f <b,a> in <c,b,a>
 --
 constructrN :: forall v a. Vector v a => Int -> (v a -> a) -> v a
 {-# INLINE constructrN #-}
@@ -1602,8 +1597,8 @@ maximumBy cmpr = Bundle.foldl1' maxBy . stream
   where
     {-# INLINE maxBy #-}
     maxBy x y = case cmpr x y of
-                  LT -> y
-                  _  -> x
+                  GT -> x
+                  _  -> y
 
 -- | /O(n)/ Yield the minimum element of the vector. The vector may not be
 -- empty.
@@ -1636,8 +1631,8 @@ maxIndexBy cmpr = fst . Bundle.foldl1' imax . Bundle.indexed . stream
   where
     imax (i,x) (j,y) = i `seq` j `seq`
                        case cmpr x y of
-                         LT -> (j,y)
-                         _  -> (i,x)
+                         GT -> (i,x)
+                         _  -> (j,y)
 
 -- | /O(n)/ Yield the index of the minimum element of the vector. The vector
 -- may not be empty.
@@ -2205,9 +2200,26 @@ gfoldl :: (Vector v a, Data a)
 {-# INLINE gfoldl #-}
 gfoldl f z v = z fromList `f` toList v
 
+mkVecConstr :: String -> Constr
+{-# INLINE mkVecConstr #-}
+mkVecConstr name = mkConstr (mkVecType name) "fromList" [] Prefix
+
+mkVecType :: String -> DataType
+{-# INLINE mkVecType #-}
+mkVecType name = mkDataType name [mkVecConstr name]
+
 mkType :: String -> DataType
 {-# INLINE mkType #-}
+{-# DEPRECATED mkType "Use Data.Data.mkNoRepType" #-}
 mkType = mkNoRepType
+
+gunfold :: (Vector v a, Data a)
+        => (forall b r. Data b => c (b -> r) -> c r)
+        -> (forall r. r -> c r)
+        -> Constr -> c (v a)
+gunfold k z c = case constrIndex c of
+  1 -> k (z fromList)
+  _ -> error "gunfold"
 
 #if __GLASGOW_HASKELL__ >= 707
 dataCast :: (Vector v a, Data a, Typeable v, Typeable t)

@@ -1,5 +1,9 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, MultiParamTypeClasses, FlexibleInstances, BangPatterns, TypeFamilies #-}
 
+#if __GLASGOW_HASKELL__ >= 708
+{-# LANGUAGE RoleAnnotations #-}
+#endif
+
 -- |
 -- Module      : Data.Vector.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -61,6 +65,10 @@ import Prelude hiding ( length, null, replicate, reverse, read,
 import Data.Typeable ( Typeable )
 
 #include "vector.h"
+
+#if __GLASGOW_HASKELL__ >= 708
+type role MVector nominal representational
+#endif
 
 -- | Mutable boxed vectors keyed on the monad they live in ('IO' or @'ST' s@).
 data MVector s a = MVector {-# UNPACK #-} !Int
@@ -185,7 +193,7 @@ loopM !n k = let
   in go 0
 
 uninitialised :: a
-uninitialised = error "Data.Vector.Mutable: uninitialised element"
+uninitialised = error "Data.Vector.Mutable: uninitialised element. If you are trying to compact a vector, use the 'force' function to remove uninitialised elements from the underlying array."
 
 -- Length information
 -- ------------------
@@ -203,8 +211,12 @@ null = G.null
 -- Extracting subvectors
 -- ---------------------
 
--- | Yield a part of the mutable vector without copying it.
-slice :: Int -> Int -> MVector s a -> MVector s a
+-- | Yield a part of the mutable vector without copying it. The vector must
+-- contain at least @i+n@ elements.
+slice :: Int  -- ^ @i@ starting index
+      -> Int  -- ^ @n@ length
+      -> MVector s a
+      -> MVector s a
 {-# INLINE slice #-}
 slice = G.slice
 
@@ -371,8 +383,9 @@ set = G.set
 
 -- | Copy a vector. The two vectors must have the same length and may not
 -- overlap.
-copy :: PrimMonad m
-                 => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
+copy :: PrimMonad m => MVector (PrimState m) a   -- ^ target
+                    -> MVector (PrimState m) a   -- ^ source
+                    -> m ()
 {-# INLINE copy #-}
 copy = G.copy
 
@@ -391,8 +404,9 @@ unsafeCopy = G.unsafeCopy
 -- Otherwise, the copying is performed as if the source vector were
 -- copied to a temporary vector and then the temporary vector was copied
 -- to the target vector.
-move :: PrimMonad m
-                 => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
+move :: PrimMonad m => MVector (PrimState m) a   -- ^ target
+                    -> MVector (PrimState m) a   -- ^ source
+                    -> m ()
 {-# INLINE move #-}
 move = G.move
 
@@ -410,7 +424,7 @@ unsafeMove :: PrimMonad m => MVector (PrimState m) a   -- ^ target
 unsafeMove = G.unsafeMove
 
 -- | Compute the next (lexicographically) permutation of given vector in-place.
---   Returns False when input is the last permtuation
+--   Returns False when input is the last permutation
 nextPermutation :: (PrimMonad m,Ord e) => MVector (PrimState m) e -> m Bool
 {-# INLINE nextPermutation #-}
 nextPermutation = G.nextPermutation

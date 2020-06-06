@@ -7,11 +7,13 @@ import qualified Data.Vector.Unboxed as V
 
 import Control.Monad.ST ( ST, runST )
 
-randomGraph :: Int -> (Int, V.Vector Int, V.Vector Int)
-randomGraph e
+import Data.Word
+
+randomGraph :: Word32 -> Int -> (Int, V.Vector Int, V.Vector Int)
+randomGraph seed e
   = runST (
     do
-      g <- create
+      g <- initialize (V.singleton seed)
       arr <- STA.newArray (0,n-1) [] :: ST s (STA.STArray s Int [Int])
       addRandomEdges n g arr e
       xs <- STA.getAssocs arr

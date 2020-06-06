@@ -1,5 +1,9 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, FlexibleInstances, MagicHash, MultiParamTypeClasses, ScopedTypeVariables #-}
 
+#if __GLASGOW_HASKELL__ >= 708
+{-# LANGUAGE RoleAnnotations #-}
+#endif
+
 -- |
 -- Module      : Data.Vector.Storable.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010
@@ -50,6 +54,9 @@ module Data.Vector.Storable.Mutable(
 
   -- * Unsafe conversions
   unsafeCast,
+#if __GLASGOW_HASKELL__ >= 708
+  unsafeCoerceMVector,
+#endif
 
   -- * Raw pointers
   unsafeFromForeignPtr, unsafeFromForeignPtr0,
@@ -57,7 +64,11 @@ module Data.Vector.Storable.Mutable(
   unsafeWith
 ) where
 
-import Control.DeepSeq ( NFData(rnf) )
+import Control.DeepSeq ( NFData(rnf)
+#if MIN_VERSION_deepseq(1,4,3)
+                       , NFData1(liftRnf)
+#endif
+                       )
 
 import qualified Data.Vector.Generic.Mutable as G
 import Data.Vector.Storable.Internal
@@ -74,12 +85,14 @@ import GHC.Prim (byteArrayContents#, unsafeCoerce#)
 import GHC.ForeignPtr
 #endif
 
-import Foreign.Ptr
+import GHC.Base ( Int(..) )
+
+import Foreign.Ptr (castPtr,plusPtr)
 import Foreign.Marshal.Array ( advancePtr, copyArray, moveArray )
 
 import Control.Monad.Primitive
-import Data.Primitive.Addr
 import Data.Primitive.Types (Prim)
+import qualified Data.Primitive.Types as DPT
 
 import GHC.Word (Word8, Word16, Word32, Word64)
 import GHC.Ptr (Ptr(..))
@@ -89,9 +102,29 @@ import Prelude hiding ( length, null, replicate, reverse, map, read,
 
 import Data.Typeable ( Typeable )
 
+#if __GLASGOW_HASKELL__ >= 708
+import Data.Coerce
+import Unsafe.Coerce
+#endif
+
 -- Data.Vector.Internal.Check is not needed
 #define NOT_VECTOR_MODULE
 #include "vector.h"
+
+#if __GLASGOW_HASKELL__ >= 708
+type role MVector nominal nominal
+
+-- | /O(1)/ Unsafely coerce a mutable vector from one element type to another,
+-- representationally equal type. The operation just changes the type of the
+-- underlying pointer and does not modify the elements.
+--
+-- This is marginally safer than 'unsafeCast', since this function imposes an
+-- extra 'Coercible' constraint. This function is still not safe, however,
+-- since it cannot guarantee that the two types have memory-compatible
+-- 'Storable' instances.
+unsafeCoerceMVector :: Coercible a b => MVector s a -> MVector s b
+unsafeCoerceMVector = unsafeCoerce
+#endif
 
 -- | Mutable 'Storable'-based vectors
 data MVector s a = MVector {-# UNPACK #-} !Int
@@ -103,6 +136,11 @@ type STVector s = MVector s
 
 instance NFData (MVector s a) where
   rnf (MVector _ _) = ()
+
+#if MIN_VERSION_deepseq(1,4,3)
+instance NFData1 (MVector s) where
+  liftRnf _ (MVector _ _) = ()
+#endif
 
 instance Storable a => G.MVector MVector a where
   {-# INLINE basicLength #-}
@@ -163,13 +201,11 @@ instance Storable a => G.MVector MVector a where
 
 storableZero :: forall a m. (Storable a, PrimMonad m) => MVector (PrimState m) a -> m ()
 {-# INLINE storableZero #-}
-storableZero (MVector n fp) = unsafePrimToPrim . withForeignPtr fp $ \(Ptr p) -> do
-  let q = Addr p
-  setAddr q byteSize (0 :: Word8)
+storableZero (MVector n fp) = unsafePrimToPrim . withForeignPtr fp $ \ptr-> do
+  memsetPrimPtr_vector (castPtr ptr) byteSize (0 :: Word8)
  where
  x :: a
  x = undefined
-
  byteSize :: Int
  byteSize = n * sizeOf x
 
@@ -195,13 +231,34 @@ storableSet (MVector n fp) x
                        do_set 1
 
 storableSetAsPrim
-  :: (Storable a, Prim b) => Int -> ForeignPtr a -> a -> b -> IO ()
+  :: forall a b . (Storable a, Prim b) => Int -> ForeignPtr a -> a -> b -> IO ()
 {-# INLINE [0] storableSetAsPrim #-}
-storableSetAsPrim n fp x y = withForeignPtr fp $ \(Ptr p) -> do
-  poke (Ptr p) x
-  let q = Addr p
-  w <- readOffAddr q 0
-  setAddr (q `plusAddr` sizeOf x) (n-1) (w `asTypeOf` y)
+storableSetAsPrim n fp x _y = withForeignPtr fp $ \ ptr  -> do
+    poke ptr x
+     -- we dont equate storable and prim reps, so we need to write to a slot
+     -- in storable
+     -- then read it back as a prim
+    w<- peakPrimPtr_vector ((castPtr ptr) :: Ptr  b) 0
+    memsetPrimPtr_vector ((castPtr ptr) `plusPtr` sizeOf x ) (n-1)  w
+
+
+
+{-
+AFTER primitive 0.7 is pretty old, move to using setPtr. which is really
+a confusing misnomer for whats often called memset (intialize )
+-}
+-- Fill a memory block with the given value. The length is in
+-- elements of type @a@ rather than in bytes.
+memsetPrimPtr_vector :: forall a c m. (Prim c, PrimMonad m) => Ptr a -> Int -> c -> m ()
+memsetPrimPtr_vector (Ptr addr#) (I# n#) x = primitive_ (DPT.setOffAddr# addr# 0# n# x)
+{-# INLINE memsetPrimPtr_vector #-}
+
+
+-- Read a value from a memory position given by an address and an offset.
+-- The offset is in elements of type @a@ rather than in bytes.
+peakPrimPtr_vector :: (Prim a, PrimMonad m) => Ptr a -> Int -> m a
+peakPrimPtr_vector (Ptr addr#) (I# i#) = primitive (DPT.readOffAddr# addr# i#)
+{-# INLINE peakPrimPtr_vector #-}
 
 {-# INLINE mallocVector #-}
 mallocVector :: Storable a => Int -> IO (ForeignPtr a)
@@ -246,8 +303,13 @@ null = G.null
 -- Extracting subvectors
 -- ---------------------
 
--- | Yield a part of the mutable vector without copying it.
-slice :: Storable a => Int -> Int -> MVector s a -> MVector s a
+-- | Yield a part of the mutable vector without copying it. The vector must
+-- contain at least @i+n@ elements.
+slice :: Storable a
+      => Int  -- ^ @i@ starting index
+      -> Int  -- ^ @n@ length
+      -> MVector s a
+      -> MVector s a
 {-# INLINE slice #-}
 slice = G.slice
 
@@ -444,7 +506,9 @@ unsafeCopy = G.unsafeCopy
 -- copied to a temporary vector and then the temporary vector was copied
 -- to the target vector.
 move :: (PrimMonad m, Storable a)
-     => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
+     => MVector (PrimState m) a   -- ^ target
+     -> MVector (PrimState m) a   -- ^ source
+     -> m ()
 {-# INLINE move #-}
 move = G.move
 

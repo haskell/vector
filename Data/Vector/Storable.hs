@@ -1,5 +1,9 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, MultiParamTypeClasses, FlexibleInstances, TypeFamilies, Rank2Types, ScopedTypeVariables #-}
 
+#if __GLASGOW_HASKELL__ >= 708
+{-# LANGUAGE RoleAnnotations #-}
+#endif
+
 -- |
 -- Module      : Data.Vector.Storable
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010
@@ -129,6 +133,9 @@ module Data.Vector.Storable (
 
   -- ** Other vector types
   G.convert, unsafeCast,
+#if __GLASGOW_HASKELL__ >= 708
+  unsafeCoerceVector,
+#endif
 
   -- ** Mutable vectors
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
@@ -149,7 +156,11 @@ import Foreign.ForeignPtr
 import Foreign.Ptr
 import Foreign.Marshal.Array ( advancePtr, copyArray )
 
-import Control.DeepSeq ( NFData(rnf) )
+import Control.DeepSeq ( NFData(rnf)
+#if MIN_VERSION_deepseq(1,4,3)
+                       , NFData1(liftRnf)
+#endif
+                       )
 
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
@@ -179,12 +190,29 @@ import Data.Traversable ( Traversable )
 #endif
 
 #if __GLASGOW_HASKELL__ >= 708
+import Data.Coerce
 import qualified GHC.Exts as Exts
+import Unsafe.Coerce
 #endif
 
 -- Data.Vector.Internal.Check is unused
 #define NOT_VECTOR_MODULE
 #include "vector.h"
+
+#if __GLASGOW_HASKELL__ >= 708
+type role Vector nominal
+
+-- | /O(1)/ Unsafely coerce a mutable vector from one element type to another,
+-- representationally equal type. The operation just changes the type of the
+-- underlying pointer and does not modify the elements.
+--
+-- This is marginally safer than 'unsafeCast', since this function imposes an
+-- extra 'Coercible' constraint. This function is still not safe, however,
+-- since it cannot guarantee that the two types have memory-compatible
+-- 'Storable' instances.
+unsafeCoerceVector :: Coercible a b => Vector a -> Vector b
+unsafeCoerceVector = unsafeCoerce
+#endif
 
 -- | 'Storable'-based vectors
 data Vector a = Vector {-# UNPACK #-} !Int
@@ -193,6 +221,12 @@ data Vector a = Vector {-# UNPACK #-} !Int
 
 instance NFData (Vector a) where
   rnf (Vector _ _) = ()
+
+#if MIN_VERSION_deepseq(1,4,3)
+-- | @since 0.12.1.0
+instance NFData1 Vector where
+  liftRnf _ (Vector _ _) = ()
+#endif
 
 instance (Show a, Storable a) => Show (Vector a) where
   showsPrec = G.showsPrec
@@ -203,10 +237,11 @@ instance (Read a, Storable a) => Read (Vector a) where
 
 instance (Data a, Storable a) => Data (Vector a) where
   gfoldl       = G.gfoldl
-  toConstr _   = error "toConstr"
-  gunfold _ _  = error "gunfold"
-  dataTypeOf _ = G.mkType "Data.Vector.Storable.Vector"
+  toConstr _   = G.mkVecConstr "Data.Vector.Storable.Vector"
+  gunfold      = G.gunfold
+  dataTypeOf _ = G.mkVecType "Data.Vector.Storable.Vector"
   dataCast1    = G.dataCast
+
 
 type instance G.Mutable Vector = MVector
 
@@ -546,7 +581,7 @@ unfoldrNM = G.unfoldrNM
 -- | /O(n)/ Construct a vector with @n@ elements by repeatedly applying the
 -- generator function to the already constructed part of the vector.
 --
--- > constructN 3 f = let a = f <> ; b = f <a> ; c = f <a,b> in f <a,b,c>
+-- > constructN 3 f = let a = f <> ; b = f <a> ; c = f <a,b> in <a,b,c>
 --
 constructN :: Storable a => Int -> (Vector a -> a) -> Vector a
 {-# INLINE constructN #-}
@@ -556,7 +591,7 @@ constructN = G.constructN
 -- repeatedly applying the generator function to the already constructed part
 -- of the vector.
 --
--- > constructrN 3 f = let a = f <> ; b = f<a> ; c = f <b,a> in f <c,b,a>
+-- > constructrN 3 f = let a = f <> ; b = f<a> ; c = f <b,a> in <c,b,a>
 --
 constructrN :: Storable a => Int -> (Vector a -> a) -> Vector a
 {-# INLINE constructrN #-}
@@ -992,6 +1027,8 @@ unstablePartition = G.unstablePartition
 -- | /O(n)/ Split the vector in two parts, the first one containing the
 --   @Right@ elements and the second containing the @Left@ elements.
 --   The relative order of the elements is preserved.
+--
+--   @since 0.12.1.0
 partitionWith :: (Storable a, Storable b, Storable c) => (a -> Either b c) -> Vector a -> (Vector b, Vector c)
 {-# INLINE partitionWith #-}
 partitionWith = G.partitionWith
@@ -1396,7 +1433,6 @@ unsafeCast :: forall a b. (Storable a, Storable b) => Vector a -> Vector b
 unsafeCast (Vector n fp)
   = Vector ((n * sizeOf (undefined :: a)) `div` sizeOf (undefined :: b))
            (castForeignPtr fp)
-
 
 -- Conversions - Mutable vectors
 -- -----------------------------

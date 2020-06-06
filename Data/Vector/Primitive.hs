@@ -1,5 +1,9 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, FlexibleInstances, MultiParamTypeClasses, TypeFamilies, ScopedTypeVariables, Rank2Types #-}
 
+#if __GLASGOW_HASKELL__ >= 708
+{-# LANGUAGE RoleAnnotations #-}
+#endif
+
 -- |
 -- Module      : Data.Vector.Primitive
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -143,7 +147,11 @@ import qualified Data.Vector.Fusion.Bundle as Bundle
 import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim, sizeOf )
 
-import Control.DeepSeq ( NFData(rnf) )
+import Control.DeepSeq ( NFData(rnf)
+#if MIN_VERSION_deepseq(1,4,3)
+                       , NFData1(liftRnf)
+#endif
+                       )
 
 import Control.Monad ( liftM )
 import Control.Monad.ST ( ST )
@@ -177,6 +185,10 @@ import Data.Traversable ( Traversable )
 import qualified GHC.Exts as Exts
 #endif
 
+#if __GLASGOW_HASKELL__ >= 708
+type role Vector representational
+#endif
+
 -- | Unboxed vectors of primitive types
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
@@ -185,6 +197,12 @@ data Vector a = Vector {-# UNPACK #-} !Int
 
 instance NFData (Vector a) where
   rnf (Vector _ _ _) = ()
+
+#if MIN_VERSION_deepseq(1,4,3)
+-- | @since 0.12.1.0
+instance NFData1 Vector where
+  liftRnf _ (Vector _ _ _) = ()
+#endif
 
 instance (Show a, Prim a) => Show (Vector a) where
   showsPrec = G.showsPrec
@@ -195,9 +213,9 @@ instance (Read a, Prim a) => Read (Vector a) where
 
 instance (Data a, Prim a) => Data (Vector a) where
   gfoldl       = G.gfoldl
-  toConstr _   = error "toConstr"
-  gunfold _ _  = error "gunfold"
-  dataTypeOf _ = G.mkType "Data.Vector.Primitive.Vector"
+  toConstr _   = G.mkVecConstr "Data.Vector.Primitive.Vector"
+  gunfold      = G.gunfold
+  dataTypeOf _ = G.mkVecType "Data.Vector.Primitive.Vector"
   dataCast1    = G.dataCast
 
 
@@ -536,7 +554,7 @@ unfoldrNM = G.unfoldrNM
 -- | /O(n)/ Construct a vector with @n@ elements by repeatedly applying the
 -- generator function to the already constructed part of the vector.
 --
--- > constructN 3 f = let a = f <> ; b = f <a> ; c = f <a,b> in f <a,b,c>
+-- > constructN 3 f = let a = f <> ; b = f <a> ; c = f <a,b> in <a,b,c>
 --
 constructN :: Prim a => Int -> (Vector a -> a) -> Vector a
 {-# INLINE constructN #-}
@@ -546,7 +564,7 @@ constructN = G.constructN
 -- repeatedly applying the generator function to the already constructed part
 -- of the vector.
 --
--- > constructrN 3 f = let a = f <> ; b = f<a> ; c = f <b,a> in f <c,b,a>
+-- > constructrN 3 f = let a = f <> ; b = f<a> ; c = f <b,a> in <c,b,a>
 --
 constructrN :: Prim a => Int -> (Vector a -> a) -> Vector a
 {-# INLINE constructrN #-}
@@ -982,6 +1000,8 @@ unstablePartition = G.unstablePartition
 -- | /O(n)/ Split the vector in two parts, the first one containing the
 --   @Right@ elements and the second containing the @Left@ elements.
 --   The relative order of the elements is preserved.
+--
+--   @since 0.12.1.0
 partitionWith :: (Prim a, Prim b, Prim c) => (a -> Either b c) -> Vector a -> (Vector b, Vector c)
 {-# INLINE partitionWith #-}
 partitionWith = G.partitionWith

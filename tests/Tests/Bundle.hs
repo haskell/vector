@@ -1,18 +1,20 @@
 module Tests.Bundle ( tests ) where
 
 import Boilerplater
-import Utilities
+import Utilities hiding (limitUnfolds)
 
 import qualified Data.Vector.Fusion.Bundle as S
 
 import Test.QuickCheck
 
-import Test.Framework
-import Test.Framework.Providers.QuickCheck2
+import Test.Tasty
+import Test.Tasty.QuickCheck hiding (testProperties)
 
 import Text.Show.Functions ()
 import Data.List           (foldl', foldl1', unfoldr, find, findIndex)
-import System.Random       (Random)
+
+-- migration from testframework to tasty
+type Test = TestTree
 
 #define COMMON_CONTEXT(a) \
  VANILLA_CONTEXT(a)
@@ -136,7 +138,7 @@ testPolymorphicFunctions _ = $(testProperties [
                  S.scanl1 `eq` scanl1
     prop_scanl1' :: P ((a -> a -> a) -> S.Bundle v a -> S.Bundle v a) = notNullS2 ===>
                  S.scanl1' `eq` scanl1
- 
+
     prop_concatMap    = forAll arbitrary $ \xs ->
                         forAll (sized (\n -> resize (n `div` S.length xs) arbitrary)) $ \f -> unP prop f xs
       where
