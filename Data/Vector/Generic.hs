@@ -100,6 +100,7 @@ module Data.Vector.Generic (
   mapMaybe, imapMaybe,
   filterM,
   takeWhile, dropWhile,
+  nubOrd, nubOrdBy,
 
   -- ** Partitioning
   partition, partitionWith, unstablePartition, span, break,
@@ -1347,6 +1348,17 @@ takeWhile f = unstream . Bundle.takeWhile f . stream
 dropWhile :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE dropWhile #-}
 dropWhile f = unstream . Bundle.dropWhile f . stream
+
+
+-- | /O(n * log n)/ Remove duplicate elements.
+nubOrd :: (Vector v a, Ord a) => v a -> v a
+{-# INLINE nubOrd #-}
+nubOrd = unstream . inplace S.nubOrd toMax . stream
+
+-- | /O(n * log n)/ Remove duplicate elements using a custom predicate.
+nubOrdBy :: (Vector v a) => (a -> a -> Ordering) -> v a -> v a
+{-# INLINE nubOrdBy #-}
+nubOrdBy comp = unstream . inplace (S.nubOrdBy comp) toMax . stream
 
 -- Parititioning
 -- -------------

@@ -1,5 +1,6 @@
 Changes in version next
 
+ * Add nubOrd and nubOrdBy functions.
  * Fix integer overflows in specializations of Bundle/Stream enumFromTo on Integral types
  * Fix possibility of OutOfMemory with `take` and very large arguments.
  * Fix `slice` function causing segfault and not checking the bounds properly.

@@ -41,6 +41,7 @@ module Data.Vector.Fusion.Stream.Monadic (
 
   -- * Filtering
   filter, filterM, uniq, mapMaybe, takeWhile, takeWhileM, dropWhile, dropWhileM,
+  nubOrdBy, nubOrd,
 
   -- * Searching
   elem, notElem, find, findM, findIndex, findIndexM,
@@ -793,6 +794,67 @@ dropWhileM f (Stream step t) = Stream step' (DropWhile_Drop t)
             Skip    s' -> Skip    (DropWhile_Next    s')
             Done       -> Done
         ) (step s)
+
+-- | Remove duplicate elements
+nubOrd :: (Ord a, Monad m) => Stream m a -> Stream m a
+{-# INLINE_FUSED nubOrd #-}
+nubOrd = nubOrdBy compare
+
+
+-- | Remove duplicate elements based on custom predicate.
+nubOrdBy :: Monad m => (a -> a -> Ordering) -> Stream m a -> Stream m a
+{-# INLINE_FUSED nubOrdBy #-}
+nubOrdBy cmp (Stream step st) = Stream step' (E, st)
+  where
+    {-# INLINE_INNER step' #-}
+    step' (set, s)
+      = do
+          r <- step s
+          case r of
+            Yield x s' | memberRB cmp x set -> return $ Skip (set, s')
+                       | otherwise          -> return $ Yield x (insertRB cmp x set, s')
+            Skip  s'   -> return $ Skip  (set, s')
+            Done       -> return   Done
+
+
+-- OKASAKI RED BLACK TREE
+-- Taken from https://www.cs.kent.ac.uk/people/staff/smk/redblack/Untyped.hs
+-- Note: This is the same implementation as in extra
+
+data Color = R | B deriving Show
+data RB a = E | T Color (RB a) a (RB a) deriving Show
+
+{- Insertion and membership test as by Okasaki -}
+insertRB :: (a -> a -> Ordering) -> a -> RB a -> RB a
+insertRB cmp x rb =
+    T B l n r
+    where
+    T _ l n r = ins rb
+    ins E = T R E x E
+    ins s@(T B a y b) = case cmp x y of
+        LT -> balance (ins a) y b
+        GT -> balance a y (ins b)
+        EQ -> s
+    ins s@(T R a y b) = case cmp x y of
+        LT -> T R (ins a) y b
+        GT -> T R a y (ins b)
+        EQ -> s
+
+memberRB :: (a -> a -> Ordering) -> a -> RB a -> Bool
+memberRB _ _ E = False
+memberRB cmp x (T _ a y b) = case cmp x y of
+    LT -> memberRB cmp x a
+    GT -> memberRB cmp x b
+    EQ -> True
+
+balance :: RB a -> a -> RB a -> RB a
+balance (T R a x b) y (T R c z d) = T R (T B a x b) y (T B c z d)
+balance (T R (T R a x b) y c) z d = T R (T B a x b) y (T B c z d)
+balance (T R a x (T R b y c)) z d = T R (T B a x b) y (T B c z d)
+balance a x (T R b y (T R c z d)) = T R (T B a x b) y (T B c z d)
+balance a x (T R (T R b y c) z d) = T R (T B a x b) y (T B c z d)
+balance a x b = T B a x b
+
 
 -- Searching
 -- ---------

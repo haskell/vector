@@ -100,6 +100,7 @@ module Data.Vector.Primitive (
   mapMaybe, imapMaybe,
   filterM,
   takeWhile, dropWhile,
+  nubOrd, nubOrdBy,
 
   -- ** Partitioning
   partition, unstablePartition, partitionWith, span, break,
@@ -977,6 +978,16 @@ takeWhile = G.takeWhile
 dropWhile :: Prim a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE dropWhile #-}
 dropWhile = G.dropWhile
+
+-- | /O(n * log n)/ Remove duplicate elements.
+nubOrd :: (Ord a, Prim a) => Vector a -> Vector a
+{-# INLINE nubOrd #-}
+nubOrd = G.nubOrd
+
+-- | /O(n * log n)/ Remove duplicate elements using a custom predicate.
+nubOrdBy :: (Prim a) => (a -> a -> Ordering) -> Vector a -> Vector a
+{-# INLINE nubOrdBy #-}
+nubOrdBy = G.nubOrdBy
 
 -- Parititioning
 -- -------------

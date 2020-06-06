@@ -123,6 +123,7 @@ module Data.Vector.Unboxed (
   mapMaybe, imapMaybe,
   filterM,
   takeWhile, dropWhile,
+  nubOrd, nubOrdBy,
 
   -- ** Partitioning
   partition, unstablePartition, partitionWith, span, break,
@@ -1016,6 +1017,16 @@ takeWhile = G.takeWhile
 dropWhile :: Unbox a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE dropWhile #-}
 dropWhile = G.dropWhile
+
+-- | /O(n * log n)/ Remove duplicate elements.
+nubOrd :: (Unbox a, Ord a) => Vector a -> Vector a
+{-# INLINE nubOrd #-}
+nubOrd = G.nubOrd
+
+-- | /O(n * log n)/ Remove duplicate elements using a custom predicate.
+nubOrdBy :: (Unbox a) => (a -> a -> Ordering) -> Vector a -> Vector a
+{-# INLINE nubOrdBy #-}
+nubOrdBy = G.nubOrdBy
 
 -- Parititioning
 -- -------------
