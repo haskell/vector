@@ -26,6 +26,7 @@ module Tests.Vector.Property
 import Boilerplater
 import Utilities as Util hiding (limitUnfolds)
 
+import Control.Monad
 import Data.Functor.Identity
 import qualified Data.Traversable as T (Traversable(..))
 import Data.Foldable (Foldable(foldMap))
@@ -143,7 +144,8 @@ testPolymorphicFunctions _ = $(testProperties [
         {- 'prop_replicateM, 'prop_generateM, 'prop_create, -}
 
         -- Unfolding
-        'prop_unfoldr, 'prop_unfoldrN, 'prop_unfoldrM, 'prop_unfoldrNM,
+        'prop_unfoldr, 'prop_unfoldrN, 'prop_unfoldrExactN,
+        'prop_unfoldrM, 'prop_unfoldrNM, 'prop_unfoldrExactNM,
         'prop_constructN, 'prop_constructrN,
 
         -- Enumeration? (FIXME?)
@@ -475,11 +477,15 @@ testPolymorphicFunctions _ = $(testProperties [
            `eq` (\n f a -> unfoldr (limitUnfolds f) (a, n))
     prop_unfoldrN :: P (Int -> (Int -> Maybe (a,Int)) -> Int -> v a)
          = V.unfoldrN `eq` (\n f a -> unfoldr (limitUnfolds f) (a, n))
+    prop_unfoldrExactN :: P (Int -> (Int -> (a,Int)) -> Int -> v a)
+         = V.unfoldrExactN `eq` (\n f a -> unfoldr (limitUnfolds (Just . f)) (a, n))
     prop_unfoldrM :: P (Int -> (Int -> Writer [Int] (Maybe (a,Int))) -> Int -> Writer [Int] (v a))
          = (\n f a -> V.unfoldrM (limitUnfoldsM f) (a,n))
            `eq` (\n f a -> Util.unfoldrM (limitUnfoldsM f) (a, n))
     prop_unfoldrNM :: P (Int -> (Int -> Writer [Int] (Maybe (a,Int))) -> Int -> Writer [Int] (v a))
          = V.unfoldrNM `eq` (\n f a -> Util.unfoldrM (limitUnfoldsM f) (a, n))
+    prop_unfoldrExactNM :: P (Int -> (Int -> Writer [Int] (a,Int)) -> Int -> Writer [Int] (v a))
+         = V.unfoldrExactNM `eq` (\n f a -> Util.unfoldrM (limitUnfoldsM (liftM Just . f)) (a, n))
 
     prop_constructN  = \f -> forAll (choose (0,20)) $ \n -> unP prop n f
       where
