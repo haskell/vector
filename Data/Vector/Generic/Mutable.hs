@@ -595,8 +595,10 @@ new n = BOUNDS_CHECK(checkLength) "new" n
 --   should be presumed uninitialized. However exact semantics depends
 --   on vector implementation. For example unboxed and storable
 --   vectors will create vector filled with whatever underlying memory
---   buffer happens to contain, while boxed vector initializes every
---   element to @error "..."@.
+--   buffer happens to contain, while boxed vector's elements are
+--   initialized to bottoms which will throw exception when evaluated.
+--
+-- @since 0.4
 unsafeNew :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
 {-# INLINE unsafeNew #-}
 unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n

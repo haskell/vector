@@ -281,12 +281,10 @@ new :: PrimMonad m => Int -> m (MVector (PrimState m) a)
 {-# INLINE new #-}
 new = G.new
 
--- | Create a mutable vector of the given length. The vector content
---   should be presumed uninitialized. However exact semantics depends
---   on vector implementation. For example unboxed and storable
---   vectors will create vector filled with whatever underlying memory
---   buffer happens to contain, while boxed vector initializes every
---   element to @error "..."@.
+-- | Create a mutable vector of the given length. The vector elements
+--   are set to bottom so accessing them will cause an exception.
+--
+-- @since 0.5
 unsafeNew :: PrimMonad m => Int -> m (MVector (PrimState m) a)
 {-# INLINE unsafeNew #-}
 unsafeNew = G.unsafeNew
