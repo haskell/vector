@@ -355,11 +355,10 @@ new :: (PrimMonad m, Storable a) => Int -> m (MVector (PrimState m) a)
 new = G.new
 
 -- | Create a mutable vector of the given length. The vector content
---   should be presumed uninitialized. However exact semantics depends
---   on vector implementation. For example unboxed and storable
---   vectors will create vector filled with whatever underlying memory
---   buffer happens to contain, while boxed vector initializes every
---   element to @error "..."@.
+--   is uninitialized, which means it is filled with whatever underlying memory
+--   buffer happens to contain.
+--
+-- @since 0.5
 unsafeNew :: (PrimMonad m, Storable a) => Int -> m (MVector (PrimState m) a)
 {-# INLINE unsafeNew #-}
 unsafeNew = G.unsafeNew
@@ -588,4 +587,3 @@ unsafeToForeignPtr0 (MVector n fp) = (fp, n)
 unsafeWith :: Storable a => IOVector a -> (Ptr a -> IO b) -> IO b
 {-# INLINE unsafeWith #-}
 unsafeWith (MVector _ fp) = withForeignPtr fp
-
