@@ -71,9 +71,9 @@ type role MVector nominal representational
 #endif
 
 -- | Mutable boxed vectors keyed on the monad they live in ('IO' or @'ST' s@).
-data MVector s a = MVector {-# UNPACK #-} !Int
-                           {-# UNPACK #-} !Int
-                           {-# UNPACK #-} !(MutableArray s a)
+data MVector s a = MVector {-# UNPACK #-} !Int                -- ^ Offset in underlying array
+                           {-# UNPACK #-} !Int                -- ^ Size of slice
+                           {-# UNPACK #-} !(MutableArray s a) -- ^ Underlying array
         deriving ( Typeable )
 
 type IOVector = MVector RealWorld
@@ -281,7 +281,10 @@ new :: PrimMonad m => Int -> m (MVector (PrimState m) a)
 {-# INLINE new #-}
 new = G.new
 
--- | Create a mutable vector of the given length. The memory is not initialized.
+-- | Create a mutable vector of the given length. The vector elements
+--   are set to bottom so accessing them will cause an exception.
+--
+-- @since 0.5
 unsafeNew :: PrimMonad m => Int -> m (MVector (PrimState m) a)
 {-# INLINE unsafeNew #-}
 unsafeNew = G.unsafeNew
