@@ -1,5 +1,6 @@
 # Changes in NEXT_VERSION
 
+ * `MonadFix` instance for boxed vectors added
  * `mkType` from `Data.Vector.Generic` is deprecated in favor of
    `Data.Data.mkNoRepType`
  * `maximumBy` now behaves like its counterpart in `Data.List` in that if
