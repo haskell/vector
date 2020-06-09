@@ -383,12 +383,13 @@ instance MonadZip Vector where
   munzip = unzip
 
 instance MonadFix Vector where
-  -- We take care to dispose of v0 as soon as possible.
+  -- We take care to dispose of v0 as soon as possible (see headM docs).
   -- We also avoid setting up the result vector to refer to
   -- itself. These measures should prevent memory leaks.
-  -- It's perfectly safe to use non-monadic indexing within
-  -- each element, as the result of indexing will be demanded
-  -- as soon as the vector is produced.
+  --
+  -- It's perfectly safe to use non-monadic indexing within generate
+  -- call since intermediate vector won't be created until result's
+  -- value is demanded.
   {-# INLINE mfix #-}
   mfix f
     | null v0 = empty
