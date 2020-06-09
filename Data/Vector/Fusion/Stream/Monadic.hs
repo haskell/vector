@@ -1137,7 +1137,8 @@ unfoldrExactNM m f t = Stream step (t,m)
                | otherwise = do (x,s') <- f s
                                 return $ Yield x (s',n-1)
 
--- | Apply monadic function n times to value. Zeroth element is original value.
+-- | Apply monadic function \(\max\{n - 1, 0\}\) times to value, producing a
+-- vector of length /n/. Zeroth element is the original value.
 iterateNM :: Monad m => Int -> (a -> m a) -> a -> Stream m a
 {-# INLINE_FUSED iterateNM #-}
 iterateNM n f x0 = Stream step (x0,n)
@@ -1148,7 +1149,8 @@ iterateNM n f x0 = Stream step (x0,n)
                | otherwise = do a <- f x
                                 return $ Yield a (a,i-1)
 
--- | Apply function n times to value. Zeroth element is original value.
+-- | Apply function \(\max\{n - 1, 0\}\) times to a value, producing a vector of
+-- length /n/. Zeroth element is the original value.
 iterateN :: Monad m => Int -> (a -> a) -> a -> Stream m a
 {-# INLINE_FUSED iterateN #-}
 iterateN n f x0 = iterateNM n (return . f) x0

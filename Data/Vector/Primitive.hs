@@ -503,7 +503,8 @@ generate :: Prim a => Int -> (Int -> a) -> Vector a
 {-# INLINE generate #-}
 generate = G.generate
 
--- | /O(n)/ Apply function n times to value. Zeroth element is original value.
+-- | /O(n)/ Apply function \(\max\{n - 1, 0\}\) times to value, producing a 
+-- vector of length /n/. Zeroth element is original value.
 iterateN :: Prim a => Int -> (a -> a) -> a -> Vector a
 {-# INLINE iterateN #-}
 iterateN = G.iterateN
@@ -659,7 +660,8 @@ generateM :: (Monad m, Prim a) => Int -> (Int -> m a) -> m (Vector a)
 {-# INLINE generateM #-}
 generateM = G.generateM
 
--- | /O(n)/ Apply monadic function n times to value. Zeroth element is original value.
+-- | /O(n)/ Apply monadic function \(\max\{n - 1, 0\}\) times to value, 
+-- producing a vector of length /n/. Zeroth element is original value.
 iterateNM :: (Monad m, Prim a) => Int -> (a -> m a) -> a -> m (Vector a)
 {-# INLINE iterateNM #-}
 iterateNM = G.iterateNM

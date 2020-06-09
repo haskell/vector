@@ -533,7 +533,8 @@ generate :: Vector v a => Int -> (Int -> a) -> v a
 {-# INLINE generate #-}
 generate n f = unstream (Bundle.generate n f)
 
--- | /O(n)/ Apply function n times to value. Zeroth element is original value.
+-- | /O(n)/ Apply function \(\max\{n - 1, 0\}\) times to value, producing a 
+-- vector of length /n/. Zeroth element is original value.
 iterateN :: Vector v a => Int -> (a -> a) -> a -> v a
 {-# INLINE iterateN #-}
 iterateN n f x = unstream (Bundle.iterateN n f x)
@@ -756,7 +757,8 @@ generateM :: (Monad m, Vector v a) => Int -> (Int -> m a) -> m (v a)
 {-# INLINE generateM #-}
 generateM n f = unstreamM (MBundle.generateM n f)
 
--- | /O(n)/ Apply monadic function n times to value. Zeroth element is original value.
+-- | /O(n)/ Apply monadic function \(\max\{n - 1, 0\}\) times to value, 
+-- producing a vector of length /n/. Zeroth element is original value.
 iterateNM :: (Monad m, Vector v a) => Int -> (a -> m a) -> a -> m (v a)
 {-# INLINE iterateNM #-}
 iterateNM n f x = unstreamM (MBundle.iterateNM n f x)
