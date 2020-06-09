@@ -383,7 +383,9 @@ instance MonadZip Vector where
   {-# INLINE munzip #-}
   munzip = unzip
 
--- | @since 0.13.0.0
+-- | Instance has same semantic as one for lists
+--
+--  @since 0.13.0.0
 instance MonadFix Vector where
   -- We take care to dispose of v0 as soon as possible (see headM docs).
   -- We also avoid setting up the result vector to refer to
@@ -395,12 +397,15 @@ instance MonadFix Vector where
   {-# INLINE mfix #-}
   mfix f
     | null v0 = empty
+    -- We take first element of resulting vector from v0 and create
+    -- rest using generate. Note that cons should fuse with generate
     | otherwise = runST $ do
         h <- headM v0
         return $ cons h $
           generate (lv0 - 1) $
             \i -> fix (\a -> f a ! (i + 1))
     where
+      -- Used to calculate size of resulting vector
       v0 = fix (f . head)
       !lv0 = length v0
 
