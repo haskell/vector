@@ -1,7 +1,7 @@
 module Tests.Move (tests) where
 
 import Test.QuickCheck
-import Test.Framework.Providers.QuickCheck2
+import Test.Tasty.QuickCheck
 import Test.QuickCheck.Property (Property(..))
 
 import Utilities ()

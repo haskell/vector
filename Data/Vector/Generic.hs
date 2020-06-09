@@ -42,8 +42,8 @@ module Data.Vector.Generic (
   replicateM, generateM, iterateNM, create, createT,
 
   -- ** Unfolding
-  unfoldr, unfoldrN,
-  unfoldrM, unfoldrNM,
+  unfoldr, unfoldrN, unfoldrExactN,
+  unfoldrM, unfoldrNM, unfoldrExactNM,
   constructN, constructrN,
 
   -- ** Enumeration
@@ -81,6 +81,7 @@ module Data.Vector.Generic (
 
   -- ** Monadic mapping
   mapM, imapM, mapM_, imapM_, forM, forM_,
+  iforM, iforM_,
 
   -- ** Zipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
@@ -165,7 +166,7 @@ module Data.Vector.Generic (
   liftShowsPrec, liftReadsPrec,
 
   -- ** @Data@ and @Typeable@
-  gfoldl, gunfold, dataCast, mkVecType, mkVecConstr
+  gfoldl, gunfold, dataCast, mkVecType, mkVecConstr, mkType
 ) where
 
 import           Data.Vector.Generic.Base
@@ -212,8 +213,7 @@ import Data.Typeable ( Typeable1, gcast1 )
 #include "vector.h"
 
 import Data.Data ( Data, DataType, Constr, Fixity(Prefix),
-                   mkDataType, mkConstr, constrIndex )
-
+                   mkDataType, mkConstr, constrIndex, mkNoRepType )
 import qualified Data.Traversable as T (Traversable(mapM))
 
 -- Length information
@@ -551,6 +551,15 @@ unfoldrN  :: Vector v a => Int -> (b -> Maybe (a, b)) -> b -> v a
 {-# INLINE unfoldrN #-}
 unfoldrN n f = unstream . Bundle.unfoldrN n f
 
+-- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly applying
+-- the generator function to a seed. The generator function yields the
+-- next element and the new seed.
+--
+-- > unfoldrExactN 3 (\n -> (n,n-1)) 10 = <10,9,8>
+unfoldrExactN  :: Vector v a => Int -> (b -> (a, b)) -> b -> v a
+{-# INLINE unfoldrExactN #-}
+unfoldrExactN n f = unstream . Bundle.unfoldrExactN n f
+
 -- | /O(n)/ Construct a vector by repeatedly applying the monadic
 -- generator function to a seed. The generator function yields 'Just'
 -- the next element and the new seed or 'Nothing' if there are no more
@@ -566,6 +575,13 @@ unfoldrM f = unstreamM . MBundle.unfoldrM f
 unfoldrNM :: (Monad m, Vector v a) => Int -> (b -> m (Maybe (a, b))) -> b -> m (v a)
 {-# INLINE unfoldrNM #-}
 unfoldrNM n f = unstreamM . MBundle.unfoldrNM n f
+
+-- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly
+-- applying the monadic generator function to a seed. The generator
+-- function yields the next element and the new seed.
+unfoldrExactNM :: (Monad m, Vector v a) => Int -> (b -> m (a, b)) -> b -> m (v a)
+{-# INLINE unfoldrExactNM #-}
+unfoldrExactNM n f = unstreamM . MBundle.unfoldrExactNM n f
 
 -- | /O(n)/ Construct a vector with @n@ elements by repeatedly applying the
 -- generator function to the already constructed part of the vector.
@@ -1088,6 +1104,18 @@ forM as f = mapM f as
 forM_ :: (Monad m, Vector v a) => v a -> (a -> m b) -> m ()
 {-# INLINE forM_ #-}
 forM_ as f = mapM_ f as
+
+-- | /O(n)/ Apply the monadic action to all elements of the vector and their indices, yielding a
+-- vector of results. Equivalent to 'flip' 'imapM'.
+iforM :: (Monad m, Vector v a, Vector v b) => v a -> (Int -> a -> m b) -> m (v b)
+{-# INLINE iforM #-}
+iforM as f = imapM f as
+
+-- | /O(n)/ Apply the monadic action to all elements of the vector and their indices and ignore the
+-- results. Equivalent to 'flip' 'imapM_'.
+iforM_ :: (Monad m, Vector v a) => v a -> (Int -> a -> m b) -> m ()
+{-# INLINE iforM_ #-}
+iforM_ as f = imapM_ f as
 
 -- Zipping
 -- -------
@@ -2210,6 +2238,11 @@ mkVecConstr name = mkConstr (mkVecType name) "fromList" [] Prefix
 mkVecType :: String -> DataType
 {-# INLINE mkVecType #-}
 mkVecType name = mkDataType name [mkVecConstr name]
+
+mkType :: String -> DataType
+{-# INLINE mkType #-}
+{-# DEPRECATED mkType "Use Data.Data.mkNoRepType" #-}
+mkType = mkNoRepType
 
 gunfold :: (Vector v a, Data a)
         => (forall b r. Data b => c (b -> r) -> c r)

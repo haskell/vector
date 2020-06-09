@@ -55,7 +55,7 @@ module Data.Vector.Fusion.Bundle (
   and, or,
 
   -- * Unfolding
-  unfoldr, unfoldrN, iterateN,
+  unfoldr, unfoldrN, unfoldrExactN, iterateN,
 
   -- * Scans
   prescanl, prescanl',
@@ -436,6 +436,11 @@ unfoldr = M.unfoldr
 unfoldrN :: Int -> (s -> Maybe (a, s)) -> s -> Bundle v a
 {-# INLINE unfoldrN #-}
 unfoldrN = M.unfoldrN
+
+-- | Unfold exactly @n@ elements
+unfoldrExactN :: Int -> (s -> (a, s)) -> s -> Bundle v a
+{-# INLINE unfoldrExactN #-}
+unfoldrExactN = M.unfoldrExactN
 
 -- | Apply function n-1 times to value. Zeroth element is original value.
 iterateN :: Int -> (a -> a) -> a -> Bundle v a

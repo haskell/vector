@@ -145,4 +145,5 @@ class MVector (Mutable v) a => Vector v a where
   {-# INLINE elemseq #-}
   elemseq _ = \_ x -> x
 
-
+  {-# MINIMAL basicUnsafeFreeze, basicUnsafeThaw, basicLength,
+              basicUnsafeSlice, basicUnsafeIndexM #-}
