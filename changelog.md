@@ -1,6 +1,7 @@
 # Changes in NEXT_VERSION
 
  * `MonadFix` instance for boxed vectors added
+ * New functions: `unfoldrExactN` and `unfoldrExactNM`
  * `mkType` from `Data.Vector.Generic` is deprecated in favor of
    `Data.Data.mkNoRepType`
  * `maximumBy` now behaves like its counterpart in `Data.List` in that if
@@ -34,6 +35,7 @@
      `Data.Vector.Storable{.Mutable}` to allow this (the onus is on the user
      to ensure that no `Storable` invariants are broken when using these
      functions).
+ * Added `iforM` and `iforM_`
 
 # Changes in version 0.12.1.2
 

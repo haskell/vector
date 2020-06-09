@@ -375,7 +375,11 @@ new :: (PrimMonad m, Storable a) => Int -> m (MVector (PrimState m) a)
 {-# INLINE new #-}
 new = G.new
 
--- | Create a mutable vector of the given length. The memory is not initialized.
+-- | Create a mutable vector of the given length. The vector content
+--   is uninitialized, which means it is filled with whatever underlying memory
+--   buffer happens to contain.
+--
+-- @since 0.5
 unsafeNew :: (PrimMonad m, Storable a) => Int -> m (MVector (PrimState m) a)
 {-# INLINE unsafeNew #-}
 unsafeNew = G.unsafeNew
@@ -604,4 +608,3 @@ unsafeToForeignPtr0 (MVector n fp) = (fp, n)
 unsafeWith :: Storable a => IOVector a -> (Ptr a -> IO b) -> IO b
 {-# INLINE unsafeWith #-}
 unsafeWith (MVector _ fp) = withForeignPtr fp
-

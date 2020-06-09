@@ -59,8 +59,8 @@ module Data.Vector (
   replicateM, generateM, iterateNM, create, createT,
 
   -- ** Unfolding
-  unfoldr, unfoldrN,
-  unfoldrM, unfoldrNM,
+  unfoldr, unfoldrN, unfoldrExactN,
+  unfoldrM, unfoldrNM, unfoldrExactNM,
   constructN, constructrN,
 
   -- ** Enumeration
@@ -98,6 +98,7 @@ module Data.Vector (
 
   -- ** Monadic mapping
   mapM, imapM, mapM_, imapM_, forM, forM_,
+  iforM, iforM_,
 
   -- ** Zipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
@@ -687,7 +688,8 @@ generate :: Int -> (Int -> a) -> Vector a
 {-# INLINE generate #-}
 generate = G.generate
 
--- | /O(n)/ Apply function n times to value. Zeroth element is original value.
+-- | /O(n)/ Apply function \(\max\{n - 1, 0\}\) times to value, producing a 
+-- vector of length /n/. Zeroth element is original value.
 iterateN :: Int -> (a -> a) -> a -> Vector a
 {-# INLINE iterateN #-}
 iterateN = G.iterateN
@@ -714,6 +716,15 @@ unfoldrN :: Int -> (b -> Maybe (a, b)) -> b -> Vector a
 {-# INLINE unfoldrN #-}
 unfoldrN = G.unfoldrN
 
+-- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly applying
+-- the generator function to a seed. The generator function yields the
+-- next element and the new seed.
+--
+-- > unfoldrExactN 3 (\n -> (n,n-1)) 10 = <10,9,8>
+unfoldrExactN  :: Int -> (b -> (a, b)) -> b -> Vector a
+{-# INLINE unfoldrExactN #-}
+unfoldrExactN = G.unfoldrExactN
+
 -- | /O(n)/ Construct a vector by repeatedly applying the monadic
 -- generator function to a seed. The generator function yields 'Just'
 -- the next element and the new seed or 'Nothing' if there are no more
@@ -729,6 +740,13 @@ unfoldrM = G.unfoldrM
 unfoldrNM :: (Monad m) => Int -> (b -> m (Maybe (a, b))) -> b -> m (Vector a)
 {-# INLINE unfoldrNM #-}
 unfoldrNM = G.unfoldrNM
+
+-- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly
+-- applying the monadic generator function to a seed. The generator
+-- function yields the next element and the new seed.
+unfoldrExactNM :: (Monad m) => Int -> (b -> m (a, b)) -> b -> m (Vector a)
+{-# INLINE unfoldrExactNM #-}
+unfoldrExactNM = G.unfoldrExactNM
 
 -- | /O(n)/ Construct a vector with @n@ elements by repeatedly applying the
 -- generator function to the already constructed part of the vector.
@@ -823,7 +841,8 @@ generateM :: Monad m => Int -> (Int -> m a) -> m (Vector a)
 {-# INLINE generateM #-}
 generateM = G.generateM
 
--- | /O(n)/ Apply monadic function n times to value. Zeroth element is original value.
+-- | /O(n)/ Apply monadic function \(\max\{n - 1, 0\}\) times to value, 
+-- producing a vector of length /n/. Zeroth element is original value.
 iterateNM :: Monad m => Int -> (a -> m a) -> a -> m (Vector a)
 {-# INLINE iterateNM #-}
 iterateNM = G.iterateNM
@@ -1083,6 +1102,18 @@ forM = G.forM
 forM_ :: Monad m => Vector a -> (a -> m b) -> m ()
 {-# INLINE forM_ #-}
 forM_ = G.forM_
+
+-- | /O(n)/ Apply the monadic action to all elements of the vector and their indices, yielding a
+-- vector of results. Equivalent to 'flip' 'imapM'.
+iforM :: Monad m => Vector a -> (Int -> a -> m b) -> m (Vector b)
+{-# INLINE iforM #-}
+iforM = G.iforM
+
+-- | /O(n)/ Apply the monadic action to all elements of the vector and their indices and ignore the
+-- results. Equivalent to 'flip' 'imapM_'.
+iforM_ :: Monad m => Vector a -> (Int -> a -> m b) -> m ()
+{-# INLINE iforM_ #-}
+iforM_ = G.iforM_
 
 -- Zipping
 -- -------

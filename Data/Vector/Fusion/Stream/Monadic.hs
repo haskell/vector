@@ -56,6 +56,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   -- * Unfolding
   unfoldr, unfoldrM,
   unfoldrN, unfoldrNM,
+  unfoldrExactN, unfoldrExactNM,
   iterateN, iterateNM,
 
   -- * Scans
@@ -1104,7 +1105,7 @@ unfoldrN :: Monad m => Int -> (s -> Maybe (a, s)) -> s -> Stream m a
 {-# INLINE_FUSED unfoldrN #-}
 unfoldrN n f = unfoldrNM n (return . f)
 
--- | Unfold at most @n@ elements with a monadic functions
+-- | Unfold at most @n@ elements with a monadic function.
 unfoldrNM :: Monad m => Int -> (s -> m (Maybe (a, s))) -> s -> Stream m a
 {-# INLINE_FUSED unfoldrNM #-}
 unfoldrNM m f t = Stream step (t,m)
@@ -1117,7 +1118,23 @@ unfoldrNM m f t = Stream step (t,m)
                                  Nothing     -> Done
                              ) (f s)
 
--- | Apply monadic function n times to value. Zeroth element is original value.
+-- | Unfold exactly @n@ elements
+unfoldrExactN :: Monad m => Int -> (s -> (a, s)) -> s -> Stream m a
+{-# INLINE_FUSED unfoldrExactN #-}
+unfoldrExactN n f = unfoldrExactNM n (return . f)
+
+-- | Unfold exactly @n@ elements with a monadic function.
+unfoldrExactNM :: Monad m => Int -> (s -> m (a, s)) -> s -> Stream m a
+{-# INLINE_FUSED unfoldrExactNM #-}
+unfoldrExactNM m f t = Stream step (t,m)
+  where
+    {-# INLINE_INNER step #-}
+    step (s,n) | n <= 0    = return Done
+               | otherwise = do (x,s') <- f s
+                                return $ Yield x (s',n-1)
+
+-- | Apply monadic function \(\max\{n - 1, 0\}\) times to value, producing a
+-- vector of length /n/. Zeroth element is the original value.
 iterateNM :: Monad m => Int -> (a -> m a) -> a -> Stream m a
 {-# INLINE_FUSED iterateNM #-}
 iterateNM n f x0 = Stream step (x0,n)
@@ -1128,7 +1145,8 @@ iterateNM n f x0 = Stream step (x0,n)
                | otherwise = do a <- f x
                                 return $ Yield a (a,i-1)
 
--- | Apply function n times to value. Zeroth element is original value.
+-- | Apply function \(\max\{n - 1, 0\}\) times to a value, producing a vector of
+-- length /n/. Zeroth element is the original value.
 iterateN :: Monad m => Int -> (a -> a) -> a -> Stream m a
 {-# INLINE_FUSED iterateN #-}
 iterateN n f x0 = iterateNM n (return . f) x0
