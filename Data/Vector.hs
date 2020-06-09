@@ -382,6 +382,7 @@ instance MonadZip Vector where
   {-# INLINE munzip #-}
   munzip = unzip
 
+-- | @since 0.13.0.0
 instance MonadFix Vector where
   -- We take care to dispose of v0 as soon as possible (see headM docs).
   -- We also avoid setting up the result vector to refer to
