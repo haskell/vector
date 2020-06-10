@@ -1,6 +1,6 @@
 # Changes in NEXT_VERSION
 
- * `MonadFix` instance for boxed vectors added
+ * Added `MonadFix` instance for boxed vectors
  * New functions: `unfoldrExactN` and `unfoldrExactNM`
  * `mkType` from `Data.Vector.Generic` is deprecated in favor of
    `Data.Data.mkNoRepType`

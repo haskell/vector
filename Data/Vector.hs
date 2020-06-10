@@ -383,7 +383,7 @@ instance MonadZip Vector where
   {-# INLINE munzip #-}
   munzip = unzip
 
--- | Instance has same semantic as one for lists
+-- | Instance has same semantics as one for lists
 --
 --  @since 0.13.0.0
 instance MonadFix Vector where
