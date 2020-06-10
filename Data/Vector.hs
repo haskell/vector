@@ -388,8 +388,6 @@ instance MonadZip Vector where
 --  @since 0.13.0.0
 instance MonadFix Vector where
   -- We take care to dispose of v0 as soon as possible (see headM docs).
-  -- We also avoid setting up the result vector to refer to
-  -- itself. These measures should prevent memory leaks.
   --
   -- It's perfectly safe to use non-monadic indexing within generate
   -- call since intermediate vector won't be created until result's
