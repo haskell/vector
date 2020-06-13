@@ -137,6 +137,9 @@ module Data.Vector.Primitive (
 
   -- ** Other vector types
   G.convert,
+#if __GLASGOW_HASKELL__ >= 708
+  unsafeCoerceVector,
+#endif
 
   -- ** Mutable vectors
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy
@@ -183,11 +186,24 @@ import Data.Traversable ( Traversable )
 #endif
 
 #if __GLASGOW_HASKELL__ >= 708
+import Data.Coerce
+import Unsafe.Coerce
 import qualified GHC.Exts as Exts
 #endif
 
 #if __GLASGOW_HASKELL__ >= 708
-type role Vector representational
+type role Vector nominal
+
+-- | /O(1)/ Unsafely coerce an immutable vector from one element type to another,
+-- representationally equal type. The operation just changes the type of the
+-- underlying pointer and does not modify the elements.
+--
+-- Note that function is unsafe. @Coercible@ constraint guarantee that
+-- types @a@ and @b@ are represented identically. It however cannot
+-- guarantee that their respective 'Prim' instances may have different
+-- representations in memory.
+unsafeCoerceVector :: Coercible a b => Vector a -> Vector b
+unsafeCoerceVector = unsafeCoerce
 #endif
 
 -- | Unboxed vectors of primitive types
