@@ -1,9 +1,5 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, FlexibleInstances, MagicHash, MultiParamTypeClasses, ScopedTypeVariables #-}
-
-#if __GLASGOW_HASKELL__ >= 708
 {-# LANGUAGE RoleAnnotations #-}
-#endif
-
 -- |
 -- Module      : Data.Vector.Storable.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010
@@ -54,9 +50,7 @@ module Data.Vector.Storable.Mutable(
 
   -- * Unsafe conversions
   unsafeCast,
-#if __GLASGOW_HASKELL__ >= 708
   unsafeCoerceMVector,
-#endif
 
   -- * Raw pointers
   unsafeFromForeignPtr, unsafeFromForeignPtr0,
@@ -76,15 +70,7 @@ import Data.Vector.Storable.Internal
 import Foreign.Storable
 import Foreign.ForeignPtr
 
-#if __GLASGOW_HASKELL__ >= 706
 import GHC.ForeignPtr (mallocPlainForeignPtrAlignedBytes)
-#elif __GLASGOW_HASKELL__ >= 700
-import Data.Primitive.ByteArray (MutableByteArray(..), newAlignedPinnedByteArray,
-                                 unsafeFreezeByteArray)
-import GHC.Prim (byteArrayContents#, unsafeCoerce#)
-import GHC.ForeignPtr
-#endif
-
 import GHC.Base ( Int(..) )
 
 import Foreign.Ptr (castPtr,plusPtr)
@@ -102,16 +88,13 @@ import Prelude hiding ( length, null, replicate, reverse, map, read,
 
 import Data.Typeable ( Typeable )
 
-#if __GLASGOW_HASKELL__ >= 708
 import Data.Coerce
 import Unsafe.Coerce
-#endif
 
 -- Data.Vector.Internal.Check is not needed
 #define NOT_VECTOR_MODULE
 #include "vector.h"
 
-#if __GLASGOW_HASKELL__ >= 708
 type role MVector nominal nominal
 
 -- | /O(1)/ Unsafely coerce a mutable vector from one element type to another,
@@ -124,7 +107,6 @@ type role MVector nominal nominal
 -- 'Storable' instances.
 unsafeCoerceMVector :: Coercible a b => MVector s a -> MVector s b
 unsafeCoerceMVector = unsafeCoerce
-#endif
 
 -- | Mutable 'Storable'-based vectors
 data MVector s a = MVector {-# UNPACK #-} !Int
@@ -263,29 +245,11 @@ peakPrimPtr_vector (Ptr addr#) (I# i#) = primitive (DPT.readOffAddr# addr# i#)
 {-# INLINE mallocVector #-}
 mallocVector :: Storable a => Int -> IO (ForeignPtr a)
 mallocVector =
-#if __GLASGOW_HASKELL__ >= 706
   doMalloc undefined
   where
     doMalloc :: Storable b => b -> Int -> IO (ForeignPtr b)
     doMalloc dummy size =
       mallocPlainForeignPtrAlignedBytes (size * sizeOf dummy) (alignment dummy)
-#elif __GLASGOW_HASKELL__ >= 700
-  doMalloc undefined
-  where
-    doMalloc :: Storable b => b -> Int -> IO (ForeignPtr b)
-    doMalloc dummy size = do
-      arr@(MutableByteArray arr#) <- newAlignedPinnedByteArray arrSize arrAlign
-      newConcForeignPtr
-        (Ptr (byteArrayContents# (unsafeCoerce# arr#)))
-        -- Keep reference to mutable byte array until whole ForeignPtr goes out
-        -- of scope.
-        (touch arr)
-      where
-        arrSize  = size * sizeOf dummy
-        arrAlign = alignment dummy
-#else
-    mallocForeignPtrArray
-#endif
 
 -- Length information
 -- ------------------

@@ -203,12 +203,7 @@ import Prelude hiding ( length, null,
 
 import qualified Text.Read as Read
 import qualified Data.List.NonEmpty as NonEmpty
-
-#if __GLASGOW_HASKELL__ >= 707
 import Data.Typeable ( Typeable, gcast1 )
-#else
-import Data.Typeable ( Typeable1, gcast1 )
-#endif
 
 #include "vector.h"
 
@@ -2252,11 +2247,7 @@ gunfold k z c = case constrIndex c of
   1 -> k (z fromList)
   _ -> error "gunfold"
 
-#if __GLASGOW_HASKELL__ >= 707
 dataCast :: (Vector v a, Data a, Typeable v, Typeable t)
-#else
-dataCast :: (Vector v a, Data a, Typeable1 v, Typeable1 t)
-#endif
          => (forall d. Data  d => c (t d)) -> Maybe  (c (v a))
 {-# INLINE dataCast #-}
 dataCast f = gcast1 f

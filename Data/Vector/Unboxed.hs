@@ -191,14 +191,8 @@ import Prelude hiding ( length, null,
 import Text.Read      ( Read(..), readListPrecDefault )
 import Data.Semigroup ( Semigroup(..) )
 
-#if !MIN_VERSION_base(4,8,0)
-import Data.Monoid   ( Monoid(..) )
-import Data.Traversable ( Traversable )
-#endif
-
-#if __GLASGOW_HASKELL__ >= 708
 import qualified GHC.Exts as Exts (IsList(..))
-#endif
+
 
 #define NOT_VECTOR_MODULE
 #include "vector.h"
@@ -252,15 +246,11 @@ instance (Read a, Unbox a) => Read (Vector a) where
   readPrec = G.readPrec
   readListPrec = readListPrecDefault
 
-#if __GLASGOW_HASKELL__ >= 708
-
 instance (Unbox e) => Exts.IsList (Vector e) where
   type Item (Vector e) = e
   fromList = fromList
   fromListN = fromListN
   toList = toList
-
-#endif
 
 -- Length information
 -- ------------------
