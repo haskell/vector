@@ -6,6 +6,8 @@ module Tests.Vector.UnitTests (tests) where
 import Control.Applicative as Applicative
 import Control.Exception
 import Control.Monad.Primitive
+import Control.Monad.Fix (mfix)
+import qualified Data.Vector as Vector
 import Data.Int
 import Data.Word
 import Data.Typeable
@@ -79,6 +81,9 @@ tests =
       , testCase "Storable" $ testTakeOutOfMemory Storable.take
       , testCase "Unboxed" $ testTakeOutOfMemory Unboxed.take
       ]
+    ]
+  , testGroup "Data.Vector"
+    [ testCase "MonadFix" checkMonadFix
     ]
   ]
 
@@ -157,3 +162,15 @@ _f :: (Generic.Vector v a, Generic.Vector w a, PrimMonad f)
    => Generic.Mutable v (PrimState f) a -> f (w a)
 _f v = Generic.convert `fmap` Generic.unsafeFreeze v
 #endif
+checkMonadFix :: Assertion
+checkMonadFix = assertBool "checkMonadFix" $
+    Vector.toList fewV == fewL &&
+    Vector.toList none == []
+  where
+    facty _ 0 = 1; facty f n = n * f (n - 1)
+    fewV :: Vector.Vector Int
+    fewV = fmap ($ 12) $ mfix (\i -> Vector.fromList [facty i, facty (+1), facty (+2)])
+    fewL :: [Int]
+    fewL = fmap ($ 12) $ mfix (\i -> [facty i, facty (+1), facty (+2)])
+    none :: Vector.Vector Int
+    none = mfix (const Vector.empty)
