@@ -16,7 +16,10 @@
      `type role MVector nominal representational` (previously, both arguments
      were `phantom`).
    * The role signature for `Data.Vector.Primitive.Vector` is now
-     `type role Vector representational` (previously, it was `phantom`).
+     `type role Vector nominal` (previously, it was `phantom`).
+     The role signature for `Data.Vector.Primitive.Mutable.MVector` is now
+     `type role MVector nominal nominal` (previously, both arguments were
+     `phantom`).
    * The role signature for `Data.Vector.Storable.Vector` is now
      `type role Vector nominal` (previous, it was `phantom`), and the signature
      for `Data.Vector.Storable.Mutable.MVector` is now
