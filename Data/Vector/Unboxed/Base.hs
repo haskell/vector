@@ -1,10 +1,6 @@
 {-# LANGUAGE BangPatterns, CPP, MultiParamTypeClasses, TypeFamilies, FlexibleContexts #-}
-#if __GLASGOW_HASKELL__ >= 707
 {-# LANGUAGE DeriveDataTypeable, StandaloneDeriving #-}
-#endif
-#if __GLASGOW_HASKELL__ >= 706
 {-# LANGUAGE PolyKinds #-}
-#endif
 {-# OPTIONS_HADDOCK hide #-}
 
 -- |
@@ -39,9 +35,7 @@ import Control.DeepSeq ( NFData(rnf)
 import Control.Monad.Primitive
 import Control.Monad ( liftM )
 
-#if MIN_VERSION_base(4,8,0)
 import Data.Functor.Identity
-#endif
 #if MIN_VERSION_base(4,9,0)
 import Data.Functor.Compose
 #endif
@@ -50,23 +44,13 @@ import Data.Word ( Word8, Word16, Word32, Word64 )
 import Data.Int  ( Int8, Int16, Int32, Int64 )
 import Data.Complex
 import Data.Monoid (Dual(..),Sum(..),Product(..),All(..),Any(..))
-#if MIN_VERSION_base(4,8,0)
 import Data.Monoid (Alt(..))
-#endif
 #if MIN_VERSION_base(4,9,0)
 import Data.Semigroup (Min(..),Max(..),First(..),Last(..),WrappedMonoid(..),Arg(..))
 #endif
-#if !MIN_VERSION_base(4,8,0)
 import Data.Word ( Word )
-#endif
 
-#if __GLASGOW_HASKELL__ >= 707
 import Data.Typeable ( Typeable )
-#else
-import Data.Typeable ( Typeable1(..), Typeable2(..), mkTyConApp,
-                       mkTyCon3
-                     )
-#endif
 import Data.Data     ( Data(..) )
 import GHC.Exts      ( Down(..) )
 
@@ -99,18 +83,8 @@ instance NFData1 (MVector s) where
 -- -----------------
 -- Data and Typeable
 -- -----------------
-#if __GLASGOW_HASKELL__ >= 707
 deriving instance Typeable Vector
 deriving instance Typeable MVector
-#else
-vectorTyCon = mkTyCon3 "vector"
-
-instance Typeable1 Vector where
-  typeOf1 _ = mkTyConApp (vectorTyCon "Data.Vector.Unboxed" "Vector") []
-
-instance Typeable2 MVector where
-  typeOf2 _ = mkTyConApp (vectorTyCon "Data.Vector.Unboxed.Mutable" "MVector") []
-#endif
 
 instance (Data a, Unbox a) => Data (Vector a) where
   gfoldl       = G.gfoldl
@@ -485,10 +459,7 @@ instance inst_ctxt => Unbox (inst_head)                         ;\
 newtypeMVector(inst_ctxt, inst_head, tyC, mcon)                 ;\
 newtypeVector(inst_ctxt,  inst_head, tyC, con, mcon)
 
-#if MIN_VERSION_base(4,8,0)
 deriveNewtypeInstances(Unbox a, Identity a, a, Identity, V_Identity, MV_Identity)
-#endif
-
 deriveNewtypeInstances(Unbox a, Down a,    a, Down,    V_Down,    MV_Down)
 deriveNewtypeInstances(Unbox a, Dual a,    a, Dual,    V_Dual,    MV_Dual)
 deriveNewtypeInstances(Unbox a, Sum a,     a, Sum,     V_Sum,     MV_Sum)
@@ -573,9 +544,7 @@ deriveNewtypeInstances(Unbox a, Const a b, a, Const, V_Const, MV_Const)
 -- Alt
 -- ---
 
-#if MIN_VERSION_base(4,8,0)
 deriveNewtypeInstances(Unbox (f a), Alt f a, f a, Alt, V_Alt, MV_Alt)
-#endif
 
 -- -------
 -- Compose

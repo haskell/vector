@@ -1,9 +1,5 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, MultiParamTypeClasses, FlexibleInstances, TypeFamilies, Rank2Types, ScopedTypeVariables #-}
-
-#if __GLASGOW_HASKELL__ >= 708
 {-# LANGUAGE RoleAnnotations #-}
-#endif
-
 -- |
 -- Module      : Data.Vector.Storable
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010
@@ -134,9 +130,7 @@ module Data.Vector.Storable (
 
   -- ** Other vector types
   G.convert, unsafeCast,
-#if __GLASGOW_HASKELL__ >= 708
   unsafeCoerceVector,
-#endif
 
   -- ** Mutable vectors
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
@@ -184,23 +178,14 @@ import Data.Typeable  ( Typeable )
 import Data.Data      ( Data(..) )
 import Text.Read      ( Read(..), readListPrecDefault )
 import Data.Semigroup ( Semigroup(..) )
-
-#if !MIN_VERSION_base(4,8,0)
-import Data.Monoid   ( Monoid(..) )
-import Data.Traversable ( Traversable )
-#endif
-
-#if __GLASGOW_HASKELL__ >= 708
 import Data.Coerce
 import qualified GHC.Exts as Exts
 import Unsafe.Coerce
-#endif
 
 -- Data.Vector.Internal.Check is unused
 #define NOT_VECTOR_MODULE
 #include "vector.h"
 
-#if __GLASGOW_HASKELL__ >= 708
 type role Vector nominal
 
 -- | /O(1)/ Unsafely coerce a mutable vector from one element type to another,
@@ -213,7 +198,6 @@ type role Vector nominal
 -- 'Storable' instances.
 unsafeCoerceVector :: Coercible a b => Vector a -> Vector b
 unsafeCoerceVector = unsafeCoerce
-#endif
 
 -- | 'Storable'-based vectors
 data Vector a = Vector {-# UNPACK #-} !Int
@@ -317,15 +301,11 @@ instance Storable a => Monoid (Vector a) where
   {-# INLINE mconcat #-}
   mconcat = concat
 
-#if __GLASGOW_HASKELL__ >= 708
-
 instance Storable a => Exts.IsList (Vector a) where
   type Item (Vector a) = a
   fromList = fromList
   fromListN = fromListN
   toList = toList
-
-#endif
 
 -- Length
 -- ------

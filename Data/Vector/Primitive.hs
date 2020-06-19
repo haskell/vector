@@ -1,8 +1,5 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, FlexibleInstances, MultiParamTypeClasses, TypeFamilies, ScopedTypeVariables, Rank2Types #-}
-
-#if __GLASGOW_HASKELL__ >= 708
 {-# LANGUAGE RoleAnnotations #-}
-#endif
 
 -- |
 -- Module      : Data.Vector.Primitive
@@ -137,9 +134,7 @@ module Data.Vector.Primitive (
 
   -- ** Other vector types
   G.convert,
-#if __GLASGOW_HASKELL__ >= 708
   unsafeCoerceVector,
-#endif
 
   -- ** Mutable vectors
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy
@@ -180,18 +175,10 @@ import Data.Data      ( Data(..) )
 import Text.Read      ( Read(..), readListPrecDefault )
 import Data.Semigroup ( Semigroup(..) )
 
-#if !MIN_VERSION_base(4,8,0)
-import Data.Monoid   ( Monoid(..) )
-import Data.Traversable ( Traversable )
-#endif
-
-#if __GLASGOW_HASKELL__ >= 708
 import Data.Coerce
 import Unsafe.Coerce
 import qualified GHC.Exts as Exts
-#endif
 
-#if __GLASGOW_HASKELL__ >= 708
 type role Vector nominal
 
 -- | /O(1)/ Unsafely coerce an immutable vector from one element type to another,
@@ -204,7 +191,6 @@ type role Vector nominal
 -- representations in memory.
 unsafeCoerceVector :: Coercible a b => Vector a -> Vector b
 unsafeCoerceVector = unsafeCoerce
-#endif
 
 -- | Unboxed vectors of primitive types
 data Vector a = Vector {-# UNPACK #-} !Int
@@ -307,15 +293,13 @@ instance Prim a => Monoid (Vector a) where
   {-# INLINE mconcat #-}
   mconcat = concat
 
-#if __GLASGOW_HASKELL__ >= 708
-
 instance Prim a => Exts.IsList (Vector a) where
   type Item (Vector a) = a
   fromList = fromList
   fromListN = fromListN
   toList = toList
 
-#endif
+
 -- Length
 -- ------
 

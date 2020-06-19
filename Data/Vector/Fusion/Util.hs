@@ -17,10 +17,6 @@ module Data.Vector.Fusion.Util (
   delay_inline, delayed_min
 ) where
 
-#if !MIN_VERSION_base(4,8,0)
-import Control.Applicative (Applicative(..))
-#endif
-
 -- | Identity monad
 newtype Id a = Id { unId :: a }
 

@@ -93,28 +93,13 @@ import Prelude hiding ( length, null,
 import Data.Int  ( Int8, Int16, Int32 )
 import Data.Word ( Word8, Word16, Word32, Word64 )
 
-#if !MIN_VERSION_base(4,8,0)
-import Data.Word ( Word8, Word16, Word32, Word, Word64 )
-#endif
-
-#if __GLASGOW_HASKELL__ >= 708
 import GHC.Types ( SPEC(..) )
-#elif __GLASGOW_HASKELL__ >= 700
-import GHC.Exts ( SpecConstrAnnotation(..) )
-#endif
 
 #include "vector.h"
 #include "MachDeps.h"
 
 #if WORD_SIZE_IN_BITS > 32
 import Data.Int  ( Int64 )
-#endif
-
-#if __GLASGOW_HASKELL__ < 708
-data SPEC = SPEC | SPEC2
-#if __GLASGOW_HASKELL__ >= 700
-{-# ANN type SPEC ForceSpecConstr #-}
-#endif
 #endif
 
 emptyStream :: String

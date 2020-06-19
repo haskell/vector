@@ -1,9 +1,5 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables #-}
-
-#if __GLASGOW_HASKELL__ >= 708
 {-# LANGUAGE RoleAnnotations #-}
-#endif
-
 -- |
 -- Module      : Data.Vector.Primitive.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -54,9 +50,7 @@ module Data.Vector.Primitive.Mutable (
   set, copy, move, unsafeCopy, unsafeMove,
 
   -- * Unsafe conversions
-#if __GLASGOW_HASKELL__ >= 708
   unsafeCoerceMVector
-#endif
 ) where
 
 import qualified Data.Vector.Generic.Mutable as G
@@ -76,16 +70,13 @@ import Prelude hiding ( length, null, replicate, reverse, map, read,
                         take, drop, splitAt, init, tail )
 
 import Data.Typeable ( Typeable )
-#if __GLASGOW_HASKELL__ >= 708
 import Data.Coerce
 import Unsafe.Coerce
-#endif
 
 -- Data.Vector.Internal.Check is unnecessary
 #define NOT_VECTOR_MODULE
 #include "vector.h"
 
-#if __GLASGOW_HASKELL__ >= 708
 type role MVector nominal nominal
 
 -- | /O(1)/ Unsafely coerce a mutable vector from one element type to another,
@@ -98,7 +89,6 @@ type role MVector nominal nominal
 -- representations in memory.
 unsafeCoerceMVector :: Coercible a b => MVector s a -> MVector s b
 unsafeCoerceMVector = unsafeCoerce
-#endif
 
 -- | Mutable vectors of primitive types.
 data MVector s a = MVector {-# UNPACK #-} !Int

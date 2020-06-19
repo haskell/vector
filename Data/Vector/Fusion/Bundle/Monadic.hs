@@ -105,10 +105,6 @@ import Prelude hiding ( length, null,
 import Data.Int  ( Int8, Int16, Int32 )
 import Data.Word ( Word8, Word16, Word32, Word64 )
 
-#if !MIN_VERSION_base(4,8,0)
-import Data.Word ( Word )
-#endif
-
 #include "vector.h"
 #include "MachDeps.h"
 

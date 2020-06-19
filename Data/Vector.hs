@@ -211,13 +211,7 @@ import qualified Control.Applicative as Applicative
 import qualified Data.Foldable as Foldable
 import qualified Data.Traversable as Traversable
 
-#if !MIN_VERSION_base(4,8,0)
-import Data.Monoid   ( Monoid(..) )
-#endif
-
-#if __GLASGOW_HASKELL__ >= 708
 import qualified GHC.Exts as Exts (IsList(..))
-#endif
 
 
 -- | Boxed vectors, supporting efficient slicing.
@@ -255,14 +249,11 @@ instance Read1 Vector where
     liftReadsPrec = G.liftReadsPrec
 #endif
 
-#if __GLASGOW_HASKELL__ >= 708
-
 instance Exts.IsList (Vector a) where
   type Item (Vector a) = a
   fromList = Data.Vector.fromList
   fromListN = Data.Vector.fromListN
   toList = toList
-#endif
 
 instance Data a => Data (Vector a) where
   gfoldl       = G.gfoldl
@@ -434,15 +425,12 @@ instance Foldable.Foldable Vector where
   {-# INLINE foldl1 #-}
   foldl1 = foldl1
 
-#if MIN_VERSION_base(4,6,0)
   {-# INLINE foldr' #-}
   foldr' = foldr'
 
   {-# INLINE foldl' #-}
   foldl' = foldl'
-#endif
 
-#if MIN_VERSION_base(4,8,0)
   {-# INLINE toList #-}
   toList = toList
 
@@ -466,7 +454,6 @@ instance Foldable.Foldable Vector where
 
   {-# INLINE product #-}
   product = product
-#endif
 
 instance Traversable.Traversable Vector where
   {-# INLINE traverse #-}
