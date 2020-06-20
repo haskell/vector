@@ -194,8 +194,6 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Specialised folds
         'prop_all, 'prop_any,
-        {- 'prop_maximumBy, 'prop_minimumBy,
-        'prop_maxIndexBy, 'prop_minIndexBy, -}
 
         -- Monadic folds
         {- ... -}
