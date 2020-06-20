@@ -69,8 +69,6 @@ type Test = TestTree
 -- TODO: implement Vector equivalents of list functions for some of the commented out properties
 
 -- TODO: test and implement some of these other Prelude functions:
---  mapM *
---  mapM_ *
 --  sequence
 --  sequence_
 -- NB: this is an exhaustive list of all Prelude list functions that make sense for vectors.
@@ -166,7 +164,7 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_map, 'prop_imap, 'prop_concatMap,
 
         -- Monadic mapping
-        {- 'prop_mapM, 'prop_mapM_, 'prop_forM, 'prop_forM_, -}
+        'prop_mapM, 'prop_mapM_, 'prop_forM, 'prop_forM_,
         'prop_imapM, 'prop_imapM_,
 
         -- Zipping
@@ -303,6 +301,14 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_reverse :: P (v a -> v a) = V.reverse `eq` reverse
 
     prop_map :: P ((a -> a) -> v a -> v a) = V.map `eq` map
+    prop_mapM :: P ((a -> Identity a) -> v a -> Identity (v a))
+            = V.mapM `eq` mapM
+    prop_mapM_ :: P ((a -> Writer [a] ()) -> v a -> Writer [a] ())
+            = V.mapM_ `eq` mapM_
+    prop_forM :: P (v a -> (a -> Identity a) -> Identity (v a))
+            = V.forM `eq` forM
+    prop_forM_ :: P (v a -> (a -> Writer [a] ()) -> Writer [a] ())
+            = V.forM_ `eq` forM_
     prop_zipWith :: P ((a -> a -> a) -> v a -> v a -> v a) = V.zipWith `eq` zipWith
     prop_zipWith3 :: P ((a -> a -> a -> a) -> v a -> v a -> v a -> v a)
              = V.zipWith3 `eq` zipWith3
