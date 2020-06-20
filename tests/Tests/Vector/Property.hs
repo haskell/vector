@@ -651,10 +651,12 @@ testNumFunctions _ = $(testProperties ['prop_sum, 'prop_product])
 
 testNestedVectorFunctions :: forall a v. (CommonContext a v) => v a -> [Test]
 {-# INLINE testNestedVectorFunctions #-}
-testNestedVectorFunctions _ = $(testProperties [])
+testNestedVectorFunctions _ = $(testProperties
+  [ 'prop_concat
+  ])
   where
     -- Prelude
-    --prop_concat       = (V.concat :: [v a] -> v a)                    `eq1` concat
+    prop_concat :: P ([v a] -> v a) = V.concat `eq` concat
 
     -- Data.List
     --prop_transpose    = V.transpose   `eq1` (transpose   :: [v a] -> [v a])
