@@ -186,13 +186,9 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_zipWith, 'prop_zipWith3, {- ... -}
         'prop_izipWith, 'prop_izipWith3, {- ... -}
         'prop_izipWithM, 'prop_izipWithM_,
-        {- 'prop_zip, ... -}
 
         -- Monadic zipping
         {- 'prop_zipWithM, 'prop_zipWithM_, -}
-
-        -- Unzipping
-        {- 'prop_unzip, ... -}
 
         -- Filtering
         'prop_filter, 'prop_ifilter, {- prop_filterM, -}
