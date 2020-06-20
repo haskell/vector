@@ -1002,7 +1002,7 @@ zipWithM = G.zipWithM
 -- | /O(min(m,n))/ Zip the two vectors with a monadic action that also takes
 -- the element index and yield a vector of results
 izipWithM :: (Monad m, Unbox a, Unbox b, Unbox c)
-         => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m (Vector c)
+          => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m (Vector c)
 {-# INLINE izipWithM #-}
 izipWithM = G.izipWithM
 
@@ -1016,7 +1016,7 @@ zipWithM_ = G.zipWithM_
 -- | /O(min(m,n))/ Zip the two vectors with a monadic action that also takes
 -- the element index and ignore the results
 izipWithM_ :: (Monad m, Unbox a, Unbox b)
-          => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m ()
+           => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m ()
 {-# INLINE izipWithM_ #-}
 izipWithM_ = G.izipWithM_
 
