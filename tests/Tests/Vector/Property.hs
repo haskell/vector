@@ -13,6 +13,7 @@ module Tests.Vector.Property
   , testMonadFunctions
   , testApplicativeFunctions
   , testAlternativeFunctions
+  , testSequenceFunctions
   , testBoolFunctions
   , testNumFunctions
   , testNestedVectorFunctions
@@ -66,12 +67,6 @@ type VectorContext  a v = ( Eq (v a), Show (v a), Arbitrary (v a), CoArbitrary (
 -- | migration hack for moving from TestFramework to Tasty
 type Test = TestTree
 -- TODO: implement Vector equivalents of list functions for some of the commented out properties
-
--- TODO: test and implement some of these other Prelude functions:
---  sequence
---  sequence_
--- NB: this is an exhaustive list of all Prelude list functions that make sense for vectors.
--- Ones with *s are the most plausible candidates.
 
 -- TODO: add tests for the other extra functions
 -- IVector exports still needing tests:
@@ -202,9 +197,6 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_maxIndexBy, 'prop_minIndexBy, -}
 
         -- Monadic folds
-        {- ... -}
-
-        -- Monadic sequencing
         {- ... -}
 
         -- Scans
@@ -603,12 +595,30 @@ testFunctorFunctions _ = $(testProperties
 testMonadFunctions :: forall a v. (CommonContext a v, VectorContext (a, a) v, MonadZip v) => v a -> [Test]
 {-# INLINE testMonadFunctions #-}
 testMonadFunctions _ = $(testProperties [ 'prop_return, 'prop_bind
-                                        , 'prop_mzip, 'prop_munzip])
+                                        , 'prop_mzip, 'prop_munzip
+                                        ])
   where
     prop_return :: P (a -> v a) = return `eq` return
     prop_bind   :: P (v a -> (a -> v a) -> v a) = (>>=) `eq` (>>=)
     prop_mzip   :: P (v a -> v a -> v (a, a)) = mzip `eq` zip
     prop_munzip :: P (v (a, a) -> (v a, v a)) = munzip `eq` unzip
+
+testSequenceFunctions
+  :: forall a v. ( CommonContext a v
+                 , Model (v (Writer [a] a)) ~ [Writer [a] a]
+                 , V.Vector v (Writer [a] a)
+                 , Arbitrary (v (Writer [a] a))
+                 , Show      (v (Writer [a] a))
+                 , TestData  (v (Writer [a] a))
+                 )
+  => v a -> [Test]
+testSequenceFunctions _ = $(testProperties [ 'prop_sequence, 'prop_sequence_
+                                           ])
+  where
+    prop_sequence :: P (v (Writer [a] a) -> Writer [a] (v a))
+      = V.sequence `eq` sequence
+    prop_sequence_ :: P (v (Writer [a] a) -> Writer [a] ())
+      = V.sequence_ `eq` sequence_
 
 testApplicativeFunctions :: forall a v. (CommonContext a v, V.Vector v (a -> a), Applicative.Applicative v) => v a -> [Test]
 {-# INLINE testApplicativeFunctions #-}
