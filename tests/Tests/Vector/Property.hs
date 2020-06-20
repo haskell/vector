@@ -122,8 +122,7 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_generateM, 'prop_replicateM,
 
         -- Monadic initialisation (FIXME)
-        'prop_createT,
-        {- 'prop_create, -}
+        'prop_create, 'prop_createT,
 
         -- Unfolding
         'prop_unfoldr, 'prop_unfoldrN, 'prop_unfoldrExactN,
@@ -229,6 +228,8 @@ testPolymorphicFunctions _ = $(testProperties [
               = (\n _ _ -> n < 1000) ===> V.iterateN `eq` (\n f -> take n . iterate f)
     prop_iterateNM :: P (Int -> (a -> Writer [Int] a) -> a -> Writer [Int] (v a))
               = (\n _ _ -> n < 1000) ===> V.iterateNM `eq` Util.iterateNM
+    prop_create :: P (v a -> v a)
+    prop_create = (\v -> V.create (V.thaw v)) `eq` id
     prop_createT :: P ((a, v a) -> (a, v a))
     prop_createT = (\v -> V.createT (T.mapM V.thaw v)) `eq` id
 
