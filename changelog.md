@@ -1,5 +1,6 @@
 # Changes in NEXT_VERSION
 
+ * Added `isSameVector` for storable vectors
  * Added `catMaybes`
  * Added `MonadFix` instance for boxed vectors
  * New functions: `unfoldrExactN` and `unfoldrExactNM`
