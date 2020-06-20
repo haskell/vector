@@ -151,9 +151,6 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_reverse, 'prop_backpermute,
         {- 'prop_unsafeBackpermute, -}
 
-        -- Elementwise indexing
-        {- 'prop_indexed, -}
-
         -- Mapping
         'prop_map, 'prop_imap, 'prop_concatMap,
 
@@ -478,16 +475,24 @@ partitionWith f (x:xs) = case f x of
                          Right c -> (bs, c:cs)
     where (bs,cs) = partitionWith f xs
 
-testTuplyFunctions :: forall a v. (CommonContext a v, VectorContext (a, a) v, VectorContext (a, a, a) v) => v a -> [Test]
+testTuplyFunctions
+  :: forall a v. ( CommonContext a v
+                 , VectorContext (a, a)    v
+                 , VectorContext (a, a, a) v
+                 , VectorContext (Int, a)  v
+                 )
+  => v a -> [Test]
 {-# INLINE testTuplyFunctions #-}
 testTuplyFunctions _ = $(testProperties [ 'prop_zip, 'prop_zip3
                                         , 'prop_unzip, 'prop_unzip3
+                                        , 'prop_indexed
                                         ])
   where
-    prop_zip    :: P (v a -> v a -> v (a, a))           = V.zip `eq` zip
-    prop_zip3   :: P (v a -> v a -> v a -> v (a, a, a)) = V.zip3 `eq` zip3
-    prop_unzip  :: P (v (a, a) -> (v a, v a))           = V.unzip `eq` unzip
-    prop_unzip3 :: P (v (a, a, a) -> (v a, v a, v a))   = V.unzip3 `eq` unzip3
+    prop_zip     :: P (v a -> v a -> v (a, a))           = V.zip `eq` zip
+    prop_zip3    :: P (v a -> v a -> v a -> v (a, a, a)) = V.zip3 `eq` zip3
+    prop_unzip   :: P (v (a, a) -> (v a, v a))           = V.unzip `eq` unzip
+    prop_unzip3  :: P (v (a, a, a) -> (v a, v a, v a))   = V.unzip3 `eq` unzip3
+    prop_indexed :: P (v a -> v (Int, a))                = V.indexed `eq` (\xs -> [0..] `zip` xs)
 
 testOrdFunctions :: forall a v. (CommonContext a v, Ord a, Ord (v a)) => v a -> [Test]
 {-# INLINE testOrdFunctions #-}
