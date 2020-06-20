@@ -73,17 +73,6 @@ type Test = TestTree
 --  mapM_ *
 --  sequence
 --  sequence_
---  sum *
---  product *
---  scanl *
---  scanl1 *
---  scanr *
---  scanr1 *
---  lookup *
---  lines
---  words
---  unlines
---  unwords
 -- NB: this is an exhaustive list of all Prelude list functions that make sense for vectors.
 -- Ones with *s are the most plausible candidates.
 
@@ -92,7 +81,6 @@ type Test = TestTree
 --  copy,
 --  slice,
 --  (//), update, bpermute,
---  prescanl, prescanl',
 --  new,
 --  unsafeSlice, unsafeIndex,
 --  vlength, vnew
