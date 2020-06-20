@@ -122,7 +122,7 @@ testPolymorphicFunctions _ = $(testProperties [
         -- Length information
         'prop_length, 'prop_null,
 
-        -- Indexing (FIXME)
+        -- Indexing
         'prop_index, 'prop_safeIndex, 'prop_head, 'prop_last,
         'prop_unsafeIndex, 'prop_unsafeHead, 'prop_unsafeLast,
 
