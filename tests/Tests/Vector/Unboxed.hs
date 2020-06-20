@@ -7,7 +7,9 @@ import Tests.Vector.Property
 
 
 
-testGeneralUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Data a) => Data.Vector.Unboxed.Vector a -> [Test]
+testGeneralUnboxedVector
+  :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Data a)
+  => Data.Vector.Unboxed.Vector a -> [Test]
 testGeneralUnboxedVector dummy = concatMap ($ dummy)
   [
     testSanity
@@ -28,7 +30,10 @@ testBoolUnboxedVector dummy = concatMap ($ dummy)
   , testBoolFunctions
   ]
 
-testNumericUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Num a, Enum a, Random a, Data a) => Data.Vector.Unboxed.Vector a -> [Test]
+testNumericUnboxedVector
+  :: forall a. ( CommonContext a Data.Vector.Unboxed.Vector
+               , Data.Vector.Unboxed.Unbox a, Ord a, Num a, Enum a, Random a, Data a)
+  => Data.Vector.Unboxed.Vector a -> [Test]
 testNumericUnboxedVector dummy = concatMap ($ dummy)
   [
     testGeneralUnboxedVector
@@ -36,7 +41,9 @@ testNumericUnboxedVector dummy = concatMap ($ dummy)
   , testEnumFunctions
   ]
 
-testTupleUnboxedVector :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Data a) => Data.Vector.Unboxed.Vector a -> [Test]
+testTupleUnboxedVector
+  :: forall a. ( CommonContext a Data.Vector.Unboxed.Vector
+               , Data.Vector.Unboxed.Unbox a, Ord a, Data a) => Data.Vector.Unboxed.Vector a -> [Test]
 testTupleUnboxedVector dummy = concatMap ($ dummy)
   [
     testGeneralUnboxedVector
@@ -50,7 +57,7 @@ tests =
   , testGroup "(Int)" $
     testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Int)
   , testGroup "(Float)" $
-  testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Float)
+    testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Float)
   , testGroup "(Double)" $
     testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Double)
   , testGroup "(Int,Bool)" $
