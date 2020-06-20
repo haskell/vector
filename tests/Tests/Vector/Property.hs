@@ -187,7 +187,7 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_izipWithM, 'prop_izipWithM_,
 
         -- Monadic zipping
-        {- 'prop_zipWithM, 'prop_zipWithM_, -}
+        'prop_zipWithM, 'prop_zipWithM_,
 
         -- Filtering
         'prop_filter, 'prop_ifilter, {- prop_filterM, -}
@@ -324,6 +324,10 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_imapM_ :: P ((Int -> a -> Writer [a] ()) -> v a -> Writer [a] ())
             = V.imapM_ `eq` imapM_
     prop_izipWith :: P ((Int -> a -> a -> a) -> v a -> v a -> v a) = V.izipWith `eq` izipWith
+    prop_zipWithM :: P ((a -> a -> Identity a) -> v a -> v a -> Identity (v a))
+            = V.zipWithM `eq` zipWithM
+    prop_zipWithM_ :: P ((a -> a -> Writer [a] ()) -> v a -> v a -> Writer [a] ())
+            = V.zipWithM_ `eq` zipWithM_
     prop_izipWithM :: P ((Int -> a -> a -> Identity a) -> v a -> v a -> Identity (v a))
             = V.izipWithM `eq` izipWithM
     prop_izipWithM_ :: P ((Int -> a -> a -> Writer [a] ()) -> v a -> v a -> Writer [a] ())
