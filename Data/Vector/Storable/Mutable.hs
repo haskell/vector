@@ -14,7 +14,7 @@
 
 module Data.Vector.Storable.Mutable(
   -- * Mutable vectors of 'Storable' types
-  MVector(..), IOVector, STVector, Storable, PrimMonad(..),
+  MVector(..), IOVector, STVector, Storable,
 
   -- * Accessors
 
@@ -55,7 +55,9 @@ module Data.Vector.Storable.Mutable(
   -- * Raw pointers
   unsafeFromForeignPtr, unsafeFromForeignPtr0,
   unsafeToForeignPtr,   unsafeToForeignPtr0,
-  unsafeWith
+  unsafeWith,
+  -- * Reexports
+  PrimMonad(..), RealWorld,
 ) where
 
 import Control.DeepSeq ( NFData(rnf)

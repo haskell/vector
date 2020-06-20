@@ -14,7 +14,7 @@
 
 module Data.Vector.Primitive.Mutable (
   -- * Mutable vectors of primitive types
-  MVector(..), IOVector, STVector, Prim, PrimMonad(..),
+  MVector(..), IOVector, STVector, Prim,
 
   -- * Accessors
 
@@ -50,7 +50,9 @@ module Data.Vector.Primitive.Mutable (
   set, copy, move, unsafeCopy, unsafeMove,
 
   -- * Unsafe conversions
-  unsafeCoerceMVector
+  unsafeCoerceMVector,
+  -- * Reexports
+  PrimMonad(..), RealWorld
 ) where
 
 import qualified Data.Vector.Generic.Mutable as G

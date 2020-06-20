@@ -14,7 +14,7 @@
 
 module Data.Vector.Unboxed.Mutable (
   -- * Mutable vectors of primitive types
-  MVector(..), IOVector, STVector, Unbox, PrimMonad(..),
+  MVector(..), IOVector, STVector, Unbox,
 
   -- * Accessors
 
@@ -51,7 +51,9 @@ module Data.Vector.Unboxed.Mutable (
   nextPermutation,
 
   -- ** Filling and copying
-  set, copy, move, unsafeCopy, unsafeMove
+  set, copy, move, unsafeCopy, unsafeMove,
+  -- * Reexports
+  PrimMonad(..), RealWorld,
 ) where
 
 import Data.Vector.Unboxed.Base
