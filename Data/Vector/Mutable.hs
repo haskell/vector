@@ -14,7 +14,7 @@
 
 module Data.Vector.Mutable (
   -- * Mutable boxed vectors
-  MVector(..), IOVector, STVector,
+  MVector(..), IOVector, STVector, PrimMonad(..),
 
   -- * Accessors
 

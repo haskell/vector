@@ -14,7 +14,7 @@
 
 module Data.Vector.Storable.Mutable(
   -- * Mutable vectors of 'Storable' types
-  MVector(..), IOVector, STVector, Storable,
+  MVector(..), IOVector, STVector, Storable, PrimMonad(..),
 
   -- * Accessors
 

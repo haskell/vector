@@ -14,7 +14,7 @@
 
 module Data.Vector.Unboxed.Mutable (
   -- * Mutable vectors of primitive types
-  MVector(..), IOVector, STVector, Unbox,
+  MVector(..), IOVector, STVector, Unbox, PrimMonad(..),
 
   -- * Accessors
 

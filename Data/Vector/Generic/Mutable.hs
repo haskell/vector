@@ -13,7 +13,7 @@
 
 module Data.Vector.Generic.Mutable (
   -- * Class of mutable vector types
-  MVector(..),
+  MVector(..), PrimMonad(..),
 
   -- * Accessors
 

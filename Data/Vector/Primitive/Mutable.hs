@@ -14,7 +14,7 @@
 
 module Data.Vector.Primitive.Mutable (
   -- * Mutable vectors of primitive types
-  MVector(..), IOVector, STVector, Prim,
+  MVector(..), IOVector, STVector, Prim, PrimMonad(..),
 
   -- * Accessors
 
