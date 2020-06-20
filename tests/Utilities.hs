@@ -247,6 +247,7 @@ indices m = sized $ \n ->
 singleton x = [x]
 snoc xs x = xs ++ [x]
 generate n f = [f i | i <- [0 .. n-1]]
+generateM n f = sequence [f i | i <- [0 .. n-1]]
 slice i n xs = take n (drop i xs)
 backpermute xs is = map (xs!!) is
 prescanl f z = init . scanl f z

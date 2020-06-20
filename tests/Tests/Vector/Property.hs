@@ -120,10 +120,11 @@ testPolymorphicFunctions _ = $(testProperties [
         -- Initialisation (FIXME)
         'prop_empty, 'prop_singleton, 'prop_replicate,
         'prop_generate, 'prop_iterateN, 'prop_iterateNM,
+        'prop_generateM, 'prop_replicateM,
 
         -- Monadic initialisation (FIXME)
         'prop_createT,
-        {- 'prop_replicateM, 'prop_generateM, 'prop_create, -}
+        {- 'prop_create, -}
 
         -- Unfolding
         'prop_unfoldr, 'prop_unfoldrN, 'prop_unfoldrExactN,
@@ -168,7 +169,7 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_zipWithM, 'prop_zipWithM_,
 
         -- Filtering
-        'prop_filter, 'prop_ifilter, {- prop_filterM, -}
+        'prop_filter, 'prop_ifilter, 'prop_filterM,
         'prop_uniq,
         'prop_mapMaybe, 'prop_imapMaybe,
         'prop_takeWhile, 'prop_dropWhile,
@@ -214,6 +215,8 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_singleton :: P (a -> v a)    = V.singleton `eq` singleton
     prop_replicate :: P (Int -> a -> v a)
               = (\n _ -> n < 1000) ===> V.replicate `eq` replicate
+    prop_replicateM :: P (Int -> Writer [a] a -> Writer [a] (v a))
+              = (\n _ -> n < 1000) ===> V.replicateM `eq` replicateM
     prop_cons      :: P (a -> v a -> v a) = V.cons `eq` (:)
     prop_snoc      :: P (v a -> a -> v a) = V.snoc `eq` snoc
     prop_append    :: P (v a -> v a -> v a) = (V.++) `eq` (++)
@@ -221,6 +224,8 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_force     :: P (v a -> v a)        = V.force `eq` id
     prop_generate  :: P (Int -> (Int -> a) -> v a)
               = (\n _ -> n < 1000) ===> V.generate `eq` Util.generate
+    prop_generateM  :: P (Int -> (Int -> Writer [a] a) -> Writer [a] (v a))
+              = (\n _ -> n < 1000) ===> V.generateM `eq` Util.generateM
     prop_iterateN  :: P (Int -> (a -> a) -> a -> v a)
               = (\n _ _ -> n < 1000) ===> V.iterateN `eq` (\n f -> take n . iterate f)
     prop_iterateNM :: P (Int -> (a -> Writer [Int] a) -> a -> Writer [Int] (v a))
@@ -315,6 +320,7 @@ testPolymorphicFunctions _ = $(testProperties [
 
     prop_filter :: P ((a -> Bool) -> v a -> v a) = V.filter `eq` filter
     prop_ifilter :: P ((Int -> a -> Bool) -> v a -> v a) = V.ifilter `eq` ifilter
+    prop_filterM :: P ((a -> Writer [a] Bool) -> v a -> Writer [a] (v a)) = V.filterM `eq` filterM
     prop_mapMaybe :: P ((a -> Maybe a) -> v a -> v a) = V.mapMaybe `eq` mapMaybe
     prop_imapMaybe :: P ((Int -> a -> Maybe a) -> v a -> v a) = V.imapMaybe `eq` imapMaybe
     prop_takeWhile :: P ((a -> Bool) -> v a -> v a) = V.takeWhile `eq` takeWhile
