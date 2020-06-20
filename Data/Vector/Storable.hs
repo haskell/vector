@@ -130,6 +130,10 @@ module Data.Vector.Storable (
   -- ** Comparisons
   eqBy, cmpBy,
 
+  -- * Utilities
+  -- ** Comparisons
+  isSameVector,
+
   -- * Conversions
 
   -- ** Lists
@@ -990,6 +994,16 @@ izipWith6 :: (Storable a, Storable b, Storable c, Storable d, Storable e,
           -> Vector f -> Vector g
 {-# INLINE izipWith6 #-}
 izipWith6 = G.izipWith6
+
+-- | Checks whether two values are same vector: they have same length
+--   and share same buffer.
+--
+-- >>> let xs = fromList [0/0::Double] in isSameVector xs xs
+-- True
+isSameVector :: (Storable a) => Vector a -> Vector a -> Bool
+{-# INLINE isSameVector #-}
+isSameVector (Vector n1 ptr1) (Vector n2 ptr2) = n1 == n2 && ptr1 == ptr2
+
 
 -- Monadic zipping
 -- ---------------

@@ -6,6 +6,7 @@
  * Added `iforM` and `iforM_`: [#262](https://github.com/haskell/vector/issues/262)
  * Added `MonadFix` instance for boxed vectors: [#178](https://github.com/haskell/vector/issues/178)
  * Added `uncons` and `unsnoc`: [#212](https://github.com/haskell/vector/issues/212)
+ * Added `isSameVector` for storable vectors
  * Added `toArray`, `fromArray`, `toMutableArray` and `fromMutableArray`
  * Added `iscanl`, `iscanl'`, `iscanr`, `iscanr'` to `Primitive`, `Storable` and `Unboxed`
  * Added `izipWithM`, `izipWithM_`, `imapM` and `imapM_` to `Primitive` and `Storable`
