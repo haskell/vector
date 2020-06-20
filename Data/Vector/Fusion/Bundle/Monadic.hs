@@ -338,7 +338,7 @@ zipWithM f Bundle{sElems = sa, sSize = na}
 {-# RULES
 
 "zipWithM xs xs [Vector.Bundle]" forall f xs.
-  zipWithM f xs xs = mapM (\x -> f x x) xs   #-}
+  zipWithM f (lift xs) (lift xs) = mapM (\x -> f x x) (lift xs) #-}
 
 
 zipWithM_ :: Monad m => (a -> b -> m c) -> Bundle m v a -> Bundle m v b -> m ()
