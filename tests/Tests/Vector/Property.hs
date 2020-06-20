@@ -71,7 +71,6 @@ type Test = TestTree
 -- TODO: add tests for the other extra functions
 -- IVector exports still needing tests:
 --  copy,
---  (//), update,
 --  new,
 --  unsafeSlice, unsafeIndex,
 
@@ -135,7 +134,7 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Bulk updates (FIXME)
         'prop_upd,
-        {- 'prop_update, 'prop_update_,
+        {- 'prop_update_,
         'prop_unsafeUpd, 'prop_unsafeUpdate, 'prop_unsafeUpdate_, -}
 
         -- Accumulations (FIXME)
@@ -489,6 +488,7 @@ testTuplyFunctions
 testTuplyFunctions _ = $(testProperties [ 'prop_zip, 'prop_zip3
                                         , 'prop_unzip, 'prop_unzip3
                                         , 'prop_indexed
+                                        , 'prop_update
                                         ])
   where
     prop_zip     :: P (v a -> v a -> v (a, a))           = V.zip `eq` zip
@@ -496,6 +496,11 @@ testTuplyFunctions _ = $(testProperties [ 'prop_zip, 'prop_zip3
     prop_unzip   :: P (v (a, a) -> (v a, v a))           = V.unzip `eq` unzip
     prop_unzip3  :: P (v (a, a, a) -> (v a, v a, v a))   = V.unzip3 `eq` unzip3
     prop_indexed :: P (v a -> v (Int, a))                = V.indexed `eq` (\xs -> [0..] `zip` xs)
+    prop_update = \xs ->
+      forAll (index_value_pairs (V.length xs)) $ \ps ->
+      unP prop xs ps
+      where
+        prop :: P (v a -> [(Int,a)] -> v a) = (V.//) `eq` (//)
 
 testOrdFunctions :: forall a v. (CommonContext a v, Ord a, Ord (v a)) => v a -> [Test]
 {-# INLINE testOrdFunctions #-}
