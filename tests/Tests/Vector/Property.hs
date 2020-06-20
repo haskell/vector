@@ -163,8 +163,8 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_imapM, 'prop_imapM_,
 
         -- Zipping
-        'prop_zipWith, 'prop_zipWith3, {- ... -}
-        'prop_izipWith, 'prop_izipWith3, {- ... -}
+        'prop_zipWith, 'prop_zipWith3,
+        'prop_izipWith, 'prop_izipWith3,
         'prop_izipWithM, 'prop_izipWithM_,
 
         -- Monadic zipping
@@ -194,9 +194,6 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Specialised folds
         'prop_all, 'prop_any,
-
-        -- Monadic folds
-        {- ... -}
 
         -- Scans
         'prop_prescanl, 'prop_prescanl',
