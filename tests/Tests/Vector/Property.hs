@@ -72,13 +72,9 @@ type Test = TestTree
 -- TODO: add tests for the other extra functions
 -- IVector exports still needing tests:
 --  copy,
---  slice,
---  (//), update, bpermute,
+--  (//), update,
 --  new,
 --  unsafeSlice, unsafeIndex,
---  vlength, vnew
-
--- TODO: test non-IVector stuff?
 
 testSanity :: forall a v. (CommonContext a v) => v a -> [Test]
 {-# INLINE testSanity #-}
