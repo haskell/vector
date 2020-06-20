@@ -657,14 +657,7 @@ testNestedVectorFunctions _ = $(testProperties
   [ 'prop_concat
   ])
   where
-    -- Prelude
     prop_concat :: P ([v a] -> v a) = V.concat `eq` concat
-
-    -- Data.List
-    --prop_transpose    = V.transpose   `eq1` (transpose   :: [v a] -> [v a])
-    --prop_group        = V.group       `eq1` (group       :: v a -> [v a])
-    --prop_inits        = V.inits       `eq1` (inits       :: v a -> [v a])
-    --prop_tails        = V.tails       `eq1` (tails       :: v a -> [v a])
 
 testDataFunctions :: forall a v. (CommonContext a v, Data a, Data (v a)) => v a -> [Test]
 {-# INLINE testDataFunctions #-}
