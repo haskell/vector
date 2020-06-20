@@ -438,18 +438,8 @@ testPolymorphicFunctions _ = $(testProperties [
 
     prop_uniq :: P (v a -> v a)
       = V.uniq `eq` (map head . group)
-    --prop_span         = (V.span :: (a -> Bool) -> v a -> (v a, v a))  `eq2` span
-    --prop_break        = (V.break :: (a -> Bool) -> v a -> (v a, v a)) `eq2` break
-    --prop_splitAt      = (V.splitAt :: Int -> v a -> (v a, v a))       `eq2` splitAt
-    --prop_all          = (V.all :: (a -> Bool) -> v a -> Bool)         `eq2` all
-    --prop_any          = (V.any :: (a -> Bool) -> v a -> Bool)         `eq2` any
 
     -- Data.List
-    --prop_findIndices  = V.findIndices `eq2` (findIndices :: (a -> Bool) -> v a -> v Int)
-    --prop_isPrefixOf   = V.isPrefixOf  `eq2` (isPrefixOf  :: v a -> v a -> Bool)
-    --prop_elemIndex    = V.elemIndex   `eq2` (elemIndex   :: a -> v a -> Maybe Int)
-    --prop_elemIndices  = V.elemIndices `eq2` (elemIndices :: a -> v a -> v Int)
-    --
     --prop_mapAccumL  = eq3
     --    (V.mapAccumL :: (X -> W -> (X,W)) -> X -> B   -> (X, B))
     --    (  mapAccumL :: (X -> W -> (X,W)) -> X -> [W] -> (X, [W]))
