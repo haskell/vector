@@ -148,8 +148,6 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_unfoldrM, 'prop_unfoldrNM, 'prop_unfoldrExactNM,
         'prop_constructN, 'prop_constructrN,
 
-        -- Enumeration? (FIXME?)
-
         -- Concatenation (FIXME)
         'prop_cons, 'prop_snoc, 'prop_append,
         'prop_concat,
