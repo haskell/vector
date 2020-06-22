@@ -508,8 +508,13 @@ null v = length v == 0
 -- Extracting subvectors
 -- ---------------------
 
--- | Yield a part of the mutable vector without copying it.
-slice :: MVector v a => Int -> Int -> v s a -> v s a
+-- | Yield a part of the mutable vector without copying it. The vector must
+-- contain at least @i+n@ elements.
+slice :: MVector v a
+      => Int  -- ^ @i@ starting index
+      -> Int  -- ^ @n@ length
+      -> v s a
+      -> v s a
 {-# INLINE slice #-}
 slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
             $ unsafeSlice i n v
@@ -586,7 +591,14 @@ new :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
 new n = BOUNDS_CHECK(checkLength) "new" n
       $ unsafeNew n >>= \v -> basicInitialize v >> return v
 
--- | Create a mutable vector of the given length. The memory is not initialized.
+-- | Create a mutable vector of the given length. The vector content
+--   should be presumed uninitialized. However exact semantics depends
+--   on vector implementation. For example unboxed and storable
+--   vectors will create vector filled with whatever underlying memory
+--   buffer happens to contain, while boxed vector's elements are
+--   initialized to bottoms which will throw exception when evaluated.
+--
+-- @since 0.4
 unsafeNew :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
 {-# INLINE unsafeNew #-}
 unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n
@@ -711,7 +723,7 @@ swap v i j = BOUNDS_CHECK(checkIndex) "swap" i (length v)
            $ BOUNDS_CHECK(checkIndex) "swap" j (length v)
            $ unsafeSwap v i j
 
--- | Replace the element at the give position and return the old element.
+-- | Replace the element at the given position and return the old element.
 exchange :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m a
 {-# INLINE exchange #-}
 exchange v i x = BOUNDS_CHECK(checkIndex) "exchange" i (length v)
@@ -749,7 +761,7 @@ unsafeSwap v i j = UNSAFE_CHECK(checkIndex) "unsafeSwap" i (length v)
                      unsafeWrite v i y
                      unsafeWrite v j x
 
--- | Replace the element at the give position and return the old element. No
+-- | Replace the element at the given position and return the old element. No
 -- bounds checks are performed.
 unsafeExchange :: (PrimMonad m, MVector v a)
                                 => v (PrimState m) a -> Int -> a -> m a

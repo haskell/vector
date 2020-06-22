@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, MultiParamTypeClasses, FlexibleInstances, BangPatterns, TypeFamilies #-}
-
+{-# LANGUAGE RoleAnnotations #-}
 -- |
 -- Module      : Data.Vector.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -62,10 +62,12 @@ import Data.Typeable ( Typeable )
 
 #include "vector.h"
 
+type role MVector nominal representational
+
 -- | Mutable boxed vectors keyed on the monad they live in ('IO' or @'ST' s@).
-data MVector s a = MVector {-# UNPACK #-} !Int
-                           {-# UNPACK #-} !Int
-                           {-# UNPACK #-} !(MutableArray s a)
+data MVector s a = MVector {-# UNPACK #-} !Int                -- ^ Offset in underlying array
+                           {-# UNPACK #-} !Int                -- ^ Size of slice
+                           {-# UNPACK #-} !(MutableArray s a) -- ^ Underlying array
         deriving ( Typeable )
 
 type IOVector = MVector RealWorld
@@ -185,7 +187,7 @@ loopM !n k = let
   in go 0
 
 uninitialised :: a
-uninitialised = error "Data.Vector.Mutable: uninitialised element"
+uninitialised = error "Data.Vector.Mutable: uninitialised element. If you are trying to compact a vector, use the 'force' function to remove uninitialised elements from the underlying array."
 
 -- Length information
 -- ------------------
@@ -203,8 +205,12 @@ null = G.null
 -- Extracting subvectors
 -- ---------------------
 
--- | Yield a part of the mutable vector without copying it.
-slice :: Int -> Int -> MVector s a -> MVector s a
+-- | Yield a part of the mutable vector without copying it. The vector must
+-- contain at least @i+n@ elements.
+slice :: Int  -- ^ @i@ starting index
+      -> Int  -- ^ @n@ length
+      -> MVector s a
+      -> MVector s a
 {-# INLINE slice #-}
 slice = G.slice
 
@@ -269,7 +275,10 @@ new :: PrimMonad m => Int -> m (MVector (PrimState m) a)
 {-# INLINE new #-}
 new = G.new
 
--- | Create a mutable vector of the given length. The memory is not initialized.
+-- | Create a mutable vector of the given length. The vector elements
+--   are set to bottom so accessing them will cause an exception.
+--
+-- @since 0.5
 unsafeNew :: PrimMonad m => Int -> m (MVector (PrimState m) a)
 {-# INLINE unsafeNew #-}
 unsafeNew = G.unsafeNew
@@ -371,8 +380,9 @@ set = G.set
 
 -- | Copy a vector. The two vectors must have the same length and may not
 -- overlap.
-copy :: PrimMonad m
-                 => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
+copy :: PrimMonad m => MVector (PrimState m) a   -- ^ target
+                    -> MVector (PrimState m) a   -- ^ source
+                    -> m ()
 {-# INLINE copy #-}
 copy = G.copy
 
@@ -391,8 +401,9 @@ unsafeCopy = G.unsafeCopy
 -- Otherwise, the copying is performed as if the source vector were
 -- copied to a temporary vector and then the temporary vector was copied
 -- to the target vector.
-move :: PrimMonad m
-                 => MVector (PrimState m) a -> MVector (PrimState m) a -> m ()
+move :: PrimMonad m => MVector (PrimState m) a   -- ^ target
+                    -> MVector (PrimState m) a   -- ^ source
+                    -> m ()
 {-# INLINE move #-}
 move = G.move
 

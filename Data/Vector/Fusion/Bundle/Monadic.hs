@@ -59,6 +59,7 @@ module Data.Vector.Fusion.Bundle.Monadic (
   -- * Unfolding
   unfoldr, unfoldrM,
   unfoldrN, unfoldrNM,
+  unfoldrExactN, unfoldrExactNM,
   iterateN, iterateNM,
 
   -- * Scans
@@ -103,10 +104,6 @@ import Prelude hiding ( length, null,
 
 import Data.Int  ( Int8, Int16, Int32 )
 import Data.Word ( Word8, Word16, Word32, Word64 )
-
-#if !MIN_VERSION_base(4,8,0)
-import Data.Word ( Word )
-#endif
 
 #include "vector.h"
 #include "MachDeps.h"
@@ -269,7 +266,7 @@ tail Bundle{sElems = s, sSize = sz} = fromStream (S.tail s) (sz-1)
 -- | The first @n@ elements
 take :: Monad m => Int -> Bundle m v a -> Bundle m v a
 {-# INLINE_FUSED take #-}
-take n Bundle{sElems = s, sSize = sz} = fromStream (S.take n s) (smaller (Exact n) sz)
+take n Bundle{sElems = s, sSize = sz} = fromStream (S.take n s) (smallerThan n sz)
 
 -- | All but the first @n@ elements
 drop :: Monad m => Int -> Bundle m v a -> Bundle m v a
@@ -426,7 +423,15 @@ zip6 = zipWith6 (,,,,,)
 -- | Check if two 'Bundle's are equal
 eqBy :: (Monad m) => (a -> b -> Bool) -> Bundle m v a -> Bundle m v b -> m Bool
 {-# INLINE_FUSED eqBy #-}
-eqBy eq x y = S.eqBy eq (sElems x) (sElems y)
+eqBy eq x y
+  | sizesAreDifferent (sSize x) (sSize y) = return False
+  | otherwise                             = S.eqBy eq (sElems x) (sElems y)
+  where
+    sizesAreDifferent :: Size -> Size -> Bool
+    sizesAreDifferent (Exact a) (Exact b) = a /= b
+    sizesAreDifferent (Exact a) (Max b)   = a > b
+    sizesAreDifferent (Max a)   (Exact b) = a < b
+    sizesAreDifferent _         _         = False
 
 -- | Lexicographically compare two 'Bundle's
 cmpBy :: (Monad m) => (a -> b -> Ordering) -> Bundle m v a -> Bundle m v b -> m Ordering
@@ -632,17 +637,29 @@ unfoldrN :: Monad m => Int -> (s -> Maybe (a, s)) -> s -> Bundle m u a
 {-# INLINE_FUSED unfoldrN #-}
 unfoldrN n f = unfoldrNM n (return . f)
 
--- | Unfold at most @n@ elements with a monadic functions
+-- | Unfold at most @n@ elements with a monadic function.
 unfoldrNM :: Monad m => Int -> (s -> m (Maybe (a, s))) -> s -> Bundle m u a
 {-# INLINE_FUSED unfoldrNM #-}
 unfoldrNM n f s = fromStream (S.unfoldrNM n f s) (Max (delay_inline max n 0))
 
--- | Apply monadic function n times to value. Zeroth element is original value.
+-- | Unfold exactly @n@ elements
+unfoldrExactN :: Monad m => Int -> (s -> (a, s)) -> s -> Bundle m u a
+{-# INLINE_FUSED unfoldrExactN #-}
+unfoldrExactN n f = unfoldrExactNM n (return . f)
+
+-- | Unfold exactly @n@ elements with a monadic function.
+unfoldrExactNM :: Monad m => Int -> (s -> m (a, s)) -> s -> Bundle m u a
+{-# INLINE_FUSED unfoldrExactNM #-}
+unfoldrExactNM n f s = fromStream (S.unfoldrExactNM n f s) (Max (delay_inline max n 0))
+
+-- | Apply monadic function \(\max\{n - 1, 0\}\) times to value, producing a
+-- vector of length /n/. Zeroth element is the original value.
 iterateNM :: Monad m => Int -> (a -> m a) -> a -> Bundle m u a
 {-# INLINE_FUSED iterateNM #-}
 iterateNM n f x0 = fromStream (S.iterateNM n f x0) (Exact (delay_inline max n 0))
 
--- | Apply function n times to value. Zeroth element is original value.
+-- | Apply function \(\max\{n - 1, 0\}\) times to a value, producing a vector of
+-- length /n/. Zeroth element is the original value.
 iterateN :: Monad m => Int -> (a -> a) -> a -> Bundle m u a
 {-# INLINE_FUSED iterateN #-}
 iterateN n f x0 = iterateNM n (return . f) x0
@@ -758,13 +775,15 @@ enumFromTo x y = fromList [x .. y]
 -- FIXME: add "too large" test for Int
 enumFromTo_small :: (Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_small #-}
-enumFromTo_small x y = x `seq` y `seq` fromStream (Stream step x) (Exact n)
+enumFromTo_small x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact n)
   where
     n = delay_inline max (fromIntegral y - fromIntegral x + 1) 0
 
     {-# INLINE_INNER step #-}
-    step z | z <= y    = return $ Yield z (z+1)
-           | otherwise = return $ Done
+    step Nothing              = return $ Done
+    step (Just z) | z == y    = return $ Yield z Nothing
+                  | z <  y    = return $ Yield z (Just (z+1))
+                  | otherwise = return $ Done
 
 {-# RULES
 
@@ -808,7 +827,7 @@ enumFromTo_small x y = x `seq` y `seq` fromStream (Stream step x) (Exact n)
 
 enumFromTo_int :: forall m v. Monad m => Int -> Int -> Bundle m v Int
 {-# INLINE_FUSED enumFromTo_int #-}
-enumFromTo_int x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len x y))
+enumFromTo_int x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len :: Int -> Int -> Int
@@ -820,12 +839,14 @@ enumFromTo_int x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len x y)
         n = v-u+1
 
     {-# INLINE_INNER step #-}
-    step z | z <= y    = return $ Yield z (z+1)
-           | otherwise = return $ Done
+    step Nothing              = return $ Done
+    step (Just z) | z == y    = return $ Yield z Nothing
+                  | z <  y    = return $ Yield z (Just (z+1))
+                  | otherwise = return $ Done
 
 enumFromTo_intlike :: (Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_intlike #-}
-enumFromTo_intlike x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len x y))
+enumFromTo_intlike x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len u v | u > v     = 0
@@ -836,8 +857,10 @@ enumFromTo_intlike x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len 
         n = v-u+1
 
     {-# INLINE_INNER step #-}
-    step z | z <= y    = return $ Yield z (z+1)
-           | otherwise = return $ Done
+    step Nothing              = return $ Done
+    step (Just z) | z == y    = return $ Yield z Nothing
+                  | z <  y    = return $ Yield z (Just (z+1))
+                  | otherwise = return $ Done
 
 {-# RULES
 
@@ -860,7 +883,7 @@ enumFromTo_intlike x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len 
 
 enumFromTo_big_word :: (Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_big_word #-}
-enumFromTo_big_word x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len x y))
+enumFromTo_big_word x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len u v | u > v     = 0
@@ -871,8 +894,10 @@ enumFromTo_big_word x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len
         n = v-u
 
     {-# INLINE_INNER step #-}
-    step z | z <= y    = return $ Yield z (z+1)
-           | otherwise = return $ Done
+    step Nothing              = return $ Done
+    step (Just z) | z == y    = return $ Yield z Nothing
+                  | z <  y    = return $ Yield z (Just (z+1))
+                  | otherwise = return $ Done
 
 {-# RULES
 
@@ -901,7 +926,7 @@ enumFromTo_big_word x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len
 -- FIXME: the "too large" test is totally wrong
 enumFromTo_big_int :: (Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_big_int #-}
-enumFromTo_big_int x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len x y))
+enumFromTo_big_int x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len u v | u > v     = 0
@@ -912,8 +937,10 @@ enumFromTo_big_int x y = x `seq` y `seq` fromStream (Stream step x) (Exact (len 
         n = v-u+1
 
     {-# INLINE_INNER step #-}
-    step z | z <= y    = return $ Yield z (z+1)
-           | otherwise = return $ Done
+    step Nothing              = return $ Done
+    step (Just z) | z == y    = return $ Yield z Nothing
+                  | z <  y    = return $ Yield z (Just (z+1))
+                  | otherwise = return $ Done
 
 
 {-# RULES
@@ -952,7 +979,7 @@ enumFromTo_char x y = x `seq` y `seq` fromStream (Stream step xn) (Exact n)
 
 enumFromTo_double :: (Monad m, Ord a, RealFrac a) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_double #-}
-enumFromTo_double n m = n `seq` m `seq` fromStream (Stream step n) (Max (len n lim))
+enumFromTo_double n m = n `seq` m `seq` fromStream (Stream step ini) (Max (len n lim))
   where
     lim = m + 1/2 -- important to float out
 
@@ -966,8 +993,23 @@ enumFromTo_double n m = n `seq` m `seq` fromStream (Stream step n) (Max (len n l
         l = truncate (y-x)+2
 
     {-# INLINE_INNER step #-}
+-- GHC changed definition of Enum for Double in GHC8.6 so we have to
+-- accomodate both definitions in order to preserve validity of
+-- rewrite rule
+--
+--  ISSUE:  https://gitlab.haskell.org/ghc/ghc/issues/15081
+--  COMMIT: https://gitlab.haskell.org/ghc/ghc/commit/4ffaf4b67773af4c72d92bb8b6c87b1a7d34ac0f
+#if MIN_VERSION_base(4,12,0)
+    ini = 0
+    step x | x' <= lim = return $ Yield x' (x+1)
+           | otherwise = return $ Done
+           where
+             x' = x + n
+#else
+    ini = n
     step x | x <= lim  = return $ Yield x (x+1)
            | otherwise = return $ Done
+#endif
 
 {-# RULES
 

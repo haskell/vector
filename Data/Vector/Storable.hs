@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, MultiParamTypeClasses, FlexibleInstances, TypeFamilies, Rank2Types, ScopedTypeVariables #-}
-
+{-# LANGUAGE RoleAnnotations #-}
 -- |
 -- Module      : Data.Vector.Storable
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010
@@ -42,8 +42,8 @@ module Data.Vector.Storable (
   replicateM, generateM, iterateNM, create, createT,
 
   -- ** Unfolding
-  unfoldr, unfoldrN,
-  unfoldrM, unfoldrNM,
+  unfoldr, unfoldrN, unfoldrExactN,
+  unfoldrM, unfoldrNM, unfoldrExactNM,
   constructN, constructrN,
 
   -- ** Enumeration
@@ -78,6 +78,7 @@ module Data.Vector.Storable (
 
   -- ** Monadic mapping
   mapM, mapM_, forM, forM_,
+  iforM, iforM_,
 
   -- ** Zipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
@@ -129,6 +130,7 @@ module Data.Vector.Storable (
 
   -- ** Other vector types
   G.convert, unsafeCast,
+  unsafeCoerceVector,
 
   -- ** Mutable vectors
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
@@ -149,7 +151,11 @@ import Foreign.ForeignPtr
 import Foreign.Ptr
 import Foreign.Marshal.Array ( advancePtr, copyArray )
 
-import Control.DeepSeq ( NFData(rnf) )
+import Control.DeepSeq ( NFData(rnf)
+#if MIN_VERSION_deepseq(1,4,3)
+                       , NFData1(liftRnf)
+#endif
+                       )
 
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
@@ -172,19 +178,26 @@ import Data.Typeable  ( Typeable )
 import Data.Data      ( Data(..) )
 import Text.Read      ( Read(..), readListPrecDefault )
 import Data.Semigroup ( Semigroup(..) )
-
-#if !MIN_VERSION_base(4,8,0)
-import Data.Monoid   ( Monoid(..) )
-import Data.Traversable ( Traversable )
-#endif
-
-#if __GLASGOW_HASKELL__ >= 708
+import Data.Coerce
 import qualified GHC.Exts as Exts
-#endif
+import Unsafe.Coerce
 
 -- Data.Vector.Internal.Check is unused
 #define NOT_VECTOR_MODULE
 #include "vector.h"
+
+type role Vector nominal
+
+-- | /O(1)/ Unsafely coerce a mutable vector from one element type to another,
+-- representationally equal type. The operation just changes the type of the
+-- underlying pointer and does not modify the elements.
+--
+-- This is marginally safer than 'unsafeCast', since this function imposes an
+-- extra 'Coercible' constraint. This function is still not safe, however,
+-- since it cannot guarantee that the two types have memory-compatible
+-- 'Storable' instances.
+unsafeCoerceVector :: Coercible a b => Vector a -> Vector b
+unsafeCoerceVector = unsafeCoerce
 
 -- | 'Storable'-based vectors
 data Vector a = Vector {-# UNPACK #-} !Int
@@ -193,6 +206,12 @@ data Vector a = Vector {-# UNPACK #-} !Int
 
 instance NFData (Vector a) where
   rnf (Vector _ _) = ()
+
+#if MIN_VERSION_deepseq(1,4,3)
+-- | @since 0.12.1.0
+instance NFData1 Vector where
+  liftRnf _ (Vector _ _) = ()
+#endif
 
 instance (Show a, Storable a) => Show (Vector a) where
   showsPrec = G.showsPrec
@@ -282,15 +301,11 @@ instance Storable a => Monoid (Vector a) where
   {-# INLINE mconcat #-}
   mconcat = concat
 
-#if __GLASGOW_HASKELL__ >= 708
-
 instance Storable a => Exts.IsList (Vector a) where
   type Item (Vector a) = a
   fromList = fromList
   fromListN = fromListN
   toList = toList
-
-#endif
 
 -- Length
 -- ------
@@ -509,7 +524,8 @@ generate :: Storable a => Int -> (Int -> a) -> Vector a
 {-# INLINE generate #-}
 generate = G.generate
 
--- | /O(n)/ Apply function n times to value. Zeroth element is original value.
+-- | /O(n)/ Apply function \(\max\{n - 1, 0\}\) times to value, producing a 
+-- vector of length /n/. Zeroth element is original value.
 iterateN :: Storable a => Int -> (a -> a) -> a -> Vector a
 {-# INLINE iterateN #-}
 iterateN = G.iterateN
@@ -536,6 +552,15 @@ unfoldrN :: Storable a => Int -> (b -> Maybe (a, b)) -> b -> Vector a
 {-# INLINE unfoldrN #-}
 unfoldrN = G.unfoldrN
 
+-- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly applying
+-- the generator function to a seed. The generator function yields the
+-- next element and the new seed.
+--
+-- > unfoldrExactN 3 (\n -> (n,n-1)) 10 = <10,9,8>
+unfoldrExactN :: (Storable a) => Int -> (b -> (a, b)) -> b -> Vector a
+{-# INLINE unfoldrExactN #-}
+unfoldrExactN = G.unfoldrExactN
+
 -- | /O(n)/ Construct a vector by repeatedly applying the monadic
 -- generator function to a seed. The generator function yields 'Just'
 -- the next element and the new seed or 'Nothing' if there are no more
@@ -551,6 +576,13 @@ unfoldrM = G.unfoldrM
 unfoldrNM :: (Monad m, Storable a) => Int -> (b -> m (Maybe (a, b))) -> b -> m (Vector a)
 {-# INLINE unfoldrNM #-}
 unfoldrNM = G.unfoldrNM
+
+-- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly
+-- applying the monadic generator function to a seed. The generator
+-- function yields the next element and the new seed.
+unfoldrExactNM :: (Monad m, Storable a) => Int -> (b -> m (a, b)) -> b -> m (Vector a)
+{-# INLINE unfoldrExactNM #-}
+unfoldrExactNM = G.unfoldrExactNM
 
 -- | /O(n)/ Construct a vector with @n@ elements by repeatedly applying the
 -- generator function to the already constructed part of the vector.
@@ -645,7 +677,8 @@ generateM :: (Monad m, Storable a) => Int -> (Int -> m a) -> m (Vector a)
 {-# INLINE generateM #-}
 generateM = G.generateM
 
--- | /O(n)/ Apply monadic function n times to value. Zeroth element is original value.
+-- | /O(n)/ Apply monadic function \(\max\{n - 1, 0\}\) times to value, 
+-- producing a vector of length /n/. Zeroth element is original value.
 iterateNM :: (Monad m, Storable a) => Int -> (a -> m a) -> a -> m (Vector a)
 {-# INLINE iterateNM #-}
 iterateNM = G.iterateNM
@@ -843,6 +876,18 @@ forM_ :: (Monad m, Storable a) => Vector a -> (a -> m b) -> m ()
 {-# INLINE forM_ #-}
 forM_ = G.forM_
 
+-- | /O(n)/ Apply the monadic action to all elements of the vector and their indices, yielding a
+-- vector of results. Equivalent to 'flip' 'imapM'.
+iforM :: (Monad m, Storable a, Storable b) => Vector a -> (Int -> a -> m b) -> m (Vector b)
+{-# INLINE iforM #-}
+iforM = G.iforM
+
+-- | /O(n)/ Apply the monadic action to all elements of the vector and their indices and ignore the
+-- results. Equivalent to 'flip' 'imapM_'.
+iforM_ :: (Monad m, Storable a) => Vector a -> (Int -> a -> m b) -> m ()
+{-# INLINE iforM_ #-}
+iforM_ = G.iforM_
+
 -- Zipping
 -- -------
 
@@ -1001,6 +1046,8 @@ unstablePartition = G.unstablePartition
 -- | /O(n)/ Split the vector in two parts, the first one containing the
 --   @Right@ elements and the second containing the @Left@ elements.
 --   The relative order of the elements is preserved.
+--
+--   @since 0.12.1.0
 partitionWith :: (Storable a, Storable b, Storable c) => (a -> Either b c) -> Vector a -> (Vector b, Vector c)
 {-# INLINE partitionWith #-}
 partitionWith = G.partitionWith
@@ -1405,7 +1452,6 @@ unsafeCast :: forall a b. (Storable a, Storable b) => Vector a -> Vector b
 unsafeCast (Vector n fp)
   = Vector ((n * sizeOf (undefined :: a)) `div` sizeOf (undefined :: b))
            (castForeignPtr fp)
-
 
 -- Conversions - Mutable vectors
 -- -----------------------------

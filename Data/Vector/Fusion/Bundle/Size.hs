@@ -11,7 +11,7 @@
 --
 
 module Data.Vector.Fusion.Bundle.Size (
-  Size(..), clampedSubtract, smaller, larger, toMax, upperBound, lowerBound
+  Size(..), clampedSubtract, smaller, smallerThan, larger, toMax, upperBound, lowerBound
 ) where
 
 import Data.Vector.Fusion.Util ( delay_inline )
@@ -90,6 +90,14 @@ smaller (Max   m) Unknown   = Max   m
 smaller Unknown   (Exact n) = Max   n
 smaller Unknown   (Max   n) = Max   n
 smaller Unknown   Unknown   = Unknown
+
+-- | Select a safe smaller than known size.
+smallerThan :: Int -> Size -> Size
+{-# INLINE smallerThan #-}
+smallerThan m (Exact n) = Exact (delay_inline min m n)
+smallerThan m (Max   n) = Max   (delay_inline min m n)
+smallerThan _ Unknown   = Unknown
+
 
 -- | Maximum of two size hints
 larger :: Size -> Size -> Size

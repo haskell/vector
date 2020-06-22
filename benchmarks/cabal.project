@@ -1,0 +1,4 @@
+packages: ../vector.cabal vector-benchmarks.cabal
+
+allow-newer:
+  *:vector

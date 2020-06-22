@@ -59,8 +59,8 @@ module Data.Vector (
   replicateM, generateM, iterateNM, create, createT,
 
   -- ** Unfolding
-  unfoldr, unfoldrN,
-  unfoldrM, unfoldrNM,
+  unfoldr, unfoldrN, unfoldrExactN,
+  unfoldrM, unfoldrNM, unfoldrExactNM,
   constructN, constructrN,
 
   -- ** Enumeration
@@ -98,6 +98,7 @@ module Data.Vector (
 
   -- ** Monadic mapping
   mapM, imapM, mapM_, imapM_, forM, forM_,
+  iforM, iforM_,
 
   -- ** Zipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
@@ -164,18 +165,24 @@ module Data.Vector (
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy
 ) where
 
-import qualified Data.Vector.Generic as G
-import           Data.Vector.Mutable  ( MVector(..) )
-import           Data.Primitive.Array
+import Data.Vector.Mutable  ( MVector(..) )
+import Data.Primitive.Array
 import qualified Data.Vector.Fusion.Bundle as Bundle
+import qualified Data.Vector.Generic as G
 
-import Control.DeepSeq ( NFData, rnf )
+import Control.DeepSeq ( NFData(rnf)
+#if MIN_VERSION_deepseq(1,4,3)
+                       , NFData1(liftRnf)
+#endif
+                       )
+
 import Control.Monad ( MonadPlus(..), liftM, ap )
-import Control.Monad.ST ( ST )
+import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
-
-
+import qualified Control.Monad.Fail as Fail
+import Control.Monad.Fix ( MonadFix (mfix) )
 import Control.Monad.Zip
+import Data.Function ( fix )
 
 import Prelude hiding ( length, null,
                         replicate, (++), concat,
@@ -204,13 +211,7 @@ import qualified Control.Applicative as Applicative
 import qualified Data.Foldable as Foldable
 import qualified Data.Traversable as Traversable
 
-#if !MIN_VERSION_base(4,8,0)
-import Data.Monoid   ( Monoid(..) )
-#endif
-
-#if __GLASGOW_HASKELL__ >= 708
 import qualified GHC.Exts as Exts (IsList(..))
-#endif
 
 
 -- | Boxed vectors, supporting efficient slicing.
@@ -219,11 +220,19 @@ data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !(Array a)
         deriving ( Typeable )
 
+liftRnfV :: (a -> ()) -> Vector a -> ()
+liftRnfV elemRnf = foldl' (\_ -> elemRnf) ()
+
 instance NFData a => NFData (Vector a) where
-    rnf (Vector i n arr) = rnfAll i
-        where
-          rnfAll ix | ix < n    = rnf (indexArray arr ix) `seq` rnfAll (ix+1)
-                    | otherwise = ()
+  rnf = liftRnfV rnf
+  {-# INLINEABLE rnf #-}
+
+#if MIN_VERSION_deepseq(1,4,3)
+-- | @since 0.12.1.0
+instance NFData1 Vector where
+  liftRnf = liftRnfV
+  {-# INLINEABLE liftRnf #-}
+#endif
 
 instance Show a => Show (Vector a) where
   showsPrec = G.showsPrec
@@ -240,14 +249,11 @@ instance Read1 Vector where
     liftReadsPrec = G.liftReadsPrec
 #endif
 
-#if __GLASGOW_HASKELL__ >= 708
-
 instance Exts.IsList (Vector a) where
   type Item (Vector a) = a
   fromList = Data.Vector.fromList
   fromListN = Data.Vector.fromListN
   toList = toList
-#endif
 
 instance Data a => Data (Vector a) where
   gfoldl       = G.gfoldl
@@ -341,6 +347,13 @@ instance Monad Vector where
   {-# INLINE (>>=) #-}
   (>>=) = flip concatMap
 
+#if !(MIN_VERSION_base(4,13,0))
+  {-# INLINE fail #-}
+  fail = Fail.fail -- == \ _str -> empty
+#endif
+
+-- | @since 0.12.1.0
+instance Fail.MonadFail Vector where
   {-# INLINE fail #-}
   fail _ = empty
 
@@ -361,6 +374,29 @@ instance MonadZip Vector where
   {-# INLINE munzip #-}
   munzip = unzip
 
+-- | Instance has same semantics as one for lists
+--
+--  @since 0.13.0.0
+instance MonadFix Vector where
+  -- We take care to dispose of v0 as soon as possible (see headM docs).
+  --
+  -- It's perfectly safe to use non-monadic indexing within generate
+  -- call since intermediate vector won't be created until result's
+  -- value is demanded.
+  {-# INLINE mfix #-}
+  mfix f
+    | null v0 = empty
+    -- We take first element of resulting vector from v0 and create
+    -- rest using generate. Note that cons should fuse with generate
+    | otherwise = runST $ do
+        h <- headM v0
+        return $ cons h $
+          generate (lv0 - 1) $
+            \i -> fix (\a -> f a ! (i + 1))
+    where
+      -- Used to calculate size of resulting vector
+      v0 = fix (f . head)
+      !lv0 = length v0
 
 instance Applicative.Applicative Vector where
   {-# INLINE pure #-}
@@ -389,15 +425,12 @@ instance Foldable.Foldable Vector where
   {-# INLINE foldl1 #-}
   foldl1 = foldl1
 
-#if MIN_VERSION_base(4,6,0)
   {-# INLINE foldr' #-}
   foldr' = foldr'
 
   {-# INLINE foldl' #-}
   foldl' = foldl'
-#endif
 
-#if MIN_VERSION_base(4,8,0)
   {-# INLINE toList #-}
   toList = toList
 
@@ -421,11 +454,15 @@ instance Foldable.Foldable Vector where
 
   {-# INLINE product #-}
   product = product
-#endif
 
 instance Traversable.Traversable Vector where
   {-# INLINE traverse #-}
-  traverse f xs = Data.Vector.fromList Applicative.<$> Traversable.traverse f (toList xs)
+  traverse f xs =
+      -- Get the length of the vector in /O(1)/ time
+      let !n = G.length xs
+      -- Use fromListN to be more efficient in construction of resulting vector
+      -- Also behaves better with compact regions, preventing runtime exceptions
+      in  Data.Vector.fromListN n Applicative.<$> Traversable.traverse f (toList xs)
 
   {-# INLINE mapM #-}
   mapM = mapM
@@ -649,7 +686,8 @@ generate :: Int -> (Int -> a) -> Vector a
 {-# INLINE generate #-}
 generate = G.generate
 
--- | /O(n)/ Apply function n times to value. Zeroth element is original value.
+-- | /O(n)/ Apply function \(\max\{n - 1, 0\}\) times to value, producing a 
+-- vector of length /n/. Zeroth element is original value.
 iterateN :: Int -> (a -> a) -> a -> Vector a
 {-# INLINE iterateN #-}
 iterateN = G.iterateN
@@ -676,6 +714,15 @@ unfoldrN :: Int -> (b -> Maybe (a, b)) -> b -> Vector a
 {-# INLINE unfoldrN #-}
 unfoldrN = G.unfoldrN
 
+-- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly applying
+-- the generator function to a seed. The generator function yields the
+-- next element and the new seed.
+--
+-- > unfoldrExactN 3 (\n -> (n,n-1)) 10 = <10,9,8>
+unfoldrExactN  :: Int -> (b -> (a, b)) -> b -> Vector a
+{-# INLINE unfoldrExactN #-}
+unfoldrExactN = G.unfoldrExactN
+
 -- | /O(n)/ Construct a vector by repeatedly applying the monadic
 -- generator function to a seed. The generator function yields 'Just'
 -- the next element and the new seed or 'Nothing' if there are no more
@@ -691,6 +738,13 @@ unfoldrM = G.unfoldrM
 unfoldrNM :: (Monad m) => Int -> (b -> m (Maybe (a, b))) -> b -> m (Vector a)
 {-# INLINE unfoldrNM #-}
 unfoldrNM = G.unfoldrNM
+
+-- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly
+-- applying the monadic generator function to a seed. The generator
+-- function yields the next element and the new seed.
+unfoldrExactNM :: (Monad m) => Int -> (b -> m (a, b)) -> b -> m (Vector a)
+{-# INLINE unfoldrExactNM #-}
+unfoldrExactNM = G.unfoldrExactNM
 
 -- | /O(n)/ Construct a vector with @n@ elements by repeatedly applying the
 -- generator function to the already constructed part of the vector.
@@ -785,7 +839,8 @@ generateM :: Monad m => Int -> (Int -> m a) -> m (Vector a)
 {-# INLINE generateM #-}
 generateM = G.generateM
 
--- | /O(n)/ Apply monadic function n times to value. Zeroth element is original value.
+-- | /O(n)/ Apply monadic function \(\max\{n - 1, 0\}\) times to value, 
+-- producing a vector of length /n/. Zeroth element is original value.
 iterateNM :: Monad m => Int -> (a -> m a) -> a -> m (Vector a)
 {-# INLINE iterateNM #-}
 iterateNM = G.iterateNM
@@ -1046,6 +1101,18 @@ forM_ :: Monad m => Vector a -> (a -> m b) -> m ()
 {-# INLINE forM_ #-}
 forM_ = G.forM_
 
+-- | /O(n)/ Apply the monadic action to all elements of the vector and their indices, yielding a
+-- vector of results. Equivalent to 'flip' 'imapM'.
+iforM :: Monad m => Vector a -> (Int -> a -> m b) -> m (Vector b)
+{-# INLINE iforM #-}
+iforM = G.iforM
+
+-- | /O(n)/ Apply the monadic action to all elements of the vector and their indices and ignore the
+-- results. Equivalent to 'flip' 'imapM_'.
+iforM_ :: Monad m => Vector a -> (Int -> a -> m b) -> m ()
+{-# INLINE iforM_ #-}
+iforM_ = G.iforM_
+
 -- Zipping
 -- -------
 
@@ -1251,6 +1318,8 @@ unstablePartition = G.unstablePartition
 -- | /O(n)/ Split the vector in two parts, the first one containing the
 --   @Right@ elements and the second containing the @Left@ elements.
 --   The relative order of the elements is preserved.
+--
+--   @since 0.12.1.0
 partitionWith :: (a -> Either b c) -> Vector a -> (Vector b, Vector c)
 {-# INLINE partitionWith #-}
 partitionWith = G.partitionWith

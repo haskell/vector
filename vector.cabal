@@ -1,5 +1,5 @@
 Name:           vector
-Version:        0.12.0.1
+Version:        0.13.0.1
 -- don't forget to update the changelog file!
 License:        BSD3
 License-File:   LICENSE
@@ -35,19 +35,20 @@ Description:
         * <http://haskell.org/haskellwiki/Numeric_Haskell:_A_Vector_Tutorial>
 
 Tested-With:
-  GHC == 7.4.2,
-  GHC == 7.6.3,
-  GHC == 7.8.4,
   GHC == 7.10.3,
   GHC == 8.0.2,
   GHC == 8.2.2,
-  GHC == 8.4.2
+  GHC == 8.4.4,
+  GHC == 8.6.5,
+  GHC == 8.8.1,
+  GHC == 8.10.1
+
 
 Cabal-Version:  >=1.10
 Build-Type:     Simple
 
 Extra-Source-Files:
-      changelog
+      changelog.md
       README.md
       tests/LICENSE
       tests/Setup.hs
@@ -67,9 +68,10 @@ Extra-Source-Files:
       benchmarks/TestData/Graph.hs
       benchmarks/TestData/ParenTree.hs
       benchmarks/TestData/Random.hs
-      changelog
       internal/GenUnboxTuple.hs
       internal/unbox-tuple-instances
+
+
 
 Flag BoundsChecks
   Description: Enable bounds checking
@@ -92,6 +94,7 @@ Flag Wall
   Description: Enable all -Wall warnings
   Default: False
   Manual: True
+
 
 Library
   Default-Language: Haskell2010
@@ -146,12 +149,13 @@ Library
   Install-Includes:
         vector.h
 
-  Build-Depends: base >= 4.5 && < 4.12
-               , primitive >= 0.5.0.1 && < 0.7
-               , ghc-prim >= 0.2 && < 0.6
+  Build-Depends: base >= 4.8 && < 4.15
+               , primitive >= 0.5.0.1 && < 0.8
+               , ghc-prim >= 0.2 && < 0.7
                , deepseq >= 1.1 && < 1.5
   if !impl(ghc > 8.0)
-    Build-Depends: semigroups >= 0.18 && < 0.19
+    Build-Depends: fail == 4.9.*
+                 , semigroups >= 0.18 && < 0.20
 
   Ghc-Options: -O2 -Wall
 
@@ -185,15 +189,20 @@ test-suite vector-tests-O0
                  Tests.Bundle
                  Tests.Move
                  Tests.Vector
+                 Tests.Vector.Property
+                 Tests.Vector.Boxed
+                 Tests.Vector.Storable
+                 Tests.Vector.Primitive
+                 Tests.Vector.Unboxed
                  Tests.Vector.UnitTests
                  Utilities
 
   hs-source-dirs: tests
   Build-Depends: base >= 4.5 && < 5, template-haskell, base-orphans >= 0.6, vector,
                  primitive, random,
-                 QuickCheck >= 2.9 && < 2.12 , HUnit, test-framework,
-                 test-framework-hunit, test-framework-quickcheck2,
-                 transformers >= 0.2.0.0
+                 QuickCheck >= 2.9 && < 2.14 , HUnit, tasty,
+                 tasty-hunit, tasty-quickcheck,
+                 transformers >= 0.2.0.0,semigroups
 
   default-extensions: CPP,
               ScopedTypeVariables,
@@ -205,7 +214,7 @@ test-suite vector-tests-O0
               TypeFamilies,
               TemplateHaskell
 
-  Ghc-Options: -O0
+  Ghc-Options: -O0 -threaded
   Ghc-Options: -Wall
 
   if !flag(Wall)
@@ -223,15 +232,20 @@ test-suite vector-tests-O2
                  Tests.Bundle
                  Tests.Move
                  Tests.Vector
+                 Tests.Vector.Property
+                 Tests.Vector.Boxed
+                 Tests.Vector.Storable
+                 Tests.Vector.Primitive
+                 Tests.Vector.Unboxed
                  Tests.Vector.UnitTests
                  Utilities
 
   hs-source-dirs: tests
   Build-Depends: base >= 4.5 && < 5, template-haskell, base-orphans >= 0.6, vector,
                  primitive, random,
-                 QuickCheck >= 2.9 && < 2.12 , HUnit, test-framework,
-                 test-framework-hunit, test-framework-quickcheck2,
-                 transformers >= 0.2.0.0
+                 QuickCheck >= 2.9 && < 2.14 , HUnit,  tasty,
+                 tasty-hunit, tasty-quickcheck,
+                 transformers >= 0.2.0.0,semigroups
 
   default-extensions: CPP,
               ScopedTypeVariables,
@@ -243,8 +257,8 @@ test-suite vector-tests-O2
               TypeFamilies,
               TemplateHaskell
 
-  Ghc-Options: -O2 -Wall
-
+  Ghc-Options: -Wall
+  Ghc-Options:  -O2 -threaded
   if !flag(Wall)
     Ghc-Options: -fno-warn-orphans -fno-warn-missing-signatures
     if impl(ghc >= 8.0) && impl(ghc < 8.1)
