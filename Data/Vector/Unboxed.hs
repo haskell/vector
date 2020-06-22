@@ -53,7 +53,7 @@ module Data.Vector.Unboxed (
   unsafeIndexM, unsafeHeadM, unsafeLastM,
 
   -- ** Extracting subvectors (slicing)
-  slice, init, tail, take, drop, splitAt,
+  slice, init, tail, take, drop, splitAt, uncons, unsnoc,
   unsafeSlice, unsafeInit, unsafeTail, unsafeTake, unsafeDrop,
 
   -- * Construction
@@ -402,6 +402,14 @@ drop = G.drop
 {-# INLINE splitAt #-}
 splitAt :: Unbox a => Int -> Vector a -> (Vector a, Vector a)
 splitAt = G.splitAt
+
+-- | /O(1)/ Yield the 'head' and 'tail' of the vector, or 'Nothing' if empty.
+uncons :: Unbox a => Vector a -> Maybe (a, Vector a)
+uncons = G.uncons
+
+-- | /O(1)/ Yield the 'last' and 'init' of the vector, or 'Nothing' if empty.
+unsnoc :: Unbox a => Vector a -> Maybe (Vector a, a)
+unsnoc = G.unsnoc
 
 -- | /O(1)/ Yield a slice of the vector without copying. The vector must
 -- contain at least @i+n@ elements but this is not checked.
