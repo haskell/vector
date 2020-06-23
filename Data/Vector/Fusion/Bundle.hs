@@ -80,7 +80,7 @@ import Data.Vector.Generic.Base ( Vector )
 import Data.Vector.Fusion.Bundle.Size
 import Data.Vector.Fusion.Util
 import Data.Vector.Fusion.Stream.Monadic ( Stream(..), Step(..) )
-import Data.Vector.Fusion.Bundle.Monadic ( Chunk(..) )
+import Data.Vector.Fusion.Bundle.Monadic ( Chunk(..), lift )
 import qualified Data.Vector.Fusion.Bundle.Monadic as M
 import qualified Data.Vector.Fusion.Stream.Monadic as S
 
@@ -127,14 +127,6 @@ inplace f g b = b `seq` M.fromStream (f (M.elements b)) (g (M.size b))
          g1 g2 s.
   inplace f1 g1 (inplace f2 g2 s) = inplace (f1 . f2) (g1 . g2) s   #-}
 
-
-
--- | Convert a pure stream to a monadic stream
-lift :: Monad m => Bundle v a -> M.Bundle m v a
-{-# INLINE_FUSED lift #-}
-lift (M.Bundle (Stream step s) (Stream vstep t) v sz)
-    = M.Bundle (Stream (return . unId . step) s)
-               (Stream (return . unId . vstep) t) v sz
 
 -- | 'Size' hint of a 'Bundle'
 size :: Bundle v a -> Size

@@ -13,7 +13,7 @@
 --
 
 module Data.Vector.Fusion.Bundle.Monadic (
-  Bundle(..), Chunk(..),
+  Bundle(..), Chunk(..), lift,
 
   -- * Size hints
   size, sized,
@@ -80,7 +80,7 @@ module Data.Vector.Fusion.Bundle.Monadic (
 import Data.Vector.Generic.Base
 import qualified Data.Vector.Generic.Mutable.Base as M
 import Data.Vector.Fusion.Bundle.Size
-import Data.Vector.Fusion.Util ( Box(..), delay_inline )
+import Data.Vector.Fusion.Util ( Box(..), delay_inline, Id(..) )
 import Data.Vector.Fusion.Stream.Monadic ( Stream(..), Step(..) )
 import qualified Data.Vector.Fusion.Stream.Monadic as S
 import Control.Monad.Primitive
@@ -120,6 +120,13 @@ data Bundle m v a = Bundle { sElems  :: Stream m a
                            , sVector :: Maybe (v a)
                            , sSize   :: Size
                            }
+
+-- | Convert a pure stream to a monadic stream
+lift :: Monad m => Bundle Id v a -> Bundle m v a
+{-# INLINE_FUSED lift #-}
+lift (Bundle (Stream step s) (Stream vstep t) v sz)
+    = Bundle (Stream (return . unId . step) s)
+             (Stream (return . unId . vstep) t) v sz
 
 fromStream :: Monad m => Stream m a -> Size -> Bundle m v a
 {-# INLINE fromStream #-}
@@ -331,7 +338,7 @@ zipWithM f Bundle{sElems = sa, sSize = na}
 {-# RULES
 
 "zipWithM xs xs [Vector.Bundle]" forall f xs.
-  zipWithM f xs xs = mapM (\x -> f x x) xs   #-}
+  zipWithM f (lift xs) (lift xs) = mapM (\x -> f x x) (lift xs) #-}
 
 
 zipWithM_ :: Monad m => (a -> b -> m c) -> Bundle m v a -> Bundle m v b -> m ()
