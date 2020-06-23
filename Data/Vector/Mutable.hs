@@ -47,7 +47,10 @@ module Data.Vector.Mutable (
   nextPermutation,
 
   -- ** Filling and copying
-  set, copy, move, unsafeCopy, unsafeMove
+  set, copy, move, unsafeCopy, unsafeMove,
+
+  -- * Reexports
+  PrimMonad(..), RealWorld
 ) where
 
 import           Control.Monad (when)

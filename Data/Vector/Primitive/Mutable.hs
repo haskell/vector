@@ -50,7 +50,9 @@ module Data.Vector.Primitive.Mutable (
   set, copy, move, unsafeCopy, unsafeMove,
 
   -- * Unsafe conversions
-  unsafeCoerceMVector
+  unsafeCoerceMVector,
+  -- * Reexports
+  PrimMonad(..), RealWorld
 ) where
 
 import qualified Data.Vector.Generic.Mutable as G

@@ -57,7 +57,9 @@ module Data.Vector.Generic.Mutable (
   fill, fillR,
   unsafeAccum, accum, unsafeUpdate, update, reverse,
   unstablePartition, unstablePartitionBundle, partitionBundle,
-  partitionWithBundle
+  partitionWithBundle,
+  -- * Reexports
+  PrimMonad(..), RealWorld
 ) where
 
 import           Data.Vector.Generic.Mutable.Base
@@ -71,7 +73,7 @@ import qualified Data.Vector.Fusion.Stream.Monadic as Stream
 import           Data.Vector.Fusion.Bundle.Size
 import           Data.Vector.Fusion.Util        ( delay_inline )
 
-import Control.Monad.Primitive ( PrimMonad, PrimState )
+import Control.Monad.Primitive ( PrimMonad(..), RealWorld )
 
 import Prelude hiding ( length, null, replicate, reverse, map, read,
                         take, drop, splitAt, init, tail )

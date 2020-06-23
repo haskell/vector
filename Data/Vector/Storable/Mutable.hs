@@ -55,7 +55,9 @@ module Data.Vector.Storable.Mutable(
   -- * Raw pointers
   unsafeFromForeignPtr, unsafeFromForeignPtr0,
   unsafeToForeignPtr,   unsafeToForeignPtr0,
-  unsafeWith
+  unsafeWith,
+  -- * Reexports
+  PrimMonad(..), RealWorld,
 ) where
 
 import Control.DeepSeq ( NFData(rnf)
