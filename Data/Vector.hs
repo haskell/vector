@@ -349,6 +349,9 @@ instance Functor Vector where
   {-# INLINE fmap #-}
   fmap = map
 
+  {-# INLINE (<$) #-}
+  (<$) = map . const
+
 instance Monad Vector where
   {-# INLINE return #-}
   return = Applicative.pure
