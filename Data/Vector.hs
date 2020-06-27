@@ -153,6 +153,9 @@ module Data.Vector (
   scanr, scanr', scanr1, scanr1',
   iscanr, iscanr',
 
+  -- ** Comparisons
+  eqBy, cmpBy,
+
   -- * Conversions
 
   -- ** Lists
@@ -1777,6 +1780,22 @@ scanr1 = G.scanr1
 scanr1' :: (a -> a -> a) -> Vector a -> Vector a
 {-# INLINE scanr1' #-}
 scanr1' = G.scanr1'
+
+-- Comparisons
+-- ------------------------
+
+-- | /O(n)/ Check if two vectors are equal using supplied equality
+-- predicate.
+eqBy :: (a -> b -> Bool) -> Vector a -> Vector b -> Bool
+{-# INLINE eqBy #-}
+eqBy = G.eqBy
+
+-- | /O(n)/ Compare two vectors using supplied comparison function for
+-- vector elements. Comparison works same as for lists.
+--
+-- > cmpBy compare == compare
+cmpBy :: (a -> b -> Ordering) -> Vector a -> Vector b -> Ordering
+cmpBy = G.cmpBy
 
 -- Conversions - Lists
 -- ------------------------
