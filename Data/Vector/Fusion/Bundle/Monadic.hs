@@ -287,6 +287,8 @@ drop n Bundle{sElems = s, sSize = sz} =
 instance Monad m => Functor (Bundle m v) where
   {-# INLINE fmap #-}
   fmap = map
+  {-# INLINE (<$) #-}
+  (<$) = map . const
 
 -- | Map a function over a 'Bundle'
 map :: Monad m => (a -> b) -> Bundle m v a -> Bundle m v b
