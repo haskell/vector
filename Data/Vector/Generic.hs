@@ -2192,7 +2192,10 @@ cmp :: (Vector v a, Ord a) => v a -> v a -> Ordering
 {-# INLINE cmp #-}
 cmp xs ys = compare (stream xs) (stream ys)
 
--- | /O(n)/ Check if two vectors are equal using supplied comparison function
+-- | /O(n)/ Compare two vectors using supplied comparison function for
+-- vector elements. Comparison works same as for lists.
+--
+-- > cmpBy compare == cmp
 cmpBy :: (Vector v a, Vector v b) => (a -> b -> Ordering) -> v a -> v b -> Ordering
 cmpBy c xs ys = Bundle.cmpBy c (stream xs) (stream ys)
 
