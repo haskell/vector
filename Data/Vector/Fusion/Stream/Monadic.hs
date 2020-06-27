@@ -134,6 +134,8 @@ instance Functor (Step s) where
   fmap f (Yield x s) = Yield (f x) s
   fmap _ (Skip s) = Skip s
   fmap _ Done = Done
+  {-# INLINE (<$) #-}
+  (<$) = fmap . const
 
 -- | Monadic streams
 data Stream m a = forall s. Stream (s -> m (Step s a)) s
