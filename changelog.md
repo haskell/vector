@@ -39,6 +39,7 @@
      to ensure that no `Storable` invariants are broken when using these
      functions).
  * Added `iforM` and `iforM_`
+ * Added `toArray`, `fromArray`, `toMutableArray` and `fromMutableArray`
 
 # Changes in version 0.12.1.2
 
