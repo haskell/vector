@@ -20,7 +20,7 @@ module Tests.Vector.Property
   -- re-exports
   , Data
   , Random
-  ,Test
+  , Test
   ) where
 
 import Boilerplater

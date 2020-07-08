@@ -47,10 +47,14 @@ module Data.Vector.Mutable (
   nextPermutation,
 
   -- ** Filling and copying
-  set, copy, move, unsafeCopy, unsafeMove
+
+  set, copy, move, unsafeCopy, unsafeMove,
+
+  -- ** Arrays
+  fromMutableArray, toMutableArray,
 ) where
 
-import           Control.Monad (when)
+import           Control.Monad (when, liftM)
 import qualified Data.Vector.Generic.Mutable as G
 import           Data.Primitive.Array
 import           Control.Monad.Primitive
@@ -425,3 +429,18 @@ unsafeMove = G.unsafeMove
 nextPermutation :: (PrimMonad m,Ord e) => MVector (PrimState m) e -> m Bool
 {-# INLINE nextPermutation #-}
 nextPermutation = G.nextPermutation
+
+-- Conversions - Arrays
+-- -----------------------------
+
+-- | /O(n)/ Make a copy of a mutable array to a new mutable vector.
+fromMutableArray :: PrimMonad m => MutableArray (PrimState m) a -> m (MVector (PrimState m) a)
+{-# INLINE fromMutableArray #-}
+fromMutableArray marr =
+  let size = sizeofMutableArray marr
+   in MVector 0 size `liftM` cloneMutableArray marr 0 size
+
+-- | /O(n)/ Make a copy of a mutable vector into a new mutable array.
+toMutableArray :: PrimMonad m => MVector (PrimState m) a -> m (MutableArray (PrimState m) a)
+{-# INLINE toMutableArray #-}
+toMutableArray (MVector offset size marr) = cloneMutableArray marr offset size
