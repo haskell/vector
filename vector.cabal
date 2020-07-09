@@ -150,7 +150,7 @@ Library
         vector.h
 
   Build-Depends: base >= 4.8 && < 4.15
-               , primitive >= 0.5.0.1 && < 0.8
+               , primitive >= 0.6.4.0 && < 0.8
                , ghc-prim >= 0.2 && < 0.7
                , deepseq >= 1.1 && < 1.5
   if !impl(ghc > 8.0)

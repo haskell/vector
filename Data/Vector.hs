@@ -158,6 +158,9 @@ module Data.Vector (
   -- ** Lists
   toList, Data.Vector.fromList, Data.Vector.fromListN,
 
+  -- ** Arrays
+  fromArray, toArray,
+
   -- ** Other vector types
   G.convert,
 
@@ -165,7 +168,7 @@ module Data.Vector (
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy
 ) where
 
-import Data.Vector.Mutable  ( MVector(..) )
+import Data.Vector.Mutable  ( MVector(..), toMutableArray )
 import Data.Primitive.Array
 import qualified Data.Vector.Fusion.Bundle as Bundle
 import qualified Data.Vector.Generic as G
@@ -1767,6 +1770,21 @@ fromList = G.fromList
 fromListN :: Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
 fromListN = G.fromListN
+
+-- Conversions - Arrays
+-- -----------------------------
+
+-- | /O(1)/ Convert an array to a vector.
+fromArray :: Array a -> Vector a
+{-# INLINE fromArray #-}
+fromArray x = Vector 0 (sizeofArray x) x
+
+-- | /O(n)/ Convert a vector to an array.
+toArray :: Vector a -> Array a
+{-# INLINE toArray #-}
+toArray (Vector offset size arr)
+  | offset == 0 && size == sizeofArray arr = arr
+  | otherwise = cloneArray arr offset size
 
 -- Conversions - Mutable vectors
 -- -----------------------------
