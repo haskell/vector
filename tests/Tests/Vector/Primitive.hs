@@ -7,7 +7,10 @@ import Tests.Vector.Property
 
 import GHC.Exts (inline)
 
-testGeneralPrimitiveVector :: forall a. (CommonContext a Data.Vector.Primitive.Vector, Data.Vector.Primitive.Prim a, Ord a, Data a) => Data.Vector.Primitive.Vector a -> [Test]
+testGeneralPrimitiveVector
+  :: forall a. ( CommonContext a Data.Vector.Primitive.Vector
+               , Data.Vector.Primitive.Prim a, Ord a, Data a)
+  => Data.Vector.Primitive.Vector a -> [Test]
 testGeneralPrimitiveVector dummy = concatMap ($ dummy)
   [
     testSanity
@@ -17,7 +20,10 @@ testGeneralPrimitiveVector dummy = concatMap ($ dummy)
   , testDataFunctions
   ]
 
-testNumericPrimitiveVector :: forall a. (CommonContext a Data.Vector.Primitive.Vector, Data.Vector.Primitive.Prim a, Ord a, Num a, Enum a, Random a, Data a) => Data.Vector.Primitive.Vector a -> [Test]
+testNumericPrimitiveVector
+  :: forall a. ( CommonContext a Data.Vector.Primitive.Vector
+               , Data.Vector.Primitive.Prim a, Ord a, Num a, Enum a, Random a, Data a)
+  => Data.Vector.Primitive.Vector a -> [Test]
 testNumericPrimitiveVector dummy = concatMap ($ dummy)
   [
     testGeneralPrimitiveVector

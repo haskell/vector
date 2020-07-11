@@ -7,7 +7,10 @@ import Tests.Vector.Property
 
 import GHC.Exts (inline)
 
-testGeneralStorableVector :: forall a. (CommonContext a Data.Vector.Storable.Vector, Data.Vector.Storable.Storable a, Ord a, Data a) => Data.Vector.Storable.Vector a -> [Test]
+testGeneralStorableVector
+  :: forall a. ( CommonContext a Data.Vector.Storable.Vector
+               , Data.Vector.Storable.Storable a, Ord a, Data a)
+  => Data.Vector.Storable.Vector a -> [Test]
 testGeneralStorableVector dummy = concatMap ($ dummy)
   [
     testSanity
@@ -17,7 +20,10 @@ testGeneralStorableVector dummy = concatMap ($ dummy)
   , testDataFunctions
   ]
 
-testNumericStorableVector :: forall a. (CommonContext a Data.Vector.Storable.Vector, Data.Vector.Storable.Storable a, Ord a, Num a, Enum a, Random a, Data a) => Data.Vector.Storable.Vector a -> [Test]
+testNumericStorableVector
+  :: forall a. ( CommonContext a Data.Vector.Storable.Vector
+               , Data.Vector.Storable.Storable a, Ord a, Num a, Enum a, Random a, Data a)
+  => Data.Vector.Storable.Vector a -> [Test]
 testNumericStorableVector dummy = concatMap ($ dummy)
   [
     testGeneralStorableVector

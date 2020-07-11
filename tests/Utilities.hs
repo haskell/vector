@@ -68,42 +68,42 @@ class (Testable (EqTest a), Conclusion (EqTest a)) => TestData a where
   type EqTest a
   equal :: a -> a -> EqTest a
 
-instance Eq a => TestData (S.Bundle v a) where
-  type Model (S.Bundle v a) = [a]
-  model = S.toList
-  unmodel = S.fromList
+instance (Eq a, TestData a) => TestData (S.Bundle v a) where
+  type Model (S.Bundle v a) = [Model a]
+  model   = map model  . S.toList
+  unmodel = S.fromList . map unmodel
 
   type EqTest (S.Bundle v a) = Property
   equal x y = property (x == y)
 
-instance Eq a => TestData (DV.Vector a) where
-  type Model (DV.Vector a) = [a]
-  model = DV.toList
-  unmodel = DV.fromList
+instance (Eq a, TestData a) => TestData (DV.Vector a) where
+  type Model (DV.Vector a) = [Model a]
+  model   = map model    . DV.toList
+  unmodel = DV.fromList . map unmodel
 
   type EqTest (DV.Vector a) = Property
   equal x y = property (x == y)
 
-instance (Eq a, DVP.Prim a) => TestData (DVP.Vector a) where
-  type Model (DVP.Vector a) = [a]
-  model = DVP.toList
-  unmodel = DVP.fromList
+instance (Eq a, DVP.Prim a, TestData a) => TestData (DVP.Vector a) where
+  type Model (DVP.Vector a) = [Model a]
+  model   = map model    . DVP.toList
+  unmodel = DVP.fromList . map unmodel
 
   type EqTest (DVP.Vector a) = Property
   equal x y = property (x == y)
 
-instance (Eq a, DVS.Storable a) => TestData (DVS.Vector a) where
-  type Model (DVS.Vector a) = [a]
-  model = DVS.toList
-  unmodel = DVS.fromList
+instance (Eq a, DVS.Storable a, TestData a) => TestData (DVS.Vector a) where
+  type Model (DVS.Vector a) = [Model a]
+  model   = map model    . DVS.toList
+  unmodel = DVS.fromList . map unmodel
 
   type EqTest (DVS.Vector a) = Property
   equal x y = property (x == y)
 
-instance (Eq a, DVU.Unbox a) => TestData (DVU.Vector a) where
-  type Model (DVU.Vector a) = [a]
-  model = DVU.toList
-  unmodel = DVU.fromList
+instance (Eq a, DVU.Unbox a, TestData a) => TestData (DVU.Vector a) where
+  type Model (DVU.Vector a) = [Model a]
+  model   = map model    . DVU.toList
+  unmodel = DVU.fromList . map unmodel
 
   type EqTest (DVU.Vector a) = Property
   equal x y = property (x == y)
@@ -247,6 +247,7 @@ indices m = sized $ \n ->
 singleton x = [x]
 snoc xs x = xs ++ [x]
 generate n f = [f i | i <- [0 .. n-1]]
+generateM n f = sequence [f i | i <- [0 .. n-1]]
 slice i n xs = take n (drop i xs)
 backpermute xs is = map (xs!!) is
 prescanl f z = init . scanl f z

@@ -8,7 +8,9 @@ import Tests.Vector.Property
 import GHC.Exts (inline)
 
 
-testGeneralBoxedVector :: forall a. (CommonContext a Data.Vector.Vector, Ord a, Data a) => Data.Vector.Vector a -> [Test]
+testGeneralBoxedVector
+  :: forall a. (CommonContext a Data.Vector.Vector, Ord a, Data a)
+  => Data.Vector.Vector a -> [Test]
 testGeneralBoxedVector dummy = concatMap ($ dummy)
   [
     testSanity
@@ -21,6 +23,7 @@ testGeneralBoxedVector dummy = concatMap ($ dummy)
   , testMonadFunctions
   , testApplicativeFunctions
   , testAlternativeFunctions
+  , testSequenceFunctions
   , testDataFunctions
   ]
 
@@ -30,7 +33,9 @@ testBoolBoxedVector dummy = concatMap ($ dummy)
   , testBoolFunctions
   ]
 
-testNumericBoxedVector :: forall a. (CommonContext a Data.Vector.Vector, Ord a, Num a, Enum a, Random a, Data a) => Data.Vector.Vector a -> [Test]
+testNumericBoxedVector
+  :: forall a. (CommonContext a Data.Vector.Vector, Ord a, Num a, Enum a, Random a, Data a)
+  => Data.Vector.Vector a -> [Test]
 testNumericBoxedVector dummy = concatMap ($ dummy)
   [
     testGeneralBoxedVector
