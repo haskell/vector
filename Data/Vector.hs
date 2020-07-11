@@ -168,7 +168,7 @@ module Data.Vector (
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy
 ) where
 
-import Data.Vector.Mutable  ( MVector(..), toMutableArray )
+import Data.Vector.Mutable  ( MVector(..) )
 import Data.Primitive.Array
 import qualified Data.Vector.Fusion.Bundle as Bundle
 import qualified Data.Vector.Generic as G
