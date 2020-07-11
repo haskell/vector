@@ -4,6 +4,7 @@ import Criterion.Main
 import Criterion.Main.Options
 import Options.Applicative
 
+import Algo.MutableSet(mutableSet)
 import Algo.ListRank  (listRank)
 import Algo.Rootfix   (rootfix)
 import Algo.Leaffix   (leaffix)
@@ -18,6 +19,7 @@ import TestData.Graph     ( randomGraph )
 import TestData.Random    ( randomVector )
 
 import Data.Vector.Unboxed ( Vector )
+import qualified Data.Vector.Mutable as M( IOVector, new )
 
 import System.Environment
 import Data.Word
@@ -62,6 +64,7 @@ main = do
   lparens `seq` rparens `seq`
     nodes `seq` edges1 `seq` edges2 `seq` return ()
 
+  vi <- M.new useSize                :: IO (M.IOVector Int)
   as <- randomVector useSeed useSize :: IO (Vector Double)
   bs <- randomVector useSeed useSize :: IO (Vector Double)
   cs <- randomVector useSeed useSize :: IO (Vector Double)
@@ -69,7 +72,6 @@ main = do
   sp <- randomVector useSeed (floor $ sqrt $ fromIntegral useSize)
                           :: IO (Vector Double)
   as `seq` bs `seq` cs `seq` ds `seq` sp `seq` return ()
-  putStrLn "foo"
   runMode (otherArgs args)
                 [ bench "listRank"  $ whnf listRank useSize
                 , bench "rootfix"   $ whnf rootfix (lparens, rparens)
@@ -79,4 +81,5 @@ main = do
                 , bench "quickhull" $ whnf quickhull (as,bs)
                 , bench "spectral"  $ whnf spectral sp
                 , bench "tridiag"   $ whnf tridiag (as,bs,cs,ds)
+                , bench "mutableSet"$ nfIO $ mutableSet vi
                 ]
