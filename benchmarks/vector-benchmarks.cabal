@@ -8,13 +8,15 @@ Copyright:      (c) Roman Leshchinskiy 2010-2012
 Cabal-Version:  >= 1.2
 Build-Type:     Simple
 
-Executable algorithms
+benchmark algorithms
+  type: exitcode-stdio-1.0
   Main-Is: Main.hs
 
-  Build-Depends: base >= 2 && < 5, array,
-                 criterion >= 1.5.4.0 && < 1.6,
+  Build-Depends: base >= 2 && < 5,
+                 array,
+                 gauge,
                  mwc-random >= 0.5 && < 0.15,
-                 vector, optparse-applicative
+                 vector
 
   if impl(ghc<6.13)
     Ghc-Options: -finline-if-enough-args -fno-method-sharing
