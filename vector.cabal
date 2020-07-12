@@ -67,7 +67,6 @@ Extra-Source-Files:
       benchmarks/Algo/Tridiag.hs
       benchmarks/TestData/Graph.hs
       benchmarks/TestData/ParenTree.hs
-      benchmarks/TestData/Random.hs
       internal/GenUnboxTuple.hs
       internal/unbox-tuple-instances
 
