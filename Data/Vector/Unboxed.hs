@@ -150,9 +150,14 @@ module Data.Vector.Unboxed (
   prescanl, prescanl',
   postscanl, postscanl',
   scanl, scanl', scanl1, scanl1',
+  iscanl, iscanl',
   prescanr, prescanr',
   postscanr, postscanr',
   scanr, scanr', scanr1, scanr1',
+  iscanr, iscanr',
+
+  -- ** Comparisons
+  eqBy, cmpBy,
 
   -- * Conversions
 
@@ -982,7 +987,7 @@ zipWithM = G.zipWithM
 -- | /O(min(m,n))/ Zip the two vectors with a monadic action that also takes
 -- the element index and yield a vector of results
 izipWithM :: (Monad m, Unbox a, Unbox b, Unbox c)
-         => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m (Vector c)
+          => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m (Vector c)
 {-# INLINE izipWithM #-}
 izipWithM = G.izipWithM
 
@@ -996,7 +1001,7 @@ zipWithM_ = G.zipWithM_
 -- | /O(min(m,n))/ Zip the two vectors with a monadic action that also takes
 -- the element index and ignore the results
 izipWithM_ :: (Monad m, Unbox a, Unbox b)
-          => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m ()
+           => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m ()
 {-# INLINE izipWithM_ #-}
 izipWithM_ = G.izipWithM_
 
@@ -1400,6 +1405,16 @@ scanl' :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE scanl' #-}
 scanl' = G.scanl'
 
+-- | /O(n)/ Scan over a vector with its index
+iscanl :: (Unbox a, Unbox b) => (Int -> a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE iscanl #-}
+iscanl = G.iscanl
+
+-- | /O(n)/ Scan over a vector (strictly) with its index
+iscanl' :: (Unbox a, Unbox b) => (Int -> a -> b -> a) -> a -> Vector b -> Vector a
+{-# INLINE iscanl' #-}
+iscanl' = G.iscanl'
+
 -- | /O(n)/ Scan over a non-empty vector
 --
 -- > scanl f <x1,...,xn> = <y1,...,yn>
@@ -1450,6 +1465,16 @@ scanr' :: (Unbox a, Unbox b) => (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE scanr' #-}
 scanr' = G.scanr'
 
+-- | /O(n)/ Right-to-left scan over a vector with its index
+iscanr :: (Unbox a, Unbox b) => (Int -> a -> b -> b) -> b -> Vector a -> Vector b
+{-# INLINE iscanr #-}
+iscanr = G.iscanr
+
+-- | /O(n)/ Right-to-left scan over a vector (strictly) with its index
+iscanr' :: (Unbox a, Unbox b) => (Int -> a -> b -> b) -> b -> Vector a -> Vector b
+{-# INLINE iscanr' #-}
+iscanr' = G.iscanr'
+
 -- | /O(n)/ Right-to-left scan over a non-empty vector
 scanr1 :: Unbox a => (a -> a -> a) -> Vector a -> Vector a
 {-# INLINE scanr1 #-}
@@ -1460,6 +1485,22 @@ scanr1 = G.scanr1
 scanr1' :: Unbox a => (a -> a -> a) -> Vector a -> Vector a
 {-# INLINE scanr1' #-}
 scanr1' = G.scanr1'
+
+-- Comparisons
+-- ------------------------
+
+-- | /O(n)/ Check if two vectors are equal using supplied equality
+-- predicate.
+eqBy :: (Unbox a, Unbox b) => (a -> b -> Bool) -> Vector a -> Vector b -> Bool
+{-# INLINE eqBy #-}
+eqBy = G.eqBy
+
+-- | /O(n)/ Compare two vectors using supplied comparison function for
+-- vector elements. Comparison works same as for lists.
+--
+-- > cmpBy compare == compare
+cmpBy :: (Unbox a, Unbox b) => (a -> b -> Ordering) -> Vector a -> Vector b -> Ordering
+cmpBy = G.cmpBy
 
 -- Conversions - Lists
 -- ------------------------
