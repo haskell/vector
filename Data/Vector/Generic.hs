@@ -1381,8 +1381,19 @@ takeWhile f = unstream . Bundle.takeWhile f . stream
 -- | /O(n)/ Drop the longest prefix of elements that satisfy the predicate
 -- without copying.
 dropWhile :: Vector v a => (a -> Bool) -> v a -> v a
-{-# INLINE dropWhile #-}
-dropWhile f = unstream . Bundle.dropWhile f . stream
+{-# INLINE_FUSED dropWhile #-}
+-- In the case that the argument is an actual vector,
+-- this is a faster solution than stream fusion.
+dropWhile f xs = case findIndex (not . f) xs of
+                   Just i  -> unsafeDrop i xs
+                   Nothing -> empty
+
+-- If the argument to 'dropWhile' comes from a stream,
+-- we need to avoid unnecessary allocation.
+{-# RULES
+"dropWhile/unstream [Vector]" forall f p.
+  dropWhile f (new (New.unstream p)) = new (New.unstream (Bundle.dropWhile f p))
+  #-}
 
 -- Parititioning
 -- -------------
