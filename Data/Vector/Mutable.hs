@@ -191,7 +191,7 @@ loopM !n k = let
   in go 0
 
 uninitialised :: a
-uninitialised = error "Data.Vector.Mutable: uninitialised element. If you are trying to compact a vector, use the 'force' function to remove uninitialised elements from the underlying array."
+uninitialised = error "Data.Vector.Mutable: uninitialised element. If you are trying to compact a vector, use the 'Data.Vector.force' function to remove uninitialised elements from the underlying array."
 
 -- Length information
 -- ------------------
