@@ -1388,8 +1388,13 @@ dropWhile f xs = case findIndex (not . f) xs of
                    Just i  -> unsafeDrop i xs
                    Nothing -> empty
 
--- If the argument to 'dropWhile' comes from a stream,
--- we need to avoid unnecessary allocation.
+-- If we have optimization turned on
+-- and the argument to 'dropWhile' comes from a stream,
+-- we never allocate the argument vector, and
+-- whenever possible, we avoid creating the resulting vector actually in heap.
+--
+-- Also note that @'new' . 'New.unstream'@
+-- is the definition (to be @INLINE@d) of 'unstream'.
 {-# RULES
 "dropWhile/unstream [Vector]" forall f p.
   dropWhile f (new (New.unstream p)) = new (New.unstream (Bundle.dropWhile f p))
