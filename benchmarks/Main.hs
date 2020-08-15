@@ -11,6 +11,7 @@ import Algo.HybCC      (hybcc)
 import Algo.Quickhull  (quickhull)
 import Algo.Spectral   (spectral)
 import Algo.Tridiag    (tridiag)
+import Algo.FindIndexR (findIndexR, findIndexR_naive, findIndexR_manual)
 
 import TestData.ParenTree (parenTree)
 import TestData.Graph     (randomGraph)
@@ -25,6 +26,9 @@ useSize = 2000000
 
 useSeed :: Int
 useSeed = 42
+
+indexFindThreshold :: Double
+indexFindThreshold = 2e-5
 
 main :: IO ()
 main = do
@@ -54,4 +58,7 @@ main = do
     , bench "spectral"   $ whnf spectral sp
     , bench "tridiag"    $ whnf tridiag (as,bs,cs,ds)
     , bench "mutableSet" $ nfIO $ mutableSet vi
+    , bench "findIndexR" $ whnf findIndexR ((<indexFindThreshold), as)
+    , bench "findIndexR_naïve" $ whnf findIndexR_naive ((<indexFindThreshold), as)
+    , bench "findIndexR_manual" $ whnf findIndexR_manual ((<indexFindThreshold), as)
     ]

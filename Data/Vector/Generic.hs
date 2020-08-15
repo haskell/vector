@@ -106,7 +106,7 @@ module Data.Vector.Generic (
   partition, partitionWith, unstablePartition, span, break,
 
   -- ** Searching
-  elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
+  elem, notElem, find, findIndex, findIndexR, findIndices, elemIndex, elemIndices,
 
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1, foldr', foldr1',
@@ -1515,6 +1515,12 @@ find f = Bundle.find f . stream
 findIndex :: Vector v a => (a -> Bool) -> v a -> Maybe Int
 {-# INLINE findIndex #-}
 findIndex f = Bundle.findIndex f . stream
+
+-- | /O(n)/ Yield 'Just' the index of the /last/ element matching the predicate
+-- or 'Nothing' if no such element exists.
+findIndexR :: Vector v a => (a -> Bool) -> v a -> Maybe Int
+{-# INLINE findIndexR #-}
+findIndexR f v = fmap (length v - 1 -) . Bundle.findIndex f $ streamR v
 
 -- | /O(n)/ Yield the indices of elements satisfying the predicate in ascending
 -- order.
