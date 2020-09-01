@@ -1,5 +1,6 @@
 # Changes in NEXT_VERSION
 
+ * Added `catMaybes`
  * Added `MonadFix` instance for boxed vectors
  * New functions: `unfoldrExactN` and `unfoldrExactNM`
  * `mkType` from `Data.Vector.Generic` is deprecated in favor of

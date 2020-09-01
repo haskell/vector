@@ -115,7 +115,7 @@ module Data.Vector (
 
   -- ** Filtering
   filter, ifilter, uniq,
-  mapMaybe, imapMaybe,
+  mapMaybe, imapMaybe, catMaybes,
   filterM,
   takeWhile, dropWhile,
 
@@ -1287,6 +1287,11 @@ mapMaybe = G.mapMaybe
 imapMaybe :: (Int -> a -> Maybe b) -> Vector a -> Vector b
 {-# INLINE imapMaybe #-}
 imapMaybe = G.imapMaybe
+
+-- | /O(n)/ Return a Vector of all the Just values.
+catMaybes :: Vector (Maybe a) -> Vector a
+{-# INLINE catMaybes #-}
+catMaybes = mapMaybe id
 
 -- | /O(n)/ Drop elements that do not satisfy the monadic predicate
 filterM :: Monad m => (a -> m Bool) -> Vector a -> m (Vector a)
