@@ -40,7 +40,7 @@ module Data.Vector.Fusion.Stream.Monadic (
   eqBy, cmpBy,
 
   -- * Filtering
-  filter, filterM, uniq, mapMaybe, takeWhile, takeWhileM, dropWhile, dropWhileM,
+  filter, filterM, uniq, mapMaybe, catMaybes, takeWhile, takeWhileM, dropWhile, dropWhileM,
 
   -- * Searching
   elem, notElem, find, findM, findIndex, findIndexM,
@@ -683,6 +683,9 @@ mapMaybe f (Stream step t) = Stream step' t
                                     Just b' -> Yield b' s'
                   Skip    s' -> return $ Skip s'
                   Done       -> return $ Done
+
+catMaybes :: Monad m => Stream m (Maybe a) -> Stream m a
+catMaybes = mapMaybe id
 
 -- | Drop elements which do not satisfy the monadic predicate
 filterM :: Monad m => (a -> m Bool) -> Stream m a -> Stream m a
