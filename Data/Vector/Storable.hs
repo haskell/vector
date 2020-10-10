@@ -91,10 +91,9 @@ module Data.Vector.Storable (
   -- * Working with predicates
 
   -- ** Filtering
-  filter, ifilter, uniq,
+  filter, ifilter, filterM, uniq,
   mapMaybe, imapMaybe,
   mapMaybeM, imapMaybeM,
-  filterM,
   takeWhile, dropWhile,
 
   -- ** Partitioning

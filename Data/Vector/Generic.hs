@@ -97,9 +97,9 @@ module Data.Vector.Generic (
   -- * Working with predicates
 
   -- ** Filtering
-  filter, ifilter, uniq,
+  filter, ifilter, filterM, uniq,
   mapMaybe, imapMaybe,
-  filterM, mapMaybeM, imapMaybeM,
+  mapMaybeM, imapMaybeM,
   takeWhile, dropWhile,
 
   -- ** Partitioning
