@@ -1382,6 +1382,7 @@ mapMaybeM f = unstreamM . Bundle.mapMaybeM f . stream
 -- Discards elements returning Nothing.
 imapMaybeM :: (Monad m, Vector v a, Vector v b)
       => (Int -> a -> m (Maybe b)) -> v a -> m (v b)
+{-# INLINE imapMaybeM #-}
 imapMaybeM f = unstreamM . Bundle.mapMaybeM (\(i, a) -> f i a) . Bundle.indexed . stream
 
 -- | /O(n)/ Yield the longest prefix of elements satisfying the predicate
