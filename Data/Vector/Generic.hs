@@ -1392,10 +1392,14 @@ filterM :: (Monad m, Vector v a) => (a -> m Bool) -> v a -> m (v a)
 {-# INLINE filterM #-}
 filterM f = unstreamM . Bundle.filterM f . stream
 
+-- | /O(n)/ Apply monadic function to each element of vector and
+-- discard elements returning Nothing.
 mapMaybeM :: (Monad m, Vector v a, Vector v b) => (a -> m (Maybe b)) -> v a -> m (v b)
 {-# INLINE mapMaybeM #-}
 mapMaybeM f = unstreamM . Bundle.mapMaybeM f . stream
 
+-- | /O(n)/ Apply monadic function to each element of vector and its index.
+-- Discards elements returning Nothing.
 imapMaybeM :: (Monad m, Vector v a, Vector v b)
       => (Int -> a -> m (Maybe b)) -> v a -> m (v b)
 imapMaybeM f = unstreamM . Bundle.mapMaybeM (\(i, a) -> f i a) . Bundle.indexed . stream

@@ -1056,12 +1056,16 @@ imapMaybe :: (Storable a, Storable b) => (Int -> a -> Maybe b) -> Vector a -> Ve
 {-# INLINE imapMaybe #-}
 imapMaybe = G.imapMaybe
 
+-- | /O(n)/ Apply monadic function to each element of vector and
+-- discard elements returning Nothing.
 mapMaybeM
   :: (Monad m, Storable a, Storable b)
   => (a -> m (Maybe b)) -> Vector a -> m (Vector b)
 {-# INLINE mapMaybeM #-}
 mapMaybeM = G.mapMaybeM
 
+-- | /O(n)/ Apply monadic function to each element of vector and its index.
+-- Discards elements returning Nothing.
 imapMaybeM
   :: (Monad m, Storable a, Storable b)
   => (Int -> a -> m (Maybe b)) -> Vector a -> m (Vector b)
