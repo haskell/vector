@@ -114,9 +114,10 @@ module Data.Vector (
   -- * Working with predicates
 
   -- ** Filtering
-  filter, ifilter, uniq,
-  mapMaybe, imapMaybe, imapMaybeM, catMaybes,
-  filterM, mapMaybeM,
+  filter, ifilter, filterM, uniq,
+  mapMaybe, imapMaybe,
+  mapMaybeM, imapMaybeM,
+  catMaybes,
   takeWhile, dropWhile,
 
   -- ** Partitioning
