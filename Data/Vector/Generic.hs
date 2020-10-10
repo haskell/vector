@@ -2002,7 +2002,7 @@ convert = unstream . Bundle.reVector . stream
 unsafeFreeze
   :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m (v a)
 {-# INLINE unsafeFreeze #-}
-unsafeFreeze = basicUnsafeFreeze
+unsafeFreeze = stToPrim . basicUnsafeFreeze
 
 -- | /O(n)/ Yield an immutable copy of the mutable vector.
 freeze :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m (v a)
@@ -2013,7 +2013,7 @@ freeze mv = unsafeFreeze =<< M.clone mv
 -- copying. The immutable vector may not be used after this operation.
 unsafeThaw :: (PrimMonad m, Vector v a) => v a -> m (Mutable v (PrimState m) a)
 {-# INLINE_FUSED unsafeThaw #-}
-unsafeThaw = basicUnsafeThaw
+unsafeThaw = stToPrim . basicUnsafeThaw
 
 -- | /O(n)/ Yield a mutable copy of the immutable vector.
 thaw :: (PrimMonad m, Vector v a) => v a -> m (Mutable v (PrimState m) a)
@@ -2072,7 +2072,7 @@ unsafeCopy
 {-# INLINE unsafeCopy #-}
 unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
                                          (M.length dst == basicLength src)
-                   $ (dst `seq` src `seq` basicUnsafeCopy dst src)
+                   $ (dst `seq` src `seq` stToPrim (basicUnsafeCopy dst src))
 
 -- Conversions to/from Bundles
 -- ---------------------------

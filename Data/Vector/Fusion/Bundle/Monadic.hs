@@ -133,7 +133,7 @@ fromStream :: Monad m => Stream m a -> Size -> Bundle m v a
 fromStream (Stream step t) sz = Bundle (Stream step t) (Stream step' t) Nothing sz
   where
     step' s = do r <- step s
-                 return $ fmap (\x -> Chunk 1 (\v -> M.basicUnsafeWrite v 0 x)) r
+                 return $ fmap (\x -> Chunk 1 (\v -> stToPrim $ M.basicUnsafeWrite v 0 x)) r
 
 chunks :: Bundle m v a -> Stream m (Chunk v a)
 {-# INLINE chunks #-}
@@ -185,7 +185,7 @@ singleton x = fromStream (S.singleton x) (Exact 1)
 replicate :: Monad m => Int -> a -> Bundle m v a
 {-# INLINE_FUSED replicate #-}
 replicate n x = Bundle (S.replicate n x)
-                       (S.singleton $ Chunk len (\v -> M.basicSet v x))
+                       (S.singleton $ Chunk len (\v -> stToPrim $ M.basicSet v x))
                        Nothing
                        (Exact len)
   where
@@ -1086,7 +1086,7 @@ fromVector v = v `seq` n `seq` Bundle (Stream step 0)
 
 
     {-# INLINE vstep #-}
-    vstep True  = return (Yield (Chunk (basicLength v) (\mv -> basicUnsafeCopy mv v)) False)
+    vstep True  = return (Yield (Chunk (basicLength v) (\mv -> stToPrim $ basicUnsafeCopy mv v)) False)
     vstep False = return Done
 
 fromVectors :: forall m v a. (Monad m, Vector v a) => [v a] -> Bundle m v a
@@ -1112,7 +1112,7 @@ fromVectors us = Bundle (Stream pstep (Left us))
     vstep (v:vs) = return $ Yield (Chunk (basicLength v)
                                          (\mv -> INTERNAL_CHECK(check) "concatVectors" "length mismatch"
                                                                        (M.basicLength mv == basicLength v)
-                                                 $ basicUnsafeCopy mv v)) vs
+                                                 $ stToPrim $ basicUnsafeCopy mv v)) vs
 
 
 concatVectors :: (Monad m, Vector v a) => Bundle m u (v a) -> Bundle m v a
@@ -1142,7 +1142,7 @@ concatVectors Bundle{sElems = Stream step t}
         Yield v s' -> return (Yield (Chunk (basicLength v)
                                            (\mv -> INTERNAL_CHECK(check) "concatVectors" "length mismatch"
                                                                           (M.basicLength mv == basicLength v)
-                                                   $ basicUnsafeCopy mv v)) s')
+                                                   $ stToPrim $ basicUnsafeCopy mv v)) s')
         Skip    s' -> return (Skip s')
         Done       -> return Done
 
