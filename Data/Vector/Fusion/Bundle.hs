@@ -71,7 +71,7 @@ module Data.Vector.Fusion.Bundle (
   fromVector, reVector, fromVectors, concatVectors,
 
   -- * Monadic combinators
-  mapM, mapM_, zipWithM, zipWithM_, filterM, foldM, fold1M, foldM', fold1M',
+  mapM, mapM_, zipWithM, zipWithM_, filterM, mapMaybeM, foldM, fold1M, foldM', fold1M',
 
   eq, cmp, eqBy, cmpBy
 ) where
@@ -549,6 +549,10 @@ zipWithM_ f as bs = M.zipWithM_ f (lift as) (lift bs)
 filterM :: Monad m => (a -> m Bool) -> Bundle v a -> M.Bundle m v a
 {-# INLINE filterM #-}
 filterM f = M.filterM f . lift
+
+mapMaybeM :: Monad m => (a -> m (Maybe b)) -> Bundle v a -> M.Bundle m v b
+{-# INLINE mapMaybeM #-}
+mapMaybeM f = M.mapMaybeM f . lift
 
 -- | Monadic fold
 foldM :: Monad m => (a -> b -> m a) -> a -> Bundle v b -> m a

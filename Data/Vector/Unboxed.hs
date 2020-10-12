@@ -120,9 +120,9 @@ module Data.Vector.Unboxed (
   -- * Working with predicates
 
   -- ** Filtering
-  filter, ifilter, uniq,
+  filter, ifilter, filterM, uniq,
   mapMaybe, imapMaybe,
-  filterM,
+  mapMaybeM, imapMaybeM,
   takeWhile, dropWhile,
 
   -- ** Partitioning
@@ -1033,6 +1033,18 @@ mapMaybe = G.mapMaybe
 imapMaybe :: (Unbox a, Unbox b) => (Int -> a -> Maybe b) -> Vector a -> Vector b
 {-# INLINE imapMaybe #-}
 imapMaybe = G.imapMaybe
+
+-- | /O(n)/ Apply monadic function to each element of vector and
+-- discard elements returning Nothing.
+mapMaybeM :: (Monad m, Unbox a, Unbox b) => (a -> m (Maybe b)) -> Vector a -> m (Vector b)
+{-# INLINE mapMaybeM #-}
+mapMaybeM = G.mapMaybeM
+
+-- | /O(n)/ Apply monadic function to each element of vector and its index.
+-- Discards elements returning Nothing.
+imapMaybeM :: (Monad m, Unbox a, Unbox b) => (Int -> a -> m (Maybe b)) -> Vector a -> m (Vector b)
+{-# INLINE imapMaybeM #-}
+imapMaybeM = G.imapMaybeM
 
 -- | /O(n)/ Drop elements that do not satisfy the monadic predicate
 filterM :: (Monad m, Unbox a) => (a -> m Bool) -> Vector a -> m (Vector a)
