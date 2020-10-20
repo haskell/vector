@@ -235,7 +235,7 @@ infixl 9 !
 (!) :: Vector v a => v a -> Int -> a
 {-# INLINE_FUSED (!) #-}
 (!) v i = BOUNDS_CHECK(checkIndex) "(!)" i (length v)
-        $ unId (basicUnsafeIndexM v i)
+        $ unBox (basicUnsafeIndexM v i)
 
 infixl 9 !?
 -- | O(1) Safe indexing
@@ -258,7 +258,7 @@ last v = v ! (length v - 1)
 unsafeIndex :: Vector v a => v a -> Int -> a
 {-# INLINE_FUSED unsafeIndex #-}
 unsafeIndex v i = UNSAFE_CHECK(checkIndex) "unsafeIndex" i (length v)
-                $ unId (basicUnsafeIndexM v i)
+                $ unBox (basicUnsafeIndexM v i)
 
 -- | /O(1)/ First element without checking if the vector is empty
 unsafeHead :: Vector v a => v a -> a
@@ -320,6 +320,7 @@ unsafeLast v = unsafeIndex v (length v - 1)
 indexM :: (Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_FUSED indexM #-}
 indexM v i = BOUNDS_CHECK(checkIndex) "indexM" i (length v)
+           $ liftBox
            $ basicUnsafeIndexM v i
 
 -- | /O(1)/ First element of a vector in a monad. See 'indexM' for an
@@ -339,6 +340,7 @@ lastM v = indexM v (length v - 1)
 unsafeIndexM :: (Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_FUSED unsafeIndexM #-}
 unsafeIndexM v i = UNSAFE_CHECK(checkIndex) "unsafeIndexM" i (length v)
+                 $ liftBox
                  $ basicUnsafeIndexM v i
 
 -- | /O(1)/ First element in a monad without checking for empty vectors.
