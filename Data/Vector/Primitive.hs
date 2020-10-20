@@ -108,6 +108,7 @@ module Data.Vector.Primitive (
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1, foldr', foldr1',
   ifoldl, ifoldl', ifoldr, ifoldr',
+  foldMap, foldMap',
 
   -- ** Specialised folds
   all, any,
@@ -174,7 +175,7 @@ import Prelude hiding ( length, null,
                         zipWith, zipWith3, zip, zip3, unzip, unzip3,
                         filter, takeWhile, dropWhile, span, break,
                         elem, notElem,
-                        foldl, foldl1, foldr, foldr1,
+                        foldl, foldl1, foldr, foldr1, foldMap,
                         all, any, sum, product, minimum, maximum,
                         scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo,
@@ -1221,6 +1222,23 @@ ifoldr = G.ifoldr
 ifoldr' :: Prim a => (Int -> a -> b -> b) -> b -> Vector a -> b
 {-# INLINE ifoldr' #-}
 ifoldr' = G.ifoldr'
+
+-- | /O(n)/ Map each element of the structure to a monoid, and combine
+-- the results. It uses same implementation as corresponding method of
+-- 'Foldable' type cless. Note it's implemented in terms of 'foldr'
+-- and won't fuse with functions that traverse vector from left to
+-- right ('map', 'generate', etc.).
+foldMap :: (Monoid m, Prim a) => (a -> m) -> Vector a -> m
+{-# INLINE foldMap #-}
+foldMap = G.foldMap
+
+-- | /O(n)/ 'foldMap' which is strict in accumulator. It uses same
+-- implementation as corresponding method of 'Foldable' type class.
+-- Note it's implemented in terms of 'foldl'' so it fuses in most
+-- contexts.
+foldMap' :: (Monoid m, Prim a) => (a -> m) -> Vector a -> m
+{-# INLINE foldMap' #-}
+foldMap' = G.foldMap'
 
 -- Specialised folds
 -- -----------------
