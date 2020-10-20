@@ -30,7 +30,7 @@ module Data.Vector.Generic.Mutable (
   -- * Construction
 
   -- ** Initialisation
-  new, unsafeNew, replicate, replicateM, clone,
+  new, unsafeNew, replicate, replicateM, generate, generateM, clone,
 
   -- ** Growing
   grow, unsafeGrow,
@@ -619,6 +619,24 @@ replicate n x = stToPrim $ basicUnsafeReplicate (delay_inline max 0 n) x
 replicateM :: (PrimMonad m, MVector v a) => Int -> m a -> m (v (PrimState m) a)
 {-# INLINE replicateM #-}
 replicateM n m = munstream (MBundle.replicateM n m)
+
+-- | /O(n)/ Create a mutable vector of the given length (0 if the length is negative)
+-- and fill it with results of applying function to each index.
+generate :: (PrimMonad m, MVector v a) => Int -> (Int -> a) -> m (v (PrimState m) a)
+{-# INLINE generate #-}
+generate n f = stToPrim $ generateM n (return . f)
+
+-- | /O(n)/ Create a mutable vector of the given length (0 if the length is
+-- negative) and fill it with results of applying function to each
+-- index. Iteration is done string from 0 indexes.
+generateM :: (PrimMonad m, MVector v a) => Int -> (Int -> m a) -> m (v (PrimState m) a)
+{-# INLINE generateM #-}
+generateM n f = do
+  vec <- new n
+  let loop i | i >= n    = return vec
+             | otherwise = do unsafeWrite vec i =<< f i
+                              loop (i + 1)
+  loop 0
 
 -- | Create a copy of a mutable vector.
 clone :: (PrimMonad m, MVector v a) => v (PrimState m) a -> m (v (PrimState m) a)
