@@ -40,8 +40,8 @@ module Data.Vector.Generic.Mutable (
   clear,
 
   -- * Accessing individual elements
-  read, write, modify, swap, exchange,
-  unsafeRead, unsafeWrite, unsafeModify, unsafeSwap, unsafeExchange,
+  read, write, modify, modifyM, swap, exchange,
+  unsafeRead, unsafeWrite, unsafeModify, unsafeModifyM, unsafeSwap, unsafeExchange,
 
   -- * Modifying vectors
   nextPermutation,
@@ -781,6 +781,12 @@ modify :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> a) -> Int -> 
 modify v f i = BOUNDS_CHECK(checkIndex) "modify" i (length v)
              $ unsafeModify v f i
 
+-- | Modify the element at the given position using a monadic function.
+modifyM :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m a) -> Int -> m ()
+{-# INLINE modifyM #-}
+modifyM v f i = BOUNDS_CHECK(checkIndex) "modify" i (length v)
+              $ unsafeModifyM v f i
+
 -- | Swap the elements at the given positions.
 swap :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> Int -> m ()
 {-# INLINE swap #-}
@@ -816,6 +822,13 @@ unsafeModify v f i = UNSAFE_CHECK(checkIndex) "unsafeModify" i (length v)
                    $ stToPrim
                    $ basicUnsafeRead v i >>= \x ->
                      basicUnsafeWrite v i (f x)
+
+-- | Modify the element at the given position using a monadic
+-- function. No bounds checks are performed.
+unsafeModifyM :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m a) -> Int -> m ()
+{-# INLINE unsafeModifyM #-}
+unsafeModifyM v f i = UNSAFE_CHECK(checkIndex) "unsafeModify" i (length v)
+                    $ stToPrim . basicUnsafeWrite v i =<< f =<< stToPrim (basicUnsafeRead v i)
 
 -- | Swap the elements at the given positions. No bounds checks are performed.
 unsafeSwap :: (PrimMonad m, MVector v a)
