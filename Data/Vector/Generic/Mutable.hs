@@ -43,6 +43,11 @@ module Data.Vector.Generic.Mutable (
   read, write, modify, modifyM, swap, exchange,
   unsafeRead, unsafeWrite, unsafeModify, unsafeModifyM, unsafeSwap, unsafeExchange,
 
+  -- * Folds
+  mapM_, imapM_,
+  foldl, foldl', foldM, foldM',
+  ifoldl, ifoldl', ifoldM, ifoldM',
+
   -- * Modifying vectors
   nextPermutation,
 
@@ -76,7 +81,7 @@ import           Data.Vector.Fusion.Util        ( delay_inline )
 import Control.Monad.Primitive ( PrimMonad(..), RealWorld, stToPrim )
 
 import Prelude hiding ( length, null, replicate, reverse, map, read,
-                        take, drop, splitAt, init, tail )
+                        take, drop, splitAt, init, tail, mapM_, foldr, foldl )
 
 #include "vector.h"
 
@@ -852,6 +857,89 @@ unsafeExchange v i x = UNSAFE_CHECK(checkIndex) "unsafeExchange" i (length v)
                          y <- unsafeRead v i
                          unsafeWrite v i x
                          return y
+
+-- Folds
+-- -----
+
+forI_ :: (Monad m, MVector v a) => v (PrimState m) a -> (Int -> m b) -> m ()
+{-# INLINE forI_ #-}
+forI_ v f = loop 0
+  where
+    loop i | i >= n    = return ()
+           | otherwise = f i >> loop (i + 1)
+    n = length v
+
+-- | /O(n)/ Apply monadic action to every element of vector discarding results.
+mapM_ :: (PrimMonad m, MVector v a) => (a -> m b) -> v (PrimState m) a -> m ()
+{-# INLINE mapM_ #-}
+mapM_ f v = forI_ v $ \i -> f =<< unsafeRead v i
+
+-- | /O(n)/ Apply monadic action to every element of vector and its index discarding results.
+imapM_ :: (PrimMonad m, MVector v a) => (Int -> a -> m b) -> v (PrimState m) a -> m ()
+{-# INLINE imapM_ #-}
+imapM_ f v = forI_ v $ \i -> f i =<< unsafeRead v i
+
+-- | /O(n)/ Pure left fold.
+foldl :: (PrimMonad m, MVector v a) => (b -> a -> b) -> b -> v (PrimState m) a -> m b
+{-# INLINE foldl #-}
+foldl f = ifoldl (const f)
+
+-- | /O(n)/ Pure left fold with strict accumulator.
+foldl' :: (PrimMonad m, MVector v a) => (b -> a -> b) -> b -> v (PrimState m) a -> m b
+{-# INLINE foldl' #-}
+foldl' f = ifoldl' (const f)
+
+-- | /O(n)/ Pure left fold (function applied to each element and its index)
+ifoldl :: (PrimMonad m, MVector v a) => (Int -> b -> a -> b) -> b -> v (PrimState m) a -> m b
+{-# INLINE ifoldl #-}
+ifoldl f b0 v = stToPrim $ loop 0 b0
+  where
+    loop i b | i >= n = return b
+             | otherwise = do a <- unsafeRead v i
+                              loop (i + 1) $ f i b a
+    n = length v
+
+-- | /O(n)/ Pure left fold with strict accumulator (function applied to each element and its index)
+ifoldl' :: (PrimMonad m, MVector v a) => (Int -> b -> a -> b) -> b -> v (PrimState m) a -> m b
+{-# INLINE ifoldl' #-}
+ifoldl' f b0 v = stToPrim $ loop 0 b0
+  where
+    loop i !b | i >= n = return b
+              | otherwise = do a <- unsafeRead v i
+                               loop (i + 1) $ f i b a
+    n = length v
+
+-- | /O(n)/ Monadic fold.
+foldM :: (PrimMonad m, MVector v a) => (b -> a -> m b) -> b -> v (PrimState m) a -> m b
+{-# INLINE foldM #-}
+foldM f = ifoldM (const f)
+
+-- | /O(n)/ Monadic fold with strict accumulator.
+foldM' :: (PrimMonad m, MVector v a) => (b -> a -> m b) -> b -> v (PrimState m) a -> m b
+{-# INLINE foldM' #-}
+foldM' f = ifoldM (const f)
+
+-- | /O(n)/ Monadic fold (action applied to each element and its index)
+ifoldM :: (PrimMonad m, MVector v a) => (Int -> b -> a -> m b) -> b -> v (PrimState m) a -> m b
+{-# INLINE ifoldM #-}
+ifoldM f b0 v = loop 0 b0
+  where
+    loop i b | i >= n = return b
+             | otherwise = do a <- unsafeRead v i
+                              loop (i + 1) =<< f i b a
+    n = length v
+
+-- | /O(n)/ Monadic fold with strict accumulator. (action applied to each element and its index)
+ifoldM' :: (PrimMonad m, MVector v a) => (Int -> b -> a -> m b) -> b -> v (PrimState m) a -> m b
+{-# INLINE ifoldM' #-}
+ifoldM' f b0 v = loop 0 b0
+  where
+    loop i !b | i >= n = return b
+              | otherwise = do a <- unsafeRead v i
+                               loop (i + 1) =<< f i b a
+    n = length v
+
+
 
 -- Filling and copying
 -- -------------------
