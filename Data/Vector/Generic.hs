@@ -557,7 +557,8 @@ unfoldrN  :: Vector v a => Int -> (b -> Maybe (a, b)) -> b -> v a
 {-# INLINE unfoldrN #-}
 unfoldrN n f = unstream . Bundle.unfoldrN n f
 
--- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly applying
+-- | @since NEXT
+-- /O(n)/ Construct a vector with exactly @n@ elements by repeatedly applying
 -- the generator function to a seed. The generator function yields the
 -- next element and the new seed.
 --
@@ -582,7 +583,8 @@ unfoldrNM :: (Monad m, Vector v a) => Int -> (b -> m (Maybe (a, b))) -> b -> m (
 {-# INLINE unfoldrNM #-}
 unfoldrNM n f = unstreamM . MBundle.unfoldrNM n f
 
--- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly
+-- | @since NEXT
+-- /O(n)/ Construct a vector with exactly @n@ elements by repeatedly
 -- applying the monadic generator function to a seed. The generator
 -- function yields the next element and the new seed.
 unfoldrExactNM :: (Monad m, Vector v a) => Int -> (b -> m (a, b)) -> b -> m (v a)
@@ -1111,13 +1113,15 @@ forM_ :: (Monad m, Vector v a) => v a -> (a -> m b) -> m ()
 {-# INLINE forM_ #-}
 forM_ as f = mapM_ f as
 
--- | /O(n)/ Apply the monadic action to all elements of the vector and their indices, yielding a
+-- | @since NEXT
+-- /O(n)/ Apply the monadic action to all elements of the vector and their indices, yielding a
 -- vector of results. Equivalent to 'flip' 'imapM'.
 iforM :: (Monad m, Vector v a, Vector v b) => v a -> (Int -> a -> m b) -> m (v b)
 {-# INLINE iforM #-}
 iforM as f = imapM f as
 
--- | /O(n)/ Apply the monadic action to all elements of the vector and their indices and ignore the
+-- | @since NEXT
+-- /O(n)/ Apply the monadic action to all elements of the vector and their indices and ignore the
 -- results. Equivalent to 'flip' 'imapM_'.
 iforM_ :: (Monad m, Vector v a) => v a -> (Int -> a -> m b) -> m ()
 {-# INLINE iforM_ #-}
@@ -1372,13 +1376,15 @@ filterM :: (Monad m, Vector v a) => (a -> m Bool) -> v a -> m (v a)
 {-# INLINE filterM #-}
 filterM f = unstreamM . Bundle.filterM f . stream
 
--- | /O(n)/ Apply monadic function to each element of vector and
+-- | @since NEXT
+-- /O(n)/ Apply monadic function to each element of vector and
 -- discard elements returning Nothing.
 mapMaybeM :: (Monad m, Vector v a, Vector v b) => (a -> m (Maybe b)) -> v a -> m (v b)
 {-# INLINE mapMaybeM #-}
 mapMaybeM f = unstreamM . Bundle.mapMaybeM f . stream
 
--- | /O(n)/ Apply monadic function to each element of vector and its index.
+-- | @since NEXT
+-- /O(n)/ Apply monadic function to each element of vector and its index.
 -- Discards elements returning Nothing.
 imapMaybeM :: (Monad m, Vector v a, Vector v b)
       => (Int -> a -> m (Maybe b)) -> v a -> m (v b)

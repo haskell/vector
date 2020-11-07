@@ -562,7 +562,8 @@ unfoldrN :: Storable a => Int -> (b -> Maybe (a, b)) -> b -> Vector a
 {-# INLINE unfoldrN #-}
 unfoldrN = G.unfoldrN
 
--- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly applying
+-- | @since NEXT
+-- /O(n)/ Construct a vector with exactly @n@ elements by repeatedly applying
 -- the generator function to a seed. The generator function yields the
 -- next element and the new seed.
 --
@@ -587,7 +588,8 @@ unfoldrNM :: (Monad m, Storable a) => Int -> (b -> m (Maybe (a, b))) -> b -> m (
 {-# INLINE unfoldrNM #-}
 unfoldrNM = G.unfoldrNM
 
--- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly
+-- | @since NEXT
+-- /O(n)/ Construct a vector with exactly @n@ elements by repeatedly
 -- applying the monadic generator function to a seed. The generator
 -- function yields the next element and the new seed.
 unfoldrExactNM :: (Monad m, Storable a) => Int -> (b -> m (a, b)) -> b -> m (Vector a)
@@ -984,7 +986,8 @@ izipWith6 :: (Storable a, Storable b, Storable c, Storable d, Storable e,
 {-# INLINE izipWith6 #-}
 izipWith6 = G.izipWith6
 
--- | Checks whether two values are same vector: they have same length
+-- | @since NEXT
+--   Checks whether two values are same vector: they have same length
 --   and share same buffer.
 --
 -- >>> let xs = fromList [0/0::Double] in isSameVector xs xs
@@ -1054,7 +1057,8 @@ imapMaybe :: (Storable a, Storable b) => (Int -> a -> Maybe b) -> Vector a -> Ve
 {-# INLINE imapMaybe #-}
 imapMaybe = G.imapMaybe
 
--- | /O(n)/ Apply monadic function to each element of vector and
+-- | @since NEXT
+-- /O(n)/ Apply monadic function to each element of vector and
 -- discard elements returning Nothing.
 mapMaybeM
   :: (Monad m, Storable a, Storable b)
@@ -1062,7 +1066,8 @@ mapMaybeM
 {-# INLINE mapMaybeM #-}
 mapMaybeM = G.mapMaybeM
 
--- | /O(n)/ Apply monadic function to each element of vector and its index.
+-- | @since NEXT
+-- /O(n)/ Apply monadic function to each element of vector and its index.
 -- Discards elements returning Nothing.
 imapMaybeM
   :: (Monad m, Storable a, Storable b)

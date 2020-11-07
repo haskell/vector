@@ -501,7 +501,8 @@ unfoldrN :: Unbox a => Int -> (b -> Maybe (a, b)) -> b -> Vector a
 {-# INLINE unfoldrN #-}
 unfoldrN = G.unfoldrN
 
--- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly applying
+-- | @since NEXT
+-- /O(n)/ Construct a vector with exactly @n@ elements by repeatedly applying
 -- the generator function to a seed. The generator function yields the
 -- next element and the new seed.
 --
@@ -526,7 +527,8 @@ unfoldrNM :: (Monad m, Unbox a) => Int -> (b -> m (Maybe (a, b))) -> b -> m (Vec
 {-# INLINE unfoldrNM #-}
 unfoldrNM = G.unfoldrNM
 
--- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly
+-- | @since NEXT
+-- /O(n)/ Construct a vector with exactly @n@ elements by repeatedly
 -- applying the monadic generator function to a seed. The generator
 -- function yields the next element and the new seed.
 unfoldrExactNM :: (Monad m, Unbox a) => Int -> (b -> m (a, b)) -> b -> m (Vector a)
@@ -893,13 +895,15 @@ forM_ :: (Monad m, Unbox a) => Vector a -> (a -> m b) -> m ()
 {-# INLINE forM_ #-}
 forM_ = G.forM_
 
--- | /O(n)/ Apply the monadic action to all elements of the vector and their indices, yielding a
+-- | @since NEXT
+-- /O(n)/ Apply the monadic action to all elements of the vector and their indices, yielding a
 -- vector of results. Equivalent to 'flip' 'imapM'.
 iforM :: (Monad m, Unbox a, Unbox b) => Vector a -> (Int -> a -> m b) -> m (Vector b)
 {-# INLINE iforM #-}
 iforM = G.iforM
 
--- | /O(n)/ Apply the monadic action to all elements of the vector and their indices and ignore the
+-- | @since NEXT
+-- /O(n)/ Apply the monadic action to all elements of the vector and their indices and ignore the
 -- results. Equivalent to 'flip' 'imapM_'.
 iforM_ :: (Monad m, Unbox a) => Vector a -> (Int -> a -> m b) -> m ()
 {-# INLINE iforM_ #-}
@@ -1034,13 +1038,15 @@ imapMaybe :: (Unbox a, Unbox b) => (Int -> a -> Maybe b) -> Vector a -> Vector b
 {-# INLINE imapMaybe #-}
 imapMaybe = G.imapMaybe
 
--- | /O(n)/ Apply monadic function to each element of vector and
+-- | @since NEXT
+-- /O(n)/ Apply monadic function to each element of vector and
 -- discard elements returning Nothing.
 mapMaybeM :: (Monad m, Unbox a, Unbox b) => (a -> m (Maybe b)) -> Vector a -> m (Vector b)
 {-# INLINE mapMaybeM #-}
 mapMaybeM = G.mapMaybeM
 
--- | /O(n)/ Apply monadic function to each element of vector and its index.
+-- | @since NEXT
+-- /O(n)/ Apply monadic function to each element of vector and its index.
 -- Discards elements returning Nothing.
 imapMaybeM :: (Monad m, Unbox a, Unbox b) => (Int -> a -> m (Maybe b)) -> Vector a -> m (Vector b)
 {-# INLINE imapMaybeM #-}
