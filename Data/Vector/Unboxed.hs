@@ -168,7 +168,10 @@ module Data.Vector.Unboxed (
   G.convert,
 
   -- ** Mutable vectors
-  freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy
+  freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
+
+  -- ** Deriving via
+  UnboxViaPrim(..)
 ) where
 
 import Data.Vector.Unboxed.Base

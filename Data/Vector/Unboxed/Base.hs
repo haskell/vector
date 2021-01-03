@@ -16,7 +16,7 @@
 --
 
 module Data.Vector.Unboxed.Base (
-  MVector(..), IOVector, STVector, Vector(..), Unbox
+  MVector(..), IOVector, STVector, Vector(..), Unbox, UnboxViaPrim(..)
 ) where
 
 import qualified Data.Vector.Generic         as G
@@ -164,6 +164,96 @@ instance G.Vector Vector () where
 -- ---------------
 -- Primitive types
 -- ---------------
+
+-- | Newtype wrapper which allows to derive unboxed vector in term of
+-- primitive vectors using @DerivingVia@ mechanism. This is mostly
+-- used as illustration of use of @DerivingVia@ for vector, see examples below.
+--
+-- First is rather straightforward: we define newtype and use GND to
+-- derive 'P.Prim' instance. Newtype instances should be defined
+-- manually. Then we use deriving via to define necessary instances.
+--
+-- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia -XMultiParamTypeClasses
+-- >>> -- Needed to derive Prim
+-- >>> :set -XGeneralizedNewtypeDeriving -XDataKinds -XUnboxedTuples -XPolyKinds
+-- >>>
+-- >>> import qualified Data.Vector.Unboxed         as U
+-- >>> import qualified Data.Vector.Primitive       as P
+-- >>> import qualified Data.Vector.Generic         as G
+-- >>> import qualified Data.Vector.Generic.Mutable as M
+-- >>>
+-- >>> newtype Foo = Foo Int deriving P.Prim
+-- >>>
+-- >>> newtype instance U.MVector s Foo = MV_Int (P.MVector s Foo)
+-- >>> newtype instance U.Vector    Foo = V_Int  (P.Vector    Foo)
+-- >>> deriving via (U.UnboxViaPrim Foo) instance M.MVector MVector Foo
+-- >>> deriving via (U.UnboxViaPrim Foo) instance G.Vector  Vector  Foo
+-- >>> instance Unbox Foo
+--
+-- Second example is essentially same but with a twist. Instead of
+-- using @Prim@ instance of data type, we use underlying instance of @Int@:
+--
+-- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia -XMultiParamTypeClasses
+-- >>>
+-- >>> import qualified Data.Vector.Unboxed         as U
+-- >>> import qualified Data.Vector.Primitive       as P
+-- >>> import qualified Data.Vector.Generic         as G
+-- >>> import qualified Data.Vector.Generic.Mutable as M
+-- >>>
+-- >>> newtype Foo = Foo Int
+-- >>>
+-- >>> newtype instance U.MVector s Foo = MV_Int (P.MVector s Int)
+-- >>> newtype instance U.Vector    Foo = V_Int  (P.Vector    Int)
+-- >>> deriving via (U.UnboxViaPrim Int) instance M.MVector MVector Foo
+-- >>> deriving via (U.UnboxViaPrim Int) instance G.Vector  Vector  Foo
+-- >>> instance Unbox Foo
+newtype UnboxViaPrim a = UnboxViaPrim a
+
+newtype instance MVector s (UnboxViaPrim a) = MV_UnboxViaPrim (P.MVector s a)
+newtype instance Vector    (UnboxViaPrim a) = V_UnboxViaPrim (P.Vector a)
+
+instance P.Prim a => M.MVector MVector (UnboxViaPrim a) where
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicOverlaps #-}
+  {-# INLINE basicUnsafeNew #-}
+  {-# INLINE basicInitialize #-}
+  {-# INLINE basicUnsafeReplicate #-}
+  {-# INLINE basicUnsafeRead #-}
+  {-# INLINE basicUnsafeWrite #-}
+  {-# INLINE basicClear #-}
+  {-# INLINE basicSet #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeGrow #-}
+  basicLength (MV_UnboxViaPrim v) = M.basicLength v
+  basicUnsafeSlice i n (MV_UnboxViaPrim v) = MV_UnboxViaPrim $ M.basicUnsafeSlice i n v
+  basicOverlaps (MV_UnboxViaPrim v1) (MV_UnboxViaPrim v2) = M.basicOverlaps v1 v2
+  basicUnsafeNew n = MV_UnboxViaPrim `liftM` M.basicUnsafeNew n
+  basicInitialize (MV_UnboxViaPrim v) = M.basicInitialize v
+  basicUnsafeReplicate n (UnboxViaPrim x) = MV_UnboxViaPrim `liftM` M.basicUnsafeReplicate n x
+  basicUnsafeRead (MV_UnboxViaPrim v) i = UnboxViaPrim `liftM` M.basicUnsafeRead v i
+  basicUnsafeWrite (MV_UnboxViaPrim v) i (UnboxViaPrim x) = M.basicUnsafeWrite v i x
+  basicClear (MV_UnboxViaPrim v) = M.basicClear v
+  basicSet (MV_UnboxViaPrim v) (UnboxViaPrim x) = M.basicSet v x
+  basicUnsafeCopy (MV_UnboxViaPrim v1) (MV_UnboxViaPrim v2) = M.basicUnsafeCopy v1 v2
+  basicUnsafeMove (MV_UnboxViaPrim v1) (MV_UnboxViaPrim v2) = M.basicUnsafeMove v1 v2
+  basicUnsafeGrow (MV_UnboxViaPrim v) n = MV_UnboxViaPrim `liftM` M.basicUnsafeGrow v n
+
+instance P.Prim a => G.Vector Vector (UnboxViaPrim a) where
+  {-# INLINE basicUnsafeFreeze #-}
+  {-# INLINE basicUnsafeThaw #-}
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE elemseq #-}
+  basicUnsafeFreeze (MV_UnboxViaPrim v) = V_UnboxViaPrim `liftM` G.basicUnsafeFreeze v
+  basicUnsafeThaw (V_UnboxViaPrim v) = MV_UnboxViaPrim `liftM` G.basicUnsafeThaw v
+  basicLength (V_UnboxViaPrim v) = G.basicLength v
+  basicUnsafeSlice i n (V_UnboxViaPrim v) = V_UnboxViaPrim $ G.basicUnsafeSlice i n v
+  basicUnsafeIndexM (V_UnboxViaPrim v) i = UnboxViaPrim <$> G.basicUnsafeIndexM v i
+  basicUnsafeCopy (MV_UnboxViaPrim mv) (V_UnboxViaPrim v) = G.basicUnsafeCopy mv v
+  elemseq _ = seq
+
 
 #define primMVector(ty,con)                                             \
 instance M.MVector MVector ty where {                                   \
