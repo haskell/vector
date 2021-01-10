@@ -148,9 +148,9 @@ Library
   Install-Includes:
         vector.h
 
-  Build-Depends: base >= 4.8 && < 4.15
+  Build-Depends: base >= 4.8 && < 4.16
                , primitive >= 0.6.4.0 && < 0.8
-               , ghc-prim >= 0.2 && < 0.7
+               , ghc-prim >= 0.2 && < 0.8
                , deepseq >= 1.1 && < 1.5
   if !impl(ghc > 8.0)
     Build-Depends: fail == 4.9.*
@@ -199,7 +199,7 @@ test-suite vector-tests-O0
   hs-source-dirs: tests
   Build-Depends: base >= 4.5 && < 5, template-haskell, base-orphans >= 0.6, vector,
                  primitive, random,
-                 QuickCheck >= 2.9 && < 2.14 , HUnit, tasty,
+                 QuickCheck >= 2.9 && < 2.15, HUnit, tasty,
                  tasty-hunit, tasty-quickcheck,
                  transformers >= 0.2.0.0
   if !impl(ghc > 8.0)
@@ -244,7 +244,7 @@ test-suite vector-tests-O2
   hs-source-dirs: tests
   Build-Depends: base >= 4.5 && < 5, template-haskell, base-orphans >= 0.6, vector,
                  primitive, random,
-                 QuickCheck >= 2.9 && < 2.14 , HUnit,  tasty,
+                 QuickCheck >= 2.9 && < 2.15, HUnit, tasty,
                  tasty-hunit, tasty-quickcheck,
                  transformers >= 0.2.0.0
   if !impl(ghc > 8.0)

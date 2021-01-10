@@ -205,7 +205,7 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_null   :: P (v a -> Bool)    = V.null `eq` null
 
     prop_empty  :: P (v a)            = V.empty `eq` []
-    prop_singleton :: P (a -> v a)    = V.singleton `eq` singleton
+    prop_singleton :: P (a -> v a)    = V.singleton `eq` Util.singleton
     prop_replicate :: P (Int -> a -> v a)
               = (\n _ -> n < 1000) ===> V.replicate `eq` replicate
     prop_replicateM :: P (Int -> Writer [a] a -> Writer [a] (v a))
