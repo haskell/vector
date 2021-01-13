@@ -280,6 +280,9 @@ test-suite vector-doctest
   -- Older GHC choke on {-# UNPACK #-} pragma for some reason
   if impl(ghc < 8.6)
     buildable: False
+  -- GHC 8.10 fails to run doctests for some reason
+  if impl(ghc >= 8.10) && impl(ghc < 8.11)
+    buildable: False
   build-depends:
         base      -any
       , doctest   >=0.15 && <0.18
