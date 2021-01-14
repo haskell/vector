@@ -34,7 +34,26 @@
 --
 -- instance ('RealFloat' a, 'Unbox' a) => 'Unbox' ('Complex' a)
 -- @
-
+--
+-- For newtype defining instances is easier since one could use
+-- GenerazedNewtypeDeriving in order to derive instances for
+-- 'Data.Vector.Generic.Vector' and
+-- 'Data.Vector.Generic.Mutable.MVector' type classes since they're
+-- very cumbersome to write by hand:
+--
+-- >>> :set -XTypeFamilies -XStandaloneDeriving -XMultiParamTypeClasses -XGeneralizedNewtypeDeriving
+-- >>>
+-- >>> import qualified Data.Vector.Unboxed         as U
+-- >>> import qualified Data.Vector.Generic         as G
+-- >>> import qualified Data.Vector.Generic.Mutable as M
+-- >>>
+-- >>> newtype Foo = Foo Int
+-- >>>
+-- >>> newtype instance U.MVector s Foo = MV_Int (U.MVector s Int)
+-- >>> newtype instance U.Vector    Foo = V_Int  (U.Vector    Int)
+-- >>> deriving instance M.MVector MVector Foo
+-- >>> deriving instance G.Vector  Vector  Foo
+-- >>> instance Unbox Foo
 module Data.Vector.Unboxed (
   -- * Unboxed vectors
   Vector, MVector(..), Unbox,
