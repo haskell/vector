@@ -1343,7 +1343,7 @@ unstablePartition :: (a -> Bool) -> Vector a -> (Vector a, Vector a)
 unstablePartition = G.unstablePartition
 
 -- | /O(n)/ Split the vector in two parts, the first one containing the
---   @Right@ elements and the second containing the @Left@ elements.
+--   @Left@ elements and the second containing the @Right@ elements.
 --   The relative order of the elements is preserved.
 --
 --   @since 0.12.1.0
