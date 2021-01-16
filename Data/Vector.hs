@@ -1342,11 +1342,11 @@ unstablePartition :: (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE unstablePartition #-}
 unstablePartition = G.unstablePartition
 
--- | /O(n)/ Split the vector in two parts, the first one containing the
---   @Left@ elements and the second containing the @Right@ elements.
---   The relative order of the elements is preserved.
+-- | /O(n)/ Split the vector into two parts, the first one containing the
+-- @`Left`@ elements and the second containing the @`Right`@ elements.
+-- The relative order of the elements is preserved.
 --
---   @since 0.12.1.0
+-- @since 0.12.1.0
 partitionWith :: (a -> Either b c) -> Vector a -> (Vector b, Vector c)
 {-# INLINE partitionWith #-}
 partitionWith = G.partitionWith
