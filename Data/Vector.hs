@@ -1796,11 +1796,15 @@ fromListN = G.fromListN
 -- -----------------------------
 
 -- | /O(1)/ Convert an array to a vector.
+--
+-- @since 0.12.2.0
 fromArray :: Array a -> Vector a
 {-# INLINE fromArray #-}
 fromArray x = Vector 0 (sizeofArray x) x
 
 -- | /O(n)/ Convert a vector to an array.
+--
+-- @since 0.12.2.0
 toArray :: Vector a -> Array a
 {-# INLINE toArray #-}
 toArray (Vector offset size arr)

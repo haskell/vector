@@ -51,7 +51,7 @@ module Data.Vector.Mutable (
   set, copy, move, unsafeCopy, unsafeMove,
 
   -- ** Arrays
-  fromMutableArray, toMutableArray,
+  fromMutableArray, toMutableArray
 ) where
 
 import           Control.Monad (when, liftM)
@@ -434,6 +434,8 @@ nextPermutation = G.nextPermutation
 -- -----------------------------
 
 -- | /O(n)/ Make a copy of a mutable array to a new mutable vector.
+--
+-- @since 0.12.2.0
 fromMutableArray :: PrimMonad m => MutableArray (PrimState m) a -> m (MVector (PrimState m) a)
 {-# INLINE fromMutableArray #-}
 fromMutableArray marr =
@@ -441,6 +443,8 @@ fromMutableArray marr =
    in MVector 0 size `liftM` cloneMutableArray marr 0 size
 
 -- | /O(n)/ Make a copy of a mutable vector into a new mutable array.
+--
+-- @since 0.12.2.0
 toMutableArray :: PrimMonad m => MVector (PrimState m) a -> m (MutableArray (PrimState m) a)
 {-# INLINE toMutableArray #-}
 toMutableArray (MVector offset size marr) = cloneMutableArray marr offset size
