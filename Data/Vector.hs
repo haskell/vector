@@ -1309,7 +1309,9 @@ imapMaybe :: (Int -> a -> Maybe b) -> Vector a -> Vector b
 {-# INLINE imapMaybe #-}
 imapMaybe = G.imapMaybe
 
--- | /O(n)/ Return a Vector of all the Just values.
+-- | /O(n)/ Return a Vector of all the `Just` values.
+--
+-- @since 0.12.2.0
 catMaybes :: Vector (Maybe a) -> Vector a
 {-# INLINE catMaybes #-}
 catMaybes = mapMaybe id

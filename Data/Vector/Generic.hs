@@ -1538,6 +1538,8 @@ findIndex f = Bundle.findIndex f . stream
 
 -- | /O(n)/ Yield 'Just' the index of the /last/ element matching the predicate
 -- or 'Nothing' if no such element exists.
+--
+-- @since 0.12.2.0
 findIndexR :: Vector v a => (a -> Bool) -> v a -> Maybe Int
 {-# INLINE findIndexR #-}
 findIndexR f v = fmap (length v - 1 -) . Bundle.findIndex f $ streamR v
