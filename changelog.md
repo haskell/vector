@@ -11,6 +11,9 @@
  * Added `izipWithM`, `izipWithM_`, `imapM` and `imapM_` to `Primitive` and `Storable`
  * Added `ifoldM`, `ifoldM'`, `ifoldM_` and `ifoldM'_` to `Primitive` and `Storable`
  * Added `eqBy` and `cmpBy`
+ * Added `findIndexR` to `Generic`: [#172](https://github.com/haskell/vector/issues/172)
+ * Added `catMaybes`
+ * Added `mapMaybeM` and `imapMaybeM`
 
 # Changes in version 0.12.1.2
 
