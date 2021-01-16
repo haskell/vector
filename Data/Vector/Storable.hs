@@ -1364,11 +1364,15 @@ scanl' :: (Storable a, Storable b) => (a -> b -> a) -> a -> Vector b -> Vector a
 scanl' = G.scanl'
 
 -- | /O(n)/ Scan over a vector with its index
+--
+-- @since 0.12.2.0
 iscanl :: (Storable a, Storable b) => (Int -> a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE iscanl #-}
 iscanl = G.iscanl
 
 -- | /O(n)/ Scan over a vector (strictly) with its index
+--
+-- @since 0.12.2.0
 iscanl' :: (Storable a, Storable b) => (Int -> a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE iscanl' #-}
 iscanl' = G.iscanl'
@@ -1424,11 +1428,15 @@ scanr' :: (Storable a, Storable b) => (a -> b -> b) -> b -> Vector a -> Vector b
 scanr' = G.scanr'
 
 -- | /O(n)/ Right-to-left scan over a vector with its index
+--
+-- @since 0.12.2.0
 iscanr :: (Storable a, Storable b) => (Int -> a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE iscanr #-}
 iscanr = G.iscanr
 
 -- | /O(n)/ Right-to-left scan over a vector (strictly) with its index
+--
+-- @since 0.12.2.0
 iscanr' :: (Storable a, Storable b) => (Int -> a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE iscanr' #-}
 iscanr' = G.iscanr'

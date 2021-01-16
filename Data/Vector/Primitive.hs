@@ -1342,11 +1342,15 @@ scanl' :: (Prim a, Prim b) => (a -> b -> a) -> a -> Vector b -> Vector a
 scanl' = G.scanl'
 
 -- | /O(n)/ Scan over a vector with its index
+--
+-- @since 0.12.2.0
 iscanl :: (Prim a, Prim b) => (Int -> a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE iscanl #-}
 iscanl = G.iscanl
 
 -- | /O(n)/ Scan over a vector (strictly) with its index
+--
+-- @since 0.12.2.0
 iscanl' :: (Prim a, Prim b) => (Int -> a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE iscanl' #-}
 iscanl' = G.iscanl'
@@ -1403,11 +1407,15 @@ scanr' :: (Prim a, Prim b) => (a -> b -> b) -> b -> Vector a -> Vector b
 scanr' = G.scanr'
 
 -- | /O(n)/ Right-to-left scan over a vector with its index
+--
+-- @since 0.12.2.0
 iscanr :: (Prim a, Prim b) => (Int -> a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE iscanr #-}
 iscanr = G.iscanr
 
 -- | /O(n)/ Right-to-left scan over a vector (strictly) with its index
+--
+-- @since 0.12.2.0
 iscanr' :: (Prim a, Prim b) => (Int -> a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE iscanr' #-}
 iscanr' = G.iscanr'

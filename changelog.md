@@ -7,6 +7,7 @@
  * Added `MonadFix` instance for boxed vectors: [#178](https://github.com/haskell/vector/issues/178)
  * Added `uncons` and `unsnoc`: [#212](https://github.com/haskell/vector/issues/212)
  * Added `toArray`, `fromArray`, `toMutableArray` and `fromMutableArray`
+ * Added `iscanl`, `iscanl'`, `iscanr`, `iscanr'` to `Primitive`, `Storable` and `Unboxed`
 
 # Changes in version 0.12.1.2
 
