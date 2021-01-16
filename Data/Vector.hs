@@ -1786,6 +1786,8 @@ scanr1' = G.scanr1'
 
 -- | /O(n)/ Check if two vectors are equal using supplied equality
 -- predicate.
+--
+-- @since 0.12.2.0
 eqBy :: (a -> b -> Bool) -> Vector a -> Vector b -> Bool
 {-# INLINE eqBy #-}
 eqBy = G.eqBy
@@ -1794,6 +1796,8 @@ eqBy = G.eqBy
 -- vector elements. Comparison works same as for lists.
 --
 -- > cmpBy compare == compare
+--
+-- @since 0.12.2.0
 cmpBy :: (a -> b -> Ordering) -> Vector a -> Vector b -> Ordering
 cmpBy = G.cmpBy
 
