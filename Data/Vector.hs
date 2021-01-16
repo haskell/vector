@@ -133,7 +133,8 @@ module Data.Vector (
   -- ** Specialised folds
   all, any, and, or,
   sum, product,
-  maximum, maximumBy, minimum, minimumBy,
+  maximum, maximumBy, maximumOn,
+  minimum, minimumBy, minimumOn,
   minIndex, minIndexBy, maxIndex, maxIndexBy,
 
   -- ** Monadic folds
@@ -1519,6 +1520,12 @@ maximumBy :: (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE maximumBy #-}
 maximumBy = G.maximumBy
 
+-- | /O(n)/ Yield the maximum element of the vector according to the given
+-- comparison function. The vector may not be empty.
+maximumOn :: Ord b => (a -> b) -> Vector a -> a
+{-# INLINE maximumOn #-}
+maximumOn = G.maximumOn
+
 -- | /O(n)/ Yield the minimum element of the vector. The vector may not be
 -- empty.
 minimum :: Ord a => Vector a -> a
@@ -1530,6 +1537,12 @@ minimum = G.minimum
 minimumBy :: (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE minimumBy #-}
 minimumBy = G.minimumBy
+
+-- | /O(n)/ Yield the minimum element of the vector according to the given
+-- comparison function. The vector may not be empty.
+minimumOn :: Ord b => (a -> b) -> Vector a -> a
+{-# INLINE minimumOn #-}
+minimumOn = G.minimumOn
 
 -- | /O(n)/ Yield the index of the maximum element of the vector. The vector
 -- may not be empty.
