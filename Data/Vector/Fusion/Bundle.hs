@@ -430,6 +430,8 @@ unfoldrN :: Int -> (s -> Maybe (a, s)) -> s -> Bundle v a
 unfoldrN = M.unfoldrN
 
 -- | Unfold exactly @n@ elements
+--
+-- @since 0.12.2.0
 unfoldrExactN :: Int -> (s -> (a, s)) -> s -> Bundle v a
 {-# INLINE unfoldrExactN #-}
 unfoldrExactN = M.unfoldrExactN
@@ -550,6 +552,10 @@ filterM :: Monad m => (a -> m Bool) -> Bundle v a -> M.Bundle m v a
 {-# INLINE filterM #-}
 filterM f = M.filterM f . lift
 
+-- | /O(n)/ Apply monadic function to each element of a bundle and
+-- discard elements returning Nothing.
+--
+-- @since 0.12.2.0
 mapMaybeM :: Monad m => (a -> m (Maybe b)) -> Bundle v a -> M.Bundle m v b
 {-# INLINE mapMaybeM #-}
 mapMaybeM f = M.mapMaybeM f . lift

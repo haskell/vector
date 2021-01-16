@@ -388,7 +388,7 @@ instance MonadZip Vector where
 
 -- | Instance has same semantics as one for lists
 --
---  @since 0.13.0.0
+--  @since 0.12.2.0
 instance MonadFix Vector where
   -- We take care to dispose of v0 as soon as possible (see headM docs).
   --
@@ -731,6 +731,8 @@ unfoldrN = G.unfoldrN
 -- next element and the new seed.
 --
 -- > unfoldrExactN 3 (\n -> (n,n-1)) 10 = <10,9,8>
+--
+-- @since 0.12.2.0
 unfoldrExactN  :: Int -> (b -> (a, b)) -> b -> Vector a
 {-# INLINE unfoldrExactN #-}
 unfoldrExactN = G.unfoldrExactN
@@ -754,6 +756,8 @@ unfoldrNM = G.unfoldrNM
 -- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly
 -- applying the monadic generator function to a seed. The generator
 -- function yields the next element and the new seed.
+--
+-- @since 0.12.2.0
 unfoldrExactNM :: (Monad m) => Int -> (b -> m (a, b)) -> b -> m (Vector a)
 {-# INLINE unfoldrExactNM #-}
 unfoldrExactNM = G.unfoldrExactNM
@@ -1123,12 +1127,16 @@ forM_ = G.forM_
 
 -- | /O(n)/ Apply the monadic action to all elements of the vector and their indices, yielding a
 -- vector of results. Equivalent to 'flip' 'imapM'.
+--
+-- @since 0.12.2.0
 iforM :: Monad m => Vector a -> (Int -> a -> m b) -> m (Vector b)
 {-# INLINE iforM #-}
 iforM = G.iforM
 
 -- | /O(n)/ Apply the monadic action to all elements of the vector and their indices and ignore the
 -- results. Equivalent to 'flip' 'imapM_'.
+--
+-- @since 0.12.2.0
 iforM_ :: Monad m => Vector a -> (Int -> a -> m b) -> m ()
 {-# INLINE iforM_ #-}
 iforM_ = G.iforM_
@@ -1299,7 +1307,9 @@ imapMaybe :: (Int -> a -> Maybe b) -> Vector a -> Vector b
 {-# INLINE imapMaybe #-}
 imapMaybe = G.imapMaybe
 
--- | /O(n)/ Return a Vector of all the Just values.
+-- | /O(n)/ Return a Vector of all the `Just` values.
+--
+-- @since 0.12.2.0
 catMaybes :: Vector (Maybe a) -> Vector a
 {-# INLINE catMaybes #-}
 catMaybes = mapMaybe id
@@ -1311,12 +1321,16 @@ filterM = G.filterM
 
 -- | /O(n)/ Apply monadic function to each element of vector and
 -- discard elements returning Nothing.
+--
+-- @since 0.12.2.0
 mapMaybeM :: Monad m => (a -> m (Maybe b)) -> Vector a -> m (Vector b)
 {-# INLINE mapMaybeM #-}
 mapMaybeM = G.mapMaybeM
 
 -- | /O(n)/ Apply monadic function to each element of vector and its index.
 -- Discards elements returning Nothing.
+--
+-- @since 0.12.2.0
 imapMaybeM :: Monad m => (Int -> a -> m (Maybe b)) -> Vector a -> m (Vector b)
 {-# INLINE imapMaybeM #-}
 imapMaybeM = G.imapMaybeM
@@ -1490,6 +1504,8 @@ ifoldr' = G.ifoldr'
 -- 'Foldable' type cless. Note it's implemented in terms of 'foldr'
 -- and won't fuse with functions that traverse vector from left to
 -- right ('map', 'generate', etc.).
+--
+-- @since 0.12.2.0
 foldMap :: (Monoid m) => (a -> m) -> Vector a -> m
 {-# INLINE foldMap #-}
 foldMap = G.foldMap
@@ -1498,6 +1514,8 @@ foldMap = G.foldMap
 -- implementation as corresponding method of 'Foldable' type class.
 -- Note it's implemented in terms of 'foldl'' so it fuses in most
 -- contexts.
+--
+-- @since 0.12.2.0
 foldMap' :: (Monoid m) => (a -> m) -> Vector a -> m
 {-# INLINE foldMap' #-}
 foldMap' = G.foldMap'
@@ -1785,11 +1803,15 @@ scanl' :: (a -> b -> a) -> a -> Vector b -> Vector a
 scanl' = G.scanl'
 
 -- | /O(n)/ Scan over a vector with its index
+--
+-- @since 0.12.0.0
 iscanl :: (Int -> a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE iscanl #-}
 iscanl = G.iscanl
 
 -- | /O(n)/ Scan over a vector (strictly) with its index
+--
+-- @since 0.12.0.0
 iscanl' :: (Int -> a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE iscanl' #-}
 iscanl' = G.iscanl'
@@ -1845,11 +1867,15 @@ scanr' :: (a -> b -> b) -> b -> Vector a -> Vector b
 scanr' = G.scanr'
 
 -- | /O(n)/ Right-to-left scan over a vector with its index
+--
+-- @since 0.12.0.0
 iscanr :: (Int -> a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE iscanr #-}
 iscanr = G.iscanr
 
 -- | /O(n)/ Right-to-left scan over a vector (strictly) with its index
+--
+-- @since 0.12.0.0
 iscanr' :: (Int -> a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE iscanr' #-}
 iscanr' = G.iscanr'
@@ -1870,6 +1896,8 @@ scanr1' = G.scanr1'
 
 -- | /O(n)/ Check if two vectors are equal using supplied equality
 -- predicate.
+--
+-- @since 0.12.2.0
 eqBy :: (a -> b -> Bool) -> Vector a -> Vector b -> Bool
 {-# INLINE eqBy #-}
 eqBy = G.eqBy
@@ -1878,6 +1906,8 @@ eqBy = G.eqBy
 -- vector elements. Comparison works same as for lists.
 --
 -- > cmpBy compare == compare
+--
+-- @since 0.12.2.0
 cmpBy :: (a -> b -> Ordering) -> Vector a -> Vector b -> Ordering
 cmpBy = G.cmpBy
 
@@ -1907,11 +1937,15 @@ fromListN = G.fromListN
 -- -----------------------------
 
 -- | /O(1)/ Convert an array to a vector.
+--
+-- @since 0.12.2.0
 fromArray :: Array a -> Vector a
 {-# INLINE fromArray #-}
 fromArray x = Vector 0 (sizeofArray x) x
 
 -- | /O(n)/ Convert a vector to an array.
+--
+-- @since 0.12.2.0
 toArray :: Vector a -> Array a
 {-# INLINE toArray #-}
 toArray (Vector offset size arr)

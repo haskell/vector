@@ -704,6 +704,8 @@ filterM f (Stream step t) = Stream step' t
                   Done       -> return $ Done
 
 -- | Apply monadic function to each element and drop all Nothings
+--
+-- @since 0.12.2.0
 mapMaybeM :: Monad m => (a -> m (Maybe b)) -> Stream m a -> Stream m b
 {-# INLINE_FUSED mapMaybeM #-}
 mapMaybeM f (Stream step t) = Stream step' t
@@ -1119,11 +1121,15 @@ unfoldrNM m f t = Stream step (t,m)
                              ) (f s)
 
 -- | Unfold exactly @n@ elements
+--
+-- @since 0.12.2.0
 unfoldrExactN :: Monad m => Int -> (s -> (a, s)) -> s -> Stream m a
 {-# INLINE_FUSED unfoldrExactN #-}
 unfoldrExactN n f = unfoldrExactNM n (return . f)
 
 -- | Unfold exactly @n@ elements with a monadic function.
+--
+-- @since 0.12.2.0
 unfoldrExactNM :: Monad m => Int -> (s -> m (a, s)) -> s -> Stream m a
 {-# INLINE_FUSED unfoldrExactNM #-}
 unfoldrExactNM m f t = Stream step (t,m)

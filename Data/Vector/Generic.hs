@@ -564,6 +564,8 @@ unfoldrN n f = unstream . Bundle.unfoldrN n f
 -- next element and the new seed.
 --
 -- > unfoldrExactN 3 (\n -> (n,n-1)) 10 = <10,9,8>
+--
+-- @since 0.12.2.0
 unfoldrExactN  :: Vector v a => Int -> (b -> (a, b)) -> b -> v a
 {-# INLINE unfoldrExactN #-}
 unfoldrExactN n f = unstream . Bundle.unfoldrExactN n f
@@ -587,6 +589,8 @@ unfoldrNM n f = unstreamM . MBundle.unfoldrNM n f
 -- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly
 -- applying the monadic generator function to a seed. The generator
 -- function yields the next element and the new seed.
+--
+-- @since 0.12.2.0
 unfoldrExactNM :: (Monad m, Vector v a) => Int -> (b -> m (a, b)) -> b -> m (v a)
 {-# INLINE unfoldrExactNM #-}
 unfoldrExactNM n f = unstreamM . MBundle.unfoldrExactNM n f
@@ -1123,12 +1127,16 @@ forM_ as f = mapM_ f as
 
 -- | /O(n)/ Apply the monadic action to all elements of the vector and their indices, yielding a
 -- vector of results. Equivalent to 'flip' 'imapM'.
+--
+-- @since 0.12.2.0
 iforM :: (Monad m, Vector v a, Vector v b) => v a -> (Int -> a -> m b) -> m (v b)
 {-# INLINE iforM #-}
 iforM as f = imapM f as
 
 -- | /O(n)/ Apply the monadic action to all elements of the vector and their indices and ignore the
 -- results. Equivalent to 'flip' 'imapM_'.
+--
+-- @since 0.12.2.0
 iforM_ :: (Monad m, Vector v a) => v a -> (Int -> a -> m b) -> m ()
 {-# INLINE iforM_ #-}
 iforM_ as f = imapM_ f as
@@ -1384,12 +1392,16 @@ filterM f = unstreamM . Bundle.filterM f . stream
 
 -- | /O(n)/ Apply monadic function to each element of vector and
 -- discard elements returning Nothing.
+--
+-- @since 0.12.2.0
 mapMaybeM :: (Monad m, Vector v a, Vector v b) => (a -> m (Maybe b)) -> v a -> m (v b)
 {-# INLINE mapMaybeM #-}
 mapMaybeM f = unstreamM . Bundle.mapMaybeM f . stream
 
 -- | /O(n)/ Apply monadic function to each element of vector and its index.
 -- Discards elements returning Nothing.
+--
+-- @since 0.12.2.0
 imapMaybeM :: (Monad m, Vector v a, Vector v b)
       => (Int -> a -> m (Maybe b)) -> v a -> m (v b)
 {-# INLINE imapMaybeM #-}
@@ -1547,6 +1559,8 @@ findIndex f = Bundle.findIndex f . stream
 
 -- | /O(n)/ Yield 'Just' the index of the /last/ element matching the predicate
 -- or 'Nothing' if no such element exists.
+--
+-- @since 0.12.2.0
 findIndexR :: Vector v a => (a -> Bool) -> v a -> Maybe Int
 {-# INLINE findIndexR #-}
 findIndexR f v = fmap (length v - 1 -) . Bundle.findIndex f $ streamR v
@@ -1643,6 +1657,8 @@ ifoldr' f z xs = Bundle.foldl' (flip (uncurry f)) z
 -- 'Foldable' type cless. Note it's implemented in terms of 'foldr'
 -- and won't fuse with functions that traverse vector from left to
 -- right ('map', 'generate', etc.).
+--
+-- @since 0.12.2.0
 foldMap :: (Monoid m, Vector v a) => (a -> m) -> v a -> m
 {-# INLINE foldMap #-}
 foldMap f = foldr (mappend . f) mempty
@@ -1651,6 +1667,8 @@ foldMap f = foldr (mappend . f) mempty
 -- implementation as corresponding method of 'Foldable' type class.
 -- Note it's implemented in terms of 'foldl'' so it fuses in most
 -- contexts.
+--
+-- @since 0.12.2.0
 foldMap' :: (Monoid m, Vector v a) => (a -> m) -> v a -> m
 {-# INLINE foldMap' #-}
 foldMap' f = foldl' (\acc a -> acc `mappend` f a) mempty
