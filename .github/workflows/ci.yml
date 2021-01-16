@@ -69,7 +69,7 @@ jobs:
     - name: Make sdist
       run: |
         mkdir sdist
-        cabal sdist -o sdist
+        cabal sdist vector -o sdist
     - name: Unpack
       run: |
         mkdir unpacked
@@ -78,6 +78,7 @@ jobs:
     # ----------------
     - name: cabal check
       run: |
+        cd vector
         cabal -vnormal check
     # ----------------
     - name: Build

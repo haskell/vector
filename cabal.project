@@ -1,1 +1,1 @@
-packages: vector.cabal
+packages: vector/vector.cabal

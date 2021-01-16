@@ -1,6 +1,6 @@
 resolver: lts-16.27
 packages:
-- .
+- vector
 extra-deps:
 - random-1.2.0@sha256:3337fb944048b49ada7ac70771e9040382da8dcc7058570dd6835af5cc40b822,6094
 - splitmix-0.1.0.3@sha256:fc3aae74c467f4b608050bef53aec17904a618731df9407e655d8f3bf8c32d5c,6049
