@@ -1119,12 +1119,16 @@ forM_ as f = mapM_ f as
 
 -- | /O(n)/ Apply the monadic action to all elements of the vector and their indices, yielding a
 -- vector of results. Equivalent to 'flip' 'imapM'.
+--
+-- @since 0.12.2.0
 iforM :: (Monad m, Vector v a, Vector v b) => v a -> (Int -> a -> m b) -> m (v b)
 {-# INLINE iforM #-}
 iforM as f = imapM f as
 
 -- | /O(n)/ Apply the monadic action to all elements of the vector and their indices and ignore the
 -- results. Equivalent to 'flip' 'imapM_'.
+--
+-- @since 0.12.2.0
 iforM_ :: (Monad m, Vector v a) => v a -> (Int -> a -> m b) -> m ()
 {-# INLINE iforM_ #-}
 iforM_ as f = imapM_ f as
