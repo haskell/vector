@@ -546,6 +546,8 @@ unfoldrN = G.unfoldrN
 -- next element and the new seed.
 --
 -- > unfoldrExactN 3 (\n -> (n,n-1)) 10 = <10,9,8>
+--
+-- @since 0.12.2.0
 unfoldrExactN :: (Storable a) => Int -> (b -> (a, b)) -> b -> Vector a
 {-# INLINE unfoldrExactN #-}
 unfoldrExactN = G.unfoldrExactN
@@ -569,6 +571,8 @@ unfoldrNM = G.unfoldrNM
 -- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly
 -- applying the monadic generator function to a seed. The generator
 -- function yields the next element and the new seed.
+--
+-- @since 0.12.2.0
 unfoldrExactNM :: (Monad m, Storable a) => Int -> (b -> m (a, b)) -> b -> m (Vector a)
 {-# INLINE unfoldrExactNM #-}
 unfoldrExactNM = G.unfoldrExactNM

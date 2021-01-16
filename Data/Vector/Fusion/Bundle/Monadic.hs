@@ -647,11 +647,15 @@ unfoldrNM :: Monad m => Int -> (s -> m (Maybe (a, s))) -> s -> Bundle m u a
 unfoldrNM n f s = fromStream (S.unfoldrNM n f s) (Max (delay_inline max n 0))
 
 -- | Unfold exactly @n@ elements
+--
+-- @since 0.12.2.0
 unfoldrExactN :: Monad m => Int -> (s -> (a, s)) -> s -> Bundle m u a
 {-# INLINE_FUSED unfoldrExactN #-}
 unfoldrExactN n f = unfoldrExactNM n (return . f)
 
 -- | Unfold exactly @n@ elements with a monadic function.
+--
+-- @since 0.12.2.0
 unfoldrExactNM :: Monad m => Int -> (s -> m (a, s)) -> s -> Bundle m u a
 {-# INLINE_FUSED unfoldrExactNM #-}
 unfoldrExactNM n f s = fromStream (S.unfoldrExactNM n f s) (Max (delay_inline max n 0))

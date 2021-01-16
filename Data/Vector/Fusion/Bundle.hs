@@ -438,6 +438,8 @@ unfoldrN :: Int -> (s -> Maybe (a, s)) -> s -> Bundle v a
 unfoldrN = M.unfoldrN
 
 -- | Unfold exactly @n@ elements
+--
+-- @since 0.12.2.0
 unfoldrExactN :: Int -> (s -> (a, s)) -> s -> Bundle v a
 {-# INLINE unfoldrExactN #-}
 unfoldrExactN = M.unfoldrExactN

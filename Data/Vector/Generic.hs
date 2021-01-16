@@ -564,6 +564,8 @@ unfoldrN n f = unstream . Bundle.unfoldrN n f
 -- next element and the new seed.
 --
 -- > unfoldrExactN 3 (\n -> (n,n-1)) 10 = <10,9,8>
+--
+-- @since 0.12.2.0
 unfoldrExactN  :: Vector v a => Int -> (b -> (a, b)) -> b -> v a
 {-# INLINE unfoldrExactN #-}
 unfoldrExactN n f = unstream . Bundle.unfoldrExactN n f
@@ -587,6 +589,8 @@ unfoldrNM n f = unstreamM . MBundle.unfoldrNM n f
 -- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly
 -- applying the monadic generator function to a seed. The generator
 -- function yields the next element and the new seed.
+--
+-- @since 0.12.2.0
 unfoldrExactNM :: (Monad m, Vector v a) => Int -> (b -> m (a, b)) -> b -> m (v a)
 {-# INLINE unfoldrExactNM #-}
 unfoldrExactNM n f = unstreamM . MBundle.unfoldrExactNM n f
