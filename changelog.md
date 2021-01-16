@@ -1,5 +1,10 @@
 # Changes in NEXT_VERSION
 
+ * Methods of type classes `Data.Vector.Generic.Mutable.MVector` and
+   `Data.Vector.Generic.Vector` use concrete monads (ST,etc) being
+   polymorphic. This allows use of GND and deriving via to define
+   instances. Rest of API is unchanged and most existing instances should
+   compiler fine with new definitions.
  * Added `mapMaybeM` & `imapMaybeM`
  * Added `isSameVector` for storable vectors
  * Added `catMaybes`

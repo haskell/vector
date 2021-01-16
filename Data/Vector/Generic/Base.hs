@@ -24,7 +24,9 @@ module Data.Vector.Generic.Base (
 
 import           Data.Vector.Generic.Mutable.Base ( MVector )
 import qualified Data.Vector.Generic.Mutable.Base as M
+import           Data.Vector.Fusion.Util (Box(..), liftBox)
 
+import Control.Monad.ST
 import Control.Monad.Primitive
 
 -- | @Mutable v s a@ is the mutable version of the pure vector type @v a@ with
@@ -59,13 +61,13 @@ class MVector (Mutable v) a => Vector v a where
   -- Unsafely convert a mutable vector to its immutable version
   -- without copying. The mutable vector may not be used after
   -- this operation.
-  basicUnsafeFreeze :: PrimMonad m => Mutable v (PrimState m) a -> m (v a)
+  basicUnsafeFreeze :: Mutable v s a -> ST s (v a)
 
   -- | /Assumed complexity: O(1)/
   --
   -- Unsafely convert an immutable vector to its mutable version without
   -- copying. The immutable vector may not be used after this operation.
-  basicUnsafeThaw :: PrimMonad m => v a -> m (Mutable v (PrimState m) a)
+  basicUnsafeThaw :: v a -> ST s (Mutable v s a)
 
   -- | /Assumed complexity: O(1)/
   --
@@ -105,7 +107,7 @@ class MVector (Mutable v) a => Vector v a where
   -- which does not have this problem because indexing (but not the returned
   -- element!) is evaluated immediately.
   --
-  basicUnsafeIndexM  :: Monad m => v a -> Int -> m a
+  basicUnsafeIndexM  :: v a -> Int -> Box a
 
   -- |  /Assumed complexity: O(n)/
   --
@@ -117,7 +119,7 @@ class MVector (Mutable v) a => Vector v a where
   --
   -- Default definition: copying basic on 'basicUnsafeIndexM' and
   -- 'basicUnsafeWrite'.
-  basicUnsafeCopy :: PrimMonad m => Mutable v (PrimState m) a -> v a -> m ()
+  basicUnsafeCopy :: Mutable v s a -> v a -> ST s ()
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy !dst !src = do_copy 0
@@ -125,7 +127,7 @@ class MVector (Mutable v) a => Vector v a where
       !n = basicLength src
 
       do_copy i | i < n = do
-                            x <- basicUnsafeIndexM src i
+                            x <- liftBox $ basicUnsafeIndexM src i
                             M.basicUnsafeWrite dst i x
                             do_copy (i+1)
                 | otherwise = return ()

@@ -15,6 +15,7 @@ module Data.Vector.Generic.Mutable.Base (
   MVector(..)
 ) where
 
+import Control.Monad.ST
 import Control.Monad.Primitive ( PrimMonad, PrimState )
 
 -- Data.Vector.Internal.Check is unused
@@ -41,7 +42,7 @@ class MVector v a where
 
   -- | Create a mutable vector of the given length. This method should not be
   -- called directly, use 'unsafeNew' instead.
-  basicUnsafeNew   :: PrimMonad m => Int -> m (v (PrimState m) a)
+  basicUnsafeNew   :: Int -> ST s (v s a)
 
   -- | Initialize a vector to a standard value. This is intended to be called as
   -- part of the safe new operation (and similar operations), to properly blank
@@ -51,46 +52,45 @@ class MVector v a where
   -- this as a no-op.
   --
   -- @since 0.11.0.0
-  basicInitialize :: PrimMonad m => v (PrimState m) a -> m ()
+  basicInitialize :: v s a -> ST s ()
 
   -- | Create a mutable vector of the given length and fill it with an
   -- initial value. This method should not be called directly, use
   -- 'replicate' instead.
-  basicUnsafeReplicate :: PrimMonad m => Int -> a -> m (v (PrimState m) a)
+  basicUnsafeReplicate :: Int -> a -> ST s (v s a)
 
   -- | Yield the element at the given position. This method should not be
   -- called directly, use 'unsafeRead' instead.
-  basicUnsafeRead  :: PrimMonad m => v (PrimState m) a -> Int -> m a
+  basicUnsafeRead  :: v s a -> Int -> ST s a
 
   -- | Replace the element at the given position. This method should not be
   -- called directly, use 'unsafeWrite' instead.
-  basicUnsafeWrite :: PrimMonad m => v (PrimState m) a -> Int -> a -> m ()
+  basicUnsafeWrite :: v s a -> Int -> a -> ST s ()
 
   -- | Reset all elements of the vector to some undefined value, clearing all
   -- references to external objects. This is usually a noop for unboxed
   -- vectors. This method should not be called directly, use 'clear' instead.
-  basicClear       :: PrimMonad m => v (PrimState m) a -> m ()
+  basicClear       :: v s a -> ST s ()
 
   -- | Set all elements of the vector to the given value. This method should
   -- not be called directly, use 'set' instead.
-  basicSet         :: PrimMonad m => v (PrimState m) a -> a -> m ()
+  basicSet         :: v s a -> a -> ST s ()
 
   -- | Copy a vector. The two vectors may not overlap. This method should not
   -- be called directly, use 'unsafeCopy' instead.
-  basicUnsafeCopy  :: PrimMonad m => v (PrimState m) a   -- ^ target
-                                  -> v (PrimState m) a   -- ^ source
-                                  -> m ()
+  basicUnsafeCopy  :: v s a   -- ^ target
+                   -> v s a   -- ^ source
+                   -> ST s ()
 
   -- | Move the contents of a vector. The two vectors may overlap. This method
   -- should not be called directly, use 'unsafeMove' instead.
-  basicUnsafeMove  :: PrimMonad m => v (PrimState m) a   -- ^ target
-                                  -> v (PrimState m) a   -- ^ source
-                                  -> m ()
+  basicUnsafeMove  :: v s a   -- ^ target
+                   -> v s a   -- ^ source
+                   -> ST s ()
 
   -- | Grow a vector by the given number of elements. This method should not be
   -- called directly, use 'unsafeGrow' instead.
-  basicUnsafeGrow  :: PrimMonad m => v (PrimState m) a -> Int
-                                                       -> m (v (PrimState m) a)
+  basicUnsafeGrow  :: v s a -> Int -> ST s (v s a)
 
   {-# INLINE basicUnsafeReplicate #-}
   basicUnsafeReplicate n x

@@ -12,7 +12,7 @@
 --
 
 module Data.Vector.Fusion.Util (
-  Id(..), Box(..),
+  Id(..), Box(..), liftBox,
 
   delay_inline, delayed_min
 ) where
@@ -44,6 +44,10 @@ instance Applicative Box where
 instance Monad Box where
   return = pure
   Box x >>= f = f x
+
+liftBox :: Monad m => Box a -> m a
+liftBox (Box a) = return a
+{-# INLINE liftBox #-}
 
 -- | Delay inlining a function until late in the game (simplifier phase 0).
 delay_inline :: (a -> b) -> a -> b
