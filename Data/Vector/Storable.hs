@@ -108,7 +108,8 @@ module Data.Vector.Storable (
   -- ** Specialised folds
   all, any, and, or,
   sum, product,
-  maximum, maximumBy, minimum, minimumBy,
+  maximum, maximumBy, maximumOn,
+  minimum, minimumBy, minimumOn,
   minIndex, minIndexBy, maxIndex, maxIndexBy,
 
   -- ** Monadic folds

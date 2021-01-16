@@ -157,7 +157,8 @@ module Data.Vector.Unboxed (
   -- ** Specialised folds
   all, any, and, or,
   sum, product,
-  maximum, maximumBy, minimum, minimumBy,
+  maximum, maximumBy, maximumOn,
+  minimum, minimumBy, minimumOn,
   minIndex, minIndexBy, maxIndex, maxIndexBy,
 
   -- ** Monadic folds
