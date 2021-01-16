@@ -58,8 +58,8 @@ module Data.Vector.Generic.Mutable (
   unsafeAccum, accum, unsafeUpdate, update, reverse,
   unstablePartition, unstablePartitionBundle, partitionBundle,
   partitionWithBundle,
-  -- * Reexports
-  PrimMonad(..), RealWorld
+  -- * Re-exports
+  PrimMonad, PrimState, RealWorld
 ) where
 
 import           Data.Vector.Generic.Mutable.Base

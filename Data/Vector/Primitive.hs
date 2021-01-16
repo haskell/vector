@@ -18,7 +18,7 @@
 
 module Data.Vector.Primitive (
   -- * Primitive vectors
-  Vector(..), MVector(..), Prim,
+  Vector(..), MVector(..),
 
   -- * Accessors
 
@@ -143,7 +143,10 @@ module Data.Vector.Primitive (
   unsafeCoerceVector,
 
   -- ** Mutable vectors
-  freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy
+  freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
+
+  -- ** Re-exports
+  Prim
 ) where
 
 import qualified Data.Vector.Generic           as G

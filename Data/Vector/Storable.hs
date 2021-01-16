@@ -14,7 +14,7 @@
 
 module Data.Vector.Storable (
   -- * Storable vectors
-  Vector, MVector(..), Storable,
+  Vector, MVector(..),
 
   -- * Accessors
 
@@ -148,7 +148,10 @@ module Data.Vector.Storable (
   -- * Raw pointers
   unsafeFromForeignPtr, unsafeFromForeignPtr0,
   unsafeToForeignPtr,   unsafeToForeignPtr0,
-  unsafeWith
+  unsafeWith,
+
+  -- * Re-exports
+  Storable
 ) where
 
 import qualified Data.Vector.Generic          as G

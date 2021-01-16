@@ -52,8 +52,8 @@ module Data.Vector.Mutable (
   -- ** Arrays
   fromMutableArray, toMutableArray,
 
-  -- * Reexports
-  PrimMonad(..), RealWorld
+  -- * Re-exports
+  PrimMonad, PrimState, RealWorld
 ) where
 
 import           Control.Monad (when, liftM)

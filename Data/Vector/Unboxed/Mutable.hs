@@ -52,8 +52,8 @@ module Data.Vector.Unboxed.Mutable (
 
   -- ** Filling and copying
   set, copy, move, unsafeCopy, unsafeMove,
-  -- * Reexports
-  PrimMonad(..), RealWorld,
+  -- * Re-exports
+  PrimMonad, PrimState, RealWorld
 ) where
 
 import Data.Vector.Unboxed.Base
