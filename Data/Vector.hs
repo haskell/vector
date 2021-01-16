@@ -356,8 +356,10 @@ instance Functor Vector where
   {-# INLINE fmap #-}
   fmap = map
 
+#if MIN_VERSION_base(4,8,0)
   {-# INLINE (<$) #-}
   (<$) = map . const
+#endif
 
 instance Monad Vector where
   {-# INLINE return #-}

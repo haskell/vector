@@ -134,8 +134,10 @@ instance Functor (Step s) where
   fmap f (Yield x s) = Yield (f x) s
   fmap _ (Skip s) = Skip s
   fmap _ Done = Done
+#if MIN_VERSION_base(4,8,0)
   {-# INLINE (<$) #-}
   (<$) = fmap . const
+#endif
 
 -- | Monadic streams
 data Stream m a = forall s. Stream (s -> m (Step s a)) s
