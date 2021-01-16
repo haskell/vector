@@ -5,6 +5,7 @@
  * New functions: `unfoldrExactN` and `unfoldrExactNM`: [#140](https://github.com/haskell/vector/issues/140)
  * Added `iforM` and `iforM_`: [#262](https://github.com/haskell/vector/issues/262)
  * Added `MonadFix` instance for boxed vectors: [#178](https://github.com/haskell/vector/issues/178)
+ * Added `uncons` and `unsnoc`: [#212](https://github.com/haskell/vector/issues/212)
 
 # Changes in version 0.12.1.2
 
