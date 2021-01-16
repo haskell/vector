@@ -2100,7 +2100,10 @@ unstreamR s = new (New.unstreamR s)
   streamR (new (New.transformR f g m)) = inplace f g (streamR (new m))  #-}
 
 
-
+-- | Load monadic stream bundle into a newly allocated vector. This function goes through
+-- a list, so prefer using `unstream`, unless you need to be in a monad.
+--
+-- @since 0.12.2.0
 unstreamM :: (Monad m, Vector v a) => MBundle m u a -> m (v a)
 {-# INLINE_FUSED unstreamM #-}
 unstreamM s = do

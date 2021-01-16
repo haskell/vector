@@ -1,3 +1,8 @@
+# Changes in version 0.12.2.0
+
+* Export `unstreamM` from`from Data.Vector.Generic`
+
+
 # Changes in version 0.12.1.2
 
  * Fix for lost function `Data.Vector.Generic.mkType`: [#287](https://github.com/haskell/vector/issues/287)
