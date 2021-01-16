@@ -385,7 +385,7 @@ instance MonadZip Vector where
 
 -- | Instance has same semantics as one for lists
 --
---  @since 0.13.0.0
+--  @since 0.12.2.0
 instance MonadFix Vector where
   -- We take care to dispose of v0 as soon as possible (see headM docs).
   --
