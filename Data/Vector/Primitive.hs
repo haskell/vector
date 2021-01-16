@@ -1088,11 +1088,11 @@ unstablePartition :: Prim a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE unstablePartition #-}
 unstablePartition = G.unstablePartition
 
--- | /O(n)/ Split the vector in two parts, the first one containing the
---   @Right@ elements and the second containing the @Left@ elements.
---   The relative order of the elements is preserved.
+-- | /O(n)/ Split the vector into two parts, the first one containing the
+-- @`Left`@ elements and the second containing the @`Right`@ elements.
+-- The relative order of the elements is preserved.
 --
---   @since 0.12.1.0
+-- @since 0.12.1.0
 partitionWith :: (Prim a, Prim b, Prim c) => (a -> Either b c) -> Vector a -> (Vector b, Vector c)
 {-# INLINE partitionWith #-}
 partitionWith = G.partitionWith

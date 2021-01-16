@@ -1436,6 +1436,11 @@ partition_stream f s = s `seq` runST (
     v2 <- unsafeFreeze mv2
     return (v1,v2))
 
+-- | /O(n)/ Split the vector into two parts, the first one containing the
+-- @`Left`@ elements and the second containing the @`Right`@ elements.
+-- The relative order of the elements is preserved.
+--
+-- @since 0.12.1.0
 partitionWith :: (Vector v a, Vector v b, Vector v c) => (a -> Either b c) -> v a -> (v b, v c)
 {-# INLINE partitionWith #-}
 partitionWith f = partition_with_stream f . stream
