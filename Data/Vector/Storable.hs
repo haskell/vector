@@ -866,6 +866,8 @@ mapM = G.mapM
 
 -- | /O(n)/ Apply the monadic action to every element of a vector and its
 -- index, yielding a vector of results
+--
+-- @since 0.12.2.0
 imapM :: (Monad m, Storable a, Storable b)
       => (Int -> a -> m b) -> Vector a -> m (Vector b)
 {-# INLINE imapM #-}
@@ -879,6 +881,8 @@ mapM_ = G.mapM_
 
 -- | /O(n)/ Apply the monadic action to every element of a vector and its
 -- index, ignoring the results
+--
+-- @since 0.12.2.0
 imapM_ :: (Monad m, Storable a) => (Int -> a -> m b) -> Vector a -> m ()
 {-# INLINE imapM_ #-}
 imapM_ = G.imapM_
@@ -996,6 +1000,8 @@ zipWithM = G.zipWithM
 
 -- | /O(min(m,n))/ Zip the two vectors with a monadic action that also takes
 -- the element index and yield a vector of results
+--
+-- @since 0.12.2.0
 izipWithM :: (Monad m, Storable a, Storable b, Storable c)
           => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m (Vector c)
 {-# INLINE izipWithM #-}
@@ -1010,6 +1016,8 @@ zipWithM_ = G.zipWithM_
 
 -- | /O(min(m,n))/ Zip the two vectors with a monadic action that also takes
 -- the element index and ignore the results
+--
+-- @since 0.12.2.0
 izipWithM_ :: (Monad m, Storable a, Storable b)
            => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m ()
 {-# INLINE izipWithM_ #-}
@@ -1302,6 +1310,8 @@ foldM :: (Monad m, Storable b) => (a -> b -> m a) -> a -> Vector b -> m a
 foldM = G.foldM
 
 -- | /O(n)/ Monadic fold (action applied to each element and its index)
+--
+-- @since 0.12.2.0
 ifoldM :: (Monad m, Storable b) => (a -> Int -> b -> m a) -> a -> Vector b -> m a
 {-# INLINE ifoldM #-}
 ifoldM = G.ifoldM
@@ -1318,6 +1328,8 @@ foldM' = G.foldM'
 
 -- | /O(n)/ Monadic fold with strict accumulator (action applied to each
 -- element and its index)
+--
+-- @since 0.12.2.0
 ifoldM' :: (Monad m, Storable b) => (a -> Int -> b -> m a) -> a -> Vector b -> m a
 {-# INLINE ifoldM' #-}
 ifoldM' = G.ifoldM'
@@ -1334,6 +1346,8 @@ foldM_ = G.foldM_
 
 -- | /O(n)/ Monadic fold that discards the result (action applied to each
 -- element and its index)
+--
+-- @since 0.12.2.0
 ifoldM_ :: (Monad m, Storable b) => (a -> Int -> b -> m a) -> a -> Vector b -> m ()
 {-# INLINE ifoldM_ #-}
 ifoldM_ = G.ifoldM_
@@ -1350,6 +1364,8 @@ foldM'_ = G.foldM'_
 
 -- | /O(n)/ Monadic fold with strict accumulator that discards the result
 -- (action applied to each element and its index)
+--
+-- @since 0.12.2.0
 ifoldM'_ :: (Monad m, Storable b)
          => (a -> Int -> b -> m a) -> a -> Vector b -> m ()
 {-# INLINE ifoldM'_ #-}

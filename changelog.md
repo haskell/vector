@@ -8,6 +8,8 @@
  * Added `uncons` and `unsnoc`: [#212](https://github.com/haskell/vector/issues/212)
  * Added `toArray`, `fromArray`, `toMutableArray` and `fromMutableArray`
  * Added `iscanl`, `iscanl'`, `iscanr`, `iscanr'` to `Primitive`, `Storable` and `Unboxed`
+ * Added `izipWithM`, `izipWithM_`, `imapM` and `imapM_` to `Primitive` and `Storable`
+ * Added `ifoldM`, `ifoldM'`, `ifoldM_` and `ifoldM'_` to `Primitive` and `Storable`
 
 # Changes in version 0.12.1.2
 
