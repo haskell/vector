@@ -1,8 +1,9 @@
 # Changes in version 0.12.2.0
 
- * Export `unstreamM` from`from Data.Vector.Generic`
- * New functions: `unfoldrExactN` and `unfoldrExactNM`
- * Added `iforM` and `iforM_`
+ * Add `MINIMAL` pragma to `Vector` & `MVector` type classes: [#11](https://github.com/haskell/vector/issues/11)
+ * Export `unstreamM` from`from Data.Vector.Generic`: [#70](https://github.com/haskell/vector/issues/70)
+ * New functions: `unfoldrExactN` and `unfoldrExactNM`: [#140](https://github.com/haskell/vector/issues/140)
+ * Added `iforM` and `iforM_`: [#262](https://github.com/haskell/vector/issues/262)
 
 # Changes in version 0.12.1.2
 
