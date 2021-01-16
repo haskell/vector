@@ -513,6 +513,7 @@ testOrdFunctions _ = $(testProperties
    'prop_maximum, 'prop_minimum,
    'prop_minIndex, 'prop_maxIndex,
    'prop_maximumBy, 'prop_minimumBy,
+   'prop_maximumOn, 'prop_minimumOn,
    'prop_maxIndexBy, 'prop_minIndexBy,
    'prop_ListLastMaxIndexWins, 'prop_FalseListFirstMaxIndexWins ])
   where
@@ -525,6 +526,10 @@ testOrdFunctions _ = $(testProperties
       not . V.null ===> V.maximumBy compare `eq` maximum
     prop_minimumBy :: P (v a -> a) =
       not . V.null ===> V.minimumBy compare `eq` minimum
+    prop_maximumOn :: P (v a -> a) =
+      not . V.null ===> V.maximumOn id `eq` maximum
+    prop_minimumOn :: P (v a -> a) =
+      not . V.null ===> V.minimumOn id `eq` minimum
     prop_maxIndexBy :: P (v a -> Int) =
       not . V.null ===> V.maxIndexBy compare `eq` maxIndex
     prop_ListLastMaxIndexWins ::  P (v a -> Int) =
