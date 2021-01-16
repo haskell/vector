@@ -1040,6 +1040,8 @@ mapMaybe = G.mapMaybe
 
 -- | /O(n)/ Apply monadic function to each element of vector and
 -- discard elements returning Nothing.
+--
+-- @since 0.12.2.0
 mapMaybeM
   :: (Monad m, Prim a, Prim b)
   => (a -> m (Maybe b)) -> Vector a -> m (Vector b)
@@ -1053,6 +1055,8 @@ imapMaybe = G.imapMaybe
 
 -- | /O(n)/ Apply monadic function to each element of vector and its index.
 -- Discards elements returning Nothing.
+--
+-- @since 0.12.2.0
 imapMaybeM
   :: (Monad m, Prim a, Prim b)
   => (Int -> a -> m (Maybe b)) -> Vector a -> m (Vector b)

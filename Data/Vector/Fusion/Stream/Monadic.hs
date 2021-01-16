@@ -719,6 +719,8 @@ filterM f (Stream step t) = Stream step' t
                   Done       -> return $ Done
 
 -- | Apply monadic function to each element and drop all Nothings
+--
+-- @since 0.12.2.0
 mapMaybeM :: Monad m => (a -> m (Maybe b)) -> Stream m a -> Stream m b
 {-# INLINE_FUSED mapMaybeM #-}
 mapMaybeM f (Stream step t) = Stream step' t

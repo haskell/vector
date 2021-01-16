@@ -465,6 +465,8 @@ filterM :: Monad m => (a -> m Bool) -> Bundle m v a -> Bundle m v a
 filterM f Bundle{sElems = s, sSize = n} = fromStream (S.filterM f s) (toMax n)
 
 -- | Apply monadic function to each element and drop all Nothings
+--
+-- @since 0.12.2.0
 mapMaybeM :: Monad m => (a -> m (Maybe b)) -> Bundle m v a -> Bundle m v b
 {-# INLINE_FUSED mapMaybeM #-}
 mapMaybeM f Bundle{sElems = s, sSize = n} = fromStream (S.mapMaybeM f s) (toMax n)

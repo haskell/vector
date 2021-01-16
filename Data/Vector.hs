@@ -1324,12 +1324,16 @@ filterM = G.filterM
 
 -- | /O(n)/ Apply monadic function to each element of vector and
 -- discard elements returning Nothing.
+--
+-- @since 0.12.2.0
 mapMaybeM :: Monad m => (a -> m (Maybe b)) -> Vector a -> m (Vector b)
 {-# INLINE mapMaybeM #-}
 mapMaybeM = G.mapMaybeM
 
 -- | /O(n)/ Apply monadic function to each element of vector and its index.
 -- Discards elements returning Nothing.
+--
+-- @since 0.12.2.0
 imapMaybeM :: Monad m => (Int -> a -> m (Maybe b)) -> Vector a -> m (Vector b)
 {-# INLINE imapMaybeM #-}
 imapMaybeM = G.imapMaybeM

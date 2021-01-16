@@ -1071,6 +1071,8 @@ imapMaybe = G.imapMaybe
 
 -- | /O(n)/ Apply monadic function to each element of vector and
 -- discard elements returning Nothing.
+--
+-- @since 0.12.2.0
 mapMaybeM
   :: (Monad m, Storable a, Storable b)
   => (a -> m (Maybe b)) -> Vector a -> m (Vector b)
@@ -1079,6 +1081,8 @@ mapMaybeM = G.mapMaybeM
 
 -- | /O(n)/ Apply monadic function to each element of vector and its index.
 -- Discards elements returning Nothing.
+--
+-- @since 0.12.2.0
 imapMaybeM
   :: (Monad m, Storable a, Storable b)
   => (Int -> a -> m (Maybe b)) -> Vector a -> m (Vector b)
