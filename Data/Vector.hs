@@ -1340,8 +1340,9 @@ imapMaybeM :: Monad m => (Int -> a -> m (Maybe b)) -> Vector a -> m (Vector b)
 {-# INLINE imapMaybeM #-}
 imapMaybeM = G.imapMaybeM
 
--- | /O(n)/ Yield the longest prefix of elements satisfying the predicate
--- without copying.
+-- | /O(n)/ Yield the longest prefix of elements satisfying the predicate.
+-- Current implementation is not copy-free, unless the result vector is
+-- fused away.
 takeWhile :: (a -> Bool) -> Vector a -> Vector a
 {-# INLINE takeWhile #-}
 takeWhile = G.takeWhile

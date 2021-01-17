@@ -1073,8 +1073,9 @@ filterM :: (Monad m, Unbox a) => (a -> m Bool) -> Vector a -> m (Vector a)
 {-# INLINE filterM #-}
 filterM = G.filterM
 
--- | /O(n)/ Yield the longest prefix of elements satisfying the predicate
--- without copying.
+-- | /O(n)/ Yield the longest prefix of elements satisfying the predicate.
+-- Current implementation is not copy-free, unless the result vector is
+-- fused away.
 takeWhile :: Unbox a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE takeWhile #-}
 takeWhile = G.takeWhile
