@@ -1680,8 +1680,8 @@ maximumBy cmpr = Bundle.foldl1' maxBy . stream
                   GT -> x
                   _  -> y
 
--- | /O(n)/ Yield the maximum element of the vector according to the given
--- comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the maximum element of the vector by comparing the results
+-- of a key function on each element. The vector may not be empty.
 maximumOn :: (Ord b, Vector v a) => (a -> b) -> v a -> a
 {-# INLINE maximumOn #-}
 maximumOn f = fst . Bundle.foldl1' maxBy . Bundle.map (\a -> (a, f a)) . stream
@@ -1708,8 +1708,8 @@ minimumBy cmpr = Bundle.foldl1' minBy . stream
                   GT -> y
                   _  -> x
 
--- | /O(n)/ Yield the minimum element of the vector according to the given
--- comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the minimum element of the vector by comparing the results
+-- of a key function on each element. The vector may not be empty.
 minimumOn :: (Ord b, Vector v a) => (a -> b) -> v a -> a
 {-# INLINE minimumOn #-}
 minimumOn f = fst . Bundle.foldl1' minBy . Bundle.map (\a -> (a, f a)) . stream
