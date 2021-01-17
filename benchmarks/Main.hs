@@ -12,7 +12,6 @@ import Algo.Quickhull  (quickhull)
 import Algo.Spectral   (spectral)
 import Algo.Tridiag    (tridiag)
 import Algo.FindIndexR (findIndexR, findIndexR_naive, findIndexR_manual)
-import Algo.MinimumOn  (minOn, maxOn)
 
 import TestData.ParenTree (parenTree)
 import TestData.Graph     (randomGraph)
@@ -62,6 +61,6 @@ main = do
     , bench "findIndexR" $ whnf findIndexR ((<indexFindThreshold), as)
     , bench "findIndexR_naïve" $ whnf findIndexR_naive ((<indexFindThreshold), as)
     , bench "findIndexR_manual" $ whnf findIndexR_manual ((<indexFindThreshold), as)
-    , bench "minimumOn"  $ whnf (minOn (\x -> x*x*x)) as
-    , bench "maximumOn"  $ whnf (maxOn (\x -> x*x*x)) as
+    , bench "minimumOn"  $ whnf (U.minimumOn (\x -> x*x*x)) as
+    , bench "maximumOn"  $ whnf (U.maximumOn (\x -> x*x*x)) as
     ]

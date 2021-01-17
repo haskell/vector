@@ -33,7 +33,6 @@ benchmark algorithms
         Algo.Spectral
         Algo.Tridiag
         Algo.FindIndexR
-        Algo.MinimumOn
 
         TestData.ParenTree
         TestData.Graph
