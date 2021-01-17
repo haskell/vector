@@ -1388,8 +1388,9 @@ imapMaybeM :: (Monad m, Vector v a, Vector v b)
 {-# INLINE imapMaybeM #-}
 imapMaybeM f = unstreamM . Bundle.mapMaybeM (\(i, a) -> f i a) . Bundle.indexed . stream
 
--- | /O(n)/ Yield the longest prefix of elements satisfying the predicate
--- without copying.
+-- | /O(n)/ Yield the longest prefix of elements satisfying the predicate.
+-- Current implementation is not copy-free, unless the result vector is
+-- fused away.
 takeWhile :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE takeWhile #-}
 takeWhile f = unstream . Bundle.takeWhile f . stream
