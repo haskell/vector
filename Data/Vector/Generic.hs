@@ -115,7 +115,8 @@ module Data.Vector.Generic (
   -- ** Specialised folds
   all, any, and, or,
   sum, product,
-  maximum, maximumBy, minimum, minimumBy,
+  maximum, maximumBy, maximumOn,
+  minimum, minimumBy, minimumOn,
   minIndex, minIndexBy, maxIndex, maxIndexBy,
 
   -- ** Monadic folds
@@ -1679,6 +1680,18 @@ maximumBy cmpr = Bundle.foldl1' maxBy . stream
                   GT -> x
                   _  -> y
 
+-- | /O(n)/ Yield the maximum element of the vector by comparing the results
+-- of a key function on each element. In case of a tie, the first occurrence
+-- wins. The vector may not be empty.
+maximumOn :: (Ord b, Vector v a) => (a -> b) -> v a -> a
+{-# INLINE maximumOn #-}
+maximumOn f = fst . Bundle.foldl1' maxBy . Bundle.map (\a -> (a, f a)) . stream
+  where
+    {-# INLINE maxBy #-}
+    maxBy x y = case compare (snd x) (snd y) of
+                  GT -> x
+                  _  -> y
+
 -- | /O(n)/ Yield the minimum element of the vector. The vector may not be
 -- empty.
 minimum :: (Vector v a, Ord a) => v a -> a
@@ -1693,6 +1706,18 @@ minimumBy cmpr = Bundle.foldl1' minBy . stream
   where
     {-# INLINE minBy #-}
     minBy x y = case cmpr x y of
+                  GT -> y
+                  _  -> x
+
+-- | /O(n)/ Yield the minimum element of the vector by comparing the results
+-- of a key function on each element. In case of a tie, the first occurrence
+-- wins. The vector may not be empty.
+minimumOn :: (Ord b, Vector v a) => (a -> b) -> v a -> a
+{-# INLINE minimumOn #-}
+minimumOn f = fst . Bundle.foldl1' minBy . Bundle.map (\a -> (a, f a)) . stream
+  where
+    {-# INLINE minBy #-}
+    minBy x y = case compare (snd x) (snd y) of
                   GT -> y
                   _  -> x
 

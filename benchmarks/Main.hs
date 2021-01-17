@@ -61,4 +61,6 @@ main = do
     , bench "findIndexR" $ whnf findIndexR ((<indexFindThreshold), as)
     , bench "findIndexR_naïve" $ whnf findIndexR_naive ((<indexFindThreshold), as)
     , bench "findIndexR_manual" $ whnf findIndexR_manual ((<indexFindThreshold), as)
+    , bench "minimumOn"  $ whnf (U.minimumOn (\x -> x*x*x)) as
+    , bench "maximumOn"  $ whnf (U.maximumOn (\x -> x*x*x)) as
     ]
