@@ -205,8 +205,6 @@ import Prelude hiding ( length, null,
 import qualified Text.Read as Read
 import qualified Data.List.NonEmpty as NonEmpty
 
-import Data.Functor ((<$>))
-
 import Data.Typeable ( Typeable, gcast1 )
 
 #include "vector.h"

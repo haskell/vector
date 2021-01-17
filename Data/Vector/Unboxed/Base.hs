@@ -48,7 +48,6 @@ import Data.Monoid (Alt(..))
 #if MIN_VERSION_base(4,9,0)
 import Data.Semigroup (Min(..),Max(..),First(..),Last(..),WrappedMonoid(..),Arg(..))
 #endif
-import Data.Word ( Word )
 
 import Data.Typeable ( Typeable )
 import Data.Data     ( Data(..) )
