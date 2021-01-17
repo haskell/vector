@@ -15,7 +15,6 @@ import Control.Monad.Trans.Writer
 import Data.Function (on)
 import Data.Functor.Identity
 import Data.List ( sortBy )
-import Data.Monoid
 import Data.Maybe (catMaybes)
 
 instance Show a => Show (S.Bundle v a) where

@@ -27,7 +27,6 @@ import qualified Data.Vector.Generic.Mutable.Base as M
 import           Data.Vector.Fusion.Util (Box(..), liftBox)
 
 import Control.Monad.ST
-import Control.Monad.Primitive
 
 -- | @Mutable v s a@ is the mutable version of the pure vector type @v a@ with
 -- the state token @s@. It is injective on GHC 8 and newer.

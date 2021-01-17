@@ -16,7 +16,6 @@ module Data.Vector.Generic.Mutable.Base (
 ) where
 
 import Control.Monad.ST
-import Control.Monad.Primitive ( PrimMonad, PrimState )
 
 -- Data.Vector.Internal.Check is unused
 #define NOT_VECTOR_MODULE
