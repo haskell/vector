@@ -1257,7 +1257,8 @@ maximumBy :: Prim a => (a -> a -> Ordering) -> Vector a -> a
 maximumBy = G.maximumBy
 
 -- | /O(n)/ Yield the maximum element of the vector by comparing the results
--- of a key function on each element. The vector may not be empty.
+-- of a key function on each element. In case of a tie, the first occurrence
+-- wins. The vector may not be empty.
 maximumOn :: (Ord b, Prim a) => (a -> b) -> Vector a -> a
 {-# INLINE maximumOn #-}
 maximumOn = G.maximumOn
@@ -1275,7 +1276,8 @@ minimumBy :: Prim a => (a -> a -> Ordering) -> Vector a -> a
 minimumBy = G.minimumBy
 
 -- | /O(n)/ Yield the minimum element of the vector by comparing the results
--- of a key function on each element. The vector may not be empty.
+-- of a key function on each element. In case of a tie, the first occurrence
+-- wins. The vector may not be empty.
 minimumOn :: (Ord b, Prim a) => (a -> b) -> Vector a -> a
 {-# INLINE minimumOn #-}
 minimumOn = G.minimumOn
