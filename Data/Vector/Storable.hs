@@ -1406,14 +1406,15 @@ maximum :: (Storable a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
 maximum = G.maximum
 
--- | /O(n)/ Yield the maximum element of the vector according to the given
--- comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the maximum element of the vector according to the
+-- given comparison function. The vector may not be empty. In case of
+-- a tie the last occurrence wins.
 maximumBy :: Storable a => (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE maximumBy #-}
 maximumBy = G.maximumBy
 
 -- | /O(n)/ Yield the maximum element of the vector by comparing the results
--- of a key function on each element. In case of a tie, the first occurrence
+-- of a key function on each element. In case of a tie, the last occurrence
 -- wins. The vector may not be empty.
 maximumOn :: (Ord b, Storable a) => (a -> b) -> Vector a -> a
 {-# INLINE maximumOn #-}
@@ -1425,8 +1426,9 @@ minimum :: (Storable a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum
 
--- | /O(n)/ Yield the minimum element of the vector according to the given
--- comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the minimum element of the vector according to the
+-- given comparison function. The vector may not be empty. In case of
+-- a tie, the first occurrence wins. The vector may not be empty.
 minimumBy :: Storable a => (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE minimumBy #-}
 minimumBy = G.minimumBy
@@ -1444,8 +1446,9 @@ maxIndex :: (Storable a, Ord a) => Vector a -> Int
 {-# INLINE maxIndex #-}
 maxIndex = G.maxIndex
 
--- | /O(n)/ Yield the index of the maximum element of the vector according to
--- the given comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the index of the maximum element of the vector
+-- according to the given comparison function. The vector may not be
+-- empty. In case of a tie, the last occurrence wins.
 maxIndexBy :: Storable a => (a -> a -> Ordering) -> Vector a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy = G.maxIndexBy

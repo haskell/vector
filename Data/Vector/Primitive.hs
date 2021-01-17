@@ -1359,14 +1359,15 @@ maximum :: (Prim a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
 maximum = G.maximum
 
--- | /O(n)/ Yield the maximum element of the vector according to the given
--- comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the maximum element of the vector according to the
+-- given comparison function. The vector may not be empty. In case of
+-- a tie the last occurrence wins.
 maximumBy :: Prim a => (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE maximumBy #-}
 maximumBy = G.maximumBy
 
 -- | /O(n)/ Yield the maximum element of the vector by comparing the results
--- of a key function on each element. In case of a tie, the first occurrence
+-- of a key function on each element. In case of a tie, the last occurrence
 -- wins. The vector may not be empty.
 maximumOn :: (Ord b, Prim a) => (a -> b) -> Vector a -> a
 {-# INLINE maximumOn #-}
@@ -1378,8 +1379,9 @@ minimum :: (Prim a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum
 
--- | /O(n)/ Yield the minimum element of the vector according to the given
--- comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the minimum element of the vector according to the
+-- given comparison function. The vector may not be empty. In case of
+-- a tie, the first occurrence wins. The vector may not be empty.
 minimumBy :: Prim a => (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE minimumBy #-}
 minimumBy = G.minimumBy
@@ -1397,8 +1399,9 @@ maxIndex :: (Prim a, Ord a) => Vector a -> Int
 {-# INLINE maxIndex #-}
 maxIndex = G.maxIndex
 
--- | /O(n)/ Yield the index of the maximum element of the vector according to
--- the given comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the index of the maximum element of the vector
+-- according to the given comparison function. The vector may not be
+-- empty. In case of a tie, the last occurrence wins.
 maxIndexBy :: Prim a => (a -> a -> Ordering) -> Vector a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy = G.maxIndexBy

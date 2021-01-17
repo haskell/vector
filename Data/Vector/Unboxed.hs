@@ -1397,15 +1397,33 @@ maximum :: (Unbox a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
 maximum = G.maximum
 
--- | /O(n)/ Yield the maximum element of the vector according to the given
--- comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the maximum element of the vector according to the
+-- given comparison function. The vector may not be empty. In case of
+-- a tie the last occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.maximumBy (comparing fst) $ VU.fromList [(2.0,'a'), (1.0,'b')]
+-- (2.0,'a')
+-- >>> VU.maximumBy (comparing fst) $ VU.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'b')
 maximumBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE maximumBy #-}
 maximumBy = G.maximumBy
 
 -- | /O(n)/ Yield the maximum element of the vector by comparing the results
--- of a key function on each element. In case of a tie, the first occurrence
+-- of a key function on each element. In case of a tie, the last occurrence
 -- wins. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.maximumOn fst $ VU.fromList [(2.0,'a'), (1.0,'b')]
+-- (2.0,'a')
+-- >>> VU.maximumOn fst $ VU.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'b')
 maximumOn :: (Ord b, Unbox a) => (a -> b) -> Vector a -> a
 {-# INLINE maximumOn #-}
 maximumOn = G.maximumOn
@@ -1415,6 +1433,18 @@ maximumOn = G.maximumOn
 minimum :: (Unbox a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum
+-- | /O(n)/ Yield the minimum element of the vector according to the
+-- given comparison function. The vector may not be empty. In case of
+-- a tie, the first occurrence wins. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.minimumBy (comparing fst) $ VU.fromList [(2.0,'a'), (1.0,'b')]
+-- (1.0,'b')
+-- >>> VU.minimumBy (comparing fst) $ VU.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'a')
 
 minimumBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> a
 -- | /O(n)/ Yield the minimum element of the vector according to the given
@@ -1425,6 +1455,14 @@ minimumBy = G.minimumBy
 -- | /O(n)/ Yield the minimum element of the vector by comparing the results
 -- of a key function on each element. In case of a tie, the first occurrence
 -- wins. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.minimumOn fst $ VU.fromList [(2.0,'a'), (1.0,'b')]
+-- (1.0,'b')
+-- >>> VU.minimumOn fst $ VU.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'a')
 minimumOn :: (Ord b, Unbox a) => (a -> b) -> Vector a -> a
 {-# INLINE minimumOn #-}
 minimumOn = G.minimumOn
@@ -1435,8 +1473,18 @@ maxIndex :: (Unbox a, Ord a) => Vector a -> Int
 {-# INLINE maxIndex #-}
 maxIndex = G.maxIndex
 
--- | /O(n)/ Yield the index of the maximum element of the vector according to
--- the given comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the index of the maximum element of the vector
+-- according to the given comparison function. The vector may not be
+-- empty. In case of a tie, the last occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.maxIndexBy (comparing fst) $ VU.fromList [(2.0,'a'), (1.0,'b')]
+-- 0
+-- >>> VU.maxIndexBy (comparing fst) $ VU.fromList [(1.0,'a'), (1.0,'b')]
+-- 1
 maxIndexBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy = G.maxIndexBy
@@ -1449,6 +1497,15 @@ minIndex = G.minIndex
 
 -- | /O(n)/ Yield the index of the minimum element of the vector according to
 -- the given comparison function. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.minIndexBy (comparing fst) $ VU.fromList [(2.0,'a'), (1.0,'b')]
+-- 1
+-- >>> VU.minIndexBy (comparing fst) $ VU.fromList [(1.0,'a'), (1.0,'b')]
+-- 0
 minIndexBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> Int
 {-# INLINE minIndexBy #-}
 minIndexBy = G.minIndexBy

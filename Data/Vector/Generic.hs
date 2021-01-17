@@ -1783,8 +1783,18 @@ maximum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE maximum #-}
 maximum = Bundle.foldl1' max . stream
 
--- | /O(n)/ Yield the maximum element of the vector according to the given
--- comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the maximum element of the vector according to the
+-- given comparison function. The vector may not be empty. In case of
+-- a tie the last occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector as V
+-- >>> V.maximumBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- (2.0,'a')
+-- >>> V.maximumBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'b')
 maximumBy :: Vector v a => (a -> a -> Ordering) -> v a -> a
 {-# INLINE maximumBy #-}
 maximumBy cmpr = Bundle.foldl1' maxBy . stream
@@ -1795,8 +1805,16 @@ maximumBy cmpr = Bundle.foldl1' maxBy . stream
                   _  -> y
 
 -- | /O(n)/ Yield the maximum element of the vector by comparing the results
--- of a key function on each element. In case of a tie, the first occurrence
+-- of a key function on each element. In case of a tie, the last occurrence
 -- wins. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.maximumOn fst $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- (2.0,'a')
+-- >>> V.maximumOn fst $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'b')
 maximumOn :: (Ord b, Vector v a) => (a -> b) -> v a -> a
 {-# INLINE maximumOn #-}
 maximumOn f = fst . Bundle.foldl1' maxBy . Bundle.map (\a -> (a, f a)) . stream
@@ -1812,8 +1830,18 @@ minimum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE minimum #-}
 minimum = Bundle.foldl1' min . stream
 
--- | /O(n)/ Yield the minimum element of the vector according to the given
--- comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the minimum element of the vector according to the
+-- given comparison function. The vector may not be empty. In case of
+-- a tie, the first occurrence wins. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector as V
+-- >>> V.minimumBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- (1.0,'b')
+-- >>> V.minimumBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'a')
 minimumBy :: Vector v a => (a -> a -> Ordering) -> v a -> a
 {-# INLINE minimumBy #-}
 minimumBy cmpr = Bundle.foldl1' minBy . stream
@@ -1826,6 +1854,14 @@ minimumBy cmpr = Bundle.foldl1' minBy . stream
 -- | /O(n)/ Yield the minimum element of the vector by comparing the results
 -- of a key function on each element. In case of a tie, the first occurrence
 -- wins. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.minimumOn fst $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- (1.0,'b')
+-- >>> V.minimumOn fst $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'a')
 minimumOn :: (Ord b, Vector v a) => (a -> b) -> v a -> a
 {-# INLINE minimumOn #-}
 minimumOn f = fst . Bundle.foldl1' minBy . Bundle.map (\a -> (a, f a)) . stream
@@ -1841,8 +1877,18 @@ maxIndex :: (Vector v a, Ord a) => v a -> Int
 {-# INLINE maxIndex #-}
 maxIndex = maxIndexBy compare
 
--- | /O(n)/ Yield the index of the maximum element of the vector according to
--- the given comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the index of the maximum element of the vector
+-- according to the given comparison function. The vector may not be
+-- empty. In case of a tie, the last occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector as V
+-- >>> V.maxIndexBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- 0
+-- >>> V.maxIndexBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- 1
 maxIndexBy :: Vector v a => (a -> a -> Ordering) -> v a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy cmpr = fst . Bundle.foldl1' imax . Bundle.indexed . stream
@@ -1860,6 +1906,15 @@ minIndex = minIndexBy compare
 
 -- | /O(n)/ Yield the index of the minimum element of the vector according to
 -- the given comparison function. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector as V
+-- >>> V.minIndexBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- 1
+-- >>> V.minIndexBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- 0
 minIndexBy :: Vector v a => (a -> a -> Ordering) -> v a -> Int
 {-# INLINE minIndexBy #-}
 minIndexBy cmpr = fst . Bundle.foldl1' imin . Bundle.indexed . stream
