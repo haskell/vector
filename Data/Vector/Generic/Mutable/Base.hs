@@ -87,10 +87,12 @@ class MVector v a where
                                   -> v (PrimState m) a   -- ^ source
                                   -> m ()
 
-  -- | Grow a vector by the given number of elements. This method should not be
-  -- called directly, use 'unsafeGrow' instead.
-  basicUnsafeGrow  :: PrimMonad m => v (PrimState m) a -> Int
-                                                       -> m (v (PrimState m) a)
+  -- | Grow a vector by the given number of elements. Allocates a new vector and
+  -- copies all of the elements over starting at 0 index. This method should not
+  -- be called directly, use 'grow'\/'unsafeGrow' instead.
+  basicUnsafeGrow  :: PrimMonad m => v (PrimState m) a
+                                  -> Int
+                                  -> m (v (PrimState m) a)
 
   {-# INLINE basicUnsafeReplicate #-}
   basicUnsafeReplicate n x
