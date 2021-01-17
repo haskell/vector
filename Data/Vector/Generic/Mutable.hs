@@ -631,8 +631,18 @@ clone v = do
 -- Growing
 -- -------
 
--- | Grow a vector by the given number of elements. The number must be
--- positive.
+-- | Grow a vector by the given number of elements. The number must not be
+-- negative otherwise error is thrown. Semantics of this function is exactly the
+-- same as `unsafeGrow`, except that it will initialize the newly
+-- allocated memory first.
+--
+-- It is important to note that mutating the returned vector will not affect the
+-- vector that was used as a source. In other words it does not, nor will it
+-- ever have the semantics of @realloc@ from C.
+--
+-- > grow mv 0 === clone mv
+--
+-- @since 0.4.0
 grow :: (PrimMonad m, MVector v a)
                 => v (PrimState m) a -> Int -> m (v (PrimState m) a)
 {-# INLINE grow #-}
@@ -642,6 +652,10 @@ grow v by = BOUNDS_CHECK(checkLength) "grow" by
                basicInitialize $ basicUnsafeSlice (length v) by vnew
                return vnew
 
+-- | Same as `grow`, except that it copies data towards the end of the newly
+-- allocated vector making extra space available at the beginning.
+--
+-- @since 0.11.0.0
 growFront :: (PrimMonad m, MVector v a)
                 => v (PrimState m) a -> Int -> m (v (PrimState m) a)
 {-# INLINE growFront #-}
@@ -675,15 +689,40 @@ enlargeFront v = stToPrim $ do
   where
     by = enlarge_delta v
 
--- | Grow a vector by the given number of elements. The number must be
--- positive but this is not checked.
-unsafeGrow :: (PrimMonad m, MVector v a)
-                        => v (PrimState m) a -> Int -> m (v (PrimState m) a)
+-- | Grow a vector by allocating a new mutable vector of the same size plus the
+-- the given number of elements and copying all the data over to the new vector
+-- starting at its beginning. The newly allocated memory is not initialized and
+-- the extra space at the end will likely contain garbage data or uninitialzed
+-- error. Use `unsafeGrowFront` to make the extra space available in the front
+-- of the new vector.
+--
+-- It is important to note that mutating the returned vector will not affect
+-- elements of the vector that was used as a source. In other words it does not,
+-- nor will it ever have the semantics of @realloc@ from C. Keep in mind,
+-- however, that values themselves can be of a mutable type
+-- (eg. `Foreign.Ptr.Ptr`), in which case it would be possible to affect values
+-- stored in both vectors.
+--
+-- > unsafeGrow mv 0 === clone mv
+--
+-- @since 0.4.0
+unsafeGrow ::
+     (PrimMonad m, MVector v a)
+  => v (PrimState m) a
+  -- ^ A mutable vector to copy the data from.
+  -> Int
+  -- ^ Number of elements to grow the vector by. It must be non-negative but
+  -- this is not checked.
+  -> m (v (PrimState m) a)
 {-# INLINE unsafeGrow #-}
 unsafeGrow v n = UNSAFE_CHECK(checkLength) "unsafeGrow" n
                $ stToPrim
                $ basicUnsafeGrow v n
 
+-- | Same as `unsafeGrow`, except that it copies data towards the end of the
+-- newly allocated vector making extra space available at the beginning.
+--
+-- @since 0.11.0.0
 unsafeGrowFront :: (PrimMonad m, MVector v a)
                         => v (PrimState m) a -> Int -> m (v (PrimState m) a)
 {-# INLINE unsafeGrowFront #-}

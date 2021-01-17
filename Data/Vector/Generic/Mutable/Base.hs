@@ -87,8 +87,9 @@ class MVector v a where
                    -> v s a   -- ^ source
                    -> ST s ()
 
-  -- | Grow a vector by the given number of elements. This method should not be
-  -- called directly, use 'unsafeGrow' instead.
+  -- | Grow a vector by the given number of elements. Allocates a new vector and
+  -- copies all of the elements over starting at 0 index. This method should not
+  -- be called directly, use 'grow'\/'unsafeGrow' instead.
   basicUnsafeGrow  :: v s a -> Int -> ST s (v s a)
 
   {-# INLINE basicUnsafeReplicate #-}

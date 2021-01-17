@@ -187,15 +187,50 @@ clone = G.clone
 -- Growing
 -- -------
 
--- | Grow a vector by the given number of elements. The number must be
--- positive.
+-- | Grow an unboxed vector by the given number of elements. The number must be
+-- non-negative. Same semantics as in `G.grow` for generic vector.
+--
+-- ====__Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> import qualified Data.Vector.Unboxed.Mutable as MVU
+-- >>> mv <- VU.thaw $ VU.fromList ([('a', 10), ('b', 20), ('c', 30)] :: [(Char, Int)])
+-- >>> mv' <- MVU.grow mv 2
+--
+-- Extra memory at the end of the newly allocated vector is initialized to 0
+-- bytes, which for `Unbox` instance will usually correspond to some default
+-- value for a particular type, eg. @0@ for @Int@, @False@ for @Bool@,
+-- etc. However, if `unsafeGrow` was used instead this would not have been
+-- guaranteed and some garbage would be there instead:
+--
+-- >>> VU.unsafeFreeze mv'
+-- [('a',10),('b',20),('c',30),('\NUL',0),('\NUL',0)]
+--
+-- Having the extra space we can write new values in there:
+--
+-- >>> MVU.write mv' 3 ('d', 999)
+-- >>> VU.unsafeFreeze mv'
+-- [('a',10),('b',20),('c',30),('d',999),('\NUL',0)]
+--
+-- It is important to note that the source mutable vector is not affected when
+-- the newly allocated one is mutated.
+--
+-- >>> MVU.write mv' 2 ('X', 888)
+-- >>> VU.unsafeFreeze mv'
+-- [('a',10),('b',20),('X',888),('d',999),('\NUL',0)]
+-- >>> VU.unsafeFreeze mv
+-- [('a',10),('b',20),('c',30)]
+--
+-- @since 0.5
 grow :: (PrimMonad m, Unbox a)
               => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE grow #-}
 grow = G.grow
 
--- | Grow a vector by the given number of elements. The number must be
--- positive but this is not checked.
+-- | Grow a vector by the given number of elements. The number must be non-negative but
+-- this is not checked. Same semantics as in `G.unsafeGrow` for generic vector.
+--
+-- @since 0.5
 unsafeGrow :: (PrimMonad m, Unbox a)
                => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE unsafeGrow #-}
