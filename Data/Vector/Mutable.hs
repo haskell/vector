@@ -309,15 +309,49 @@ clone = G.clone
 -- Growing
 -- -------
 
--- | Grow a vector by the given number of elements. The number must be
--- positive.
+-- | Grow a boxed vector by the given number of elements. The number must be
+-- non-negative. Same semantics as in `G.grow` for generic vector. It differs
+-- from @grow@ functions for unpacked vectors, however, in that only pointers to
+-- values are copied over, therefore values themselves will be shared between
+-- two vectors. This is an important distinction to know about during memory
+-- usage analysis and in case when values themselves are of a mutable type, eg.
+-- `Data.IORef.IORef` or another mutable vector.
+--
+-- ====__Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Mutable as MV
+-- >>> mv <- V.thaw $ V.fromList ([10, 20, 30] :: [Integer])
+-- >>> mv' <- MV.grow mv 2
+--
+-- The two extra elements at the end of the newly allocated vector will be
+-- uninitialized and will result in an error if evaluated, so me must overwrite
+-- them with new values first:
+--
+-- >>> MV.write mv' 3 999
+-- >>> MV.write mv' 4 777
+-- >>> V.unsafeFreeze mv'
+-- [10,20,30,999,777]
+--
+-- It is important to note that the source mutable vector is not affected when
+-- the newly allocated one is mutated.
+--
+-- >>> MV.write mv' 2 888
+-- >>> V.unsafeFreeze mv'
+-- [10,20,888,999,777]
+-- >>> V.unsafeFreeze mv
+-- [10,20,30]
+--
+-- @since 0.5
 grow :: PrimMonad m
               => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE grow #-}
 grow = G.grow
 
--- | Grow a vector by the given number of elements. The number must be
--- positive but this is not checked.
+-- | Grow a vector by the given number of elements. The number must be non-negative but
+-- this is not checked. Same semantics as in `G.unsafeGrow` for generic vector.
+--
+-- @since 0.5
 unsafeGrow :: PrimMonad m
                => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE unsafeGrow #-}

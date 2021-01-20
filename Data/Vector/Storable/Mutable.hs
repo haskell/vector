@@ -371,15 +371,50 @@ clone = G.clone
 -- Growing
 -- -------
 
--- | Grow a vector by the given number of elements. The number must be
--- positive.
+-- | Grow a storable vector by the given number of elements. The number must be
+-- non-negative. Same semantics as in `G.grow` for generic vector.
+--
+-- ====__Examples__
+--
+-- >>> import qualified Data.Vector.Storable as VS
+-- >>> import qualified Data.Vector.Storable.Mutable as MVS
+-- >>> mv <- VS.thaw $ VS.fromList ([10, 20, 30] :: [Int])
+-- >>> mv' <- MVS.grow mv 2
+--
+-- Extra memory at the end of the newly allocated vector is initialized to 0
+-- bytes, which for `Storable` instance will usually correspond to some default
+-- value for a particular type, eg. @0@ for @Int@, @False@ for @Bool@,
+-- etc. However, if `unsafeGrow` was used instead this would not have been
+-- guaranteed and some garbage would be there instead:
+--
+-- >>> VS.unsafeFreeze mv'
+-- [10,20,30,0,0]
+--
+-- Having the extra space we can write new values in there:
+--
+-- >>> MVS.write mv' 3 999
+-- >>> VS.unsafeFreeze mv'
+-- [10,20,30,999,0]
+--
+-- It is important to note that the source mutable vector is not affected when
+-- the newly allocated one is mutated.
+--
+-- >>> MVS.write mv' 2 888
+-- >>> VS.unsafeFreeze mv'
+-- [10,20,888,999,0]
+-- >>> VS.unsafeFreeze mv
+-- [10,20,30]
+--
+-- @since 0.5
 grow :: (PrimMonad m, Storable a)
      => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE grow #-}
 grow = G.grow
 
--- | Grow a vector by the given number of elements. The number must be
--- positive but this is not checked.
+-- | Grow a vector by the given number of elements. The number must be non-negative but
+-- this is not checked. Same semantics as in `G.unsafeGrow` for generic vector.
+--
+-- @since 0.5
 unsafeGrow :: (PrimMonad m, Storable a)
            => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE unsafeGrow #-}
