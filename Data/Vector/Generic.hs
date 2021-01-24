@@ -1652,31 +1652,83 @@ foldMap' f = foldl' (\acc a -> acc `mappend` f a) mempty
 -- -----------------
 
 -- | /O(n)/ Check if all elements satisfy the predicate.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.all even $ V.fromList [2, 4, 12 :: Int]
+-- True
+-- >>> V.all even $ V.fromList [2, 4, 13 :: Int]
+-- False
+-- >>> V.all even (V.empty :: V.Vector Int)
+-- True
 all :: Vector v a => (a -> Bool) -> v a -> Bool
 {-# INLINE all #-}
 all f = Bundle.and . Bundle.map f . stream
 
 -- | /O(n)/ Check if any element satisfies the predicate.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.any even $ V.fromList [1, 3, 7 :: Int]
+-- False
+-- >>> V.any even $ V.fromList [3, 2, 13 :: Int]
+-- True
+-- >>> V.any even (V.empty :: V.Vector Int)
+-- False
 any :: Vector v a => (a -> Bool) -> v a -> Bool
 {-# INLINE any #-}
 any f = Bundle.or . Bundle.map f . stream
 
 -- | /O(n)/ Check if all elements are 'True'
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.and $ V.fromList [True, False]
+-- False
+-- >>> V.and V.empty
+-- True
 and :: Vector v Bool => v Bool -> Bool
 {-# INLINE and #-}
 and = Bundle.and . stream
 
 -- | /O(n)/ Check if any element is 'True'
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.or $ V.fromList [True, False]
+-- True
+-- >>> V.or V.empty
+-- False
 or :: Vector v Bool => v Bool -> Bool
 {-# INLINE or #-}
 or = Bundle.or . stream
 
 -- | /O(n)/ Compute the sum of the elements
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.sum $ V.fromList [300,20,1 :: Int]
+-- 321
+-- >>> V.sum (V.empty :: V.Vector Int)
+-- 0
 sum :: (Vector v a, Num a) => v a -> a
 {-# INLINE sum #-}
 sum = Bundle.foldl' (+) 0 . stream
 
 -- | /O(n)/ Compute the produce of the elements
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.product $ V.fromList [1,2,3,4 :: Int]
+-- 24
+-- >>> V.product (V.empty :: V.Vector Int)
+-- 1
 product :: (Vector v a, Num a) => v a -> a
 {-# INLINE product #-}
 product = Bundle.foldl' (*) 1 . stream
@@ -2027,6 +2079,14 @@ fromList = unstream . Bundle.fromList
 -- @
 -- fromListN n xs = 'fromList' ('take' n xs)
 -- @
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.fromListN 3 [1,2,3,4,5::Int]
+-- [1,2,3]
+-- >>> V.fromListN 3 [1::Int]
+-- [1]
 fromListN :: Vector v a => Int -> [a] -> v a
 {-# INLINE fromListN #-}
 fromListN n = unstream . Bundle.fromListN n

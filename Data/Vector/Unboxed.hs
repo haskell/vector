@@ -1260,31 +1260,83 @@ foldMap' = G.foldMap'
 -- -----------------
 
 -- | /O(n)/ Check if all elements satisfy the predicate.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.all even $ VU.fromList [2, 4, 12 :: Int]
+-- True
+-- >>> VU.all even $ VU.fromList [2, 4, 13 :: Int]
+-- False
+-- >>> VU.all even (VU.empty :: VU.Vector Int)
+-- True
 all :: Unbox a => (a -> Bool) -> Vector a -> Bool
 {-# INLINE all #-}
 all = G.all
 
 -- | /O(n)/ Check if any element satisfies the predicate.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.any even $ VU.fromList [1, 3, 7 :: Int]
+-- False
+-- >>> VU.any even $ VU.fromList [3, 2, 13 :: Int]
+-- True
+-- >>> VU.any even (VU.empty :: VU.Vector Int)
+-- False
 any :: Unbox a => (a -> Bool) -> Vector a -> Bool
 {-# INLINE any #-}
 any = G.any
 
 -- | /O(n)/ Check if all elements are 'True'
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.and $ VU.fromList [True, False]
+-- False
+-- >>> VU.and VU.empty
+-- True
 and :: Vector Bool -> Bool
 {-# INLINE and #-}
 and = G.and
 
 -- | /O(n)/ Check if any element is 'True'
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.or $ VU.fromList [True, False]
+-- True
+-- >>> VU.or VU.empty
+-- False
 or :: Vector Bool -> Bool
 {-# INLINE or #-}
 or = G.or
 
 -- | /O(n)/ Compute the sum of the elements
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.sum $ VU.fromList [300,20,1 :: Int]
+-- 321
+-- >>> VU.sum (VU.empty :: VU.Vector Int)
+-- 0
 sum :: (Unbox a, Num a) => Vector a -> a
 {-# INLINE sum #-}
 sum = G.sum
 
 -- | /O(n)/ Compute the produce of the elements
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.product $ VU.fromList [1,2,3,4 :: Int]
+-- 24
+-- >>> VU.product (VU.empty :: VU.Vector Int)
+-- 1
 product :: (Unbox a, Num a) => Vector a -> a
 {-# INLINE product #-}
 product = G.product
@@ -1588,6 +1640,14 @@ fromList = G.fromList
 -- @
 -- fromListN n xs = 'fromList' ('take' n xs)
 -- @
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.fromListN 3 [1,2,3,4,5::Int]
+-- [1,2,3]
+-- >>> VU.fromListN 3 [1::Int]
+-- [1]
 fromListN :: Unbox a => Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
 fromListN = G.fromListN
