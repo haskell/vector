@@ -111,6 +111,7 @@ module Data.Vector.Generic (
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1, foldr', foldr1',
   ifoldl, ifoldl', ifoldr, ifoldr',
+  foldMap, foldMap',
 
   -- ** Specialised folds
   all, any, and, or,
@@ -194,7 +195,7 @@ import Prelude hiding ( length, null,
                         zipWith, zipWith3, zip, zip3, unzip, unzip3,
                         filter, takeWhile, dropWhile, span, break,
                         elem, notElem,
-                        foldl, foldl1, foldr, foldr1,
+                        foldl, foldl1, foldr, foldr1, foldMap,
                         all, any, and, or, sum, product, maximum, minimum,
                         scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo,
@@ -1654,6 +1655,24 @@ ifoldr' :: Vector v a => (Int -> a -> b -> b) -> b -> v a -> b
 ifoldr' f z xs = Bundle.foldl' (flip (uncurry f)) z
                $ Bundle.indexedR (length xs) $ streamR xs
 
+-- | /O(n)/ Map each element of the structure to a monoid, and combine
+-- the results. It uses same implementation as corresponding method of
+-- 'Foldable' type cless. Note it's implemented in terms of 'foldr'
+-- and won't fuse with functions that traverse vector from left to
+-- right ('map', 'generate', etc.).
+foldMap :: (Monoid m, Vector v a) => (a -> m) -> v a -> m
+{-# INLINE foldMap #-}
+foldMap f = foldr (mappend . f) mempty
+
+-- | /O(n)/ 'foldMap' which is strict in accumulator. It uses same
+-- implementation as corresponding method of 'Foldable' type class.
+-- Note it's implemented in terms of 'foldl'' so it fuses in most
+-- contexts.
+foldMap' :: (Monoid m, Vector v a) => (a -> m) -> v a -> m
+{-# INLINE foldMap' #-}
+foldMap' f = foldl' (\acc a -> acc `mappend` f a) mempty
+
+
 -- Specialised folds
 -- -----------------
 
@@ -2333,3 +2352,6 @@ dataCast :: (Vector v a, Data a, Typeable1 v, Typeable1 t)
          => (forall d. Data  d => c (t d)) -> Maybe  (c (v a))
 {-# INLINE dataCast #-}
 dataCast f = gcast1 f
+
+-- $setup
+-- >>> :set -XFlexibleContexts

@@ -6,6 +6,7 @@
  * Added `iforM` and `iforM_`: [#262](https://github.com/haskell/vector/issues/262)
  * Added `MonadFix` instance for boxed vectors: [#178](https://github.com/haskell/vector/issues/178)
  * Added `uncons` and `unsnoc`: [#212](https://github.com/haskell/vector/issues/212)
+ * Added `foldMap` and `foldMap'`: [#263](https://github.com/haskell/vector/issues/263)
  * Added `isSameVector` for storable vectors
  * Added `toArray`, `fromArray`, `toMutableArray` and `fromMutableArray`
  * Added `iscanl`, `iscanl'`, `iscanr`, `iscanr'` to `Primitive`, `Storable` and `Unboxed`
@@ -13,8 +14,8 @@
  * Added `ifoldM`, `ifoldM'`, `ifoldM_` and `ifoldM'_` to `Primitive` and `Storable`
  * Added `eqBy` and `cmpBy`
  * Added `findIndexR` to `Generic`: [#172](https://github.com/haskell/vector/issues/172)
- * Added `catMaybes`
- * Added `mapMaybeM` and `imapMaybeM`
+ * Added `catMaybes`: [#329](https://github.com/haskell/vector/issues/329)
+ * Added `mapMaybeM` and `imapMaybeM`: [#183](https://github.com/haskell/vector/issues/183)
 
 # Changes in version 0.12.1.2
 
