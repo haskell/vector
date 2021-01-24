@@ -749,7 +749,11 @@ unsafeUpdate_ = G.unsafeUpdate_
 -- | /O(m+n)/ For each pair @(i,b)@ from the list, replace the vector element
 -- @a@ at position @i@ by @f a b@.
 --
--- > accum (+) <5,9,2> [(2,4),(1,6),(0,3),(1,7)] = <5+3, 9+6+7, 2+4>
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.accum (+) (VU.fromList [1000.0,2000.0,3000.0]) [(2,4),(1,6),(0,3),(1,10)]
+-- [1003.0,2016.0,3004.0]
 accum :: Unbox a
       => (a -> b -> a) -- ^ accumulating function @f@
       -> Vector a      -- ^ initial vector (of length @m@)
@@ -761,7 +765,11 @@ accum = G.accum
 -- | /O(m+n)/ For each pair @(i,b)@ from the vector of pairs, replace the vector
 -- element @a@ at position @i@ by @f a b@.
 --
--- > accumulate (+) <5,9,2> <(2,4),(1,6),(0,3),(1,7)> = <5+3, 9+6+7, 2+4>
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.accumulate (+) (VU.fromList [1000.0,2000.0,3000.0]) (VU.fromList [(2,4),(1,6),(0,3),(1,10)])
+-- [1003.0,2016.0,3004.0]
 accumulate :: (Unbox a, Unbox b)
             => (a -> b -> a)  -- ^ accumulating function @f@
             -> Vector a       -- ^ initial vector (of length @m@)
