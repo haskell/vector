@@ -1,5 +1,6 @@
 # Changes in NEXT_VERSION
 
+ * Added `foldMap` and `foldMap'`
  * Methods of type classes `Data.Vector.Generic.Mutable.MVector` and
    `Data.Vector.Generic.Vector` use concrete monads (ST,etc) being
    polymorphic. This allows use of GND and deriving via to define
