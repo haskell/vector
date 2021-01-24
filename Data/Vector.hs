@@ -1534,31 +1534,83 @@ foldMap' = G.foldMap'
 -- -----------------
 
 -- | /O(n)/ Check if all elements satisfy the predicate.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.all even $ V.fromList [2, 4, 12 :: Int]
+-- True
+-- >>> V.all even $ V.fromList [2, 4, 13 :: Int]
+-- False
+-- >>> V.all even (V.empty :: V.Vector Int)
+-- True
 all :: (a -> Bool) -> Vector a -> Bool
 {-# INLINE all #-}
 all = G.all
 
 -- | /O(n)/ Check if any element satisfies the predicate.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.any even $ V.fromList [1, 3, 7 :: Int]
+-- False
+-- >>> V.any even $ V.fromList [3, 2, 13 :: Int]
+-- True
+-- >>> V.any even (V.empty :: V.Vector Int)
+-- False
 any :: (a -> Bool) -> Vector a -> Bool
 {-# INLINE any #-}
 any = G.any
 
 -- | /O(n)/ Check if all elements are 'True'
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.and $ V.fromList [True, False]
+-- False
+-- >>> V.and V.empty
+-- True
 and :: Vector Bool -> Bool
 {-# INLINE and #-}
 and = G.and
 
 -- | /O(n)/ Check if any element is 'True'
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.or $ V.fromList [True, False]
+-- True
+-- >>> V.or V.empty
+-- False
 or :: Vector Bool -> Bool
 {-# INLINE or #-}
 or = G.or
 
 -- | /O(n)/ Compute the sum of the elements
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.sum $ V.fromList [300,20,1 :: Int]
+-- 321
+-- >>> V.sum (V.empty :: V.Vector Int)
+-- 0
 sum :: Num a => Vector a -> a
 {-# INLINE sum #-}
 sum = G.sum
 
 -- | /O(n)/ Compute the produce of the elements
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.product $ V.fromList [1,2,3,4 :: Int]
+-- 24
+-- >>> V.product (V.empty :: V.Vector Int)
+-- 1
 product :: Num a => Vector a -> a
 {-# INLINE product #-}
 product = G.product

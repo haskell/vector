@@ -1261,21 +1261,57 @@ foldMap' = G.foldMap'
 -- -----------------
 
 -- | /O(n)/ Check if all elements satisfy the predicate.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> VP.all even $ VP.fromList [2, 4, 12 :: Int]
+-- True
+-- >>> VP.all even $ VP.fromList [2, 4, 13 :: Int]
+-- False
+-- >>> VP.all even (VP.empty :: VP.Vector Int)
+-- True
 all :: Prim a => (a -> Bool) -> Vector a -> Bool
 {-# INLINE all #-}
 all = G.all
 
 -- | /O(n)/ Check if any element satisfies the predicate.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> VP.any even $ VP.fromList [1, 3, 7 :: Int]
+-- False
+-- >>> VP.any even $ VP.fromList [3, 2, 13 :: Int]
+-- True
+-- >>> VP.any even (VP.empty :: VP.Vector Int)
+-- False
 any :: Prim a => (a -> Bool) -> Vector a -> Bool
 {-# INLINE any #-}
 any = G.any
 
 -- | /O(n)/ Compute the sum of the elements
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> VP.sum $ VP.fromList [300,20,1 :: Int]
+-- 321
+-- >>> VP.sum (VP.empty :: VP.Vector Int)
+-- 0
 sum :: (Prim a, Num a) => Vector a -> a
 {-# INLINE sum #-}
 sum = G.sum
 
 -- | /O(n)/ Compute the produce of the elements
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> VP.product $ VP.fromList [1,2,3,4 :: Int]
+-- 24
+-- >>> VP.product (VP.empty :: VP.Vector Int)
+-- 1
 product :: (Prim a, Num a) => Vector a -> a
 {-# INLINE product #-}
 product = G.product
@@ -1586,6 +1622,14 @@ fromList = G.fromList
 -- @
 -- fromListN n xs = 'fromList' ('take' n xs)
 -- @
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> VP.fromListN 3 [1,2,3,4,5::Int]
+-- [1,2,3]
+-- >>> VP.fromListN 3 [1::Int]
+-- [1]
 fromListN :: Prim a => Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
 fromListN = G.fromListN
