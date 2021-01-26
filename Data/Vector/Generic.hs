@@ -195,7 +195,10 @@ import Prelude hiding ( length, null,
                         zipWith, zipWith3, zip, zip3, unzip, unzip3,
                         filter, takeWhile, dropWhile, span, break,
                         elem, notElem,
-                        foldl, foldl1, foldr, foldr1, foldMap,
+                        foldl, foldl1, foldr, foldr1,
+#if __GLASGOW_HASKELL__ >= 706
+                        foldMap,
+#endif
                         all, any, and, or, sum, product, maximum, minimum,
                         scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo,
@@ -204,6 +207,10 @@ import Prelude hiding ( length, null,
 
 import qualified Text.Read as Read
 import qualified Data.List.NonEmpty as NonEmpty
+
+#if __GLASGOW_HASKELL__ < 710
+import Data.Monoid
+#endif
 
 #if __GLASGOW_HASKELL__ >= 707
 import Data.Typeable ( Typeable, gcast1 )
