@@ -1779,6 +1779,12 @@ product = Bundle.foldl' (*) 1 . stream
 
 -- | /O(n)/ Yield the maximum element of the vector. The vector may not be
 -- empty.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.maximum $ V.fromList [2.0, 1.0]
+-- 2.0
 maximum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE maximum #-}
 maximum = Bundle.foldl1' max . stream
@@ -1796,6 +1802,12 @@ maximumBy cmpr = Bundle.foldl1' maxBy . stream
 
 -- | /O(n)/ Yield the minimum element of the vector. The vector may not be
 -- empty.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.minimum $ V.fromList [2.0, 1.0]
+-- 1.0
 minimum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE minimum #-}
 minimum = Bundle.foldl1' min . stream

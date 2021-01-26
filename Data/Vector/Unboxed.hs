@@ -1357,6 +1357,12 @@ product = G.product
 
 -- | /O(n)/ Yield the maximum element of the vector. The vector may not be
 -- empty.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.maximum $ VU.fromList [2.0, 1.0]
+-- 2.0
 maximum :: (Unbox a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
 maximum = G.maximum
@@ -1369,6 +1375,12 @@ maximumBy = G.maximumBy
 
 -- | /O(n)/ Yield the minimum element of the vector. The vector may not be
 -- empty.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.minimum $ VU.fromList [2.0, 1.0]
+-- 1.0
 minimum :: (Unbox a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum
