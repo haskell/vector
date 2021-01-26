@@ -774,7 +774,11 @@ unsafeUpdate_ = G.unsafeUpdate_
 -- | /O(m+n)/ For each pair @(i,b)@ from the list, replace the vector element
 -- @a@ at position @i@ by @f a b@.
 --
--- > accum (+) <5,9,2> [(2,4),(1,6),(0,3),(1,7)] = <5+3, 9+6+7, 2+4>
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Storable as VS
+-- >>> VS.accum (+) (VS.fromList [1000.0,2000.0,3000.0]) [(2,4),(1,6),(0,3),(1,10)]
+-- [1003.0,2016.0,3004.0]
 accum :: Storable a
       => (a -> b -> a) -- ^ accumulating function @f@
       -> Vector a      -- ^ initial vector (of length @m@)
@@ -1265,31 +1269,83 @@ foldMap' = G.foldMap'
 -- -----------------
 
 -- | /O(n)/ Check if all elements satisfy the predicate.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Storable as VS
+-- >>> VS.all even $ VS.fromList [2, 4, 12 :: Int]
+-- True
+-- >>> VS.all even $ VS.fromList [2, 4, 13 :: Int]
+-- False
+-- >>> VS.all even (VS.empty :: VS.Vector Int)
+-- True
 all :: Storable a => (a -> Bool) -> Vector a -> Bool
 {-# INLINE all #-}
 all = G.all
 
 -- | /O(n)/ Check if any element satisfies the predicate.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Storable as VS
+-- >>> VS.any even $ VS.fromList [1, 3, 7 :: Int]
+-- False
+-- >>> VS.any even $ VS.fromList [3, 2, 13 :: Int]
+-- True
+-- >>> VS.any even (VS.empty :: VS.Vector Int)
+-- False
 any :: Storable a => (a -> Bool) -> Vector a -> Bool
 {-# INLINE any #-}
 any = G.any
 
 -- | /O(n)/ Check if all elements are 'True'
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Storable as VS
+-- >>> VS.and $ VS.fromList [True, False]
+-- False
+-- >>> VS.and VS.empty
+-- True
 and :: Vector Bool -> Bool
 {-# INLINE and #-}
 and = G.and
 
 -- | /O(n)/ Check if any element is 'True'
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Storable as VS
+-- >>> VS.or $ VS.fromList [True, False]
+-- True
+-- >>> VS.or VS.empty
+-- False
 or :: Vector Bool -> Bool
 {-# INLINE or #-}
 or = G.or
 
 -- | /O(n)/ Compute the sum of the elements
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Storable as VS
+-- >>> VS.sum $ VS.fromList [300,20,1 :: Int]
+-- 321
+-- >>> VS.sum (VS.empty :: VS.Vector Int)
+-- 0
 sum :: (Storable a, Num a) => Vector a -> a
 {-# INLINE sum #-}
 sum = G.sum
 
 -- | /O(n)/ Compute the produce of the elements
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Storable as VS
+-- >>> VS.product $ VS.fromList [1,2,3,4 :: Int]
+-- 24
+-- >>> VS.product (VS.empty :: VS.Vector Int)
+-- 1
 product :: (Storable a, Num a) => Vector a -> a
 {-# INLINE product #-}
 product = G.product
@@ -1593,6 +1649,14 @@ fromList = G.fromList
 -- @
 -- fromListN n xs = 'fromList' ('take' n xs)
 -- @
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Storable as VS
+-- >>> VS.fromListN 3 [1,2,3,4,5::Int]
+-- [1,2,3]
+-- >>> VS.fromListN 3 [1::Int]
+-- [1]
 fromListN :: Storable a => Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
 fromListN = G.fromListN
