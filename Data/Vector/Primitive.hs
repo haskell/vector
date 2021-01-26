@@ -1354,7 +1354,13 @@ product :: (Prim a, Num a) => Vector a -> a
 product = G.product
 
 -- | /O(n)/ Yield the maximum element of the vector. The vector may not be
--- empty.
+-- empty. In a case of a tie the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> VP.maximum $ VP.fromList [2.0, 1.0]
+-- 2.0
 maximum :: (Prim a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
 maximum = G.maximum
@@ -1374,7 +1380,13 @@ maximumOn :: (Ord b, Prim a) => (a -> b) -> Vector a -> a
 maximumOn = G.maximumOn
 
 -- | /O(n)/ Yield the minimum element of the vector. The vector may not be
--- empty.
+-- empty. In a case of a tie the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> VP.minimum $ VP.fromList [2.0, 1.0]
+-- 1.0
 minimum :: (Prim a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum

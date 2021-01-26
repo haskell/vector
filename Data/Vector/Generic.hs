@@ -1778,7 +1778,18 @@ product :: (Vector v a, Num a) => v a -> a
 product = Bundle.foldl' (*) 1 . stream
 
 -- | /O(n)/ Yield the maximum element of the vector. The vector may not be
--- empty.
+-- empty. In a case of a tie the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.maximum $ V.fromList [2.0, 1.0]
+-- 2.0
+-- >>> import Data.Semigroup
+-- >>> V.maximum $ V.fromList [Arg 1.0 'a', Arg 2.0 'b']
+-- Arg 2.0 'b'
+-- >>> V.maximum $ V.fromList [Arg 1.0 'a', Arg 1.0 'b']
+-- Arg 1.0 'a'
 maximum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE maximum #-}
 maximum = Bundle.foldl1' max . stream
@@ -1825,7 +1836,18 @@ maximumOn f = fst . Bundle.foldl1' maxBy . Bundle.map (\a -> (a, f a)) . stream
                   _  -> y
 
 -- | /O(n)/ Yield the minimum element of the vector. The vector may not be
--- empty.
+-- empty. In a case of a tie the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.minimum $ V.fromList [2.0, 1.0]
+-- 1.0
+-- >>> import Data.Semigroup
+-- >>> V.minimum $ V.fromList [Arg 2.0 'a', Arg 1.0 'b']
+-- Arg 1.0 'b'
+-- >>> V.minimum $ V.fromList [Arg 1.0 'a', Arg 1.0 'b']
+-- Arg 1.0 'a'
 minimum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE minimum #-}
 minimum = Bundle.foldl1' min . stream

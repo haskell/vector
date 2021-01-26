@@ -1392,7 +1392,18 @@ product :: (Unbox a, Num a) => Vector a -> a
 product = G.product
 
 -- | /O(n)/ Yield the maximum element of the vector. The vector may not be
--- empty.
+-- empty. In a case of a tie the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.maximum $ VU.fromList [2.0, 1.0]
+-- 2.0
+-- >>> import Data.Semigroup
+-- >>> VU.maximum $ VU.fromList [Arg 1.0 'a', Arg 2.0 'b']
+-- Arg 2.0 'b'
+-- >>> VU.maximum $ VU.fromList [Arg 1.0 'a', Arg 1.0 'b']
+-- Arg 1.0 'a'
 maximum :: (Unbox a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
 maximum = G.maximum
@@ -1429,7 +1440,18 @@ maximumOn :: (Ord b, Unbox a) => (a -> b) -> Vector a -> a
 maximumOn = G.maximumOn
 
 -- | /O(n)/ Yield the minimum element of the vector. The vector may not be
--- empty.
+-- empty. In a case of a tie the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.minimum $ VU.fromList [2.0, 1.0]
+-- 1.0
+-- >>> import Data.Semigroup
+-- >>> VU.minimum $ VU.fromList [Arg 2.0 'a', Arg 1.0 'b']
+-- Arg 1.0 'b'
+-- >>> VU.minimum $ VU.fromList [Arg 1.0 'a', Arg 1.0 'b']
+-- Arg 1.0 'a'
 minimum :: (Unbox a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum
