@@ -1238,6 +1238,8 @@ ifoldr' = G.ifoldr'
 -- 'Foldable' type cless. Note it's implemented in terms of 'foldr'
 -- and won't fuse with functions that traverse vector from left to
 -- right ('map', 'generate', etc.).
+--
+-- @since 0.12.2.0
 foldMap :: (Monoid m, Prim a) => (a -> m) -> Vector a -> m
 {-# INLINE foldMap #-}
 foldMap = G.foldMap
@@ -1246,6 +1248,8 @@ foldMap = G.foldMap
 -- implementation as corresponding method of 'Foldable' type class.
 -- Note it's implemented in terms of 'foldl'' so it fuses in most
 -- contexts.
+--
+-- @since 0.12.2.0
 foldMap' :: (Monoid m, Prim a) => (a -> m) -> Vector a -> m
 {-# INLINE foldMap' #-}
 foldMap' = G.foldMap'

@@ -1660,6 +1660,8 @@ ifoldr' f z xs = Bundle.foldl' (flip (uncurry f)) z
 -- 'Foldable' type cless. Note it's implemented in terms of 'foldr'
 -- and won't fuse with functions that traverse vector from left to
 -- right ('map', 'generate', etc.).
+--
+-- @since 0.12.2.0
 foldMap :: (Monoid m, Vector v a) => (a -> m) -> v a -> m
 {-# INLINE foldMap #-}
 foldMap f = foldr (mappend . f) mempty
@@ -1668,6 +1670,8 @@ foldMap f = foldr (mappend . f) mempty
 -- implementation as corresponding method of 'Foldable' type class.
 -- Note it's implemented in terms of 'foldl'' so it fuses in most
 -- contexts.
+--
+-- @since 0.12.2.0
 foldMap' :: (Monoid m, Vector v a) => (a -> m) -> v a -> m
 {-# INLINE foldMap' #-}
 foldMap' f = foldl' (\acc a -> acc `mappend` f a) mempty
