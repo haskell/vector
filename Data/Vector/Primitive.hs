@@ -452,16 +452,24 @@ drop = G.drop
 --
 -- Note that @'splitAt' n v@ is equivalent to @('take' n v, 'drop' n v)@
 -- but slightly more efficient.
-{-# INLINE splitAt #-}
+--
+-- @since 0.7.1
 splitAt :: Prim a => Int -> Vector a -> (Vector a, Vector a)
+{-# INLINE splitAt #-}
 splitAt = G.splitAt
 
 -- | /O(1)/ Yield the 'head' and 'tail' of the vector, or 'Nothing' if empty.
+--
+-- @since 0.12.2.0
 uncons :: Prim a => Vector a -> Maybe (a, Vector a)
+{-# INLINE uncons #-}
 uncons = G.uncons
 
 -- | /O(1)/ Yield the 'last' and 'init' of the vector, or 'Nothing' if empty.
+--
+-- @since 0.12.2.0
 unsnoc :: Prim a => Vector a -> Maybe (Vector a, a)
+{-# INLINE unsnoc #-}
 unsnoc = G.unsnoc
 
 -- | /O(1)/ Yield a slice of the vector without copying. The vector must
@@ -521,8 +529,21 @@ generate :: Prim a => Int -> (Int -> a) -> Vector a
 {-# INLINE generate #-}
 generate = G.generate
 
--- | /O(n)/ Apply function \(\max\{n - 1, 0\}\) times to value, producing a 
--- vector of length /n/. Zeroth element is original value.
+-- | /O(n)/ Apply function \(\max(n - 1, 0)\) times to an initial value, producing a vector
+-- of length \(\max(n, 0)\). Zeroth element will contain the initial value, that's why there
+-- is one less function application than the number of elements in the produced vector.
+--
+-- \( \underbrace{x, f (x), f (f (x)), \ldots}_{\max(0,n)\rm{~elements}} \)
+--
+-- ===__Examples__
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> VP.iterateN 0 undefined undefined :: VP.Vector Int
+-- []
+-- >>> VP.iterateN 26 succ 'a'
+-- "abcdefghijklmnopqrstuvwxyz"
+--
+-- @since 0.7.1
 iterateN :: Prim a => Int -> (a -> a) -> a -> Vector a
 {-# INLINE iterateN #-}
 iterateN = G.iterateN
@@ -678,8 +699,13 @@ generateM :: (Monad m, Prim a) => Int -> (Int -> m a) -> m (Vector a)
 {-# INLINE generateM #-}
 generateM = G.generateM
 
--- | /O(n)/ Apply monadic function \(\max\{n - 1, 0\}\) times to value, 
--- producing a vector of length /n/. Zeroth element is original value.
+-- | /O(n)/ Apply monadic function \(\max(n - 1, 0)\) times to an initial value, producing a vector
+-- of length \(\max(n, 0)\). Zeroth element will contain the initial value, that's why there
+-- is one less function application than the number of elements in the produced vector.
+--
+-- For non-monadic version see `iterateN`
+--
+-- @since 0.12.0.0
 iterateNM :: (Monad m, Prim a) => Int -> (a -> m a) -> a -> m (Vector a)
 {-# INLINE iterateNM #-}
 iterateNM = G.iterateNM

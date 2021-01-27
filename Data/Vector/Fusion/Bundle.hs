@@ -436,8 +436,8 @@ unfoldrExactN :: Int -> (s -> (a, s)) -> s -> Bundle v a
 {-# INLINE unfoldrExactN #-}
 unfoldrExactN = M.unfoldrExactN
 
--- | Apply function \(\max\{n - 1, 0\}\) times to a value, producing a vector of
--- length /n/. Zeroth element is the original value.
+-- | /O(n)/ Apply function \(\max(n - 1, 0)\) times to an initial value, producing a pure
+-- bundle of exact length \(\max(n, 0)\). Zeroth element will contain the initial value.
 iterateN :: Int -> (a -> a) -> a -> Bundle v a
 {-# INLINE iterateN #-}
 iterateN = M.iterateN

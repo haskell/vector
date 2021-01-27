@@ -440,8 +440,10 @@ drop n v = unsafeSlice (delay_inline min n' len)
 --
 -- Note that @'splitAt' n v@ is equivalent to @('take' n v, 'drop' n v)@
 -- but slightly more efficient.
-{-# INLINE_FUSED splitAt #-}
+--
+-- @since 0.7.1
 splitAt :: Vector v a => Int -> v a -> (v a, v a)
+{-# INLINE_FUSED splitAt #-}
 splitAt n v = ( unsafeSlice 0 m v
               , unsafeSlice m (delay_inline max 0 (len - n')) v
               )
@@ -451,11 +453,17 @@ splitAt n v = ( unsafeSlice 0 m v
       len = length v
 
 -- | /O(1)/ Yield the 'head' and 'tail' of the vector, or 'Nothing' if empty.
+--
+-- @since 0.12.2.0
 uncons :: Vector v a => v a -> Maybe (a, v a)
+{-# INLINE_FUSED uncons #-}
 uncons xs = flip (,) (unsafeTail xs) `fmap` (xs !? 0)
 
 -- | /O(1)/ Yield the 'last' and 'init' of the vector, or 'Nothing' if empty.
+--
+-- @since 0.12.2.0
 unsnoc :: Vector v a => v a -> Maybe (v a, a)
+{-# INLINE_FUSED unsnoc #-}
 unsnoc xs = (,) (unsafeInit xs) `fmap` (xs !? (length xs - 1))
 
 -- | /O(1)/ Yield a slice of the vector without copying. The vector must
@@ -549,8 +557,13 @@ generate :: Vector v a => Int -> (Int -> a) -> v a
 {-# INLINE generate #-}
 generate n f = unstream (Bundle.generate n f)
 
--- | /O(n)/ Apply function \(\max\{n - 1, 0\}\) times to value, producing a 
--- vector of length /n/. Zeroth element is original value.
+-- | /O(n)/ Apply function \(\max(n - 1, 0)\) times to an initial value, producing a vector
+-- of length \(\max(n, 0)\). Zeroth element will contain the initial value, that's why there
+-- is one less function application than the number of elements in the produced vector.
+--
+-- \( \underbrace{x, f (x), f (f (x)), \ldots}_{\max(0,n)\rm{~elements}} \)
+--
+-- @since 0.7.1
 iterateN :: Vector v a => Int -> (a -> a) -> a -> v a
 {-# INLINE iterateN #-}
 iterateN n f x = unstream (Bundle.iterateN n f x)
@@ -773,8 +786,13 @@ generateM :: (Monad m, Vector v a) => Int -> (Int -> m a) -> m (v a)
 {-# INLINE generateM #-}
 generateM n f = unstreamM (MBundle.generateM n f)
 
--- | /O(n)/ Apply monadic function \(\max\{n - 1, 0\}\) times to value, 
--- producing a vector of length /n/. Zeroth element is original value.
+-- | /O(n)/ Apply monadic function \(\max(n - 1, 0)\) times to an initial value, producing a vector
+-- of length \(\max(n, 0)\). Zeroth element will contain the initial value, that's why there
+-- is one less function application than the number of elements in the produced vector.
+--
+-- For non-monadic version see `iterateN`
+--
+-- @since 0.12.0.0
 iterateNM :: (Monad m, Vector v a) => Int -> (a -> m a) -> a -> m (v a)
 {-# INLINE iterateNM #-}
 iterateNM n f x = unstreamM (MBundle.iterateNM n f x)
