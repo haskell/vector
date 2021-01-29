@@ -1,16 +1,10 @@
-# Changes in NEXT_VERSION
+# Changes in 0.13.0.0
 
- * Added `foldMap` and `foldMap'`
  * Methods of type classes `Data.Vector.Generic.Mutable.MVector` and
    `Data.Vector.Generic.Vector` use concrete monads (ST,etc) being
    polymorphic. This allows use of GND and deriving via to define
    instances. Rest of API is unchanged and most existing instances should
    compiler fine with new definitions.
- * Added `mapMaybeM` & `imapMaybeM`
- * Added `isSameVector` for storable vectors
- * Added `catMaybes`
- * Added `MonadFix` instance for boxed vectors
- * New functions: `unfoldrExactN` and `unfoldrExactNM`
  * `mkType` from `Data.Vector.Generic` is deprecated in favor of
    `Data.Data.mkNoRepType`
  * `maximumBy` now behaves like its counterpart in `Data.List` in that if
@@ -47,12 +41,26 @@
      `Data.Vector.Storable{.Mutable}` to allow this (the onus is on the user
      to ensure that no `Storable` invariants are broken when using these
      functions).
- * Added `iforM` and `iforM_`
+
+# Changes in version 0.12.2.0
+
+ * Add `MINIMAL` pragma to `Vector` & `MVector` type classes: [#11](https://github.com/haskell/vector/issues/11)
+ * Export `unstreamM` from`from Data.Vector.Generic`: [#70](https://github.com/haskell/vector/issues/70)
+ * Added `unfoldrExactN` and `unfoldrExactNM`: [#140](https://github.com/haskell/vector/issues/140)
+ * Added `iforM` and `iforM_`: [#262](https://github.com/haskell/vector/issues/262)
+ * Added `MonadFix` instance for boxed vectors: [#178](https://github.com/haskell/vector/issues/178)
+ * Added `uncons` and `unsnoc`: [#212](https://github.com/haskell/vector/issues/212)
+ * Added `foldMap` and `foldMap'`: [#263](https://github.com/haskell/vector/issues/263)
+ * Added `isSameVector` for storable vectors
  * Added `toArray`, `fromArray`, `toMutableArray` and `fromMutableArray`
  * Added `iscanl`, `iscanl'`, `iscanr`, `iscanr'` to `Primitive`, `Storable` and `Unboxed`
  * Added `izipWithM`, `izipWithM_`, `imapM` and `imapM_` to `Primitive` and `Storable`
  * Added `ifoldM`, `ifoldM'`, `ifoldM_` and `ifoldM'_` to `Primitive` and `Storable`
  * Added `eqBy` and `cmpBy`
+ * Added `findIndexR` to `Generic`: [#172](https://github.com/haskell/vector/issues/172)
+ * Added `catMaybes`: [#329](https://github.com/haskell/vector/issues/329)
+ * Added `mapMaybeM` and `imapMaybeM`: [#183](https://github.com/haskell/vector/issues/183)
+
 
 # Changes in version 0.12.1.2
 
