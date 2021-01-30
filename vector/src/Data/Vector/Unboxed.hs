@@ -192,7 +192,9 @@ module Data.Vector.Unboxed (
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
 
   -- ** Deriving via
-  UnboxViaPrim(..)
+  UnboxViaPrim(..),
+  As(..),
+  Isomorphic(..)
 ) where
 
 import Data.Vector.Unboxed.Base
