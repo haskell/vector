@@ -1079,7 +1079,16 @@ filter :: Unbox a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE filter #-}
 filter = G.filter
 
--- | /O(n)/ Drop repeated adjacent elements.
+-- | /O(n)/ Drop repeated adjacent elements. First element in group is returned.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.uniq $ VU.fromList [1.0,3.0,3.0,200.0,3.0]
+-- [1.0,3.0,200.0,3.0]
+-- >>> import Data.Semigroup
+-- >>> VU.uniq $ VU.fromList [ Arg 1 'a', Arg 1 'b', Arg (1 :: Int) 'c']
+-- [Arg 1 'a']
 uniq :: (Unbox a, Eq a) => Vector a -> Vector a
 {-# INLINE uniq #-}
 uniq = G.uniq

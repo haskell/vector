@@ -1069,7 +1069,13 @@ ifilter :: Prim a => (Int -> a -> Bool) -> Vector a -> Vector a
 {-# INLINE ifilter #-}
 ifilter = G.ifilter
 
--- | /O(n)/ Drop repeated adjacent elements.
+-- | /O(n)/ Drop repeated adjacent elements. First element in group is returned.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> VP.uniq $ VP.fromList [1.0,3.0,3.0,200.0,3.0]
+-- [1.0,3.0,200.0,3.0]
 uniq :: (Prim a, Eq a) => Vector a -> Vector a
 {-# INLINE uniq #-}
 uniq = G.uniq

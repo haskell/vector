@@ -1385,7 +1385,16 @@ ifilter f = unstream
           . inplace (S.map snd . S.filter (uncurry f) . S.indexed) toMax
           . stream
 
--- | /O(n)/ Drop repeated adjacent elements.
+-- | /O(n)/ Drop repeated adjacent elements. First element in group is returned.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.uniq $ V.fromList [1.0,3.0,3.0,200.0,3.0]
+-- [1.0,3.0,200.0,3.0]
+-- >>> import Data.Semigroup
+-- >>> V.uniq $ V.fromList [ Arg 1 'a', Arg 1 'b', Arg (1 :: Int) 'c']
+-- [Arg 1 'a']
 uniq :: (Vector v a, Eq a) => v a -> v a
 {-# INLINE uniq #-}
 uniq = unstream . inplace S.uniq toMax . stream
