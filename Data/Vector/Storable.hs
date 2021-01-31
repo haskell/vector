@@ -1412,7 +1412,10 @@ product = G.product
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Storable as VS
+-- >>> import qualified Data.Vector.Generic as VG
 -- >>> VS.maximum $ VS.fromList [2.0, 1.0]
+-- 2.0
+-- >>> VG.maximum $ VS.fromList [2.0, 1.0]
 -- 2.0
 maximum :: (Storable a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}

@@ -1406,7 +1406,10 @@ product = G.product
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> import qualified Data.Vector.Generic as VG
 -- >>> VU.maximum $ VU.fromList [2.0, 1.0]
+-- 2.0
+-- >>> VG.maximum $ VU.fromList [2.0, 1.0]
 -- 2.0
 -- >>> import Data.Semigroup
 -- >>> VU.maximum $ VU.fromList [Arg 1.0 'a', Arg 2.0 'b']

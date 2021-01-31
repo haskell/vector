@@ -1365,7 +1365,10 @@ product = G.product
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Primitive as VP
+-- >>> import qualified Data.Vector.Generic as VG
 -- >>> VP.maximum $ VP.fromList [2.0, 1.0]
+-- 2.0
+-- >>> VG.maximum $ VP.fromList [2.0, 1.0]
 -- 2.0
 maximum :: (Prim a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
