@@ -461,6 +461,8 @@ filterM :: Monad m => (a -> m Bool) -> Bundle m v a -> Bundle m v a
 filterM f Bundle{sElems = s, sSize = n} = fromStream (S.filterM f s) (toMax n)
 
 -- | Apply monadic function to each element and drop all Nothings
+--
+-- @since 0.12.2.0
 mapMaybeM :: Monad m => (a -> m (Maybe b)) -> Bundle m v a -> Bundle m v b
 {-# INLINE_FUSED mapMaybeM #-}
 mapMaybeM f Bundle{sElems = s, sSize = n} = fromStream (S.mapMaybeM f s) (toMax n)
@@ -657,11 +659,15 @@ unfoldrNM :: Monad m => Int -> (s -> m (Maybe (a, s))) -> s -> Bundle m u a
 unfoldrNM n f s = fromStream (S.unfoldrNM n f s) (Max (delay_inline max n 0))
 
 -- | Unfold exactly @n@ elements
+--
+-- @since 0.12.2.0
 unfoldrExactN :: Monad m => Int -> (s -> (a, s)) -> s -> Bundle m u a
 {-# INLINE_FUSED unfoldrExactN #-}
 unfoldrExactN n f = unfoldrExactNM n (return . f)
 
 -- | Unfold exactly @n@ elements with a monadic function.
+--
+-- @since 0.12.2.0
 unfoldrExactNM :: Monad m => Int -> (s -> m (a, s)) -> s -> Bundle m u a
 {-# INLINE_FUSED unfoldrExactNM #-}
 unfoldrExactNM n f s = fromStream (S.unfoldrExactNM n f s) (Max (delay_inline max n 0))

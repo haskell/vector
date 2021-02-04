@@ -593,6 +593,8 @@ unfoldrN = G.unfoldrN
 -- next element and the new seed.
 --
 -- > unfoldrExactN 3 (\n -> (n,n-1)) 10 = <10,9,8>
+--
+-- @since 0.12.2.0
 unfoldrExactN :: (Storable a) => Int -> (b -> (a, b)) -> b -> Vector a
 {-# INLINE unfoldrExactN #-}
 unfoldrExactN = G.unfoldrExactN
@@ -616,6 +618,8 @@ unfoldrNM = G.unfoldrNM
 -- | /O(n)/ Construct a vector with exactly @n@ elements by repeatedly
 -- applying the monadic generator function to a seed. The generator
 -- function yields the next element and the new seed.
+--
+-- @since 0.12.2.0
 unfoldrExactNM :: (Monad m, Storable a) => Int -> (b -> m (a, b)) -> b -> m (Vector a)
 {-# INLINE unfoldrExactNM #-}
 unfoldrExactNM = G.unfoldrExactNM
@@ -905,6 +909,8 @@ mapM = G.mapM
 
 -- | /O(n)/ Apply the monadic action to every element of a vector and its
 -- index, yielding a vector of results
+--
+-- @since 0.12.2.0
 imapM :: (Monad m, Storable a, Storable b)
       => (Int -> a -> m b) -> Vector a -> m (Vector b)
 {-# INLINE imapM #-}
@@ -918,6 +924,8 @@ mapM_ = G.mapM_
 
 -- | /O(n)/ Apply the monadic action to every element of a vector and its
 -- index, ignoring the results
+--
+-- @since 0.12.2.0
 imapM_ :: (Monad m, Storable a) => (Int -> a -> m b) -> Vector a -> m ()
 {-# INLINE imapM_ #-}
 imapM_ = G.imapM_
@@ -936,12 +944,16 @@ forM_ = G.forM_
 
 -- | /O(n)/ Apply the monadic action to all elements of the vector and their indices, yielding a
 -- vector of results. Equivalent to 'flip' 'imapM'.
+--
+-- @since 0.12.2.0
 iforM :: (Monad m, Storable a, Storable b) => Vector a -> (Int -> a -> m b) -> m (Vector b)
 {-# INLINE iforM #-}
 iforM = G.iforM
 
 -- | /O(n)/ Apply the monadic action to all elements of the vector and their indices and ignore the
 -- results. Equivalent to 'flip' 'imapM_'.
+--
+-- @since 0.12.2.0
 iforM_ :: (Monad m, Storable a) => Vector a -> (Int -> a -> m b) -> m ()
 {-# INLINE iforM_ #-}
 iforM_ = G.iforM_
@@ -1041,6 +1053,8 @@ zipWithM = G.zipWithM
 
 -- | /O(min(m,n))/ Zip the two vectors with a monadic action that also takes
 -- the element index and yield a vector of results
+--
+-- @since 0.12.2.0
 izipWithM :: (Monad m, Storable a, Storable b, Storable c)
           => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m (Vector c)
 {-# INLINE izipWithM #-}
@@ -1055,6 +1069,8 @@ zipWithM_ = G.zipWithM_
 
 -- | /O(min(m,n))/ Zip the two vectors with a monadic action that also takes
 -- the element index and ignore the results
+--
+-- @since 0.12.2.0
 izipWithM_ :: (Monad m, Storable a, Storable b)
            => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m ()
 {-# INLINE izipWithM_ #-}
@@ -1091,6 +1107,8 @@ imapMaybe = G.imapMaybe
 
 -- | /O(n)/ Apply monadic function to each element of vector and
 -- discard elements returning Nothing.
+--
+-- @since 0.12.2.0
 mapMaybeM
   :: (Monad m, Storable a, Storable b)
   => (a -> m (Maybe b)) -> Vector a -> m (Vector b)
@@ -1099,6 +1117,8 @@ mapMaybeM = G.mapMaybeM
 
 -- | /O(n)/ Apply monadic function to each element of vector and its index.
 -- Discards elements returning Nothing.
+--
+-- @since 0.12.2.0
 imapMaybeM
   :: (Monad m, Storable a, Storable b)
   => (Int -> a -> m (Maybe b)) -> Vector a -> m (Vector b)
@@ -1279,6 +1299,8 @@ ifoldr' = G.ifoldr'
 -- 'Foldable' type cless. Note it's implemented in terms of 'foldr'
 -- and won't fuse with functions that traverse vector from left to
 -- right ('map', 'generate', etc.).
+--
+-- @since 0.12.2.0
 foldMap :: (Monoid m, Storable a) => (a -> m) -> Vector a -> m
 {-# INLINE foldMap #-}
 foldMap = G.foldMap
@@ -1287,6 +1309,8 @@ foldMap = G.foldMap
 -- implementation as corresponding method of 'Foldable' type class.
 -- Note it's implemented in terms of 'foldl'' so it fuses in most
 -- contexts.
+--
+-- @since 0.12.2.0
 foldMap' :: (Monoid m, Storable a) => (a -> m) -> Vector a -> m
 {-# INLINE foldMap' #-}
 foldMap' = G.foldMap'
@@ -1447,6 +1471,8 @@ foldM :: (Monad m, Storable b) => (a -> b -> m a) -> a -> Vector b -> m a
 foldM = G.foldM
 
 -- | /O(n)/ Monadic fold (action applied to each element and its index)
+--
+-- @since 0.12.2.0
 ifoldM :: (Monad m, Storable b) => (a -> Int -> b -> m a) -> a -> Vector b -> m a
 {-# INLINE ifoldM #-}
 ifoldM = G.ifoldM
@@ -1463,6 +1489,8 @@ foldM' = G.foldM'
 
 -- | /O(n)/ Monadic fold with strict accumulator (action applied to each
 -- element and its index)
+--
+-- @since 0.12.2.0
 ifoldM' :: (Monad m, Storable b) => (a -> Int -> b -> m a) -> a -> Vector b -> m a
 {-# INLINE ifoldM' #-}
 ifoldM' = G.ifoldM'
@@ -1479,6 +1507,8 @@ foldM_ = G.foldM_
 
 -- | /O(n)/ Monadic fold that discards the result (action applied to each
 -- element and its index)
+--
+-- @since 0.12.2.0
 ifoldM_ :: (Monad m, Storable b) => (a -> Int -> b -> m a) -> a -> Vector b -> m ()
 {-# INLINE ifoldM_ #-}
 ifoldM_ = G.ifoldM_
@@ -1495,6 +1525,8 @@ foldM'_ = G.foldM'_
 
 -- | /O(n)/ Monadic fold with strict accumulator that discards the result
 -- (action applied to each element and its index)
+--
+-- @since 0.12.2.0
 ifoldM'_ :: (Monad m, Storable b)
          => (a -> Int -> b -> m a) -> a -> Vector b -> m ()
 {-# INLINE ifoldM'_ #-}
@@ -1561,11 +1593,15 @@ scanl' :: (Storable a, Storable b) => (a -> b -> a) -> a -> Vector b -> Vector a
 scanl' = G.scanl'
 
 -- | /O(n)/ Scan over a vector with its index
+--
+-- @since 0.12.2.0
 iscanl :: (Storable a, Storable b) => (Int -> a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE iscanl #-}
 iscanl = G.iscanl
 
 -- | /O(n)/ Scan over a vector (strictly) with its index
+--
+-- @since 0.12.2.0
 iscanl' :: (Storable a, Storable b) => (Int -> a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE iscanl' #-}
 iscanl' = G.iscanl'
@@ -1621,11 +1657,15 @@ scanr' :: (Storable a, Storable b) => (a -> b -> b) -> b -> Vector a -> Vector b
 scanr' = G.scanr'
 
 -- | /O(n)/ Right-to-left scan over a vector with its index
+--
+-- @since 0.12.2.0
 iscanr :: (Storable a, Storable b) => (Int -> a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE iscanr #-}
 iscanr = G.iscanr
 
 -- | /O(n)/ Right-to-left scan over a vector (strictly) with its index
+--
+-- @since 0.12.2.0
 iscanr' :: (Storable a, Storable b) => (Int -> a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE iscanr' #-}
 iscanr' = G.iscanr'
@@ -1646,6 +1686,8 @@ scanr1' = G.scanr1'
 
 -- | /O(n)/ Check if two vectors are equal using supplied equality
 -- predicate.
+--
+-- @since 0.12.2.0
 eqBy :: (Storable a, Storable b) => (a -> b -> Bool) -> Vector a -> Vector b -> Bool
 {-# INLINE eqBy #-}
 eqBy = G.eqBy
@@ -1654,6 +1696,8 @@ eqBy = G.eqBy
 -- vector elements. Comparison works same as for lists.
 --
 -- > cmpBy compare == compare
+--
+-- @since 0.12.2.0
 cmpBy :: (Storable a, Storable b) => (a -> b -> Ordering) -> Vector a -> Vector b -> Ordering
 cmpBy = G.cmpBy
 
