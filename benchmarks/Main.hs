@@ -1,7 +1,5 @@
 module Main where
 
-import Gauge.Main
-
 import Algo.MutableSet (mutableSet)
 import Algo.ListRank   (listRank)
 import Algo.Rootfix    (rootfix)
@@ -20,6 +18,7 @@ import qualified Data.Vector.Mutable as MV
 import qualified Data.Vector.Unboxed as U
 import Data.Word
 import System.Random.Stateful
+import Test.Tasty.Bench
 
 useSize :: Int
 useSize = 2000000
