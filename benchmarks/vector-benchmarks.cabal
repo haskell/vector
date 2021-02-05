@@ -14,6 +14,7 @@ benchmark algorithms
 
   Build-Depends: base >= 2 && < 5,
                  random >= 1.2,
+                 tasty,
                  tasty-bench >= 0.2.1,
                  vector
 
