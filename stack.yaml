@@ -1,8 +1,8 @@
 resolver: lts-16.27
 packages:
 - .
-- benchmarks
 extra-deps:
 - random-1.2.0@sha256:3337fb944048b49ada7ac70771e9040382da8dcc7058570dd6835af5cc40b822,6094
 - splitmix-0.1.0.3@sha256:fc3aae74c467f4b608050bef53aec17904a618731df9407e655d8f3bf8c32d5c,6049
 - QuickCheck-2.14.2@sha256:4ce29211223d5e6620ebceba34a3ca9ccf1c10c0cf387d48aea45599222ee5aa,7736
+- tasty-bench-0.2.1@sha256:626728b61aa0050b7c3b65277d185d3281db7845c8cb5fea8c17edccffa8f1c4,1319

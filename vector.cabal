@@ -53,24 +53,8 @@ Extra-Source-Files:
       tests/LICENSE
       tests/Setup.hs
       tests/Main.hs
-      benchmarks/vector-benchmarks.cabal
-      benchmarks/LICENSE
-      benchmarks/Setup.hs
-      benchmarks/Main.hs
-      benchmarks/Algo/AwShCC.hs
-      benchmarks/Algo/HybCC.hs
-      benchmarks/Algo/Leaffix.hs
-      benchmarks/Algo/ListRank.hs
-      benchmarks/Algo/Quickhull.hs
-      benchmarks/Algo/Rootfix.hs
-      benchmarks/Algo/Spectral.hs
-      benchmarks/Algo/Tridiag.hs
-      benchmarks/TestData/Graph.hs
-      benchmarks/TestData/ParenTree.hs
       internal/GenUnboxTuple.hs
       internal/unbox-tuple-instances
-
-
 
 Flag BoundsChecks
   Description: Enable bounds checking
@@ -283,3 +267,32 @@ test-suite vector-doctest
       , doctest   >=0.15 && <0.18
       , primitive >= 0.6.4.0 && < 0.8
       , vector    -any
+
+benchmark algorithms
+  type:             exitcode-stdio-1.0
+  main-is:          Main.hs
+  hs-source-dirs:   benchmarks
+  default-language: Haskell2010
+
+  build-depends:
+        base >= 2 && < 5
+      , random >= 1.2
+      , tasty
+      , tasty-bench >= 0.2.1
+      , vector
+
+  ghc-options: -O2
+
+  other-modules:
+        Algo.MutableSet
+        Algo.ListRank
+        Algo.Rootfix
+        Algo.Leaffix
+        Algo.AwShCC
+        Algo.HybCC
+        Algo.Quickhull
+        Algo.Spectral
+        Algo.Tridiag
+        Algo.FindIndexR
+        TestData.ParenTree
+        TestData.Graph

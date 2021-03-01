@@ -1,7 +1,5 @@
 module Main where
 
-import Gauge.Main
-
 import Algo.MutableSet (mutableSet)
 import Algo.ListRank   (listRank)
 import Algo.Rootfix    (rootfix)
@@ -16,22 +14,43 @@ import Algo.FindIndexR (findIndexR, findIndexR_naive, findIndexR_manual)
 import TestData.ParenTree (parenTree)
 import TestData.Graph     (randomGraph)
 
+import Data.Proxy
 import qualified Data.Vector.Mutable as MV
 import qualified Data.Vector.Unboxed as U
 import Data.Word
 import System.Random.Stateful
+import Test.Tasty
+import Test.Tasty.Bench
+import Test.Tasty.Options
+import Test.Tasty.Runners
 
-useSize :: Int
-useSize = 2000000
+newtype VectorSize = VectorSize Int
 
-useSeed :: Int
-useSeed = 42
+instance IsOption VectorSize where
+  defaultValue = VectorSize 2000000
+  parseValue = fmap VectorSize . safeRead
+  optionName = pure "size"
+  optionHelp = pure "Size of vectors used in benchmarks"
+
+newtype RandomSeed = RandomSeed Int
+
+instance IsOption RandomSeed where
+  defaultValue = RandomSeed 42
+  parseValue = fmap RandomSeed . safeRead
+  optionName = pure "seed"
+  optionHelp = pure "Random seed used in benchmarks"
 
 indexFindThreshold :: Double
 indexFindThreshold = 2e-5
 
 main :: IO ()
 main = do
+  let ourOpts = [Option (Proxy :: Proxy VectorSize), Option (Proxy :: Proxy RandomSeed)]
+      ingredients = includingOptions ourOpts : benchIngredients
+  opts <- parseOptions ingredients (bench "Fake" (nf id ()))
+  let VectorSize useSize = lookupOption opts
+      RandomSeed useSeed = lookupOption opts
+
   gen <- newIOGenM (mkStdGen useSeed)
 
   let (lparens, rparens) = parenTree useSize
@@ -48,7 +67,7 @@ main = do
 
   vi <- MV.new useSize
 
-  defaultMain
+  defaultMainWithIngredients ingredients $ bgroup "All"
     [ bench "listRank"   $ whnf listRank useSize
     , bench "rootfix"    $ whnf rootfix (lparens, rparens)
     , bench "leaffix"    $ whnf leaffix (lparens, rparens)

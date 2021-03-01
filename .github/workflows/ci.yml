@@ -77,9 +77,13 @@ jobs:
     # ----------------
     - name: Build
       run: |
-        cabal configure --enable-tests --enable-benchmarks
+        cabal configure --enable-tests --enable-benchmarks --benchmark-option=-l
         cabal build all --write-ghc-environment-files=always
     # ----------------
     - name: Test
       run: |
         cabal test all
+    # ----------------
+    - name: Bench
+      run: |
+        cabal bench all
