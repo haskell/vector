@@ -336,7 +336,7 @@ minIndex = fst . foldr1 imin . zip [0..]
 maxIndex :: Ord a => [a] -> Int
 maxIndex = fst . foldr1 imax . zip [0..]
   where
-    imax (i,x) (j,y) | x >  y    = (i,x)
+    imax (i,x) (j,y) | x >= y    = (i,x)
                      | otherwise = (j,y)
 
 iterateNM :: Monad m => Int -> (a -> m a) -> a -> m [a]
