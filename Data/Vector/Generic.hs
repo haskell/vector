@@ -1842,8 +1842,8 @@ maximumOn f = fst . Bundle.foldl1' maxBy . Bundle.map (\a -> (a, f a)) . stream
   where
     {-# INLINE maxBy #-}
     maxBy x y = case compare (snd x) (snd y) of
-                  GT -> x
-                  _  -> y
+                  LT -> y
+                  _  -> x
 
 -- | /O(n)/ Yield the minimum element of the vector. The vector may not be
 -- empty. In a case of a tie the first occurrence wins.

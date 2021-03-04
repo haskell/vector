@@ -1380,7 +1380,7 @@ maximumBy :: Prim a => (a -> a -> Ordering) -> Vector a -> a
 maximumBy = G.maximumBy
 
 -- | /O(n)/ Yield the maximum element of the vector by comparing the results
--- of a key function on each element. In case of a tie, the last occurrence
+-- of a key function on each element. In case of a tie, the first occurrence
 -- wins. The vector may not be empty.
 maximumOn :: (Ord b, Prim a) => (a -> b) -> Vector a -> a
 {-# INLINE maximumOn #-}

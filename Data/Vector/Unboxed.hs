@@ -1435,7 +1435,7 @@ maximumBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> a
 maximumBy = G.maximumBy
 
 -- | /O(n)/ Yield the maximum element of the vector by comparing the results
--- of a key function on each element. In case of a tie, the last occurrence
+-- of a key function on each element. In case of a tie, the first occurrence
 -- wins. The vector may not be empty.
 --
 -- ==== __Examples__
@@ -1444,7 +1444,7 @@ maximumBy = G.maximumBy
 -- >>> VU.maximumOn fst $ VU.fromList [(2.0,'a'), (1.0,'b')]
 -- (2.0,'a')
 -- >>> VU.maximumOn fst $ VU.fromList [(1.0,'a'), (1.0,'b')]
--- (1.0,'b')
+-- (1.0,'a')
 maximumOn :: (Ord b, Unbox a) => (a -> b) -> Vector a -> a
 {-# INLINE maximumOn #-}
 maximumOn = G.maximumOn
