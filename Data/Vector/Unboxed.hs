@@ -1406,10 +1406,7 @@ product = G.product
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> import qualified Data.Vector.Generic as VG
 -- >>> VU.maximum $ VU.fromList [2.0, 1.0]
--- 2.0
--- >>> VG.maximum $ VU.fromList [2.0, 1.0]
 -- 2.0
 -- >>> import Data.Semigroup
 -- >>> VU.maximum $ VU.fromList [Arg 1.0 'a', Arg 2.0 'b']
@@ -1422,7 +1419,8 @@ maximum = G.maximum
 
 -- | /O(n)/ Yield the maximum element of the vector according to the
 -- given comparison function. The vector may not be empty. In case of
--- a tie the last occurrence wins.
+-- a tie the first occurrence wins. This behavior is different from
+-- 'Data.List.maximumBy' which returns the last tie.
 --
 -- ==== __Examples__
 --
@@ -1431,7 +1429,7 @@ maximum = G.maximum
 -- >>> VU.maximumBy (comparing fst) $ VU.fromList [(2.0,'a'), (1.0,'b')]
 -- (2.0,'a')
 -- >>> VU.maximumBy (comparing fst) $ VU.fromList [(1.0,'a'), (1.0,'b')]
--- (1.0,'b')
+-- (1.0,'a')
 maximumBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE maximumBy #-}
 maximumBy = G.maximumBy
@@ -1469,7 +1467,7 @@ minimum :: (Unbox a, Ord a) => Vector a -> a
 minimum = G.minimum
 -- | /O(n)/ Yield the minimum element of the vector according to the
 -- given comparison function. The vector may not be empty. In case of
--- a tie, the first occurrence wins. The vector may not be empty.
+-- a tie, the first occurrence wins.
 --
 -- ==== __Examples__
 --
@@ -1509,7 +1507,7 @@ maxIndex = G.maxIndex
 
 -- | /O(n)/ Yield the index of the maximum element of the vector
 -- according to the given comparison function. The vector may not be
--- empty. In case of a tie, the last occurrence wins.
+-- empty. In case of a tie, the first occurrence wins.
 --
 -- ==== __Examples__
 --
@@ -1518,7 +1516,7 @@ maxIndex = G.maxIndex
 -- >>> VU.maxIndexBy (comparing fst) $ VU.fromList [(2.0,'a'), (1.0,'b')]
 -- 0
 -- >>> VU.maxIndexBy (comparing fst) $ VU.fromList [(1.0,'a'), (1.0,'b')]
--- 1
+-- 0
 maxIndexBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy = G.maxIndexBy

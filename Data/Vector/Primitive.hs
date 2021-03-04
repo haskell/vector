@@ -1365,10 +1365,7 @@ product = G.product
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Primitive as VP
--- >>> import qualified Data.Vector.Generic as VG
 -- >>> VP.maximum $ VP.fromList [2.0, 1.0]
--- 2.0
--- >>> VG.maximum $ VP.fromList [2.0, 1.0]
 -- 2.0
 maximum :: (Prim a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
@@ -1376,7 +1373,8 @@ maximum = G.maximum
 
 -- | /O(n)/ Yield the maximum element of the vector according to the
 -- given comparison function. The vector may not be empty. In case of
--- a tie the last occurrence wins.
+-- a tie the first occurrence wins. This behavior is different from
+-- 'Data.List.maximumBy' which returns the last tie.
 maximumBy :: Prim a => (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE maximumBy #-}
 maximumBy = G.maximumBy
@@ -1402,7 +1400,7 @@ minimum = G.minimum
 
 -- | /O(n)/ Yield the minimum element of the vector according to the
 -- given comparison function. The vector may not be empty. In case of
--- a tie, the first occurrence wins. The vector may not be empty.
+-- a tie, the first occurrence wins.
 minimumBy :: Prim a => (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE minimumBy #-}
 minimumBy = G.minimumBy
@@ -1422,7 +1420,7 @@ maxIndex = G.maxIndex
 
 -- | /O(n)/ Yield the index of the maximum element of the vector
 -- according to the given comparison function. The vector may not be
--- empty. In case of a tie, the last occurrence wins.
+-- empty. In case of a tie, the first occurrence wins.
 maxIndexBy :: Prim a => (a -> a -> Ordering) -> Vector a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy = G.maxIndexBy

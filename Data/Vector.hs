@@ -1647,10 +1647,7 @@ product = G.product
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector as V
--- >>> import qualified Data.Vector.Generic as VG
 -- >>> V.maximum $ V.fromList [2.0, 1.0]
--- 2.0
--- >>> VG.maximum $ V.fromList [2.0, 1.0]
 -- 2.0
 -- >>> import Data.Semigroup
 -- >>> V.maximum $ V.fromList [Arg 1.0 'a', Arg 2.0 'b']
@@ -1663,7 +1660,8 @@ maximum = G.maximum
 
 -- | /O(n)/ Yield the maximum element of the vector according to the
 -- given comparison function. The vector may not be empty. In case of
--- a tie the last occurrence wins.
+-- a tie the first occurrence wins. This behavior is different from
+-- 'Data.List.maximumBy' which returns the last tie.
 --
 -- ==== __Examples__
 --
@@ -1672,7 +1670,7 @@ maximum = G.maximum
 -- >>> V.maximumBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
 -- (2.0,'a')
 -- >>> V.maximumBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
--- (1.0,'b')
+-- (1.0,'a')
 maximumBy :: (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE maximumBy #-}
 maximumBy = G.maximumBy
@@ -1711,7 +1709,7 @@ minimum = G.minimum
 
 -- | /O(n)/ Yield the minimum element of the vector according to the
 -- given comparison function. The vector may not be empty. In case of
--- a tie, the first occurrence wins. The vector may not be empty.
+-- a tie, the first occurrence wins.
 --
 -- ==== __Examples__
 --
@@ -1748,7 +1746,7 @@ maxIndex = G.maxIndex
 
 -- | /O(n)/ Yield the index of the maximum element of the vector
 -- according to the given comparison function. The vector may not be
--- empty. In case of a tie, the last occurrence wins.
+-- empty. In case of a tie, the first occurrence wins.
 --
 -- ==== __Examples__
 --
@@ -1757,7 +1755,7 @@ maxIndex = G.maxIndex
 -- >>> V.maxIndexBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
 -- 0
 -- >>> V.maxIndexBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
--- 1
+-- 0
 maxIndexBy :: (a -> a -> Ordering) -> Vector a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy = G.maxIndexBy

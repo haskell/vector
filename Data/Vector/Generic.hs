@@ -1792,10 +1792,7 @@ product = Bundle.foldl' (*) 1 . stream
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector as V
--- >>> import qualified Data.Vector.Generic as VG
 -- >>> V.maximum $ V.fromList [2.0, 1.0]
--- 2.0
--- >>> VG.maximum $ V.fromList [2.0, 1.0]
 -- 2.0
 -- >>> import Data.Semigroup
 -- >>> V.maximum $ V.fromList [Arg 1.0 'a', Arg 2.0 'b']
@@ -1808,7 +1805,8 @@ maximum = Bundle.foldl1' max . stream
 
 -- | /O(n)/ Yield the maximum element of the vector according to the
 -- given comparison function. The vector may not be empty. In case of
--- a tie the last occurrence wins.
+-- a tie the first occurrence wins. This behavior is different from
+-- 'Data.List.maximumBy' which returns the last tie.
 --
 -- ==== __Examples__
 --
@@ -1817,7 +1815,7 @@ maximum = Bundle.foldl1' max . stream
 -- >>> V.maximumBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
 -- (2.0,'a')
 -- >>> V.maximumBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
--- (1.0,'b')
+-- (1.0,'a')
 maximumBy :: Vector v a => (a -> a -> Ordering) -> v a -> a
 {-# INLINE maximumBy #-}
 maximumBy cmpr = Bundle.foldl1' maxBy . stream
@@ -1828,7 +1826,7 @@ maximumBy cmpr = Bundle.foldl1' maxBy . stream
                   _  -> x
 
 -- | /O(n)/ Yield the maximum element of the vector by comparing the results
--- of a key function on each element. In case of a tie, the last occurrence
+-- of a key function on each element. In case of a tie, the first occurrence
 -- wins. The vector may not be empty.
 --
 -- ==== __Examples__
@@ -1837,7 +1835,7 @@ maximumBy cmpr = Bundle.foldl1' maxBy . stream
 -- >>> V.maximumOn fst $ V.fromList [(2.0,'a'), (1.0,'b')]
 -- (2.0,'a')
 -- >>> V.maximumOn fst $ V.fromList [(1.0,'a'), (1.0,'b')]
--- (1.0,'b')
+-- (1.0,'a')
 maximumOn :: (Ord b, Vector v a) => (a -> b) -> v a -> a
 {-# INLINE maximumOn #-}
 maximumOn f = fst . Bundle.foldl1' maxBy . Bundle.map (\a -> (a, f a)) . stream
@@ -1866,7 +1864,7 @@ minimum = Bundle.foldl1' min . stream
 
 -- | /O(n)/ Yield the minimum element of the vector according to the
 -- given comparison function. The vector may not be empty. In case of
--- a tie, the first occurrence wins. The vector may not be empty.
+-- a tie, the first occurrence wins.
 --
 -- ==== __Examples__
 --
@@ -1913,7 +1911,7 @@ maxIndex = maxIndexBy compare
 
 -- | /O(n)/ Yield the index of the maximum element of the vector
 -- according to the given comparison function. The vector may not be
--- empty. In case of a tie, the last occurrence wins.
+-- empty. In case of a tie, the first occurrence wins.
 --
 -- ==== __Examples__
 --
@@ -1922,7 +1920,7 @@ maxIndex = maxIndexBy compare
 -- >>> V.maxIndexBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
 -- 0
 -- >>> V.maxIndexBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
--- 1
+-- 0
 maxIndexBy :: Vector v a => (a -> a -> Ordering) -> v a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy cmpr = fst . Bundle.foldl1' imax . Bundle.indexed . stream
