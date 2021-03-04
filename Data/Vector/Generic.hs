@@ -1824,8 +1824,8 @@ maximumBy cmpr = Bundle.foldl1' maxBy . stream
   where
     {-# INLINE maxBy #-}
     maxBy x y = case cmpr x y of
-                  GT -> x
-                  _  -> y
+                  LT -> y
+                  _  -> x
 
 -- | /O(n)/ Yield the maximum element of the vector by comparing the results
 -- of a key function on each element. In case of a tie, the last occurrence
