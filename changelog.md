@@ -7,12 +7,6 @@
    compiler fine with new definitions.
  * `mkType` from `Data.Vector.Generic` is deprecated in favor of
    `Data.Data.mkNoRepType`
- * `maximumBy` now behaves like its counterpart in `Data.List` in that if
-   `maximumBy` has to choose between several elements which could be
-   considered the maximum, it will now choose the last element (previously,
-   it would choose the first element). Similarly, `maxIndexBy` will also
-   now pick the last element if several elements could be considered the
-   maximum.
  * The role signatures on several `Vector` types were too permissive, so they
    have been tightened up:
    * The role signature for `Data.Vector.Mutable.MVector` is now
