@@ -40,9 +40,9 @@ Tested-With:
   GHC == 8.2.2,
   GHC == 8.4.4,
   GHC == 8.6.5,
-  GHC == 8.8.1,
-  GHC == 8.10.1
-
+  GHC == 8.8.4,
+  GHC == 8.10.3
+  GHC == 9.0.1
 
 Cabal-Version:  >=1.10
 Build-Type:     Simple
@@ -262,9 +262,12 @@ test-suite vector-doctest
   -- GHC 8.10 fails to run doctests for some reason
   if impl(ghc >= 8.10) && impl(ghc < 8.11)
     buildable: False
+  -- GHC 9.0 fails to run doctests for some reason too
+  if impl(ghc >= 9.0) && impl(ghc < 9.1)
+    buildable: False
   build-depends:
         base      -any
-      , doctest   >=0.15 && <0.18
+      , doctest   >=0.15 && <0.19
       , primitive >= 0.6.4.0 && < 0.8
       , vector    -any
 

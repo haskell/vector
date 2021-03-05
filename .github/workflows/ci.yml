@@ -18,24 +18,29 @@ jobs:
       matrix:
         include:
           # Linux
-          - { cabal: "3.2", os: ubuntu-latest,  ghc: "7.10.3" }
-          - { cabal: "3.2", os: ubuntu-latest,  ghc: "8.0.2"  }
-          - { cabal: "3.2", os: ubuntu-latest,  ghc: "8.2.2"  }
-          - { cabal: "3.2", os: ubuntu-latest,  ghc: "8.4.4"  }
-          - { cabal: "3.2", os: ubuntu-latest,  ghc: "8.6.5"  }
-          - { cabal: "3.2", os: ubuntu-latest,  ghc: "8.8.4"  }
-          - { cabal: "3.2", os: ubuntu-latest,  ghc: "8.10.3" }
+          - { cabal: "3.4", os: ubuntu-latest,  ghc: "7.10.3" }
+          - { cabal: "3.4", os: ubuntu-latest,  ghc: "8.0.2"  }
+          - { cabal: "3.4", os: ubuntu-latest,  ghc: "8.2.2"  }
+          - { cabal: "3.4", os: ubuntu-latest,  ghc: "8.4.4"  }
+          - { cabal: "3.4", os: ubuntu-latest,  ghc: "8.6.5"  }
+          - { cabal: "3.4", os: ubuntu-latest,  ghc: "8.8.4"  }
+          - { cabal: "3.4", os: ubuntu-latest,  ghc: "8.10.3" }
+          - { cabal: "3.4", os: ubuntu-latest,  ghc: "9.0.1"  }
           # Win
           - { cabal: "3.2", os: windows-latest, ghc: "8.4.4"  }
           - { cabal: "3.2", os: windows-latest, ghc: "8.6.5"  }
           # OOM when building tests
-          # - { cabal: "3.2", os: windows-latest, ghc: "8.8.4"  }
-          # - { cabal: "3.2", os: windows-latest, ghc: "8.10.3" }
+          # - { cabal: "3.4", os: windows-latest, ghc: "8.8.4"  }
+          # - { cabal: "3.4", os: windows-latest, ghc: "8.10.3" }
+          # No cabal 3.4 for Windows as of 2021.03.05
+          # - { cabal: "3.4", os: windows-latest,  ghc: "9.0.1"  }
           # MacOS
           - { cabal: "3.2", os: macOS-latest,   ghc: "8.4.4"  }
           - { cabal: "3.2", os: macOS-latest,   ghc: "8.6.5"  }
           - { cabal: "3.2", os: macOS-latest,   ghc: "8.8.4"  }
           - { cabal: "3.2", os: macOS-latest,   ghc: "8.10.3" }
+          # No cabal 3.4 for macOS as of 2021.03.05
+          # - { cabal: "3.4", os: macOS-latest,   ghc: "9.0.1"  }
       fail-fast: false
 
     steps:
