@@ -512,7 +512,7 @@ testOrdFunctions _ = $(testProperties
    'prop_maximumBy, 'prop_minimumBy,
    'prop_maximumOn, 'prop_minimumOn,
    'prop_maxIndexBy, 'prop_minIndexBy,
-   'prop_ListLastMaxIndexWins, 'prop_FalseListFirstMaxIndexWins ])
+   'prop_ListFirstMaxIndexWins, 'prop_FalseListFirstMaxIndexWins ])
   where
     prop_compare :: P (v a -> v a -> Ordering) = compare `eq` compare
     prop_maximum :: P (v a -> a) = not . V.null ===> V.maximum `eq` maximum
@@ -529,8 +529,8 @@ testOrdFunctions _ = $(testProperties
       not . V.null ===> V.minimumOn id `eq` minimum
     prop_maxIndexBy :: P (v a -> Int) =
       not . V.null ===> V.maxIndexBy compare `eq` maxIndex
-    prop_ListLastMaxIndexWins ::  P (v a -> Int) =
-        not . V.null ===> ( maxIndex . V.toList) `eq` listMaxIndexLMW
+    prop_ListFirstMaxIndexWins ::  P (v a -> Int) =
+        not . V.null ===> ( maxIndex . V.toList) `eq` listMaxIndexFMW
     prop_FalseListFirstMaxIndexWinsDesc ::  P (v a -> Int) =
         (\x -> not $ V.null x && (V.uniq x /= x ) )===> ( maxIndex . V.toList) `eq` listMaxIndexFMW
     prop_FalseListFirstMaxIndexWins :: Property
@@ -540,9 +540,6 @@ testOrdFunctions _ = $(testProperties
 
 listMaxIndexFMW :: Ord a => [a] -> Int
 listMaxIndexFMW  = ( fst  . extractFMW .  sconcat . DLE.fromList . fmap FMW . zip [0 :: Int ..])
-
-listMaxIndexLMW :: Ord a => [a] -> Int
-listMaxIndexLMW = ( fst  . extractLMW .  sconcat . DLE.fromList . fmap LMW . zip [0 :: Int ..])
 
 newtype LastMaxWith a i = LMW {extractLMW:: (i,a)}
     deriving(Eq,Show,Read)

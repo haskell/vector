@@ -1385,7 +1385,16 @@ ifilter f = unstream
           . inplace (S.map snd . S.filter (uncurry f) . S.indexed) toMax
           . stream
 
--- | /O(n)/ Drop repeated adjacent elements.
+-- | /O(n)/ Drop repeated adjacent elements. First element in group is returned.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.uniq $ V.fromList [1.0,3.0,3.0,200.0,3.0]
+-- [1.0,3.0,200.0,3.0]
+-- >>> import Data.Semigroup
+-- >>> V.uniq $ V.fromList [ Arg 1 'a', Arg 1 'b', Arg (1 :: Int) 'c']
+-- [Arg 1 'a']
 uniq :: (Vector v a, Eq a) => v a -> v a
 {-# INLINE uniq #-}
 uniq = unstream . inplace S.uniq toMax . stream
@@ -1778,42 +1787,93 @@ product :: (Vector v a, Num a) => v a -> a
 product = Bundle.foldl' (*) 1 . stream
 
 -- | /O(n)/ Yield the maximum element of the vector. The vector may not be
--- empty.
+-- empty. In a case of a tie the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.maximum $ V.fromList [2.0, 1.0]
+-- 2.0
+-- >>> import Data.Semigroup
+-- >>> V.maximum $ V.fromList [Arg 1.0 'a', Arg 2.0 'b']
+-- Arg 2.0 'b'
+-- >>> V.maximum $ V.fromList [Arg 1.0 'a', Arg 1.0 'b']
+-- Arg 1.0 'a'
 maximum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE maximum #-}
 maximum = Bundle.foldl1' max . stream
 
--- | /O(n)/ Yield the maximum element of the vector according to the given
--- comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the maximum element of the vector according to the
+-- given comparison function. The vector may not be empty. In case of
+-- a tie the first occurrence wins. This behavior is different from
+-- 'Data.List.maximumBy' which returns the last tie.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector as V
+-- >>> V.maximumBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- (2.0,'a')
+-- >>> V.maximumBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'a')
 maximumBy :: Vector v a => (a -> a -> Ordering) -> v a -> a
 {-# INLINE maximumBy #-}
 maximumBy cmpr = Bundle.foldl1' maxBy . stream
   where
     {-# INLINE maxBy #-}
     maxBy x y = case cmpr x y of
-                  GT -> x
-                  _  -> y
+                  LT -> y
+                  _  -> x
 
 -- | /O(n)/ Yield the maximum element of the vector by comparing the results
 -- of a key function on each element. In case of a tie, the first occurrence
 -- wins. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.maximumOn fst $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- (2.0,'a')
+-- >>> V.maximumOn fst $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'a')
 maximumOn :: (Ord b, Vector v a) => (a -> b) -> v a -> a
 {-# INLINE maximumOn #-}
 maximumOn f = fst . Bundle.foldl1' maxBy . Bundle.map (\a -> (a, f a)) . stream
   where
     {-# INLINE maxBy #-}
     maxBy x y = case compare (snd x) (snd y) of
-                  GT -> x
-                  _  -> y
+                  LT -> y
+                  _  -> x
 
 -- | /O(n)/ Yield the minimum element of the vector. The vector may not be
--- empty.
+-- empty. In a case of a tie the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.minimum $ V.fromList [2.0, 1.0]
+-- 1.0
+-- >>> import Data.Semigroup
+-- >>> V.minimum $ V.fromList [Arg 2.0 'a', Arg 1.0 'b']
+-- Arg 1.0 'b'
+-- >>> V.minimum $ V.fromList [Arg 1.0 'a', Arg 1.0 'b']
+-- Arg 1.0 'a'
 minimum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE minimum #-}
 minimum = Bundle.foldl1' min . stream
 
--- | /O(n)/ Yield the minimum element of the vector according to the given
--- comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the minimum element of the vector according to the
+-- given comparison function. The vector may not be empty. In case of
+-- a tie, the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector as V
+-- >>> V.minimumBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- (1.0,'b')
+-- >>> V.minimumBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'a')
 minimumBy :: Vector v a => (a -> a -> Ordering) -> v a -> a
 {-# INLINE minimumBy #-}
 minimumBy cmpr = Bundle.foldl1' minBy . stream
@@ -1826,6 +1886,14 @@ minimumBy cmpr = Bundle.foldl1' minBy . stream
 -- | /O(n)/ Yield the minimum element of the vector by comparing the results
 -- of a key function on each element. In case of a tie, the first occurrence
 -- wins. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.minimumOn fst $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- (1.0,'b')
+-- >>> V.minimumOn fst $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'a')
 minimumOn :: (Ord b, Vector v a) => (a -> b) -> v a -> a
 {-# INLINE minimumOn #-}
 minimumOn f = fst . Bundle.foldl1' minBy . Bundle.map (\a -> (a, f a)) . stream
@@ -1841,16 +1909,26 @@ maxIndex :: (Vector v a, Ord a) => v a -> Int
 {-# INLINE maxIndex #-}
 maxIndex = maxIndexBy compare
 
--- | /O(n)/ Yield the index of the maximum element of the vector according to
--- the given comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the index of the maximum element of the vector
+-- according to the given comparison function. The vector may not be
+-- empty. In case of a tie, the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector as V
+-- >>> V.maxIndexBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- 0
+-- >>> V.maxIndexBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- 0
 maxIndexBy :: Vector v a => (a -> a -> Ordering) -> v a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy cmpr = fst . Bundle.foldl1' imax . Bundle.indexed . stream
   where
     imax (i,x) (j,y) = i `seq` j `seq`
                        case cmpr x y of
-                         GT -> (i,x)
-                         _  -> (j,y)
+                         LT -> (j,y)
+                         _  -> (i,x)
 
 -- | /O(n)/ Yield the index of the minimum element of the vector. The vector
 -- may not be empty.
@@ -1860,6 +1938,15 @@ minIndex = minIndexBy compare
 
 -- | /O(n)/ Yield the index of the minimum element of the vector according to
 -- the given comparison function. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector as V
+-- >>> V.minIndexBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- 1
+-- >>> V.minIndexBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- 0
 minIndexBy :: Vector v a => (a -> a -> Ordering) -> v a -> Int
 {-# INLINE minIndexBy #-}
 minIndexBy cmpr = fst . Bundle.foldl1' imin . Bundle.indexed . stream

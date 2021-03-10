@@ -1318,7 +1318,16 @@ ifilter :: (Int -> a -> Bool) -> Vector a -> Vector a
 {-# INLINE ifilter #-}
 ifilter = G.ifilter
 
--- | /O(n)/ Drop repeated adjacent elements.
+-- | /O(n)/ Drop repeated adjacent elements. First element in group is returned.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.uniq $ V.fromList [1.0,3.0,3.0,200.0,3.0]
+-- [1.0,3.0,200.0,3.0]
+-- >>> import Data.Semigroup
+-- >>> V.uniq $ V.fromList [ Arg 1 'a', Arg 1 'b', Arg (1 :: Int) 'c']
+-- [Arg 1 'a']
 uniq :: (Eq a) => Vector a -> Vector a
 {-# INLINE uniq #-}
 uniq = G.uniq
@@ -1633,13 +1642,35 @@ product :: Num a => Vector a -> a
 product = G.product
 
 -- | /O(n)/ Yield the maximum element of the vector. The vector may not be
--- empty.
+-- empty. In a case of a tie the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.maximum $ V.fromList [2.0, 1.0]
+-- 2.0
+-- >>> import Data.Semigroup
+-- >>> V.maximum $ V.fromList [Arg 1.0 'a', Arg 2.0 'b']
+-- Arg 2.0 'b'
+-- >>> V.maximum $ V.fromList [Arg 1.0 'a', Arg 1.0 'b']
+-- Arg 1.0 'a'
 maximum :: Ord a => Vector a -> a
 {-# INLINE maximum #-}
 maximum = G.maximum
 
--- | /O(n)/ Yield the maximum element of the vector according to the given
--- comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the maximum element of the vector according to the
+-- given comparison function. The vector may not be empty. In case of
+-- a tie the first occurrence wins. This behavior is different from
+-- 'Data.List.maximumBy' which returns the last tie.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector as V
+-- >>> V.maximumBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- (2.0,'a')
+-- >>> V.maximumBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'a')
 maximumBy :: (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE maximumBy #-}
 maximumBy = G.maximumBy
@@ -1647,18 +1678,47 @@ maximumBy = G.maximumBy
 -- | /O(n)/ Yield the maximum element of the vector by comparing the results
 -- of a key function on each element. In case of a tie, the first occurrence
 -- wins. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.maximumOn fst $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- (2.0,'a')
+-- >>> V.maximumOn fst $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'a')
 maximumOn :: Ord b => (a -> b) -> Vector a -> a
 {-# INLINE maximumOn #-}
 maximumOn = G.maximumOn
 
 -- | /O(n)/ Yield the minimum element of the vector. The vector may not be
--- empty.
+-- empty. In a case of a tie the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.minimum $ V.fromList [2.0, 1.0]
+-- 1.0
+-- >>> import Data.Semigroup
+-- >>> V.minimum $ V.fromList [Arg 2.0 'a', Arg 1.0 'b']
+-- Arg 1.0 'b'
+-- >>> V.minimum $ V.fromList [Arg 1.0 'a', Arg 1.0 'b']
+-- Arg 1.0 'a'
 minimum :: Ord a => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum
 
--- | /O(n)/ Yield the minimum element of the vector according to the given
--- comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the minimum element of the vector according to the
+-- given comparison function. The vector may not be empty. In case of
+-- a tie, the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector as V
+-- >>> V.minimumBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- (1.0,'b')
+-- >>> V.minimumBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'a')
 minimumBy :: (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE minimumBy #-}
 minimumBy = G.minimumBy
@@ -1666,6 +1726,14 @@ minimumBy = G.minimumBy
 -- | /O(n)/ Yield the minimum element of the vector by comparing the results
 -- of a key function on each element. In case of a tie, the first occurrence
 -- wins. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.minimumOn fst $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- (1.0,'b')
+-- >>> V.minimumOn fst $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- (1.0,'a')
 minimumOn :: Ord b => (a -> b) -> Vector a -> a
 {-# INLINE minimumOn #-}
 minimumOn = G.minimumOn
@@ -1676,8 +1744,18 @@ maxIndex :: Ord a => Vector a -> Int
 {-# INLINE maxIndex #-}
 maxIndex = G.maxIndex
 
--- | /O(n)/ Yield the index of the maximum element of the vector according to
--- the given comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the index of the maximum element of the vector
+-- according to the given comparison function. The vector may not be
+-- empty. In case of a tie, the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector as V
+-- >>> V.maxIndexBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- 0
+-- >>> V.maxIndexBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- 0
 maxIndexBy :: (a -> a -> Ordering) -> Vector a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy = G.maxIndexBy
@@ -1690,6 +1768,15 @@ minIndex = G.minIndex
 
 -- | /O(n)/ Yield the index of the minimum element of the vector according to
 -- the given comparison function. The vector may not be empty.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Ord
+-- >>> import qualified Data.Vector as V
+-- >>> V.minIndexBy (comparing fst) $ V.fromList [(2.0,'a'), (1.0,'b')]
+-- 1
+-- >>> V.minIndexBy (comparing fst) $ V.fromList [(1.0,'a'), (1.0,'b')]
+-- 0
 minIndexBy :: (a -> a -> Ordering) -> Vector a -> Int
 {-# INLINE minIndexBy #-}
 minIndexBy = G.minIndexBy

@@ -1069,7 +1069,13 @@ ifilter :: Prim a => (Int -> a -> Bool) -> Vector a -> Vector a
 {-# INLINE ifilter #-}
 ifilter = G.ifilter
 
--- | /O(n)/ Drop repeated adjacent elements.
+-- | /O(n)/ Drop repeated adjacent elements. First element in group is returned.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> VP.uniq $ VP.fromList [1.0,3.0,3.0,200.0,3.0]
+-- [1.0,3.0,200.0,3.0]
 uniq :: (Prim a, Eq a) => Vector a -> Vector a
 {-# INLINE uniq #-}
 uniq = G.uniq
@@ -1354,13 +1360,21 @@ product :: (Prim a, Num a) => Vector a -> a
 product = G.product
 
 -- | /O(n)/ Yield the maximum element of the vector. The vector may not be
--- empty.
+-- empty. In a case of a tie the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> VP.maximum $ VP.fromList [2.0, 1.0]
+-- 2.0
 maximum :: (Prim a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
 maximum = G.maximum
 
--- | /O(n)/ Yield the maximum element of the vector according to the given
--- comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the maximum element of the vector according to the
+-- given comparison function. The vector may not be empty. In case of
+-- a tie the first occurrence wins. This behavior is different from
+-- 'Data.List.maximumBy' which returns the last tie.
 maximumBy :: Prim a => (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE maximumBy #-}
 maximumBy = G.maximumBy
@@ -1373,13 +1387,20 @@ maximumOn :: (Ord b, Prim a) => (a -> b) -> Vector a -> a
 maximumOn = G.maximumOn
 
 -- | /O(n)/ Yield the minimum element of the vector. The vector may not be
--- empty.
+-- empty. In a case of a tie the first occurrence wins.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> VP.minimum $ VP.fromList [2.0, 1.0]
+-- 1.0
 minimum :: (Prim a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum
 
--- | /O(n)/ Yield the minimum element of the vector according to the given
--- comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the minimum element of the vector according to the
+-- given comparison function. The vector may not be empty. In case of
+-- a tie, the first occurrence wins.
 minimumBy :: Prim a => (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE minimumBy #-}
 minimumBy = G.minimumBy
@@ -1397,8 +1418,9 @@ maxIndex :: (Prim a, Ord a) => Vector a -> Int
 {-# INLINE maxIndex #-}
 maxIndex = G.maxIndex
 
--- | /O(n)/ Yield the index of the maximum element of the vector according to
--- the given comparison function. The vector may not be empty.
+-- | /O(n)/ Yield the index of the maximum element of the vector
+-- according to the given comparison function. The vector may not be
+-- empty. In case of a tie, the first occurrence wins.
 maxIndexBy :: Prim a => (a -> a -> Ordering) -> Vector a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy = G.maxIndexBy
