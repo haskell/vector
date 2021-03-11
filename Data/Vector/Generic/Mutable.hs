@@ -46,7 +46,9 @@ module Data.Vector.Generic.Mutable (
   -- * Folds
   mapM_, imapM_,
   foldl, foldl', foldM, foldM',
+  foldr, foldr', foldrM, foldrM',
   ifoldl, ifoldl', ifoldM, ifoldM',
+  ifoldr, ifoldr', ifoldrM, ifoldrM',
 
   -- * Modifying vectors
   nextPermutation,
@@ -909,6 +911,36 @@ ifoldl' f b0 v = stToPrim $ loop 0 b0
                                loop (i + 1) $ f i b a
     n = length v
 
+-- | /O(n)/ Pure right fold.
+foldr :: (PrimMonad m, MVector v a) => (a -> b -> b) -> b -> v (PrimState m) a -> m b
+{-# INLINE foldr #-}
+foldr f = ifoldr (const f)
+
+-- | /O(n)/ Pure right fold with strict accumulator.
+foldr' :: (PrimMonad m, MVector v a) => (a -> b -> b) -> b -> v (PrimState m) a -> m b
+{-# INLINE foldr' #-}
+foldr' f = ifoldr' (const f)
+
+-- | /O(n)/ Pure right fold (function applied to each element and its index).
+ifoldr :: (PrimMonad m, MVector v a) => (Int -> a -> b -> b) -> b -> v (PrimState m) a -> m b
+{-# INLINE ifoldr #-}
+ifoldr f b0 v = stToPrim $ loop (n-1) b0
+  where
+    loop i b | i < 0     = return b
+             | otherwise = do a <- unsafeRead v i
+                              loop (i - 1) $ f i a b
+    n = length v
+-- | /O(n)/ Pure right fold with strict accumulator (function applied
+-- to each element and its index).
+ifoldr' :: (PrimMonad m, MVector v a) => (Int -> a -> b -> b) -> b -> v (PrimState m) a -> m b
+{-# INLINE ifoldr' #-}
+ifoldr' f b0 v = stToPrim $ loop (n-1) b0
+  where
+    loop i !b | i < 0     = return b
+              | otherwise = do a <- unsafeRead v i
+                               loop (i - 1) $ f i a b
+    n = length v
+
 -- | /O(n)/ Monadic fold.
 foldM :: (PrimMonad m, MVector v a) => (b -> a -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldM #-}
@@ -939,6 +971,36 @@ ifoldM' f b0 v = loop 0 b0
                                loop (i + 1) =<< f i b a
     n = length v
 
+-- | /O(n)/ Monadic right fold.
+foldrM :: (PrimMonad m, MVector v a) => (a -> b -> m b) -> b -> v (PrimState m) a -> m b
+{-# INLINE foldrM #-}
+foldrM f = ifoldrM (const f)
+
+-- | /O(n)/ Monadic right fold with strict accumulator.
+foldrM' :: (PrimMonad m, MVector v a) => (a -> b -> m b) -> b -> v (PrimState m) a -> m b
+{-# INLINE foldrM' #-}
+foldrM' f = ifoldrM' (const f)
+
+-- | /O(n)/ Monadic right fold (action applied to each element and its index).
+ifoldrM :: (PrimMonad m, MVector v a) => (Int -> a -> b -> m b) -> b -> v (PrimState m) a -> m b
+{-# INLINE ifoldrM #-}
+ifoldrM f b0 v = loop (n-1) b0
+  where
+    loop i b | i >= n = return b
+             | otherwise = do a <- unsafeRead v i
+                              loop (i - 1) =<< f i a b
+    n = length v
+
+-- | /O(n)/ Monadic right fold with strict accumulator (action applied
+-- to each element and its index).
+ifoldrM' :: (PrimMonad m, MVector v a) => (Int -> a -> b -> m b) -> b -> v (PrimState m) a -> m b
+{-# INLINE ifoldrM' #-}
+ifoldrM' f b0 v = loop 0 b0
+  where
+    loop i !b | i >= n = return b
+              | otherwise = do a <- unsafeRead v i
+                               loop (i - 1) =<< f i a b
+    n = length v
 
 
 -- Filling and copying
