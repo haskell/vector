@@ -44,7 +44,7 @@ module Data.Vector.Generic.Mutable (
   unsafeRead, unsafeWrite, unsafeModify, unsafeModifyM, unsafeSwap, unsafeExchange,
 
   -- * Folds
-  mapM_, imapM_,
+  mapM_, imapM_, forM_, iforM_,
   foldl, foldl', foldM, foldM',
   foldr, foldr', foldrM, foldrM',
   ifoldl, ifoldl', ifoldM, ifoldM',
@@ -880,6 +880,18 @@ mapM_ f v = forI_ v $ \i -> f =<< unsafeRead v i
 imapM_ :: (PrimMonad m, MVector v a) => (Int -> a -> m b) -> v (PrimState m) a -> m ()
 {-# INLINE imapM_ #-}
 imapM_ f v = forI_ v $ \i -> f i =<< unsafeRead v i
+
+-- | /O(n)/ Apply  the monadic action to every element  of the vector,
+-- discarding the results. It's same as @flip mapM_@.
+forM_ :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m b) -> m ()
+{-# INLINE forM_ #-}
+forM_ = flip mapM_
+
+-- | /O(n)/ Apply the monadic action to every element of the vector
+-- and its index, discarding the results. It's same as @flip imapM_@.
+iforM_ :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (Int -> a -> m b) -> m ()
+{-# INLINE iforM_ #-}
+iforM_ = flip imapM_
 
 -- | /O(n)/ Pure left fold.
 foldl :: (PrimMonad m, MVector v a) => (b -> a -> b) -> b -> v (PrimState m) a -> m b
