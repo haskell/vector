@@ -31,7 +31,7 @@ module Data.Vector.Unboxed.Mutable (
   -- * Construction
 
   -- ** Initialisation
-  new, unsafeNew, replicate, replicateM, clone,
+  new, unsafeNew, replicate, replicateM, generate, generateM, clone,
 
   -- ** Growing
   grow, unsafeGrow,
@@ -44,8 +44,15 @@ module Data.Vector.Unboxed.Mutable (
   unzip, unzip3, unzip4, unzip5, unzip6,
 
   -- * Accessing individual elements
-  read, write, modify, swap,
-  unsafeRead, unsafeWrite, unsafeModify, unsafeSwap,
+  read, write, modify, modifyM, swap, exchange,
+  unsafeRead, unsafeWrite, unsafeModify, unsafeModifyM, unsafeSwap, unsafeExchange,
+
+  -- * Folds
+  mapM_, imapM_, forM_, iforM_,
+  foldl, foldl', foldM, foldM',
+  foldr, foldr', foldrM, foldrM',
+  ifoldl, ifoldl', ifoldM, ifoldM',
+  ifoldr, ifoldr', ifoldrM, ifoldrM',
 
   -- * Modifying vectors
   nextPermutation,
@@ -63,7 +70,7 @@ import Control.Monad.Primitive
 
 import Prelude hiding ( length, null, replicate, reverse, map, read,
                         take, drop, splitAt, init, tail,
-                        zip, zip3, unzip, unzip3 )
+                        zip, zip3, unzip, unzip3, foldr, foldl, mapM_ )
 
 -- don't import an unused Data.Vector.Internal.Check
 #define NOT_VECTOR_MODULE
@@ -178,6 +185,19 @@ replicateM :: (PrimMonad m, Unbox a) => Int -> m a -> m (MVector (PrimState m) a
 {-# INLINE replicateM #-}
 replicateM = G.replicateM
 
+-- | /O(n)/ Create a mutable vector of the given length (0 if the length is negative)
+-- and fill it with the results of applying the function to each index.
+generate :: (PrimMonad m, Unbox a) => Int -> (Int -> a) -> m (MVector (PrimState m) a)
+{-# INLINE generate #-}
+generate = G.generate
+
+-- | /O(n)/ Create a mutable vector of the given length (0 if the length is
+-- negative) and fill it with the results of applying the monadic function to each
+-- index. Iteration starts at index 0.
+generateM :: (PrimMonad m, Unbox a) => Int -> (Int -> m a) -> m (MVector (PrimState m) a)
+{-# INLINE generateM #-}
+generateM = G.generateM
+
 -- | Create a copy of a mutable vector.
 clone :: (PrimMonad m, Unbox a)
       => MVector (PrimState m) a -> m (MVector (PrimState m) a)
@@ -263,11 +283,20 @@ modify :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> (a -> a) -> Int -
 {-# INLINE modify #-}
 modify = G.modify
 
+-- | Modify the element at the given position using a monadic function.
+modifyM :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> (a -> m a) -> Int -> m ()
+{-# INLINE modifyM #-}
+modifyM = G.modifyM
+
 -- | Swap the elements at the given positions.
 swap :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> Int -> Int -> m ()
 {-# INLINE swap #-}
 swap = G.swap
 
+-- | Replace the element at the given position and return the old element.
+exchange :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> Int -> a -> m a
+{-# INLINE exchange #-}
+exchange = G.exchange
 
 -- | Yield the element at the given position. No bounds checks are performed.
 unsafeRead :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> Int -> m a
@@ -285,11 +314,23 @@ unsafeModify :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> (a -> a) ->
 {-# INLINE unsafeModify #-}
 unsafeModify = G.unsafeModify
 
+-- | Modify the element at the given position using a monadic
+-- function. No bounds checks are performed.
+unsafeModifyM :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> (a -> m a) -> Int -> m ()
+{-# INLINE unsafeModifyM #-}
+unsafeModifyM = G.unsafeModifyM
+
 -- | Swap the elements at the given positions. No bounds checks are performed.
 unsafeSwap
     :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> Int -> Int -> m ()
 {-# INLINE unsafeSwap #-}
 unsafeSwap = G.unsafeSwap
+
+-- | Replace the element at the given position and return the old element. No
+-- bounds checks are performed.
+unsafeExchange :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> Int -> a -> m a
+{-# INLINE unsafeExchange #-}
+unsafeExchange = G.unsafeExchange
 
 -- Filling and copying
 -- -------------------
@@ -350,6 +391,115 @@ unsafeMove = G.unsafeMove
 nextPermutation :: (PrimMonad m,Ord e,Unbox e) => MVector (PrimState m) e -> m Bool
 {-# INLINE nextPermutation #-}
 nextPermutation = G.nextPermutation
+
+
+-- Folds
+-- -----
+
+-- | /O(n)/ Apply the monadic action to every element of the vector, discarding the results.
+mapM_ :: (PrimMonad m, Unbox a) => (a -> m b) -> MVector (PrimState m) a -> m ()
+{-# INLINE mapM_ #-}
+mapM_ = G.mapM_
+
+-- | /O(n)/ Apply the monadic action to every element of the vector and its index, discarding the results.
+imapM_ :: (PrimMonad m, Unbox a) => (Int -> a -> m b) -> MVector (PrimState m) a -> m ()
+{-# INLINE imapM_ #-}
+imapM_ = G.imapM_
+
+-- | /O(n)/ Apply  the monadic action to every element  of the vector,
+-- discarding the results. It's same as @flip mapM_@.
+forM_ :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> (a -> m b) -> m ()
+{-# INLINE forM_ #-}
+forM_ = G.forM_
+
+-- | /O(n)/ Apply the monadic action to every element of the vector
+-- and its index, discarding the results. It's same as @flip imapM_@.
+iforM_ :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> (Int -> a -> m b) -> m ()
+{-# INLINE iforM_ #-}
+iforM_ = G.iforM_
+
+-- | /O(n)/ Pure left fold.
+foldl :: (PrimMonad m, Unbox a) => (b -> a -> b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE foldl #-}
+foldl = G.foldl
+
+-- | /O(n)/ Pure left fold with strict accumulator.
+foldl' :: (PrimMonad m, Unbox a) => (b -> a -> b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE foldl' #-}
+foldl' = G.foldl'
+
+-- | /O(n)/ Pure left fold (function applied to each element and its index).
+ifoldl :: (PrimMonad m, Unbox a) => (Int -> b -> a -> b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE ifoldl #-}
+ifoldl = G.ifoldl
+
+-- | /O(n)/ Pure left fold with strict accumulator (function applied to each element and its index).
+ifoldl' :: (PrimMonad m, Unbox a) => (Int -> b -> a -> b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE ifoldl' #-}
+ifoldl' = G.ifoldl'
+
+-- | /O(n)/ Pure right fold.
+foldr :: (PrimMonad m, Unbox a) => (a -> b -> b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE foldr #-}
+foldr = G.foldr
+
+-- | /O(n)/ Pure right fold with strict accumulator.
+foldr' :: (PrimMonad m, Unbox a) => (a -> b -> b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE foldr' #-}
+foldr' = G.foldr'
+
+-- | /O(n)/ Pure right fold (function applied to each element and its index).
+ifoldr :: (PrimMonad m, Unbox a) => (Int -> a -> b -> b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE ifoldr #-}
+ifoldr = G.ifoldr
+
+-- | /O(n)/ Pure right fold with strict accumulator (function applied
+-- to each element and its index).
+ifoldr' :: (PrimMonad m, Unbox a) => (Int -> a -> b -> b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE ifoldr' #-}
+ifoldr' = G.ifoldr'
+
+-- | /O(n)/ Monadic fold.
+foldM :: (PrimMonad m, Unbox a) => (b -> a -> m b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE foldM #-}
+foldM = G.foldM
+
+-- | /O(n)/ Monadic fold with strict accumulator.
+foldM' :: (PrimMonad m, Unbox a) => (b -> a -> m b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE foldM' #-}
+foldM' = G.foldM'
+
+-- | /O(n)/ Monadic fold (action applied to each element and its index).
+ifoldM :: (PrimMonad m, Unbox a) => (Int -> b -> a -> m b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE ifoldM #-}
+ifoldM = G.ifoldM
+
+-- | /O(n)/ Monadic fold with strict accumulator (action applied to each element and its index).
+ifoldM' :: (PrimMonad m, Unbox a) => (Int -> b -> a -> m b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE ifoldM' #-}
+ifoldM' = G.ifoldM'
+
+-- | /O(n)/ Monadic right fold.
+foldrM :: (PrimMonad m, Unbox a) => (a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE foldrM #-}
+foldrM = G.foldrM
+
+-- | /O(n)/ Monadic right fold with strict accumulator.
+foldrM' :: (PrimMonad m, Unbox a) => (a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE foldrM' #-}
+foldrM' = G.foldrM'
+
+-- | /O(n)/ Monadic right fold (action applied to each element and its index).
+ifoldrM :: (PrimMonad m, Unbox a) => (Int -> a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE ifoldrM #-}
+ifoldrM = G.ifoldrM
+
+-- | /O(n)/ Monadic right fold with strict accumulator (action applied
+-- to each element and its index).
+ifoldrM' :: (PrimMonad m, Unbox a) => (Int -> a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
+{-# INLINE ifoldrM' #-}
+ifoldrM' = G.ifoldrM'
+
 
 #define DEFINE_MUTABLE
 #include "unbox-tuple-instances"
