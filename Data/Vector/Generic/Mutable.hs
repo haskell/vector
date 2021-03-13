@@ -881,14 +881,14 @@ imapM_ :: (PrimMonad m, MVector v a) => (Int -> a -> m b) -> v (PrimState m) a -
 {-# INLINE imapM_ #-}
 imapM_ f v = forI_ v $ \i -> f i =<< unsafeRead v i
 
--- | /O(n)/ Apply  the monadic action to every element  of the vector,
--- discarding the results. It's same as @flip mapM_@.
+-- | /O(n)/ Apply the monadic action to every element of the vector,
+-- discarding the results. It's same as the @flip mapM_@.
 forM_ :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m b) -> m ()
 {-# INLINE forM_ #-}
 forM_ = flip mapM_
 
 -- | /O(n)/ Apply the monadic action to every element of the vector
--- and its index, discarding the results. It's same as @flip imapM_@.
+-- and its index, discarding the results. It's same as the @flip imapM_@.
 iforM_ :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (Int -> a -> m b) -> m ()
 {-# INLINE iforM_ #-}
 iforM_ = flip imapM_

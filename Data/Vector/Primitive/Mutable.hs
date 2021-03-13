@@ -495,14 +495,14 @@ imapM_ :: (PrimMonad m, Prim a) => (Int -> a -> m b) -> MVector (PrimState m) a 
 {-# INLINE imapM_ #-}
 imapM_ = G.imapM_
 
--- | /O(n)/ Apply  the monadic action to every element  of the vector,
--- discarding the results. It's same as @flip mapM_@.
+-- | /O(n)/ Apply the monadic action to every element of the vector,
+-- discarding the results. It's same as the @flip mapM_@.
 forM_ :: (PrimMonad m, Prim a) => MVector (PrimState m) a -> (a -> m b) -> m ()
 {-# INLINE forM_ #-}
 forM_ = G.forM_
 
 -- | /O(n)/ Apply the monadic action to every element of the vector
--- and its index, discarding the results. It's same as @flip imapM_@.
+-- and its index, discarding the results. It's same as the @flip imapM_@.
 iforM_ :: (PrimMonad m, Prim a) => MVector (PrimState m) a -> (Int -> a -> m b) -> m ()
 {-# INLINE iforM_ #-}
 iforM_ = G.iforM_
