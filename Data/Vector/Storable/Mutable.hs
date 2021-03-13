@@ -616,12 +616,12 @@ foldl' :: (PrimMonad m, Storable a) => (b -> a -> b) -> b -> MVector (PrimState 
 foldl' = G.foldl'
 
 -- | /O(n)/ Pure left fold (function applied to each element and its index).
-ifoldl :: (PrimMonad m, Storable a) => (Int -> b -> a -> b) -> b -> MVector (PrimState m) a -> m b
+ifoldl :: (PrimMonad m, Storable a) => (b -> Int -> a -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldl #-}
 ifoldl = G.ifoldl
 
 -- | /O(n)/ Pure left fold with strict accumulator (function applied to each element and its index).
-ifoldl' :: (PrimMonad m, Storable a) => (Int -> b -> a -> b) -> b -> MVector (PrimState m) a -> m b
+ifoldl' :: (PrimMonad m, Storable a) => (b -> Int -> a -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldl' #-}
 ifoldl' = G.ifoldl'
 

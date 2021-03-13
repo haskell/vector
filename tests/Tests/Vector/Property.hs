@@ -28,9 +28,11 @@ import Boilerplater
 import Utilities as Util hiding (limitUnfolds)
 
 import Control.Monad
+import Control.Monad.ST
 import qualified Data.Traversable as T (Traversable(..))
 import Data.Orphans ()
 import qualified Data.Vector.Generic as V
+import qualified Data.Vector.Generic.Mutable as MV
 import qualified Data.Vector.Fusion.Bundle as S
 
 import Test.QuickCheck
@@ -192,7 +194,11 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_prescanr, 'prop_prescanr',
         'prop_postscanr, 'prop_postscanr',
         'prop_scanr, 'prop_scanr', 'prop_scanr1, 'prop_scanr1',
-        'prop_iscanr, 'prop_iscanr'
+        'prop_iscanr, 'prop_iscanr',
+
+        -- Mutable API
+        'prop_mut_foldr, 'prop_mut_foldr', 'prop_mut_foldl, 'prop_mut_foldl',
+        'prop_mut_ifoldr, 'prop_mut_ifoldr', 'prop_mut_ifoldl, 'prop_mut_ifoldl'
     ])
   where
     -- Prelude
@@ -469,6 +475,24 @@ testPolymorphicFunctions _ = $(testProperties [
 
         constructrN xs 0 _ = xs
         constructrN xs n f = constructrN (f xs : xs) (n-1) f
+
+    prop_mut_foldr :: P ((a -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.foldr f z =<< V.thaw v) `eq` foldr
+    prop_mut_foldr' :: P ((a -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.foldr' f z =<< V.thaw v) `eq` foldr
+    prop_mut_foldl :: P ((a -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.foldl f z =<< V.thaw v) `eq` foldl
+    prop_mut_foldl' :: P ((a -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.foldl' f z =<< V.thaw v) `eq` foldl'
+    prop_mut_ifoldr :: P ((Int -> a -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.ifoldr f z =<< V.thaw v) `eq` ifoldr
+    prop_mut_ifoldr' :: P ((Int -> a -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.ifoldr' f z =<< V.thaw v) `eq` ifoldr
+    prop_mut_ifoldl :: P ((a -> Int -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.ifoldl f z =<< V.thaw v) `eq` ifoldl
+    prop_mut_ifoldl' :: P ((a -> Int -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.ifoldl' f z =<< V.thaw v) `eq` ifoldl
+
 
 -- copied from GHC source code
 partitionWith :: (a -> Either b c) -> [a] -> ([b], [c])

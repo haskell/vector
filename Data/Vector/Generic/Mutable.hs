@@ -896,31 +896,31 @@ iforM_ = flip imapM_
 -- | /O(n)/ Pure left fold.
 foldl :: (PrimMonad m, MVector v a) => (b -> a -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldl #-}
-foldl f = ifoldl (const f)
+foldl f = ifoldl (\b _ -> f b)
 
 -- | /O(n)/ Pure left fold with strict accumulator.
 foldl' :: (PrimMonad m, MVector v a) => (b -> a -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldl' #-}
-foldl' f = ifoldl' (const f)
+foldl' f = ifoldl' (\b _ -> f b)
 
 -- | /O(n)/ Pure left fold (function applied to each element and its index).
-ifoldl :: (PrimMonad m, MVector v a) => (Int -> b -> a -> b) -> b -> v (PrimState m) a -> m b
+ifoldl :: (PrimMonad m, MVector v a) => (b -> Int -> a -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldl #-}
 ifoldl f b0 v = stToPrim $ loop 0 b0
   where
     loop i b | i >= n = return b
              | otherwise = do a <- unsafeRead v i
-                              loop (i + 1) $ f i b a
+                              loop (i + 1) $ f b i a
     n = length v
 
 -- | /O(n)/ Pure left fold with strict accumulator (function applied to each element and its index).
-ifoldl' :: (PrimMonad m, MVector v a) => (Int -> b -> a -> b) -> b -> v (PrimState m) a -> m b
+ifoldl' :: (PrimMonad m, MVector v a) => (b -> Int -> a -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldl' #-}
 ifoldl' f b0 v = stToPrim $ loop 0 b0
   where
     loop i !b | i >= n = return b
               | otherwise = do a <- unsafeRead v i
-                               loop (i + 1) $ f i b a
+                               loop (i + 1) $ f b i a
     n = length v
 
 -- | /O(n)/ Pure right fold.
