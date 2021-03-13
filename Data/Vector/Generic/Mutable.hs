@@ -956,31 +956,31 @@ ifoldr' f b0 v = stToPrim $ loop (n-1) b0
 -- | /O(n)/ Monadic fold.
 foldM :: (PrimMonad m, MVector v a) => (b -> a -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldM #-}
-foldM f = ifoldM (const f)
+foldM f = ifoldM (\x _ -> f x)
 
 -- | /O(n)/ Monadic fold with strict accumulator.
 foldM' :: (PrimMonad m, MVector v a) => (b -> a -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldM' #-}
-foldM' f = ifoldM' (const f)
+foldM' f = ifoldM' (\x _ -> f x)
 
 -- | /O(n)/ Monadic fold (action applied to each element and its index).
-ifoldM :: (PrimMonad m, MVector v a) => (Int -> b -> a -> m b) -> b -> v (PrimState m) a -> m b
+ifoldM :: (PrimMonad m, MVector v a) => (b -> Int -> a -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldM #-}
 ifoldM f b0 v = loop 0 b0
   where
     loop i b | i >= n = return b
              | otherwise = do a <- unsafeRead v i
-                              loop (i + 1) =<< f i b a
+                              loop (i + 1) =<< f b i a
     n = length v
 
 -- | /O(n)/ Monadic fold with strict accumulator (action applied to each element and its index).
-ifoldM' :: (PrimMonad m, MVector v a) => (Int -> b -> a -> m b) -> b -> v (PrimState m) a -> m b
+ifoldM' :: (PrimMonad m, MVector v a) => (b -> Int -> a -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldM' #-}
 ifoldM' f b0 v = loop 0 b0
   where
     loop i !b | i >= n = return b
               | otherwise = do a <- unsafeRead v i
-                               loop (i + 1) =<< f i b a
+                               loop (i + 1) =<< f b i a
     n = length v
 
 -- | /O(n)/ Monadic right fold.

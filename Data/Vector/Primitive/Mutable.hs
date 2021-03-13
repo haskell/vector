@@ -559,12 +559,12 @@ foldM' :: (PrimMonad m, Prim a) => (b -> a -> m b) -> b -> MVector (PrimState m)
 foldM' = G.foldM'
 
 -- | /O(n)/ Monadic fold (action applied to each element and its index).
-ifoldM :: (PrimMonad m, Prim a) => (Int -> b -> a -> m b) -> b -> MVector (PrimState m) a -> m b
+ifoldM :: (PrimMonad m, Prim a) => (b -> Int -> a -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldM #-}
 ifoldM = G.ifoldM
 
 -- | /O(n)/ Monadic fold with strict accumulator (action applied to each element and its index).
-ifoldM' :: (PrimMonad m, Prim a) => (Int -> b -> a -> m b) -> b -> MVector (PrimState m) a -> m b
+ifoldM' :: (PrimMonad m, Prim a) => (b -> Int -> a -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldM' #-}
 ifoldM' = G.ifoldM'
 

@@ -198,7 +198,8 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Mutable API
         'prop_mut_foldr, 'prop_mut_foldr', 'prop_mut_foldl, 'prop_mut_foldl',
-        'prop_mut_ifoldr, 'prop_mut_ifoldr', 'prop_mut_ifoldl, 'prop_mut_ifoldl'
+        'prop_mut_ifoldr, 'prop_mut_ifoldr', 'prop_mut_ifoldl, 'prop_mut_ifoldl',
+        'prop_mut_ifoldM, 'prop_mut_ifoldrM
     ])
   where
     -- Prelude
@@ -493,6 +494,16 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_mut_ifoldl' :: P ((a -> Int -> a -> a) -> a -> v a -> a) =
       (\f z v -> runST $ MV.ifoldl' f z =<< V.thaw v) `eq` ifoldl
 
+    prop_mut_ifoldM :: P ((a -> Int -> a -> Identity a) -> a -> v a -> Identity a)
+      = (\f z v -> Identity $ runST $ MV.ifoldM (\b i -> pure . runIdentity . f b i) z =<< V.thaw v)
+      `eq` ifoldM
+    -- prop_ifoldM' :: P ((a -> Int -> a -> Identity a) -> a -> v a -> Identity a)
+    --   = (\f z v -> Identity $ runST $ MV.ifoldM' (\b i -> pure . runIdentity . f b i) z =<< V.thaw v)
+    --   `eq` ifoldM
+    prop_mut_ifoldrM :: P ((Int -> a -> a -> Identity a) -> a -> v a -> Identity a)
+      = (\f z v -> Identity $ runST $ MV.ifoldrM (\b i -> pure . runIdentity . f b i) z =<< V.thaw v)
+      `eq`
+      (\f -> ifoldM (\b i a -> f i a b) )
 
 -- copied from GHC source code
 partitionWith :: (a -> Either b c) -> [a] -> ([b], [c])
