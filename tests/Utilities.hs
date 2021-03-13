@@ -321,7 +321,7 @@ iscanr f z = scanr (uncurry f) z . zip [0..]
 ifoldr :: (Int -> a -> b -> b) -> b -> [a] -> b
 ifoldr f z = foldr (uncurry f) z . zip [0..]
 
-ifoldM :: Monad m => (a -> Int -> a -> m a) -> a -> [a] -> m a
+ifoldM :: Monad m => (b -> Int -> a -> m b) -> b -> [a] -> m b
 ifoldM = indexedLeftFold foldM
 
 ifoldM_ :: Monad m => (b -> Int -> a -> m b) -> b -> [a] -> m ()
