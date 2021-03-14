@@ -998,7 +998,7 @@ ifoldrM :: (PrimMonad m, MVector v a) => (Int -> a -> b -> m b) -> b -> v (PrimS
 {-# INLINE ifoldrM #-}
 ifoldrM f b0 v = loop (n-1) b0
   where
-    loop i b | i >= n = return b
+    loop i b | i < 0     = return b
              | otherwise = do a <- unsafeRead v i
                               loop (i - 1) =<< f i a b
     n = length v
@@ -1007,9 +1007,9 @@ ifoldrM f b0 v = loop (n-1) b0
 -- to each element and its index).
 ifoldrM' :: (PrimMonad m, MVector v a) => (Int -> a -> b -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldrM' #-}
-ifoldrM' f b0 v = loop 0 b0
+ifoldrM' f b0 v = loop (n-1) b0
   where
-    loop i !b | i >= n = return b
+    loop i !b | i < 0     = return b
               | otherwise = do a <- unsafeRead v i
                                loop (i - 1) =<< f i a b
     n = length v

@@ -324,6 +324,12 @@ ifoldr f z = foldr (uncurry f) z . zip [0..]
 ifoldM :: Monad m => (b -> Int -> a -> m b) -> b -> [a] -> m b
 ifoldM = indexedLeftFold foldM
 
+foldrM :: Monad m => (a -> b -> m b) -> b -> [a] -> m b
+foldrM f z = foldr (\a mb -> f a =<< mb) (pure z)
+
+ifoldrM :: Monad m => (Int -> a -> b -> m b) -> b -> [a] -> m b
+ifoldrM f z xs = foldr (\(i,a) mb -> f i a =<< mb) (pure z) ([0..] `zip` xs)
+
 ifoldM_ :: Monad m => (b -> Int -> a -> m b) -> b -> [a] -> m ()
 ifoldM_ = indexedLeftFold foldM_
 
