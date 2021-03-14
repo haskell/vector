@@ -277,6 +277,15 @@ xs // ps = go xs ps' 0
 
 withIndexFirst m f = m (uncurry f) . zip [0..]
 
+modifyList :: [a] -> (a -> a) -> Int -> [a]
+modifyList xs f i = zipWith merge xs (replicate i Nothing <> [Just f] <> repeat Nothing)
+  where
+    merge x Nothing  = x
+    merge x (Just g) = g x
+
+writeList :: [a] -> Int -> a -> [a]
+writeList xs i a = modifyList xs (const a) i
+
 imap :: (Int -> a -> a) -> [a] -> [a]
 imap = withIndexFirst map
 

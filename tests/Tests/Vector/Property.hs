@@ -197,6 +197,8 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_iscanr, 'prop_iscanr',
 
         -- Mutable API
+        'prop_mut_read, 'prop_mut_write, 'prop_mut_modify,
+
         'prop_mut_generate, 'prop_mut_generateM,
         'prop_mut_mapM_, 'prop_mut_imapM_, 'prop_mut_forM_, 'prop_mut_iforM_,
         'prop_mut_foldr, 'prop_mut_foldr', 'prop_mut_foldl, 'prop_mut_foldl',
@@ -511,6 +513,36 @@ testPolymorphicFunctions _ = $(testProperties [
       = (\f z v -> Identity $ runST $ MV.foldrM' (\a b -> pure $ runIdentity $ f a b) z =<< V.thaw v)
       `eq`
       foldrM
+
+    prop_mut_read = \xs ->
+      not (V.null xs) ==>
+      forAll (choose (0, V.length xs-1)) $ \i ->
+      unP prop xs i
+      where
+        prop :: P (v a -> Int -> a) = (\v i -> runST $ do mv <- V.thaw v
+                                                          MV.read mv i
+                                      ) `eq` (!!)
+    prop_mut_write = \xs ->
+      not (V.null xs) ==>
+      forAll (choose (0, V.length xs-1)) $ \i ->
+      unP prop xs i
+      where
+        prop :: P (v a -> Int -> a -> v a) = (\v i a -> runST $ do mv <- V.thaw v
+                                                                   MV.write mv i a
+                                                                   V.freeze mv
+                                             ) `eq` writeList
+    prop_mut_modify = \xs f ->
+      not (V.null xs) ==>
+      forAll (choose (0, V.length xs-1)) $ \i ->
+      unP prop xs f i
+      where
+        prop :: P (v a -> (a -> a) -> Int -> v a)
+          = (\v f i -> runST $ do mv <- V.thaw v
+                                  MV.modify mv f i
+                                  V.freeze mv
+            ) `eq` modifyList
+
+
 
     prop_mut_generate :: P (Int -> (Int -> a) -> v a)
       = (\n _ -> n < 1000) ===> (\n f -> runST $ V.freeze =<< MV.generate n f)
