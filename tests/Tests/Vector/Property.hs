@@ -197,6 +197,8 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_iscanr, 'prop_iscanr',
 
         -- Mutable API
+        'prop_mut_generate, 'prop_mut_generateM,
+        'prop_mut_mapM_, 'prop_mut_imapM_, 'prop_mut_forM_, 'prop_mut_iforM_,
         'prop_mut_foldr, 'prop_mut_foldr', 'prop_mut_foldl, 'prop_mut_foldl',
         'prop_mut_ifoldr, 'prop_mut_ifoldr', 'prop_mut_ifoldl, 'prop_mut_ifoldl',
         'prop_mut_foldM, 'prop_mut_foldM', 'prop_mut_foldrM, 'prop_mut_foldrM',
@@ -510,6 +512,13 @@ testPolymorphicFunctions _ = $(testProperties [
       `eq`
       foldrM
 
+    prop_mut_generate :: P (Int -> (Int -> a) -> v a)
+      = (\n _ -> n < 1000) ===> (\n f -> runST $ V.freeze =<< MV.generate n f)
+      `eq` Util.generate
+    prop_mut_generateM :: P (Int -> (Int -> Writer [a] a) -> Writer [a] (v a))
+      = (\n _ -> n < 1000) ===> (\n f -> liftRunST $ V.freeze =<< MV.generateM n (hoistST . f))
+      `eq` Util.generateM
+
     prop_mut_ifoldM :: P ((a -> Int -> a -> Identity a) -> a -> v a -> Identity a)
       = (\f z v -> Identity $ runST $ MV.ifoldM (\b i -> pure . runIdentity . f b i) z =<< V.thaw v)
       `eq` ifoldM
@@ -524,6 +533,26 @@ testPolymorphicFunctions _ = $(testProperties [
       = (\f z v -> Identity $ runST $ MV.ifoldrM' (\i b -> pure . runIdentity . f i b) z =<< V.thaw v)
       `eq`
       ifoldrM
+
+    prop_mut_forM_ :: P (v a -> (a -> Writer [a] ()) -> Writer [a] ())
+      = (\v f -> liftRunST $ do mv <- V.thaw v
+                                MV.forM_ mv (hoistST . f))
+      `eq` flip mapM_
+    prop_mut_iforM_ :: P (v a -> (Int -> a -> Writer [a] ()) -> Writer [a] ())
+      = (\v f -> liftRunST $ do mv <- V.thaw v
+                                MV.iforM_ mv (\i x -> hoistST $ f i x))
+      `eq` flip imapM_
+    prop_mut_mapM_ :: P ((a -> Writer [a] ()) -> v a -> Writer [a] ())
+      = (\f v -> liftRunST $ MV.mapM_ (hoistST . f) =<< V.thaw v) `eq` mapM_
+    prop_mut_imapM_ :: P ((Int -> a -> Writer [a] ()) -> v a -> Writer [a] ())
+      = (\f v -> liftRunST $ MV.imapM_ (\i x -> hoistST $ f i x) =<< V.thaw v) `eq` imapM_
+
+
+liftRunST :: (forall s. WriterT w (ST s) a) -> Writer w a
+liftRunST m = WriterT $ Identity $ runST $ runWriterT m
+
+hoistST :: Writer w a -> WriterT w (ST s) a
+hoistST = WriterT . pure . runWriter
 
 -- copied from GHC source code
 partitionWith :: (a -> Either b c) -> [a] -> ([b], [c])
