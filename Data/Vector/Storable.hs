@@ -261,14 +261,14 @@ instance Storable a => G.Vector Vector a where
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (Vector _ fp) i = return
                                     . unsafeInlineIO
-                                    $ withForeignPtr fp $ \p ->
+                                    $ unsafeWithForeignPtr fp $ \p ->
                                       peekElemOff p i
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MVector n fp) (Vector _ fq)
     = unsafePrimToPrim
-    $ withForeignPtr fp $ \p ->
-      withForeignPtr fq $ \q ->
+    $ unsafeWithForeignPtr fp $ \p ->
+      unsafeWithForeignPtr fq $ \q ->
       copyArray p q n
 
   {-# INLINE elemseq #-}

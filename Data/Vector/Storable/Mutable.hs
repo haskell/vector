@@ -159,12 +159,12 @@ instance Storable a => G.MVector MVector a where
   {-# INLINE basicUnsafeRead #-}
   basicUnsafeRead (MVector _ fp) i
     = unsafePrimToPrim
-    $ withForeignPtr fp (`peekElemOff` i)
+    $ unsafeWithForeignPtr fp (`peekElemOff` i)
 
   {-# INLINE basicUnsafeWrite #-}
   basicUnsafeWrite (MVector _ fp) i x
     = unsafePrimToPrim
-    $ withForeignPtr fp $ \p -> pokeElemOff p i x
+    $ unsafeWithForeignPtr fp $ \p -> pokeElemOff p i x
 
   {-# INLINE basicSet #-}
   basicSet = storableSet
@@ -172,20 +172,20 @@ instance Storable a => G.MVector MVector a where
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MVector n fp) (MVector _ fq)
     = unsafePrimToPrim
-    $ withForeignPtr fp $ \p ->
-      withForeignPtr fq $ \q ->
+    $ unsafeWithForeignPtr fp $ \p ->
+      unsafeWithForeignPtr fq $ \q ->
       copyArray p q n
 
   {-# INLINE basicUnsafeMove #-}
   basicUnsafeMove (MVector n fp) (MVector _ fq)
     = unsafePrimToPrim
-    $ withForeignPtr fp $ \p ->
-      withForeignPtr fq $ \q ->
+    $ unsafeWithForeignPtr fp $ \p ->
+      unsafeWithForeignPtr fq $ \q ->
       moveArray p q n
 
 storableZero :: forall a m. (Storable a, PrimMonad m) => MVector (PrimState m) a -> m ()
 {-# INLINE storableZero #-}
-storableZero (MVector n fp) = unsafePrimToPrim . withForeignPtr fp $ \ptr-> do
+storableZero (MVector n fp) = unsafePrimToPrim . unsafeWithForeignPtr fp $ \ptr-> do
   memsetPrimPtr_vector (castPtr ptr) byteSize (0 :: Word8)
  where
  x :: a
@@ -203,7 +203,7 @@ storableSet (MVector n fp) x
                   2 -> storableSetAsPrim n fp x (undefined :: Word16)
                   4 -> storableSetAsPrim n fp x (undefined :: Word32)
                   8 -> storableSetAsPrim n fp x (undefined :: Word64)
-                  _ -> withForeignPtr fp $ \p -> do
+                  _ -> unsafeWithForeignPtr fp $ \p -> do
                        poke p x
 
                        let do_set i
@@ -217,7 +217,7 @@ storableSet (MVector n fp) x
 storableSetAsPrim
   :: forall a b . (Storable a, Prim b) => Int -> ForeignPtr a -> a -> b -> IO ()
 {-# INLINE [0] storableSetAsPrim #-}
-storableSetAsPrim n fp x _y = withForeignPtr fp $ \ ptr  -> do
+storableSetAsPrim n fp x _y = unsafeWithForeignPtr fp $ \ ptr  -> do
     poke ptr x
      -- we dont equate storable and prim reps, so we need to write to a slot
      -- in storable
