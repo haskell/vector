@@ -934,7 +934,7 @@ ifoldr f b0 v = stToPrim $ ifoldrM (\i a b -> return $ f i a b) b0 v
 -- to each element and its index).
 ifoldr' :: (PrimMonad m, MVector v a) => (Int -> a -> b -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldr' #-}
-ifoldr' f b0 v = stToPrim $ ifoldrM (\i a b -> return $ f i a b) b0 v
+ifoldr' f b0 v = stToPrim $ ifoldrM' (\i a b -> return $ f i a b) b0 v
 
 -- | /O(n)/ Monadic fold.
 foldM :: (PrimMonad m, MVector v a) => (b -> a -> m b) -> b -> v (PrimState m) a -> m b
