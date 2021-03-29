@@ -908,22 +908,12 @@ foldl' f = ifoldl' (\b _ -> f b)
 -- | /O(n)/ Pure left fold (function applied to each element and its index).
 ifoldl :: (PrimMonad m, MVector v a) => (b -> Int -> a -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldl #-}
-ifoldl f b0 v = stToPrim $ loop 0 b0
-  where
-    loop i b | i >= n = return b
-             | otherwise = do a <- unsafeRead v i
-                              loop (i + 1) $ f b i a
-    n = length v
+ifoldl f b0 v = stToPrim $ ifoldM (\b i a -> return $ f b i a) b0 v
 
 -- | /O(n)/ Pure left fold with strict accumulator (function applied to each element and its index).
 ifoldl' :: (PrimMonad m, MVector v a) => (b -> Int -> a -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldl' #-}
-ifoldl' f b0 v = stToPrim $ loop 0 b0
-  where
-    loop i !b | i >= n = return b
-              | otherwise = do a <- unsafeRead v i
-                               loop (i + 1) $ f b i a
-    n = length v
+ifoldl' f b0 v = stToPrim $ ifoldM' (\b i a -> return $ f b i a) b0 v
 
 -- | /O(n)/ Pure right fold.
 foldr :: (PrimMonad m, MVector v a) => (a -> b -> b) -> b -> v (PrimState m) a -> m b
@@ -938,22 +928,13 @@ foldr' f = ifoldr' (const f)
 -- | /O(n)/ Pure right fold (function applied to each element and its index).
 ifoldr :: (PrimMonad m, MVector v a) => (Int -> a -> b -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldr #-}
-ifoldr f b0 v = stToPrim $ loop (n-1) b0
-  where
-    loop i b | i < 0     = return b
-             | otherwise = do a <- unsafeRead v i
-                              loop (i - 1) $ f i a b
-    n = length v
+ifoldr f b0 v = stToPrim $ ifoldrM (\i a b -> return $ f i a b) b0 v
+
 -- | /O(n)/ Pure right fold with strict accumulator (function applied
 -- to each element and its index).
 ifoldr' :: (PrimMonad m, MVector v a) => (Int -> a -> b -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldr' #-}
-ifoldr' f b0 v = stToPrim $ loop (n-1) b0
-  where
-    loop i !b | i < 0     = return b
-              | otherwise = do a <- unsafeRead v i
-                               loop (i - 1) $ f i a b
-    n = length v
+ifoldr' f b0 v = stToPrim $ ifoldrM (\i a b -> return $ f i a b) b0 v
 
 -- | /O(n)/ Monadic fold.
 foldM :: (PrimMonad m, MVector v a) => (b -> a -> m b) -> b -> v (PrimState m) a -> m b
@@ -970,7 +951,7 @@ ifoldM :: (PrimMonad m, MVector v a) => (b -> Int -> a -> m b) -> b -> v (PrimSt
 {-# INLINE ifoldM #-}
 ifoldM f b0 v = loop 0 b0
   where
-    loop i b | i >= n = return b
+    loop i b | i >= n    = return b
              | otherwise = do a <- unsafeRead v i
                               loop (i + 1) =<< f b i a
     n = length v
@@ -980,7 +961,7 @@ ifoldM' :: (PrimMonad m, MVector v a) => (b -> Int -> a -> m b) -> b -> v (PrimS
 {-# INLINE ifoldM' #-}
 ifoldM' f b0 v = loop 0 b0
   where
-    loop i !b | i >= n = return b
+    loop i !b | i >= n    = return b
               | otherwise = do a <- unsafeRead v i
                                loop (i + 1) =<< f b i a
     n = length v
