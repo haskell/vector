@@ -639,7 +639,7 @@ generate n f = stToPrim $ generateM n (return . f)
 generateM :: (PrimMonad m, MVector v a) => Int -> (Int -> m a) -> m (v (PrimState m) a)
 {-# INLINE generateM #-}
 generateM n f
-  | n < 0     = new 0
+  | n <= 0    = new 0
   | otherwise = do
       vec <- new n
       let loop i | i >= n    = return vec
