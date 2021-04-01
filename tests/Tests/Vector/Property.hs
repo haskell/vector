@@ -28,12 +28,14 @@ import Boilerplater
 import Utilities as Util hiding (limitUnfolds)
 
 import Control.Monad
-import Data.Functor.Identity
+import Control.Monad.ST
 import qualified Data.Traversable as T (Traversable(..))
 import Data.Foldable (Foldable(foldMap))
+import Data.Functor.Identity
 import Data.Orphans ()
-
+import Data.Foldable (foldrM)
 import qualified Data.Vector.Generic as V
+import qualified Data.Vector.Generic.Mutable as MV
 import qualified Data.Vector.Fusion.Bundle as S
 
 import Test.QuickCheck
@@ -196,7 +198,17 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_prescanr, 'prop_prescanr',
         'prop_postscanr, 'prop_postscanr',
         'prop_scanr, 'prop_scanr', 'prop_scanr1, 'prop_scanr1',
-        'prop_iscanr, 'prop_iscanr'
+        'prop_iscanr, 'prop_iscanr',
+
+        -- Mutable API
+        'prop_mut_read, 'prop_mut_write, 'prop_mut_modify,
+
+        'prop_mut_generate, 'prop_mut_generateM,
+        'prop_mut_mapM_, 'prop_mut_imapM_, 'prop_mut_forM_, 'prop_mut_iforM_,
+        'prop_mut_foldr, 'prop_mut_foldr', 'prop_mut_foldl, 'prop_mut_foldl',
+        'prop_mut_ifoldr, 'prop_mut_ifoldr', 'prop_mut_ifoldl, 'prop_mut_ifoldl',
+        'prop_mut_foldM, 'prop_mut_foldM', 'prop_mut_foldrM, 'prop_mut_foldrM',
+        'prop_mut_ifoldM, 'prop_mut_ifoldM', 'prop_mut_ifoldrM, 'prop_mut_ifoldrM'
     ])
   where
     -- Prelude
@@ -473,6 +485,110 @@ testPolymorphicFunctions _ = $(testProperties [
 
         constructrN xs 0 _ = xs
         constructrN xs n f = constructrN (f xs : xs) (n-1) f
+
+    prop_mut_foldr :: P ((a -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.foldr f z =<< V.thaw v) `eq` foldr
+    prop_mut_foldr' :: P ((a -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.foldr' f z =<< V.thaw v) `eq` foldr
+    prop_mut_foldl :: P ((a -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.foldl f z =<< V.thaw v) `eq` foldl
+    prop_mut_foldl' :: P ((a -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.foldl' f z =<< V.thaw v) `eq` foldl'
+    prop_mut_ifoldr :: P ((Int -> a -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.ifoldr f z =<< V.thaw v) `eq` ifoldr
+    prop_mut_ifoldr' :: P ((Int -> a -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.ifoldr' f z =<< V.thaw v) `eq` ifoldr
+    prop_mut_ifoldl :: P ((a -> Int -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.ifoldl f z =<< V.thaw v) `eq` ifoldl
+    prop_mut_ifoldl' :: P ((a -> Int -> a -> a) -> a -> v a -> a) =
+      (\f z v -> runST $ MV.ifoldl' f z =<< V.thaw v) `eq` ifoldl
+
+    prop_mut_foldM :: P ((a -> a -> Identity a) -> a -> v a -> Identity a)
+      = (\f z v -> Identity $ runST $ MV.foldM (\b -> pure . runIdentity . f b) z =<< V.thaw v)
+      `eq` foldM
+    prop_mut_foldM' :: P ((a -> a -> Identity a) -> a -> v a -> Identity a)
+      = (\f z v -> Identity $ runST $ MV.foldM' (\b -> pure . runIdentity . f b) z =<< V.thaw v)
+      `eq` foldM
+    prop_mut_foldrM :: P ((a -> a -> Identity a) -> a -> v a -> Identity a)
+      = (\f z v -> Identity $ runST $ MV.foldrM (\a -> pure . runIdentity . f a) z =<< V.thaw v)
+      `eq`
+      foldrM
+    prop_mut_foldrM' :: P ((a -> a -> Identity a) -> a -> v a -> Identity a)
+      = (\f z v -> Identity $ runST $ MV.foldrM' (\a b -> pure $ runIdentity $ f a b) z =<< V.thaw v)
+      `eq`
+      foldrM
+
+    prop_mut_read = \xs ->
+      not (V.null xs) ==>
+      forAll (choose (0, V.length xs-1)) $ \i ->
+      unP prop xs i
+      where
+        prop :: P (v a -> Int -> a) = (\v i -> runST $ do mv <- V.thaw v
+                                                          MV.read mv i
+                                      ) `eq` (!!)
+    prop_mut_write = \xs ->
+      not (V.null xs) ==>
+      forAll (choose (0, V.length xs-1)) $ \i ->
+      unP prop xs i
+      where
+        prop :: P (v a -> Int -> a -> v a) = (\v i a -> runST $ do mv <- V.thaw v
+                                                                   MV.write mv i a
+                                                                   V.freeze mv
+                                             ) `eq` writeList
+    prop_mut_modify = \xs f ->
+      not (V.null xs) ==>
+      forAll (choose (0, V.length xs-1)) $ \i ->
+      unP prop xs f i
+      where
+        prop :: P (v a -> (a -> a) -> Int -> v a)
+          = (\v f i -> runST $ do mv <- V.thaw v
+                                  MV.modify mv f i
+                                  V.freeze mv
+            ) `eq` modifyList
+
+
+
+    prop_mut_generate :: P (Int -> (Int -> a) -> v a)
+      = (\n _ -> n < 1000) ===> (\n f -> runST $ V.freeze =<< MV.generate n f)
+      `eq` Util.generate
+    prop_mut_generateM :: P (Int -> (Int -> Writer [a] a) -> Writer [a] (v a))
+      = (\n _ -> n < 1000) ===> (\n f -> liftRunST $ V.freeze =<< MV.generateM n (hoistST . f))
+      `eq` Util.generateM
+
+    prop_mut_ifoldM :: P ((a -> Int -> a -> Identity a) -> a -> v a -> Identity a)
+      = (\f z v -> Identity $ runST $ MV.ifoldM (\b i -> pure . runIdentity . f b i) z =<< V.thaw v)
+      `eq` ifoldM
+    prop_mut_ifoldM' :: P ((a -> Int -> a -> Identity a) -> a -> v a -> Identity a)
+      = (\f z v -> Identity $ runST $ MV.ifoldM' (\b i -> pure . runIdentity . f b i) z =<< V.thaw v)
+      `eq` ifoldM
+    prop_mut_ifoldrM :: P ((Int -> a -> a -> Identity a) -> a -> v a -> Identity a)
+      = (\f z v -> Identity $ runST $ MV.ifoldrM (\i b -> pure . runIdentity . f i b) z =<< V.thaw v)
+      `eq`
+      ifoldrM
+    prop_mut_ifoldrM' :: P ((Int -> a -> a -> Identity a) -> a -> v a -> Identity a)
+      = (\f z v -> Identity $ runST $ MV.ifoldrM' (\i b -> pure . runIdentity . f i b) z =<< V.thaw v)
+      `eq`
+      ifoldrM
+
+    prop_mut_forM_ :: P (v a -> (a -> Writer [a] ()) -> Writer [a] ())
+      = (\v f -> liftRunST $ do mv <- V.thaw v
+                                MV.forM_ mv (hoistST . f))
+      `eq` flip mapM_
+    prop_mut_iforM_ :: P (v a -> (Int -> a -> Writer [a] ()) -> Writer [a] ())
+      = (\v f -> liftRunST $ do mv <- V.thaw v
+                                MV.iforM_ mv (\i x -> hoistST $ f i x))
+      `eq` flip imapM_
+    prop_mut_mapM_ :: P ((a -> Writer [a] ()) -> v a -> Writer [a] ())
+      = (\f v -> liftRunST $ MV.mapM_ (hoistST . f) =<< V.thaw v) `eq` mapM_
+    prop_mut_imapM_ :: P ((Int -> a -> Writer [a] ()) -> v a -> Writer [a] ())
+      = (\f v -> liftRunST $ MV.imapM_ (\i x -> hoistST $ f i x) =<< V.thaw v) `eq` imapM_
+
+
+liftRunST :: (forall s. WriterT w (ST s) a) -> Writer w a
+liftRunST m = WriterT $ Identity $ runST $ runWriterT m
+
+hoistST :: Writer w a -> WriterT w (ST s) a
+hoistST = WriterT . pure . runWriter
 
 -- copied from GHC source code
 partitionWith :: (a -> Either b c) -> [a] -> ([b], [c])

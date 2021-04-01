@@ -1,3 +1,15 @@
+# Changes in 0.12.3.0
+
+ * Add monadic functions for mutable vectors: [#338](https://github.com/haskell/vector/pull/338)
+
+   * Added folds for monadic functions: `mapM_`, `imapM_`, `forM_`, `iforM_`,
+     `foldl`, `foldl'`, `foldM`, `foldM'`, `ifoldl`, `ifoldl'`, `ifoldM`,
+     `ifoldM'`
+   * Added `modifyM` and `unsafeModifyM` for mutable vectors
+   * Added `generate` and `generateM` for mutable vectors
+
+ * Fix performance regression in ghc-9.0 due to introduction of `keepAlive#` primop: [#372](https://github.com/haskell/vector/pull/372)
+
 # Changes in version 0.12.2.0
 
  * Add `MINIMAL` pragma to `Vector` & `MVector` type classes: [#11](https://github.com/haskell/vector/issues/11)
