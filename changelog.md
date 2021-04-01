@@ -1,5 +1,10 @@
 # Changes in 0.13.0.0
 
+ * Added folds for monadic functions: `mapM_`, `imapM_`, `forM_`, `iforM_`,
+   `foldl`, `foldl'`, `foldM`, `foldM'`, `ifoldl`, `ifoldl'`, `ifoldM`,
+   `ifoldM'`
+ * Added `modifyM` and `unsafeModifyM` for mutable vectors
+ * Added `generate` and `generateM` for mutable vectors
  * Methods of type classes `Data.Vector.Generic.Mutable.MVector` and
    `Data.Vector.Generic.Vector` use concrete monads (ST,etc) being
    polymorphic. This allows use of GND and deriving via to define

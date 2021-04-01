@@ -3,6 +3,7 @@ module Utilities where
 
 import Test.QuickCheck
 
+import Data.Foldable
 import qualified Data.Vector as DV
 import qualified Data.Vector.Generic as DVG
 import qualified Data.Vector.Primitive as DVP
@@ -277,6 +278,15 @@ xs // ps = go xs ps' 0
 
 withIndexFirst m f = m (uncurry f) . zip [0..]
 
+modifyList :: [a] -> (a -> a) -> Int -> [a]
+modifyList xs f i = zipWith merge xs (replicate i Nothing ++ [Just f] ++ repeat Nothing)
+  where
+    merge x Nothing  = x
+    merge x (Just g) = g x
+
+writeList :: [a] -> Int -> a -> [a]
+writeList xs i a = modifyList xs (const a) i
+
 imap :: (Int -> a -> a) -> [a] -> [a]
 imap = withIndexFirst map
 
@@ -321,8 +331,11 @@ iscanr f z = scanr (uncurry f) z . zip [0..]
 ifoldr :: (Int -> a -> b -> b) -> b -> [a] -> b
 ifoldr f z = foldr (uncurry f) z . zip [0..]
 
-ifoldM :: Monad m => (a -> Int -> a -> m a) -> a -> [a] -> m a
+ifoldM :: Monad m => (b -> Int -> a -> m b) -> b -> [a] -> m b
 ifoldM = indexedLeftFold foldM
+
+ifoldrM :: Monad m => (Int -> a -> b -> m b) -> b -> [a] -> m b
+ifoldrM f z xs = foldrM (\(i,a) b -> f i a b) z ([0..] `zip` xs)
 
 ifoldM_ :: Monad m => (b -> Int -> a -> m b) -> b -> [a] -> m ()
 ifoldM_ = indexedLeftFold foldM_
