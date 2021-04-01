@@ -78,7 +78,7 @@ import qualified Data.Vector.Fusion.Stream.Monadic as Stream
 import           Data.Vector.Fusion.Bundle.Size
 import           Data.Vector.Fusion.Util        ( delay_inline )
 
-import Control.Monad.Primitive ( PrimMonad, PrimState )
+import Control.Monad.Primitive ( PrimMonad, PrimState, stToPrim )
 
 import Prelude hiding ( length, null, replicate, reverse, map, read,
                         take, drop, splitAt, init, tail, mapM_, foldr, foldl )
@@ -625,6 +625,8 @@ replicateM n m = munstream (MBundle.replicateM n m)
 
 -- | /O(n)/ Create a mutable vector of the given length (0 if the length is negative)
 -- and fill it with the results of applying the function to each index.
+--
+-- @since 0.12.3.0
 generate :: (PrimMonad m, MVector v a) => Int -> (Int -> a) -> m (v (PrimState m) a)
 {-# INLINE generate #-}
 generate n f = stToPrim $ generateM n (return . f)
@@ -632,6 +634,8 @@ generate n f = stToPrim $ generateM n (return . f)
 -- | /O(n)/ Create a mutable vector of the given length (0 if the length is
 -- negative) and fill it with the results of applying the monadic function to each
 -- index. Iteration starts at index 0.
+--
+-- @since 0.12.3.0
 generateM :: (PrimMonad m, MVector v a) => Int -> (Int -> m a) -> m (v (PrimState m) a)
 {-# INLINE generateM #-}
 generateM n f
@@ -783,6 +787,8 @@ modify v f i = BOUNDS_CHECK(checkIndex) "modify" i (length v)
              $ unsafeModify v f i
 
 -- | Modify the element at the given position using a monadic function.
+--
+-- @since 0.12.3.0
 modifyM :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m a) -> Int -> m ()
 {-# INLINE modifyM #-}
 modifyM v f i = BOUNDS_CHECK(checkIndex) "modifyM" i (length v)
@@ -823,6 +829,8 @@ unsafeModify v f i = UNSAFE_CHECK(checkIndex) "unsafeModify" i (length v)
 
 -- | Modify the element at the given position using a monadic
 -- function. No bounds checks are performed.
+--
+-- @since 0.12.3.0
 unsafeModifyM :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m a) -> Int -> m ()
 {-# INLINE unsafeModifyM #-}
 unsafeModifyM v f i = UNSAFE_CHECK(checkIndex) "unsafeModifyM" i (length v)
@@ -863,79 +871,109 @@ forI_ v f = loop 0
     n = length v
 
 -- | /O(n)/ Apply the monadic action to every element of the vector, discarding the results.
+--
+-- @since 0.12.3.0
 mapM_ :: (PrimMonad m, MVector v a) => (a -> m b) -> v (PrimState m) a -> m ()
 {-# INLINE mapM_ #-}
 mapM_ f v = forI_ v $ \i -> f =<< unsafeRead v i
 
 -- | /O(n)/ Apply the monadic action to every element of the vector and its index, discarding the results.
+--
+-- @since 0.12.3.0
 imapM_ :: (PrimMonad m, MVector v a) => (Int -> a -> m b) -> v (PrimState m) a -> m ()
 {-# INLINE imapM_ #-}
 imapM_ f v = forI_ v $ \i -> f i =<< unsafeRead v i
 
 -- | /O(n)/ Apply the monadic action to every element of the vector,
 -- discarding the results. It's same as the @flip mapM_@.
+--
+-- @since 0.12.3.0
 forM_ :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m b) -> m ()
 {-# INLINE forM_ #-}
 forM_ = flip mapM_
 
 -- | /O(n)/ Apply the monadic action to every element of the vector
 -- and its index, discarding the results. It's same as the @flip imapM_@.
+--
+-- @since 0.12.3.0
 iforM_ :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (Int -> a -> m b) -> m ()
 {-# INLINE iforM_ #-}
 iforM_ = flip imapM_
 
 -- | /O(n)/ Pure left fold.
+--
+-- @since 0.12.3.0
 foldl :: (PrimMonad m, MVector v a) => (b -> a -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldl #-}
 foldl f = ifoldl (\b _ -> f b)
 
 -- | /O(n)/ Pure left fold with strict accumulator.
+--
+-- @since 0.12.3.0
 foldl' :: (PrimMonad m, MVector v a) => (b -> a -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldl' #-}
 foldl' f = ifoldl' (\b _ -> f b)
 
 -- | /O(n)/ Pure left fold (function applied to each element and its index).
+--
+-- @since 0.12.3.0
 ifoldl :: (PrimMonad m, MVector v a) => (b -> Int -> a -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldl #-}
 ifoldl f b0 v = stToPrim $ ifoldM (\b i a -> return $ f b i a) b0 v
 
 -- | /O(n)/ Pure left fold with strict accumulator (function applied to each element and its index).
+--
+-- @since 0.12.3.0
 ifoldl' :: (PrimMonad m, MVector v a) => (b -> Int -> a -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldl' #-}
 ifoldl' f b0 v = stToPrim $ ifoldM' (\b i a -> return $ f b i a) b0 v
 
 -- | /O(n)/ Pure right fold.
+--
+-- @since 0.12.3.0
 foldr :: (PrimMonad m, MVector v a) => (a -> b -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldr #-}
 foldr f = ifoldr (const f)
 
 -- | /O(n)/ Pure right fold with strict accumulator.
+--
+-- @since 0.12.3.0
 foldr' :: (PrimMonad m, MVector v a) => (a -> b -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldr' #-}
 foldr' f = ifoldr' (const f)
 
 -- | /O(n)/ Pure right fold (function applied to each element and its index).
+--
+-- @since 0.12.3.0
 ifoldr :: (PrimMonad m, MVector v a) => (Int -> a -> b -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldr #-}
 ifoldr f b0 v = stToPrim $ ifoldrM (\i a b -> return $ f i a b) b0 v
 
 -- | /O(n)/ Pure right fold with strict accumulator (function applied
 -- to each element and its index).
+--
+-- @since 0.12.3.0
 ifoldr' :: (PrimMonad m, MVector v a) => (Int -> a -> b -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldr' #-}
 ifoldr' f b0 v = stToPrim $ ifoldrM' (\i a b -> return $ f i a b) b0 v
 
 -- | /O(n)/ Monadic fold.
+--
+-- @since 0.12.3.0
 foldM :: (PrimMonad m, MVector v a) => (b -> a -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldM #-}
 foldM f = ifoldM (\x _ -> f x)
 
 -- | /O(n)/ Monadic fold with strict accumulator.
+--
+-- @since 0.12.3.0
 foldM' :: (PrimMonad m, MVector v a) => (b -> a -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldM' #-}
 foldM' f = ifoldM' (\x _ -> f x)
 
 -- | /O(n)/ Monadic fold (action applied to each element and its index).
+--
+-- @since 0.12.3.0
 ifoldM :: (PrimMonad m, MVector v a) => (b -> Int -> a -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldM #-}
 ifoldM f b0 v = loop 0 b0
@@ -946,6 +984,8 @@ ifoldM f b0 v = loop 0 b0
     n = length v
 
 -- | /O(n)/ Monadic fold with strict accumulator (action applied to each element and its index).
+--
+-- @since 0.12.3.0
 ifoldM' :: (PrimMonad m, MVector v a) => (b -> Int -> a -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldM' #-}
 ifoldM' f b0 v = loop 0 b0
@@ -956,16 +996,22 @@ ifoldM' f b0 v = loop 0 b0
     n = length v
 
 -- | /O(n)/ Monadic right fold.
+--
+-- @since 0.12.3.0
 foldrM :: (PrimMonad m, MVector v a) => (a -> b -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldrM #-}
 foldrM f = ifoldrM (const f)
 
 -- | /O(n)/ Monadic right fold with strict accumulator.
+--
+-- @since 0.12.3.0
 foldrM' :: (PrimMonad m, MVector v a) => (a -> b -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldrM' #-}
 foldrM' f = ifoldrM' (const f)
 
 -- | /O(n)/ Monadic right fold (action applied to each element and its index).
+--
+-- @since 0.12.3.0
 ifoldrM :: (PrimMonad m, MVector v a) => (Int -> a -> b -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldrM #-}
 ifoldrM f b0 v = loop (n-1) b0
@@ -977,6 +1023,8 @@ ifoldrM f b0 v = loop (n-1) b0
 
 -- | /O(n)/ Monadic right fold with strict accumulator (action applied
 -- to each element and its index).
+--
+-- @since 0.12.3.0
 ifoldrM' :: (PrimMonad m, MVector v a) => (Int -> a -> b -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldrM' #-}
 ifoldrM' f b0 v = loop (n-1) b0
