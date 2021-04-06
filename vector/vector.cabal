@@ -126,6 +126,9 @@ Library
         Data.Vector.Mutable
         Data.Vector
 
+  Hs-Source-Dirs:
+        src
+
   Include-Dirs:
         include, internal
 
