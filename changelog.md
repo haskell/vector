@@ -1,10 +1,5 @@
-# Changes in 0.13.0.0
+# Changes in version 0.13.0.0
 
- * Added folds for monadic functions: `mapM_`, `imapM_`, `forM_`, `iforM_`,
-   `foldl`, `foldl'`, `foldM`, `foldM'`, `ifoldl`, `ifoldl'`, `ifoldM`,
-   `ifoldM'`
- * Added `modifyM` and `unsafeModifyM` for mutable vectors
- * Added `generate` and `generateM` for mutable vectors
  * Methods of type classes `Data.Vector.Generic.Mutable.MVector` and
    `Data.Vector.Generic.Vector` use concrete monads (ST,etc) being
    polymorphic. This allows use of GND and deriving via to define
@@ -40,6 +35,18 @@
      `Data.Vector.Storable{.Mutable}` to allow this (the onus is on the user
      to ensure that no `Storable` invariants are broken when using these
      functions).
+
+# Changes in version 0.12.3.0
+
+ * Fix performance regression due to introduction of `keepAlive#` primop in ghc-9.0: [#372](https://github.com/haskell/vector/pull/372)
+
+ * Add monadic functions for mutable vectors: [#338](https://github.com/haskell/vector/pull/338)
+
+   * Added folds for monadic functions: `mapM_`, `imapM_`, `forM_`, `iforM_`,
+     `foldl`, `foldl'`, `foldM`, `foldM'`, `ifoldl`, `ifoldl'`, `ifoldM`,
+     `ifoldM'`
+   * Added `modifyM` and `unsafeModifyM` for mutable vectors
+   * Added `generate` and `generateM` for mutable vectors
 
 # Changes in version 0.12.2.0
 
