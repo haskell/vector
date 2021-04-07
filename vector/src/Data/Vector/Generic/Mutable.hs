@@ -528,10 +528,16 @@ slice :: MVector v a
 slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
             $ unsafeSlice i n v
 
+-- | Take @n@ first elements of the mutable vector without making a
+-- copy. For negative @n@ empty vector is returned. If @n@ is larger
+-- than vector's length empty vector is returned,
 take :: MVector v a => Int -> v s a -> v s a
 {-# INLINE take #-}
 take n v = unsafeSlice 0 (min (max n 0) (length v)) v
 
+-- | Drop @n@ first element of the mutable vector without making a
+-- copy. For negative @n@ vector is returned unchanged and if @n@ is
+-- larger than vector's length empty vector is returned.
 drop :: MVector v a => Int -> v s a -> v s a
 {-# INLINE drop #-}
 drop n v = unsafeSlice (min m n') (max 0 (m - n')) v
@@ -549,10 +555,14 @@ splitAt n v = ( unsafeSlice 0 m v
       n'  = max n 0
       len = length v
 
+-- | Drop last element of the mutable vector without making a copy. If
+-- vector is empty exception is thrown.
 init :: MVector v a => v s a -> v s a
 {-# INLINE init #-}
 init v = slice 0 (length v - 1) v
 
+-- | Drop first element of the mutable vector without making a copy. If
+-- vector is empty exception is thrown.
 tail :: MVector v a => v s a -> v s a
 {-# INLINE tail #-}
 tail v = slice 1 (length v - 1) v

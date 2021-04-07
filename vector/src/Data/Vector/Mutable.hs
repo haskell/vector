@@ -227,10 +227,16 @@ slice :: Int  -- ^ @i@ starting index
 {-# INLINE slice #-}
 slice = G.slice
 
+-- | Take @n@ first elements of the mutable vector without making a
+-- copy. For negative @n@ empty vector is returned. If @n@ is larger
+-- than vector's length empty vector is returned,
 take :: Int -> MVector s a -> MVector s a
 {-# INLINE take #-}
 take = G.take
 
+-- | Drop @n@ first element of the mutable vector without making a
+-- copy. For negative @n@ vector is returned unchanged and if @n@ is
+-- larger than vector's length empty vector is returned.
 drop :: Int -> MVector s a -> MVector s a
 {-# INLINE drop #-}
 drop = G.drop
@@ -239,10 +245,14 @@ drop = G.drop
 splitAt :: Int -> MVector s a -> (MVector s a, MVector s a)
 splitAt = G.splitAt
 
+-- | Drop last element of the mutable vector without making a copy. If
+-- vector is empty exception is thrown.
 init :: MVector s a -> MVector s a
 {-# INLINE init #-}
 init = G.init
 
+-- | Drop first element of the mutable vector without making a copy. If
+-- vector is empty exception is thrown.
 tail :: MVector s a -> MVector s a
 {-# INLINE tail #-}
 tail = G.tail
