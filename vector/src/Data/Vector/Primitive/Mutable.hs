@@ -231,18 +231,24 @@ unsafeSlice :: Prim a
 {-# INLINE unsafeSlice #-}
 unsafeSlice = G.unsafeSlice
 
+-- | Unsafe variant of 'take'. If called with out of range @n@ it will
+-- simply create invalid slice that likely violate memory safety
 unsafeTake :: Prim a => Int -> MVector s a -> MVector s a
 {-# INLINE unsafeTake #-}
 unsafeTake = G.unsafeTake
 
+-- | Unsafe variant of 'drop'. If called with out of range @n@ it will
+-- simply create invalid slice that likely violate memory safety
 unsafeDrop :: Prim a => Int -> MVector s a -> MVector s a
 {-# INLINE unsafeDrop #-}
 unsafeDrop = G.unsafeDrop
 
+-- | Same as 'init' but doesn't do range checks.
 unsafeInit :: Prim a => MVector s a -> MVector s a
 {-# INLINE unsafeInit #-}
 unsafeInit = G.unsafeInit
 
+-- | Same as 'tail' but doesn't do range checks.
 unsafeTail :: Prim a => MVector s a -> MVector s a
 {-# INLINE unsafeTail #-}
 unsafeTail = G.unsafeTail

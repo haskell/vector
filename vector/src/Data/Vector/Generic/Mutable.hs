@@ -577,18 +577,24 @@ unsafeSlice :: MVector v a => Int  -- ^ starting index
 unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
                   $ basicUnsafeSlice i n v
 
+-- | Same as 'init' but doesn't do range checks.
 unsafeInit :: MVector v a => v s a -> v s a
 {-# INLINE unsafeInit #-}
 unsafeInit v = unsafeSlice 0 (length v - 1) v
 
+-- | Same as 'tail' but doesn't do range checks.
 unsafeTail :: MVector v a => v s a -> v s a
 {-# INLINE unsafeTail #-}
 unsafeTail v = unsafeSlice 1 (length v - 1) v
 
+-- | Unsafe variant of 'take'. If called with out of range @n@ it will
+-- simply create invalid slice that likely violate memory safety
 unsafeTake :: MVector v a => Int -> v s a -> v s a
 {-# INLINE unsafeTake #-}
 unsafeTake n v = unsafeSlice 0 n v
 
+-- | Unsafe variant of 'drop'. If called with out of range @n@ it will
+-- simply create invalid slice that likely violate memory safety
 unsafeDrop :: MVector v a => Int -> v s a -> v s a
 {-# INLINE unsafeDrop #-}
 unsafeDrop n v = unsafeSlice n (length v - n) v

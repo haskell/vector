@@ -266,18 +266,24 @@ unsafeSlice :: Int  -- ^ starting index
 {-# INLINE unsafeSlice #-}
 unsafeSlice = G.unsafeSlice
 
+-- | Unsafe variant of 'take'. If called with out of range @n@ it will
+-- simply create invalid slice that likely violate memory safety
 unsafeTake :: Int -> MVector s a -> MVector s a
 {-# INLINE unsafeTake #-}
 unsafeTake = G.unsafeTake
 
+-- | Unsafe variant of 'drop'. If called with out of range @n@ it will
+-- simply create invalid slice that likely violate memory safety
 unsafeDrop :: Int -> MVector s a -> MVector s a
 {-# INLINE unsafeDrop #-}
 unsafeDrop = G.unsafeDrop
 
+-- | Same as 'init' but doesn't do range checks.
 unsafeInit :: MVector s a -> MVector s a
 {-# INLINE unsafeInit #-}
 unsafeInit = G.unsafeInit
 
+-- | Same as 'tail' but doesn't do range checks.
 unsafeTail :: MVector s a -> MVector s a
 {-# INLINE unsafeTail #-}
 unsafeTail = G.unsafeTail
