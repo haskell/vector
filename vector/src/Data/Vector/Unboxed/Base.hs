@@ -17,7 +17,7 @@
 
 module Data.Vector.Unboxed.Base (
   MVector(..), IOVector, STVector, Vector(..), Unbox,
-  UnboxViaPrim(..), As(..), Isomorphic(..)
+  UnboxViaPrim(..), As(..), IsoUnbox(..)
 ) where
 
 import qualified Data.Vector.Generic         as G
@@ -256,7 +256,7 @@ instance P.Prim a => G.Vector Vector (UnboxViaPrim a) where
 
 -- | Isomorphism between type @a@ and its representation in unboxed
 -- vector @b@.
-class Isomorphic a b where
+class IsoUnbox a b where
   -- | Convert value into it representation in unboxed vector.
   toURepr   :: a -> b
   -- | Convert value representation in unboxed vector back to value.
@@ -265,7 +265,7 @@ class Isomorphic a b where
 -- | Newtype which allows to derive unbox instances for type @a@ which
 -- uses @b@ as underlying representation (usually tuple). Type @a@ and
 -- its representation @b@ are connected by type class
--- 'Isomorphic'. For example:
+-- 'IsoUnbox'. For example:
 --
 --
 -- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia
@@ -276,7 +276,7 @@ class Isomorphic a b where
 -- >>> :{
 -- data Foo a = Foo Int a
 --   deriving Show
--- instance VU.Isomorphic (Foo a) (Int,a) where
+-- instance VU.IsoUnbox (Foo a) (Int,a) where
 --   toURepr (Foo i a) = (i,a)
 --   fromURepr (i,a) = Foo i a
 --   {-# INLINE toURepr #-}
@@ -292,7 +292,7 @@ newtype As a b = As a
 newtype instance MVector s (As a b) = MV_UnboxAs (MVector s b)
 newtype instance Vector    (As a b) = V_UnboxAs  (Vector b)
 
-instance (Isomorphic a b, Unbox b) => M.MVector MVector (As a b) where
+instance (IsoUnbox a b, Unbox b) => M.MVector MVector (As a b) where
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
   {-# INLINE basicOverlaps #-}
@@ -319,7 +319,7 @@ instance (Isomorphic a b, Unbox b) => M.MVector MVector (As a b) where
   basicUnsafeMove (MV_UnboxAs v1) (MV_UnboxAs v2) = M.basicUnsafeMove v1 v2
   basicUnsafeGrow (MV_UnboxAs v) n = MV_UnboxAs `liftM` M.basicUnsafeGrow v n
 
-instance (Isomorphic a b, Unbox b) => G.Vector Vector (As a b) where
+instance (IsoUnbox a b, Unbox b) => G.Vector Vector (As a b) where
   {-# INLINE basicUnsafeFreeze #-}
   {-# INLINE basicUnsafeThaw #-}
   {-# INLINE basicLength #-}

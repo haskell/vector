@@ -194,7 +194,7 @@ module Data.Vector.Unboxed (
   -- ** Deriving via
   UnboxViaPrim(..),
   As(..),
-  Isomorphic(..)
+  IsoUnbox(..)
 ) where
 
 import Data.Vector.Unboxed.Base
