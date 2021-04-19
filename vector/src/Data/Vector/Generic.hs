@@ -2246,7 +2246,7 @@ freeze :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m (v a)
 freeze mv = unsafeFreeze =<< M.clone mv
 
 -- | /O(1)/ Unsafely convert an immutable vector to a mutable one without
--- copying. The immutable vector may not be used after this operation.
+-- copying. The immutable vector may not be used after this operation if the thawed vector is mutated.
 unsafeThaw :: (PrimMonad m, Vector v a) => v a -> m (Mutable v (PrimState m) a)
 {-# INLINE_FUSED unsafeThaw #-}
 unsafeThaw = stToPrim . basicUnsafeThaw

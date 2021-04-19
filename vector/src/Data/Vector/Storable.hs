@@ -1780,7 +1780,7 @@ unsafeFreeze
 unsafeFreeze = G.unsafeFreeze
 
 -- | /O(1)/ Unsafely convert an immutable vector to a mutable one without
--- copying. The immutable vector may not be used after this operation.
+-- copying. The immutable vector may not be used after this operation if the thawed vector is mutated.
 unsafeThaw
         :: (Storable a, PrimMonad m) => Vector a -> m (MVector (PrimState m) a)
 {-# INLINE unsafeThaw #-}

@@ -65,7 +65,7 @@ class MVector (Mutable v) a => Vector v a where
   -- | /Assumed complexity: O(1)/
   --
   -- Unsafely convert an immutable vector to its mutable version without
-  -- copying. The immutable vector may not be used after this operation.
+  -- copying. The immutable vector may not be used after this operation if the thawed vector is mutated.
   basicUnsafeThaw :: v a -> ST s (Mutable v s a)
 
   -- | /Assumed complexity: O(1)/
