@@ -395,10 +395,10 @@ testPolymorphicFunctions _ = $(testProperties [
                 = V.scanl `eq` scanl
     prop_scanl' :: P ((a -> a -> a) -> a -> v a -> v a)
                = V.scanl' `eq` scanl
-    prop_scanl1 :: P ((a -> a -> a) -> v a -> v a) = notNull2 ===>
-                 V.scanl1 `eq` scanl1
-    prop_scanl1' :: P ((a -> a -> a) -> v a -> v a) = notNull2 ===>
-                 V.scanl1' `eq` scanl1
+    prop_scanl1 :: P ((a -> a -> a) -> v a -> v a)
+               = V.scanl1 `eq` scanl1
+    prop_scanl1' :: P ((a -> a -> a) -> v a -> v a)
+               = V.scanl1' `eq` scanl1
     prop_iscanl :: P ((Int -> a -> a -> a) -> a -> v a -> v a)
                 = V.iscanl `eq` iscanl
     prop_iscanl' :: P ((Int -> a -> a -> a) -> a -> v a -> v a)
@@ -420,10 +420,10 @@ testPolymorphicFunctions _ = $(testProperties [
                 = V.iscanr `eq` iscanr
     prop_iscanr' :: P ((Int -> a -> a -> a) -> a -> v a -> v a)
                = V.iscanr' `eq` iscanr
-    prop_scanr1 :: P ((a -> a -> a) -> v a -> v a) = notNull2 ===>
-                 V.scanr1 `eq` scanr1
-    prop_scanr1' :: P ((a -> a -> a) -> v a -> v a) = notNull2 ===>
-                 V.scanr1' `eq` scanr1
+    prop_scanr1 :: P ((a -> a -> a) -> v a -> v a)
+               = V.scanr1 `eq` scanr1
+    prop_scanr1' :: P ((a -> a -> a) -> v a -> v a)
+                = V.scanr1' `eq` scanr1
 
     prop_concatMap    = forAll arbitrary $ \xs ->
                         forAll (sized (\n -> resize (n `div` V.length xs) arbitrary)) $ \f -> unP prop f xs
