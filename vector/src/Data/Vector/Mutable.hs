@@ -358,16 +358,16 @@ clone = G.clone
 --
 -- >>> MV.write mv' 3 999
 -- >>> MV.write mv' 4 777
--- >>> V.unsafeFreeze mv'
+-- >>> V.freeze mv'
 -- [10,20,30,999,777]
 --
 -- It is important to note that the source mutable vector is not affected when
 -- the newly allocated one is mutated.
 --
 -- >>> MV.write mv' 2 888
--- >>> V.unsafeFreeze mv'
+-- >>> V.freeze mv'
 -- [10,20,888,999,777]
--- >>> V.unsafeFreeze mv
+-- >>> V.freeze mv
 -- [10,20,30]
 --
 -- @since 0.5
