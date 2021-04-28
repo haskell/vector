@@ -14,7 +14,7 @@
 
 module Data.Vector.Mutable (
   -- * Mutable boxed vectors
-  MVector(..), IOVector, STVector,
+  MVector(MVector), IOVector, STVector,
 
   -- * Accessors
 
@@ -76,9 +76,13 @@ import Data.Typeable ( Typeable )
 
 
 -- | Mutable boxed vectors keyed on the monad they live in ('IO' or @'ST' s@).
-data MVector s a = MVector {-# UNPACK #-} !Int                -- ^ Offset in underlying array
-                           {-# UNPACK #-} !Int                -- ^ Size of slice
-                           {-# UNPACK #-} !(MutableArray s a) -- ^ Underlying array
+data MVector s a = MVector { _offset :: {-# UNPACK #-} !Int
+                           -- ^ Offset in underlying array
+                           , _size   :: {-# UNPACK #-} !Int
+                           -- ^ Size of slice
+                           , _array  :: {-# UNPACK #-} !(MutableArray s a)
+                           -- ^ Underlying array
+                           }
         deriving ( Typeable )
 
 type IOVector = MVector RealWorld
