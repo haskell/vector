@@ -14,7 +14,7 @@
 
 module Data.Vector.Mutable (
   -- * Mutable boxed vectors
-  MVector(..), IOVector, STVector,
+  MVector(MVector), IOVector, STVector,
 
   -- * Accessors
 
@@ -78,9 +78,13 @@ import Data.Typeable ( Typeable )
 type role MVector nominal representational
 
 -- | Mutable boxed vectors keyed on the monad they live in ('IO' or @'ST' s@).
-data MVector s a = MVector {-# UNPACK #-} !Int                -- ^ Offset in underlying array
-                           {-# UNPACK #-} !Int                -- ^ Size of slice
-                           {-# UNPACK #-} !(MutableArray s a) -- ^ Underlying array
+data MVector s a = MVector { _offset :: {-# UNPACK #-} !Int
+                           -- ^ Offset in underlying array
+                           , _size   :: {-# UNPACK #-} !Int
+                           -- ^ Size of slice
+                           , _array  :: {-# UNPACK #-} !(MutableArray s a)
+                           -- ^ Underlying array
+                           }
         deriving ( Typeable )
 
 type IOVector = MVector RealWorld
@@ -354,16 +358,16 @@ clone = G.clone
 --
 -- >>> MV.write mv' 3 999
 -- >>> MV.write mv' 4 777
--- >>> V.unsafeFreeze mv'
+-- >>> V.freeze mv'
 -- [10,20,30,999,777]
 --
 -- It is important to note that the source mutable vector is not affected when
 -- the newly allocated one is mutated.
 --
 -- >>> MV.write mv' 2 888
--- >>> V.unsafeFreeze mv'
+-- >>> V.freeze mv'
 -- [10,20,888,999,777]
--- >>> V.unsafeFreeze mv
+-- >>> V.freeze mv
 -- [10,20,30]
 --
 -- @since 0.5

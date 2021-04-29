@@ -316,22 +316,22 @@ clone = G.clone
 -- etc. However, if `unsafeGrow` was used instead this would not have been
 -- guaranteed and some garbage would be there instead:
 --
--- >>> VP.unsafeFreeze mv'
+-- >>> VP.freeze mv'
 -- [10,20,30,0,0]
 --
 -- Having the extra space we can write new values in there:
 --
 -- >>> MVP.write mv' 3 999
--- >>> VP.unsafeFreeze mv'
+-- >>> VP.freeze mv'
 -- [10,20,30,999,0]
 --
 -- It is important to note that the source mutable vector is not affected when
 -- the newly allocated one is mutated.
 --
 -- >>> MVP.write mv' 2 888
--- >>> VP.unsafeFreeze mv'
+-- >>> VP.freeze mv'
 -- [10,20,888,999,0]
--- >>> VP.unsafeFreeze mv
+-- >>> VP.freeze mv
 -- [10,20,30]
 --
 -- @since 0.5

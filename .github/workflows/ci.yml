@@ -82,7 +82,7 @@ jobs:
     # ----------------
     - name: Build
       run: |
-        cabal configure --enable-tests --enable-benchmarks --benchmark-option=-l
+        cabal configure --haddock-all --enable-tests --enable-benchmarks --benchmark-option=-l
         cabal build all --write-ghc-environment-files=always
     # ----------------
     - name: Test
