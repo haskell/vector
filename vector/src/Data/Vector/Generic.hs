@@ -2297,7 +2297,11 @@ fromList :: Vector v a => [a] -> v a
 {-# INLINE fromList #-}
 fromList = unstream . Bundle.fromList
 
--- | /O(n)/ Convert the first @n@ elements of a list to a vector.
+-- | /O(n)/ Convert the first @n@ elements of a list to a vector. It's
+-- expected that supplied list will be exactly @n@ elements long. As
+-- optimization this function allocates buffer for @n@ elements and
+-- could be used to DoS by exhausting memory if attacker controls that
+-- parameter.
 --
 -- @
 -- fromListN n xs = 'fromList' ('take' n xs)
