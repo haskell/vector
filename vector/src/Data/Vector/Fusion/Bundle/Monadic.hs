@@ -664,7 +664,7 @@ unfoldrN n f = unfoldrNM n (return . f)
 -- | Unfold at most @n@ elements with a monadic function.
 unfoldrNM :: Monad m => Int -> (s -> m (Maybe (a, s))) -> s -> Bundle m u a
 {-# INLINE_FUSED unfoldrNM #-}
-unfoldrNM n f s = fromStream (S.unfoldrNM n f s) (Max (delay_inline max n 0))
+unfoldrNM n f s = fromStream (S.unfoldrNM n f s) Unknown
 
 -- | Unfold exactly @n@ elements
 --
