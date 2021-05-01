@@ -528,10 +528,16 @@ slice :: MVector v a
 slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
             $ unsafeSlice i n v
 
+-- | Take @n@ first elements of the mutable vector without making a
+-- copy. For negative @n@ empty vector is returned. If @n@ is larger
+-- than vector's length empty vector is returned,
 take :: MVector v a => Int -> v s a -> v s a
 {-# INLINE take #-}
 take n v = unsafeSlice 0 (min (max n 0) (length v)) v
 
+-- | Drop @n@ first element of the mutable vector without making a
+-- copy. For negative @n@ vector is returned unchanged and if @n@ is
+-- larger than vector's length empty vector is returned.
 drop :: MVector v a => Int -> v s a -> v s a
 {-# INLINE drop #-}
 drop n v = unsafeSlice (min m n') (max 0 (m - n')) v
@@ -549,10 +555,14 @@ splitAt n v = ( unsafeSlice 0 m v
       n'  = max n 0
       len = length v
 
+-- | Drop last element of the mutable vector without making a copy. If
+-- vector is empty exception is thrown.
 init :: MVector v a => v s a -> v s a
 {-# INLINE init #-}
 init v = slice 0 (length v - 1) v
 
+-- | Drop first element of the mutable vector without making a copy. If
+-- vector is empty exception is thrown.
 tail :: MVector v a => v s a -> v s a
 {-# INLINE tail #-}
 tail v = slice 1 (length v - 1) v
@@ -567,18 +577,24 @@ unsafeSlice :: MVector v a => Int  -- ^ starting index
 unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
                   $ basicUnsafeSlice i n v
 
+-- | Same as 'init' but doesn't do range checks.
 unsafeInit :: MVector v a => v s a -> v s a
 {-# INLINE unsafeInit #-}
 unsafeInit v = unsafeSlice 0 (length v - 1) v
 
+-- | Same as 'tail' but doesn't do range checks.
 unsafeTail :: MVector v a => v s a -> v s a
 {-# INLINE unsafeTail #-}
 unsafeTail v = unsafeSlice 1 (length v - 1) v
 
+-- | Unsafe variant of 'take'. If called with out of range @n@ it will
+-- simply create invalid slice that likely violate memory safety
 unsafeTake :: MVector v a => Int -> v s a -> v s a
 {-# INLINE unsafeTake #-}
 unsafeTake n v = unsafeSlice 0 n v
 
+-- | Unsafe variant of 'drop'. If called with out of range @n@ it will
+-- simply create invalid slice that likely violate memory safety
 unsafeDrop :: MVector v a => Int -> v s a -> v s a
 {-# INLINE unsafeDrop #-}
 unsafeDrop n v = unsafeSlice n (length v - n) v
