@@ -1,3 +1,5 @@
+{-# LANGUAGE DefaultSignatures #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE BangPatterns, CPP, MultiParamTypeClasses, TypeFamilies, FlexibleContexts #-}
 {-# LANGUAGE DeriveDataTypeable, StandaloneDeriving #-}
 {-# LANGUAGE PolyKinds #-}
@@ -53,6 +55,8 @@ import Data.Semigroup (Min(..),Max(..),First(..),Last(..),WrappedMonoid(..),Arg(
 import Data.Typeable ( Typeable )
 import Data.Data     ( Data(..) )
 import GHC.Exts      ( Down(..) )
+import GHC.Generics
+import Data.Coerce
 
 -- Data.Vector.Internal.Check is unused
 #define NOT_VECTOR_MODULE
@@ -255,17 +259,40 @@ instance P.Prim a => G.Vector Vector (UnboxViaPrim a) where
   elemseq _ = seq
 
 -- | Isomorphism between type @a@ and its representation in unboxed
--- vector @b@.
+-- vector @b@. Default instance coerces between generic
+-- representations of @a@ and @b@ which means they have same shape and
+-- corresponding fields could be coerced to each other. Note that this
+-- means it's possible to have fields that have different types:
+--
+-- >>> :set -XMultiParamTypeClasses -XDeriveGeneric -XFlexibleInstances
+-- >>> import GHC.Generics (Generic)
+-- >>> import Data.Monoid
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> :{
+-- data Foo a = Foo Int a
+--   deriving (Show,Generic)
+-- instance VU.IsoUnbox (Foo a) (Int, a)
+-- instance VU.IsoUnbox (Foo a) (Sum Int, Product a)
+-- :}
+--
 class IsoUnbox a b where
   -- | Convert value into it representation in unboxed vector.
   toURepr   :: a -> b
+  default toURepr :: (Generic a, Generic b, Coercible (Rep a ()) (Rep b ())) => a -> b
+  toURepr = to . idU . coerce . idU . from
   -- | Convert value representation in unboxed vector back to value.
   fromURepr :: b -> a
+  default fromURepr :: (Generic a, Generic b, Coercible (Rep b ()) (Rep a ())) => b -> a
+  fromURepr = to . idU . coerce . idU . from
+
+idU :: f () -> f ()
+idU = id
+
 
 -- | Newtype which allows to derive unbox instances for type @a@ which
 -- uses @b@ as underlying representation (usually tuple). Type @a@ and
 -- its representation @b@ are connected by type class
--- 'IsoUnbox'. For example:
+-- 'IsoUnbox'. Here's example which uses explicit 'IsoUnbox' instance:
 --
 --
 -- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia
@@ -287,6 +314,27 @@ class IsoUnbox a b where
 -- deriving via (Foo a `VU.As` (Int, a)) instance VU.Unbox a => G.Vector  Vector  (Foo a)
 -- instance VU.Unbox a => VU.Unbox (Foo a)
 -- :}
+--
+--
+-- It's also possible to use generic-based instance for 'IsoUnbox'
+-- which should work for all product types.
+--
+-- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia -XDeriveGeneric
+-- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
+-- >>> import qualified Data.Vector.Unboxed         as VU
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> :{
+-- data Bar a = Bar Int a
+--   deriving (Show,Generic)
+-- instance VU.IsoUnbox (Bar a) (Int,a) where
+-- newtype instance VU.MVector s (Bar a) = MV_Int (VU.MVector s (Int, a))
+-- newtype instance VU.Vector    (Bar a) = V_Int  (VU.Vector    (Int, a))
+-- deriving via (Bar a `VU.As` (Int, a)) instance VU.Unbox a => M.MVector MVector (Bar a)
+-- deriving via (Bar a `VU.As` (Int, a)) instance VU.Unbox a => G.Vector  Vector  (Bar a)
+-- instance VU.Unbox a => VU.Unbox (Bar a)
+-- :}
+--
 newtype As a b = As a
 
 newtype instance MVector s (As a b) = MV_UnboxAs (MVector s b)
