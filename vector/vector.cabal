@@ -274,6 +274,19 @@ test-suite vector-doctest
       , primitive >= 0.6.4.0 && < 0.8
       , vector    -any
 
+test-suite vector-inspection
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:   tests-inspect
+  main-is:          main.hs
+  Other-modules:    Inspect
+  default-language: Haskell2010
+  build-depends:
+        base                     -any
+      , primitive                >= 0.6.4.0 && < 0.8
+      , vector                   -any
+      , tasty
+      , tasty-inspection-testing >=0.1
+
 benchmark algorithms
   type:             exitcode-stdio-1.0
   main-is:          Main.hs
