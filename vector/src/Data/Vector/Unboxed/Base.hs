@@ -308,10 +308,10 @@ idU = id
 --   fromURepr (i,a) = Foo i a
 --   {-# INLINE toURepr #-}
 --   {-# INLINE fromURepr #-}
--- newtype instance VU.MVector s (Foo a) = MV_Int (VU.MVector s (Int, a))
--- newtype instance VU.Vector    (Foo a) = V_Int  (VU.Vector    (Int, a))
--- deriving via (Foo a `VU.As` (Int, a)) instance VU.Unbox a => M.MVector MVector (Foo a)
--- deriving via (Foo a `VU.As` (Int, a)) instance VU.Unbox a => G.Vector  Vector  (Foo a)
+-- newtype instance VU.MVector s (Foo a) = MV_Foo (VU.MVector s (Int, a))
+-- newtype instance VU.Vector    (Foo a) = V_Foo  (VU.Vector    (Int, a))
+-- deriving via (Foo a `VU.As` (Int, a)) instance VU.Unbox a => VGM.MVector MVector (Foo a)
+-- deriving via (Foo a `VU.As` (Int, a)) instance VU.Unbox a => VG.Vector  Vector  (Foo a)
 -- instance VU.Unbox a => VU.Unbox (Foo a)
 -- :}
 --
@@ -328,10 +328,10 @@ idU = id
 -- data Bar a = Bar Int a
 --   deriving (Show,Generic)
 -- instance VU.IsoUnbox (Bar a) (Int,a) where
--- newtype instance VU.MVector s (Bar a) = MV_Int (VU.MVector s (Int, a))
--- newtype instance VU.Vector    (Bar a) = V_Int  (VU.Vector    (Int, a))
--- deriving via (Bar a `VU.As` (Int, a)) instance VU.Unbox a => M.MVector MVector (Bar a)
--- deriving via (Bar a `VU.As` (Int, a)) instance VU.Unbox a => G.Vector  Vector  (Bar a)
+-- newtype instance VU.MVector s (Bar a) = MV_Bar (VU.MVector s (Int, a))
+-- newtype instance VU.Vector    (Bar a) = V_Bar  (VU.Vector    (Int, a))
+-- deriving via (Bar a `VU.As` (Int, a)) instance VU.Unbox a => VGM.MVector VU.MVector (Bar a)
+-- deriving via (Bar a `VU.As` (Int, a)) instance VU.Unbox a => VG.Vector  VU.Vector  (Bar a)
 -- instance VU.Unbox a => VU.Unbox (Bar a)
 -- :}
 --
