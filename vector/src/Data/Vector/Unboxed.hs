@@ -1812,8 +1812,32 @@ unsafeFreeze :: (Unbox a, PrimMonad m) => MVector (PrimState m) a -> m (Vector a
 {-# INLINE unsafeFreeze #-}
 unsafeFreeze = G.unsafeFreeze
 
--- | /O(1)/ Unsafely convert an immutable vector to a mutable one without
--- copying. The immutable vector may not be used after this operation.
+-- | /O(1)/ Unsafely convert an immutable vector to a mutable one
+-- without copying. Note that this is very dangerous function and
+-- generally it's only safe to read from resulting vector. In which
+-- case immutable vector could be used safely as well.
+--
+-- Problem with mutation happens because GHC has a lot of freedom to
+-- introduce sharing. As a result mutable vectors produced by
+-- @unsafeThaw@ may or may not share same underlying buffer. For
+-- example:
+--
+-- > foo = do
+-- >   let vec = V.generate 10 id
+-- >   mvec <- V.unsafeThaw vec
+-- >   do_something mvec
+--
+-- Here GHC could lift @vec@ outside of foo which means all calls to
+-- @do_something@ will use same buffer with possibly disastrous
+-- results. Whether such aliasing happens or not depends on program in
+-- question, optimization levels, and GHC flags.
+--
+-- All in all attempts to modify vector after unsafeThaw falls out of
+-- domain of software engineering and into realm of black magic, dark
+-- rituals, and unspeakable horrors. Only advice that could be given
+-- is: "don't attempt to mutate vector after unsafeThaw unless you
+-- know how to prevent GHC from aliasing buffers accidentally. We
+-- don't"
 unsafeThaw :: (Unbox a, PrimMonad m) => Vector a -> m (MVector (PrimState m) a)
 {-# INLINE unsafeThaw #-}
 unsafeThaw = G.unsafeThaw
