@@ -79,10 +79,16 @@ jobs:
       run: |
         cabal -vnormal check
     # ----------------
+    # GHC 7.10 fails with PIE-related linker errors. Thus it needs extra
+    # encouragement for linker in form of flags.
     - name: Build
       run: |
-        cabal configure --haddock-all --enable-tests --enable-benchmarks --benchmark-option=-l
-        cabal build all --write-ghc-environment-files=always
+        if [ ${{matrix.ghc}} = 7.10.3 ]; then
+          EXTRA_FLAGS=--ghc-option="-optl-no-pie"
+        fi
+        echo $EXTRA_FLAGS
+        cabal $EXTRA_FLAGS configure --haddock-all --enable-tests --enable-benchmarks --benchmark-option=-l
+        cabal $EXTRA_FLAGS build all --write-ghc-environment-files=always
     # ----------------
     - name: Test
       run: |
