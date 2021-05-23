@@ -277,6 +277,9 @@ test-suite vector-doctest
 test-suite vector-inspection
   type:             exitcode-stdio-1.0
   hs-source-dirs:   tests-inspect
+  -- -O1 is used here on purpose. We expect that fusion works for -O1
+  -- -as well
+  Ghc-Options:      -Wall
   main-is:          main.hs
   Other-modules:    Inspect
   default-language: Haskell2010
