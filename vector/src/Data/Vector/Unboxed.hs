@@ -56,7 +56,7 @@
 -- >>> instance Unbox Foo
 module Data.Vector.Unboxed (
   -- * Unboxed vectors
-  Vector, MVector(..), Unbox,
+  Vector(V_UnboxAs), MVector(..), Unbox,
 
   -- * Accessors
 
