@@ -749,23 +749,23 @@ scanlM' :: Monad m => (a -> b -> m a) -> a -> Bundle m v b -> Bundle m v a
 {-# INLINE scanlM' #-}
 scanlM' f z s = z `seq` (z `cons` postscanlM f z s)
 
--- | Scan over a non-empty 'Bundle'
+-- | Initial-value free scan over a 'Bundle'
 scanl1 :: Monad m => (a -> a -> a) -> Bundle m v a -> Bundle m v a
 {-# INLINE scanl1 #-}
 scanl1 f = scanl1M (\x y -> return (f x y))
 
--- | Scan over a non-empty 'Bundle' with a monadic operator
+-- | Initial-value free scan over a 'Bundle' with a monadic operator
 scanl1M :: Monad m => (a -> a -> m a) -> Bundle m v a -> Bundle m v a
 {-# INLINE_FUSED scanl1M #-}
 scanl1M f Bundle{sElems = s, sSize = sz} = fromStream (S.scanl1M f s) sz
 
--- | Scan over a non-empty 'Bundle' with a strict accumulator
+-- | Initial-value free scan over a 'Bundle' with a strict accumulator
 scanl1' :: Monad m => (a -> a -> a) -> Bundle m v a -> Bundle m v a
 {-# INLINE scanl1' #-}
 scanl1' f = scanl1M' (\x y -> return (f x y))
 
--- | Scan over a non-empty 'Bundle' with a strict accumulator and a monadic
--- operator
+-- | Initial-value free scan over a 'Bundle' with a strict accumulator
+-- and a monadic operator
 scanl1M' :: Monad m => (a -> a -> m a) -> Bundle m v a -> Bundle m v a
 {-# INLINE_FUSED scanl1M' #-}
 scanl1M' f Bundle{sElems = s, sSize = sz} = fromStream (S.scanl1M' f s) sz

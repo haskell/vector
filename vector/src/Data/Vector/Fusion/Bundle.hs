@@ -475,12 +475,12 @@ scanl' :: (a -> b -> a) -> a -> Bundle v b -> Bundle v a
 {-# INLINE scanl' #-}
 scanl' = M.scanl'
 
--- | Scan over a non-empty 'Bundle'
+-- | Initial-value free scan over a 'Bundle'
 scanl1 :: (a -> a -> a) -> Bundle v a -> Bundle v a
 {-# INLINE scanl1 #-}
 scanl1 = M.scanl1
 
--- | Scan over a non-empty 'Bundle' with a strict accumulator
+-- | Initial-value free scan over a 'Bundle' with a strict accumulator
 scanl1' :: (a -> a -> a) -> Bundle v a -> Bundle v a
 {-# INLINE scanl1' #-}
 scanl1' = M.scanl1'

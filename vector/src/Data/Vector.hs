@@ -1929,17 +1929,37 @@ iscanl' :: (Int -> a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE iscanl' #-}
 iscanl' = G.iscanl'
 
--- | /O(n)/ Scan over a non-empty vector
+-- | /O(n)/ Initial-value free scan over a vector
 --
 -- > scanl f <x1,...,xn> = <y1,...,yn>
 -- >   where y1 = x1
 -- >         yi = f y(i-1) xi
 --
+-- Note: Since 0.13, application of this to an empty vector no longer
+-- results in an error; instead produces an empty vector.
+--
+-- ==== __Examples__
+-- >>> import qualified Data.Vector as V
+-- >>> V.scanl1 min $ V.fromListN 5 [4,2,4,1,3 :: Int]
+-- [4,2,2,1,1]
+-- >>> V.scanl1 max $ V.fromListN 5 [1,3,2,5,4 :: Int]
+-- [1,3,3,5,5]
+-- >>> V.scanl1 min (V.empty :: V.Vector Int)
+-- []
 scanl1 :: (a -> a -> a) -> Vector a -> Vector a
 {-# INLINE scanl1 #-}
 scanl1 = G.scanl1
 
--- | /O(n)/ Scan over a non-empty vector with a strict accumulator
+-- | /O(n)/ Initial-value free scan over a vector with a strict accumulator
+--
+-- ==== __Examples__
+-- >>> import qualified Data.Vector as V
+-- >>> V.scanl1' min $ V.fromListN 5 [4,2,4,1,3 :: Int]
+-- [4,2,2,1,1]
+-- >>> V.scanl1' max $ V.fromListN 5 [1,3,2,5,4 :: Int]
+-- [1,3,3,5,5]
+-- >>> V.scanl1' min (V.empty :: V.Vector Int)
+-- []
 scanl1' :: (a -> a -> a) -> Vector a -> Vector a
 {-# INLINE scanl1' #-}
 scanl1' = G.scanl1'
@@ -1993,13 +2013,25 @@ iscanr' :: (Int -> a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE iscanr' #-}
 iscanr' = G.iscanr'
 
--- | /O(n)/ Right-to-left scan over a non-empty vector
+-- | /O(n)/ Right-to-left, initial-value free scan over a vector
 scanr1 :: (a -> a -> a) -> Vector a -> Vector a
 {-# INLINE scanr1 #-}
 scanr1 = G.scanr1
 
--- | /O(n)/ Right-to-left scan over a non-empty vector with a strict
+-- | /O(n)/ Right-to-left, initial-value free scan over a vector with a strict
 -- accumulator
+--
+-- Note: Since 0.13, application of this to an empty vector no longer
+-- results in an error; instead produces an empty vector.
+--
+-- ==== __Examples__
+-- >>> import qualified Data.Vector as V
+-- >>> V.scanr1' min $ V.fromListN 5 [3,1,4,2,4 :: Int]
+-- [1,1,2,2,4]
+-- >>> V.scanr1' max $ V.fromListN 5 [4,5,2,3,1 :: Int]
+-- [5,5,3,3,1]
+-- >>> V.scanr1' min (V.empty :: V.Vector Int)
+-- []
 scanr1' :: (a -> a -> a) -> Vector a -> Vector a
 {-# INLINE scanr1' #-}
 scanr1' = G.scanr1'

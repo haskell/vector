@@ -35,6 +35,14 @@
      `Data.Vector.Storable{.Mutable}` to allow this (the onus is on the user
      to ensure that no `Storable` invariants are broken when using these
      functions).
+ * The functions `scanl1`, `scanl1'`, `scanr1`, and `scanr1'` for immutable
+   vectors are now defined when given empty vectors as arguments,
+   in which case they return empty vectors. This new behavior is consistent
+   with the one of the corresponding functions in `Data.List`.
+   Prior to this change, applying an empty vector to any of those functions
+   resulted in an error. This change was introduced in:
+   [#382](https://github.com/haskell/vector/pull/382)
+
 
 # Changes in version 0.12.3.0
 

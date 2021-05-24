@@ -1262,12 +1262,12 @@ scanlM' :: Monad m => (a -> b -> m a) -> a -> Stream m b -> Stream m a
 {-# INLINE scanlM' #-}
 scanlM' f z s = z `seq` (z `cons` postscanlM f z s)
 
--- | Scan over a non-empty 'Stream'
+-- | Initial-value free scan over a 'Stream'
 scanl1 :: Monad m => (a -> a -> a) -> Stream m a -> Stream m a
 {-# INLINE scanl1 #-}
 scanl1 f = scanl1M (\x y -> return (f x y))
 
--- | Scan over a non-empty 'Stream' with a monadic operator
+-- | Initial-value free scan over a 'Stream' with a monadic operator
 scanl1M :: Monad m => (a -> a -> m a) -> Stream m a -> Stream m a
 {-# INLINE_FUSED scanl1M #-}
 scanl1M f (Stream step t) = Stream step' (t, Nothing)
@@ -1278,7 +1278,7 @@ scanl1M f (Stream step t) = Stream step' (t, Nothing)
                            case r of
                              Yield x s' -> return $ Yield x (s', Just x)
                              Skip    s' -> return $ Skip (s', Nothing)
-                             Done       -> EMPTY_STREAM "scanl1M"
+                             Done       -> return Done
 
     step' (s, Just x) = do
                           r <- step s
@@ -1289,13 +1289,13 @@ scanl1M f (Stream step t) = Stream step' (t, Nothing)
                             Skip    s' -> return $ Skip (s', Just x)
                             Done       -> return Done
 
--- | Scan over a non-empty 'Stream' with a strict accumulator
+-- | Initial-value free scan over a 'Stream' with a strict accumulator
 scanl1' :: Monad m => (a -> a -> a) -> Stream m a -> Stream m a
 {-# INLINE scanl1' #-}
 scanl1' f = scanl1M' (\x y -> return (f x y))
 
--- | Scan over a non-empty 'Stream' with a strict accumulator and a monadic
--- operator
+-- | Initial-value free scan over a 'Stream' with a strict accumulator
+-- and a monadic operator
 scanl1M' :: Monad m => (a -> a -> m a) -> Stream m a -> Stream m a
 {-# INLINE_FUSED scanl1M' #-}
 scanl1M' f (Stream step t) = Stream step' (t, Nothing)
@@ -1306,7 +1306,7 @@ scanl1M' f (Stream step t) = Stream step' (t, Nothing)
                            case r of
                              Yield x s' -> x `seq` return (Yield x (s', Just x))
                              Skip    s' -> return $ Skip (s', Nothing)
-                             Done       -> EMPTY_STREAM "scanl1M"
+                             Done       -> return Done
 
     step' (s, Just x) = x `seq`
                         do
