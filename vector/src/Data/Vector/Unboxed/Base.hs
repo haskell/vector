@@ -1,3 +1,5 @@
+{-# LANGUAGE DefaultSignatures #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE BangPatterns, CPP, MultiParamTypeClasses, TypeFamilies, FlexibleContexts #-}
 {-# LANGUAGE DeriveDataTypeable, StandaloneDeriving #-}
 {-# LANGUAGE PolyKinds #-}
@@ -16,7 +18,8 @@
 --
 
 module Data.Vector.Unboxed.Base (
-  MVector(..), IOVector, STVector, Vector(..), Unbox, UnboxViaPrim(..)
+  MVector(..), IOVector, STVector, Vector(..), Unbox,
+  UnboxViaPrim(..), As(..), IsoUnbox(..)
 ) where
 
 import qualified Data.Vector.Generic         as G
@@ -52,6 +55,8 @@ import Data.Semigroup (Min(..),Max(..),First(..),Last(..),WrappedMonoid(..),Arg(
 import Data.Typeable ( Typeable )
 import Data.Data     ( Data(..) )
 import GHC.Exts      ( Down(..) )
+import GHC.Generics
+import Data.Coerce
 
 -- Data.Vector.Internal.Check is unused
 #define NOT_VECTOR_MODULE
@@ -251,6 +256,130 @@ instance P.Prim a => G.Vector Vector (UnboxViaPrim a) where
   basicUnsafeSlice i n (V_UnboxViaPrim v) = V_UnboxViaPrim $ G.basicUnsafeSlice i n v
   basicUnsafeIndexM (V_UnboxViaPrim v) i = UnboxViaPrim <$> G.basicUnsafeIndexM v i
   basicUnsafeCopy (MV_UnboxViaPrim mv) (V_UnboxViaPrim v) = G.basicUnsafeCopy mv v
+  elemseq _ = seq
+
+-- | Isomorphism between type @a@ and its representation in unboxed
+-- vector @b@. Default instance coerces between generic
+-- representations of @a@ and @b@ which means they have same shape and
+-- corresponding fields could be coerced to each other. Note that this
+-- means it's possible to have fields that have different types:
+--
+-- >>> :set -XMultiParamTypeClasses -XDeriveGeneric -XFlexibleInstances
+-- >>> import GHC.Generics (Generic)
+-- >>> import Data.Monoid
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> :{
+-- data Foo a = Foo Int a
+--   deriving (Show,Generic)
+-- instance VU.IsoUnbox (Foo a) (Int, a)
+-- instance VU.IsoUnbox (Foo a) (Sum Int, Product a)
+-- :}
+--
+class IsoUnbox a b where
+  -- | Convert value into it representation in unboxed vector.
+  toURepr   :: a -> b
+  default toURepr :: (Generic a, Generic b, Coercible (Rep a ()) (Rep b ())) => a -> b
+  toURepr = to . idU . coerce . idU . from
+  -- | Convert value representation in unboxed vector back to value.
+  fromURepr :: b -> a
+  default fromURepr :: (Generic a, Generic b, Coercible (Rep b ()) (Rep a ())) => b -> a
+  fromURepr = to . idU . coerce . idU . from
+
+idU :: f () -> f ()
+idU = id
+
+
+-- | Newtype which allows to derive unbox instances for type @a@ which
+-- uses @b@ as underlying representation (usually tuple). Type @a@ and
+-- its representation @b@ are connected by type class
+-- 'IsoUnbox'. Here's example which uses explicit 'IsoUnbox' instance:
+--
+--
+-- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia
+-- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
+-- >>> import qualified Data.Vector.Unboxed         as VU
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> :{
+-- data Foo a = Foo Int a
+--   deriving Show
+-- instance VU.IsoUnbox (Foo a) (Int,a) where
+--   toURepr (Foo i a) = (i,a)
+--   fromURepr (i,a) = Foo i a
+--   {-# INLINE toURepr #-}
+--   {-# INLINE fromURepr #-}
+-- newtype instance VU.MVector s (Foo a) = MV_Foo (VU.MVector s (Int, a))
+-- newtype instance VU.Vector    (Foo a) = V_Foo  (VU.Vector    (Int, a))
+-- deriving via (Foo a `VU.As` (Int, a)) instance VU.Unbox a => VGM.MVector MVector (Foo a)
+-- deriving via (Foo a `VU.As` (Int, a)) instance VU.Unbox a => VG.Vector  Vector  (Foo a)
+-- instance VU.Unbox a => VU.Unbox (Foo a)
+-- :}
+--
+--
+-- It's also possible to use generic-based instance for 'IsoUnbox'
+-- which should work for all product types.
+--
+-- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia -XDeriveGeneric
+-- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
+-- >>> import qualified Data.Vector.Unboxed         as VU
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> :{
+-- data Bar a = Bar Int a
+--   deriving (Show,Generic)
+-- instance VU.IsoUnbox (Bar a) (Int,a) where
+-- newtype instance VU.MVector s (Bar a) = MV_Bar (VU.MVector s (Int, a))
+-- newtype instance VU.Vector    (Bar a) = V_Bar  (VU.Vector    (Int, a))
+-- deriving via (Bar a `VU.As` (Int, a)) instance VU.Unbox a => VGM.MVector VU.MVector (Bar a)
+-- deriving via (Bar a `VU.As` (Int, a)) instance VU.Unbox a => VG.Vector  VU.Vector  (Bar a)
+-- instance VU.Unbox a => VU.Unbox (Bar a)
+-- :}
+--
+newtype As a b = As a
+
+newtype instance MVector s (As a b) = MV_UnboxAs (MVector s b)
+newtype instance Vector    (As a b) = V_UnboxAs  (Vector b)
+
+instance (IsoUnbox a b, Unbox b) => M.MVector MVector (As a b) where
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicOverlaps #-}
+  {-# INLINE basicUnsafeNew #-}
+  {-# INLINE basicInitialize #-}
+  {-# INLINE basicUnsafeReplicate #-}
+  {-# INLINE basicUnsafeRead #-}
+  {-# INLINE basicUnsafeWrite #-}
+  {-# INLINE basicClear #-}
+  {-# INLINE basicSet #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeGrow #-}
+  basicLength (MV_UnboxAs v) = M.basicLength v
+  basicUnsafeSlice i n (MV_UnboxAs v) = MV_UnboxAs $ M.basicUnsafeSlice i n v
+  basicOverlaps (MV_UnboxAs v1) (MV_UnboxAs v2) = M.basicOverlaps v1 v2
+  basicUnsafeNew n = MV_UnboxAs `liftM` M.basicUnsafeNew n
+  basicInitialize (MV_UnboxAs v) = M.basicInitialize v
+  basicUnsafeReplicate n (As x) = MV_UnboxAs `liftM` M.basicUnsafeReplicate n (toURepr x)
+  basicUnsafeRead (MV_UnboxAs v) i = (As . fromURepr) `liftM` M.basicUnsafeRead v i
+  basicUnsafeWrite (MV_UnboxAs v) i (As x) = M.basicUnsafeWrite v i (toURepr x)
+  basicClear (MV_UnboxAs v) = M.basicClear v
+  basicSet (MV_UnboxAs v) (As x) = M.basicSet v (toURepr x)
+  basicUnsafeCopy (MV_UnboxAs v1) (MV_UnboxAs v2) = M.basicUnsafeCopy v1 v2
+  basicUnsafeMove (MV_UnboxAs v1) (MV_UnboxAs v2) = M.basicUnsafeMove v1 v2
+  basicUnsafeGrow (MV_UnboxAs v) n = MV_UnboxAs `liftM` M.basicUnsafeGrow v n
+
+instance (IsoUnbox a b, Unbox b) => G.Vector Vector (As a b) where
+  {-# INLINE basicUnsafeFreeze #-}
+  {-# INLINE basicUnsafeThaw #-}
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE elemseq #-}
+  basicUnsafeFreeze (MV_UnboxAs v) = V_UnboxAs `liftM` G.basicUnsafeFreeze v
+  basicUnsafeThaw (V_UnboxAs v) = MV_UnboxAs `liftM` G.basicUnsafeThaw v
+  basicLength (V_UnboxAs v) = G.basicLength v
+  basicUnsafeSlice i n (V_UnboxAs v) = V_UnboxAs $ G.basicUnsafeSlice i n v
+  basicUnsafeIndexM (V_UnboxAs v) i = As . fromURepr <$> G.basicUnsafeIndexM v i
+  basicUnsafeCopy (MV_UnboxAs mv) (V_UnboxAs v) = G.basicUnsafeCopy mv v
   elemseq _ = seq
 
 

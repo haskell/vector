@@ -56,7 +56,7 @@
 -- >>> instance Unbox Foo
 module Data.Vector.Unboxed (
   -- * Unboxed vectors
-  Vector, MVector(..), Unbox,
+  Vector(V_UnboxAs), MVector(..), Unbox,
 
   -- * Accessors
 
@@ -192,7 +192,9 @@ module Data.Vector.Unboxed (
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
 
   -- ** Deriving via
-  UnboxViaPrim(..)
+  UnboxViaPrim(..),
+  As(..),
+  IsoUnbox(..)
 ) where
 
 import Data.Vector.Unboxed.Base
