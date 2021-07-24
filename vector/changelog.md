@@ -42,7 +42,7 @@
    Prior to this change, applying an empty vector to any of those functions
    resulted in an error. This change was introduced in:
    [#382](https://github.com/haskell/vector/pull/382)
-
+* Remove redundant `Storable` constraints on to/from `ForeignPtr` conversions
 
 # Changes in version 0.12.3.0
 

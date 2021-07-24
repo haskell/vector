@@ -1894,8 +1894,7 @@ unsafeFromForeignPtr fp i n = unsafeFromForeignPtr0 fp' n
 -- Use `unsafeFromForeignPtr` if you need to specify an offset.
 --
 -- The data may not be modified through the 'ForeignPtr' afterwards.
-unsafeFromForeignPtr0 :: Storable a
-                      => ForeignPtr a    -- ^ pointer
+unsafeFromForeignPtr0 :: ForeignPtr a    -- ^ pointer
                       -> Int             -- ^ length
                       -> Vector a
 {-# INLINE unsafeFromForeignPtr0 #-}
@@ -1903,7 +1902,7 @@ unsafeFromForeignPtr0 fp n = Vector n fp
 
 -- | /O(1)/ Yield the underlying 'ForeignPtr' together with the offset to the
 -- data and its length. The data may not be modified through the 'ForeignPtr'.
-unsafeToForeignPtr :: Storable a => Vector a -> (ForeignPtr a, Int, Int)
+unsafeToForeignPtr :: Vector a -> (ForeignPtr a, Int, Int)
 {-# INLINE unsafeToForeignPtr #-}
 unsafeToForeignPtr (Vector n fp) = (fp, 0, n)
 
@@ -1912,7 +1911,7 @@ unsafeToForeignPtr (Vector n fp) = (fp, 0, n)
 -- You can assume the pointer points directly to the data (no offset).
 --
 -- The data may not be modified through the 'ForeignPtr'.
-unsafeToForeignPtr0 :: Storable a => Vector a -> (ForeignPtr a, Int)
+unsafeToForeignPtr0 :: Vector a -> (ForeignPtr a, Int)
 {-# INLINE unsafeToForeignPtr0 #-}
 unsafeToForeignPtr0 (Vector n fp) = (fp, n)
 

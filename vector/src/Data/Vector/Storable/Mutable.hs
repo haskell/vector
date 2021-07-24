@@ -800,8 +800,7 @@ unsafeFromForeignPtr fp i n = unsafeFromForeignPtr0 fp' n
 --
 -- Modifying data through the 'ForeignPtr' afterwards is unsafe if the vector
 -- could have been frozen before the modification.
-unsafeFromForeignPtr0 :: Storable a
-                      => ForeignPtr a    -- ^ pointer
+unsafeFromForeignPtr0 :: ForeignPtr a    -- ^ pointer
                       -> Int             -- ^ length
                       -> MVector s a
 {-# INLINE unsafeFromForeignPtr0 #-}
@@ -810,7 +809,7 @@ unsafeFromForeignPtr0 fp n = MVector n fp
 -- | Yield the underlying 'ForeignPtr' together with the offset to the data
 -- and its length. Modifying the data through the 'ForeignPtr' is
 -- unsafe if the vector could have frozen before the modification.
-unsafeToForeignPtr :: Storable a => MVector s a -> (ForeignPtr a, Int, Int)
+unsafeToForeignPtr :: MVector s a -> (ForeignPtr a, Int, Int)
 {-# INLINE unsafeToForeignPtr #-}
 unsafeToForeignPtr (MVector n fp) = (fp, 0, n)
 
@@ -820,7 +819,7 @@ unsafeToForeignPtr (MVector n fp) = (fp, 0, n)
 --
 -- Modifying the data through the 'ForeignPtr' is unsafe if the vector could
 -- have frozen before the modification.
-unsafeToForeignPtr0 :: Storable a => MVector s a -> (ForeignPtr a, Int)
+unsafeToForeignPtr0 :: MVector s a -> (ForeignPtr a, Int)
 {-# INLINE unsafeToForeignPtr0 #-}
 unsafeToForeignPtr0 (MVector n fp) = (fp, n)
 
