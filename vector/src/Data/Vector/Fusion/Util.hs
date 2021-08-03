@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 -- |
 -- Module      : Data.Vector.Fusion.Util
 -- Copyright   : (c) Roman Leshchinskiy 2009
@@ -17,6 +16,8 @@ module Data.Vector.Fusion.Util (
   delay_inline, delayed_min
 ) where
 
+import Data.Stream.Monadic (Box(..), liftBox)
+
 -- | Identity monad
 newtype Id a = Id { unId :: a }
 
@@ -30,24 +31,6 @@ instance Applicative Id where
 instance Monad Id where
   return = pure
   Id x >>= f = f x
-
--- | Box monad
-data Box a = Box { unBox :: a }
-
-instance Functor Box where
-  fmap f (Box x) = Box (f x)
-
-instance Applicative Box where
-  pure = Box
-  Box f <*> Box x = Box (f x)
-
-instance Monad Box where
-  return = pure
-  Box x >>= f = f x
-
-liftBox :: Monad m => Box a -> m a
-liftBox (Box a) = return a
-{-# INLINE liftBox #-}
 
 -- | Delay inlining a function until late in the game (simplifier phase 0).
 delay_inline :: (a -> b) -> a -> b
