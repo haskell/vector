@@ -1,4 +1,5 @@
-{-# LANGUAGE FlexibleInstances, GADTs #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
 module Utilities where
 
 import Test.QuickCheck

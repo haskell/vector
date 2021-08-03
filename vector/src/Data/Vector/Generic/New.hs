@@ -1,5 +1,7 @@
-{-# LANGUAGE CPP, Rank2Types, FlexibleContexts, MultiParamTypeClasses #-}
-
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 -- |
 -- Module      : Data.Vector.Generic.New
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010

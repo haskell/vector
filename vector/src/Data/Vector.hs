@@ -1,11 +1,10 @@
-{-# LANGUAGE CPP
-           , DeriveDataTypeable
-           , FlexibleInstances
-           , MultiParamTypeClasses
-           , TypeFamilies
-           , Rank2Types
-           , BangPatterns
-  #-}
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE BangPatterns #-}
 
 -- |
 -- Module      : Data.Vector
@@ -28,6 +27,7 @@
 --
 -- For unboxed arrays, use "Data.Vector.Unboxed"
 --
+
 
 module Data.Vector (
   -- * Boxed vectors

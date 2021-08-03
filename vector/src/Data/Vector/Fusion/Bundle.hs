@@ -1,5 +1,7 @@
-{-# LANGUAGE CPP, FlexibleInstances, Rank2Types, BangPatterns #-}
-
+{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE RankNTypes #-}
 -- |
 -- Module      : Data.Vector.Fusion.Bundle
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
