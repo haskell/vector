@@ -77,6 +77,7 @@ import Data.Vector.Fusion.Util ( Box(..) )
 import Data.Char      ( ord )
 import GHC.Base       ( unsafeChr )
 import Control.Monad  ( liftM )
+import qualified Prelude
 import Prelude hiding ( length, null,
                         replicate, (++),
                         head, last, (!!),
@@ -95,6 +96,8 @@ import Data.Word ( Word8, Word16, Word32, Word64 )
 
 import GHC.Types ( SPEC(..) )
 
+import Data.Vector.Internal.Check (HasCallStack)
+
 #include "vector.h"
 #include "MachDeps.h"
 
@@ -106,7 +109,6 @@ emptyStream :: String
 {-# NOINLINE emptyStream #-}
 emptyStream = "empty stream"
 
-#define EMPTY_STREAM (\state -> ERROR state emptyStream)
 
 -- | Result of taking a single step in a stream
 data Step s a where
@@ -226,7 +228,7 @@ Stream stepa ta ++ Stream stepb tb = Stream step (Left ta)
 -- ------------------
 
 -- | First element of the 'Stream' or error if empty
-head :: Monad m => Stream m a -> m a
+head :: (HasCallStack, Monad m) => Stream m a -> m a
 {-# INLINE_FUSED head #-}
 head (Stream step t) = head_loop SPEC t
   where
@@ -236,12 +238,12 @@ head (Stream step t) = head_loop SPEC t
           case r of
             Yield x _  -> return x
             Skip    s' -> head_loop SPEC s'
-            Done       -> EMPTY_STREAM "head"
+            Done       -> error emptyStream
 
 
 
 -- | Last element of the 'Stream' or error if empty
-last :: Monad m => Stream m a -> m a
+last :: (HasCallStack, Monad m) => Stream m a -> m a
 {-# INLINE_FUSED last #-}
 last (Stream step t) = last_loop0 SPEC t
   where
@@ -251,7 +253,7 @@ last (Stream step t) = last_loop0 SPEC t
           case r of
             Yield x s' -> last_loop1 SPEC x s'
             Skip    s' -> last_loop0 SPEC   s'
-            Done       -> EMPTY_STREAM "last"
+            Done       -> error emptyStream
 
     last_loop1 !_ x s
       = do
@@ -263,9 +265,9 @@ last (Stream step t) = last_loop0 SPEC t
 
 infixl 9 !!
 -- | Element at the given position
-(!!) :: Monad m => Stream m a -> Int -> m a
+(!!) :: (HasCallStack, Monad m) => Stream m a -> Int -> m a
 {-# INLINE (!!) #-}
-Stream step t !! j | j < 0     = ERROR "!!" "negative index"
+Stream step t !! j | j < 0     = error $ "negative index (" Prelude.++ show j Prelude.++ ")"
                    | otherwise = index_loop SPEC t j
   where
     index_loop !_ s i
@@ -276,7 +278,7 @@ Stream step t !! j | j < 0     = ERROR "!!" "negative index"
             Yield x s' | i == 0    -> return x
                        | otherwise -> index_loop SPEC s' (i-1)
             Skip    s'             -> index_loop SPEC s' i
-            Done                   -> EMPTY_STREAM "!!"
+            Done                   -> error emptyStream
 
 infixl 9 !?
 -- | Element at the given position or 'Nothing' if out of bounds
@@ -306,7 +308,7 @@ slice :: Monad m => Int   -- ^ starting index
 slice i n s = take n (drop i s)
 
 -- | All but the last element
-init :: Monad m => Stream m a -> Stream m a
+init :: (HasCallStack, Monad m) => Stream m a -> Stream m a
 {-# INLINE_FUSED init #-}
 init (Stream step t) = Stream step' (Nothing, t)
   where
@@ -315,7 +317,7 @@ init (Stream step t) = Stream step' (Nothing, t)
                            case r of
                              Yield x s' -> Skip (Just x,  s')
                              Skip    s' -> Skip (Nothing, s')
-                             Done       -> EMPTY_STREAM "init"
+                             Done       -> error emptyStream
                          ) (step s)
 
     step' (Just x,  s) = liftM (\r ->
@@ -326,7 +328,7 @@ init (Stream step t) = Stream step' (Nothing, t)
                          ) (step s)
 
 -- | All but the first element
-tail :: Monad m => Stream m a -> Stream m a
+tail :: (HasCallStack, Monad m) => Stream m a -> Stream m a
 {-# INLINE_FUSED tail #-}
 tail (Stream step t) = Stream step' (Left t)
   where
@@ -335,7 +337,7 @@ tail (Stream step t) = Stream step' (Left t)
                         case r of
                           Yield _ s' -> Skip (Right s')
                           Skip    s' -> Skip (Left  s')
-                          Done       -> EMPTY_STREAM "tail"
+                          Done       -> error emptyStream
                       ) (step s)
 
     step' (Right s) = liftM (\r ->
@@ -439,7 +441,7 @@ unbox (Stream step t) = Stream step' t
                 case r of
                   Yield (Box x) s' -> return $ Yield x s'
                   Skip          s' -> return $ Skip    s'
-                  Done             -> return $ Done
+                  Done             -> return Done
 
 -- Zipping
 -- -------
@@ -496,7 +498,7 @@ zipWithM f (Stream stepa ta) (Stream stepb tb) = Stream step (ta, tb, Nothing)
                                      z <- f x y
                                      return $ Yield z (sa, sb', Nothing)
                                  Skip    sb' -> return $ Skip (sa, sb', Just x)
-                                 Done        -> return $ Done
+                                 Done        -> return Done
 
 zipWithM_ :: Monad m => (a -> b -> m c) -> Stream m a -> Stream m b -> m ()
 {-# INLINE zipWithM_ #-}
@@ -899,7 +901,7 @@ foldl1 :: Monad m => (a -> a -> a) -> Stream m a -> m a
 foldl1 f = foldl1M (\a b -> return (f a b))
 
 -- | Left fold over a non-empty 'Stream' with a monadic operator
-foldl1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
+foldl1M :: (HasCallStack, Monad m) => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_FUSED foldl1M #-}
 foldl1M f (Stream step t) = foldl1M_loop SPEC t
   where
@@ -909,7 +911,7 @@ foldl1M f (Stream step t) = foldl1M_loop SPEC t
           case r of
             Yield x s' -> foldlM f x (Stream step s')
             Skip    s' -> foldl1M_loop SPEC s'
-            Done       -> EMPTY_STREAM "foldl1M"
+            Done       -> error emptyStream
 
 -- | Same as 'foldl1M'
 fold1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
@@ -947,7 +949,7 @@ foldl1' f = foldl1M' (\a b -> return (f a b))
 
 -- | Left fold over a non-empty 'Stream' with a strict accumulator and a
 -- monadic operator
-foldl1M' :: Monad m => (a -> a -> m a) -> Stream m a -> m a
+foldl1M' :: (HasCallStack, Monad m) => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_FUSED foldl1M' #-}
 foldl1M' f (Stream step t) = foldl1M'_loop SPEC t
   where
@@ -957,7 +959,7 @@ foldl1M' f (Stream step t) = foldl1M'_loop SPEC t
           case r of
             Yield x s' -> foldlM' f x (Stream step s')
             Skip    s' -> foldl1M'_loop SPEC s'
-            Done       -> EMPTY_STREAM "foldl1M'"
+            Done       -> error emptyStream
 
 -- | Same as 'foldl1M''
 fold1M' :: Monad m => (a -> a -> m a) -> Stream m a -> m a
@@ -988,7 +990,7 @@ foldr1 :: Monad m => (a -> a -> a) -> Stream m a -> m a
 foldr1 f = foldr1M (\a b -> return (f a b))
 
 -- | Right fold over a non-empty stream with a monadic operator
-foldr1M :: Monad m => (a -> a -> m a) -> Stream m a -> m a
+foldr1M :: (HasCallStack, Monad m) => (a -> a -> m a) -> Stream m a -> m a
 {-# INLINE_FUSED foldr1M #-}
 foldr1M f (Stream step t) = foldr1M_loop0 SPEC t
   where
@@ -998,7 +1000,7 @@ foldr1M f (Stream step t) = foldr1M_loop0 SPEC t
           case r of
             Yield x s' -> foldr1M_loop1 SPEC x s'
             Skip    s' -> foldr1M_loop0 SPEC   s'
-            Done       -> EMPTY_STREAM "foldr1M"
+            Done       -> error emptyStream
 
     foldr1M_loop1 !_ x s
       = do
@@ -1685,4 +1687,3 @@ reVector (Stream step s, sSize = n} = Stream step s n
 
 
 -}
-

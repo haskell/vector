@@ -11,13 +11,14 @@
 --
 -- Bounds checking infrastructure
 --
-
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE MagicHash #-}
 
 module Data.Vector.Internal.Check (
+  HasCallStack,
   Checks(..), doChecks,
 
-  error, internalError,
+  internalError,
   check, checkIndex, checkLength, checkSlice
 ) where
 
@@ -25,6 +26,12 @@ import GHC.Base( Int(..) )
 import GHC.Prim( Int# )
 import Prelude hiding( error, (&&), (||), not )
 import qualified Prelude as P
+
+#if MIN_VERSION_base(4,9,0)
+import GHC.Stack (HasCallStack)
+#else
+import Data.CallStack (HasCallStack)
+#endif
 
 -- NOTE: This is a workaround for GHC's weird behaviour where it doesn't inline
 -- these functions into unfoldings which makes the intermediate code size
@@ -78,35 +85,27 @@ doChecks Bounds   = doBoundsChecks
 doChecks Unsafe   = doUnsafeChecks
 doChecks Internal = doInternalChecks
 
-error_msg :: String -> Int -> String -> String -> String
-error_msg file line loc msg = file ++ ":" ++ show line ++ " (" ++ loc ++ "): " ++ msg
-
-error :: String -> Int -> String -> String -> a
-{-# NOINLINE error #-}
-error file line loc msg
-  = P.error $ error_msg file line loc msg
-
-internalError :: String -> Int -> String -> String -> a
+internalError :: HasCallStack => String -> a
 {-# NOINLINE internalError #-}
-internalError file line loc msg
+internalError msg
   = P.error $ unlines
         ["*** Internal error in package vector ***"
-        ,"*** Please submit a bug report at http://trac.haskell.org/vector"
-        ,error_msg file line loc msg]
+        ,"*** Please submit a bug report at http://github.com/haskell/vector"
+        ,msg]
 
 
-checkError :: String -> Int -> Checks -> String -> String -> a
+checkError :: HasCallStack => Checks -> String -> a
 {-# NOINLINE checkError #-}
-checkError file line kind loc msg
+checkError kind msg
   = case kind of
-      Internal -> internalError file line loc msg
-      _ -> error file line loc msg
+      Internal -> internalError msg
+      _ -> P.error msg
 
-check :: String -> Int -> Checks -> String -> String -> Bool -> a -> a
+check :: HasCallStack => Checks -> String -> Bool -> a -> a
 {-# INLINE check #-}
-check file line kind loc msg cond x
+check kind msg cond x
   | not (doChecks kind) || cond = x
-  | otherwise = checkError file line kind loc msg
+  | otherwise = checkError kind msg
 
 checkIndex_msg :: Int -> Int -> String
 {-# INLINE checkIndex_msg #-}
@@ -116,10 +115,10 @@ checkIndex_msg# :: Int# -> Int# -> String
 {-# NOINLINE checkIndex_msg# #-}
 checkIndex_msg# i# n# = "index out of bounds " ++ show (I# i#, I# n#)
 
-checkIndex :: String -> Int -> Checks -> String -> Int -> Int -> a -> a
+checkIndex :: Checks -> Int -> Int -> a -> a
 {-# INLINE checkIndex #-}
-checkIndex file line kind loc i n x
-  = check file line kind loc (checkIndex_msg i n) (i >= 0 && i<n) x
+checkIndex kind i n x
+  = check kind (checkIndex_msg i n) (i >= 0 && i<n) x
 
 
 checkLength_msg :: Int -> String
@@ -130,10 +129,9 @@ checkLength_msg# :: Int# -> String
 {-# NOINLINE checkLength_msg# #-}
 checkLength_msg# n# = "negative length " ++ show (I# n#)
 
-checkLength :: String -> Int -> Checks -> String -> Int -> a -> a
+checkLength :: Checks -> Int -> a -> a
 {-# INLINE checkLength #-}
-checkLength file line kind loc n x
-  = check file line kind loc (checkLength_msg n) (n >= 0) x
+checkLength kind n = check kind (checkLength_msg n) (n >= 0)
 
 
 checkSlice_msg :: Int -> Int -> Int -> String
@@ -144,9 +142,8 @@ checkSlice_msg# :: Int# -> Int# -> Int# -> String
 {-# NOINLINE checkSlice_msg# #-}
 checkSlice_msg# i# m# n# = "invalid slice " ++ show (I# i#, I# m#, I# n#)
 
-checkSlice :: String -> Int -> Checks -> String -> Int -> Int -> Int -> a -> a
+checkSlice :: Checks -> Int -> Int -> Int -> a -> a
 {-# INLINE checkSlice #-}
-checkSlice file line kind loc i m n x
-  = check file line kind loc (checkSlice_msg i m n)
-                             (i >= 0 && m >= 0 && m <= n - i) x
+checkSlice kind i m n x
+  = check kind (checkSlice_msg i m n) (i >= 0 && m >= 0 && m <= n - i) x
 

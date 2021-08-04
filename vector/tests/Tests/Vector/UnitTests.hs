@@ -130,7 +130,7 @@ sliceTest sliceWith i m xs = do
        in assertBool assertMsg (errSuffix `List.isSuffixOf` err)
   where
     errSuffix =
-      "(slice): invalid slice (" ++
+      "invalid slice (" ++
       show i ++ "," ++ show m ++ "," ++ show (List.length xs) ++ ")"
 {-# INLINE sliceTest #-}
 
