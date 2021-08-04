@@ -143,6 +143,7 @@ Library
     Build-Depends: fail == 4.9.*
                  , semigroups >= 0.18 && < 0.20
                  , call-stack > 0.1.0 && < 1
+    Default-Extensions: FlexibleContexts
 
   Ghc-Options: -O2 -Wall
 

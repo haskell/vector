@@ -793,7 +793,7 @@ write v i x = checkIndex Bounds i (length v)
             $ unsafeWrite v i x
 
 -- | Modify the element at the given position.
-modify :: (HasCallStack, HasCallStack, PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> a) -> Int -> m ()
+modify :: (HasCallStack, PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> a) -> Int -> m ()
 {-# INLINE modify #-}
 modify v f i = checkIndex Bounds i (length v)
              $ unsafeModify v f i

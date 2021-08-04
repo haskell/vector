@@ -1,4 +1,6 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MagicHash #-}
 
 -- |
 -- Module      : Data.Vector.Internal.Check
@@ -11,9 +13,6 @@
 --
 -- Bounds checking infrastructure
 --
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE MagicHash #-}
-
 module Data.Vector.Internal.Check (
   HasCallStack,
   Checks(..), doChecks,
