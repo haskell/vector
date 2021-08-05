@@ -1,5 +1,6 @@
-{-# LANGUAGE CPP, Rank2Types, TypeFamilies #-}
-
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TypeFamilies #-}
 -- |
 -- Module      : Data.Vector.Unboxed
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010

@@ -1,14 +1,14 @@
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE DerivingVia           #-}
-{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE StandaloneDeriving    #-}
-{-# LANGUAGE TemplateHaskell       #-}
-{-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
+{-# OPTIONS_GHC -dno-suppress-type-signatures #-}
+{-# OPTIONS_GHC -dsuppress-all #-}
 {-# OPTIONS_GHC -fplugin=Test.Tasty.Inspection.Plugin #-}
-{-# OPTIONS_GHC -dsuppress-all                        #-}
-{-# OPTIONS_GHC -dno-suppress-type-signatures         #-}
 -- | Most basic inspection tests
 module Inspect.DerivingVia where
 

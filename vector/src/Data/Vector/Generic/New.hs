@@ -1,5 +1,7 @@
-{-# LANGUAGE CPP, Rank2Types, FlexibleContexts, MultiParamTypeClasses #-}
-
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE RankNTypes #-}
 -- |
 -- Module      : Data.Vector.Generic.New
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -173,6 +175,5 @@ unsafeTail m = apply MVector.unsafeTail m
 
 "unsafeTail/unstream [New]" forall s.
   unsafeTail (unstream s) = unstream (Bundle.tail s)   #-}
-
 
 
