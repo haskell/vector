@@ -114,7 +114,7 @@ checkIndex_msg# :: Int# -> Int# -> String
 {-# NOINLINE checkIndex_msg# #-}
 checkIndex_msg# i# n# = "index out of bounds " ++ show (I# i#, I# n#)
 
-checkIndex :: Checks -> Int -> Int -> a -> a
+checkIndex :: HasCallStack => Checks -> Int -> Int -> a -> a
 {-# INLINE checkIndex #-}
 checkIndex kind i n x
   = check kind (checkIndex_msg i n) (i >= 0 && i<n) x
@@ -128,7 +128,7 @@ checkLength_msg# :: Int# -> String
 {-# NOINLINE checkLength_msg# #-}
 checkLength_msg# n# = "negative length " ++ show (I# n#)
 
-checkLength :: Checks -> Int -> a -> a
+checkLength :: HasCallStack => Checks -> Int -> a -> a
 {-# INLINE checkLength #-}
 checkLength kind n = check kind (checkLength_msg n) (n >= 0)
 
@@ -141,7 +141,7 @@ checkSlice_msg# :: Int# -> Int# -> Int# -> String
 {-# NOINLINE checkSlice_msg# #-}
 checkSlice_msg# i# m# n# = "invalid slice " ++ show (I# i#, I# m#, I# n#)
 
-checkSlice :: Checks -> Int -> Int -> Int -> a -> a
+checkSlice :: HasCallStack => Checks -> Int -> Int -> Int -> a -> a
 {-# INLINE checkSlice #-}
 checkSlice kind i m n x
   = check kind (checkSlice_msg i m n) (i >= 0 && m >= 0 && m <= n - i) x
