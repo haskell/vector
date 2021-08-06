@@ -891,7 +891,7 @@ unsafeUpdate_stream = modifyWithBundle M.unsafeUpdate
 --
 -- >>> import qualified Data.Vector as V
 -- >>> V.accum (+) (V.fromList [1000,2000,3000]) [(2,4),(1,6),(0,3),(1,10)]
--- [1003.2016,3004]
+-- [1003,2016,3004]
 accum :: Vector v a
       => (a -> b -> a) -- ^ accumulating function @f@
       -> v a           -- ^ initial vector (of length @m@)
@@ -1390,7 +1390,7 @@ ifilter f = unstream
 -- >>> V.uniq $ V.fromList [1,3,3,200,3]
 -- [1,3,200,3]
 -- >>> import Data.Semigroup
--- >>> V.uniq $ V.fromList [ Arg 1 'a', Arg 1 'b', Arg (1 :: Int) 'c']
+-- >>> V.uniq $ V.fromList [ Arg 1 'a', Arg 1 'b', Arg 1 'c']
 -- [Arg 1 'a']
 uniq :: (Vector v a, Eq a) => v a -> v a
 {-# INLINE uniq #-}
@@ -1706,9 +1706,9 @@ foldMap' f = foldl' (\acc a -> acc `mappend` f a) mempty
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector as V
--- >>> V.all even $ V.fromList [2, 4, 12 :: Int]
+-- >>> V.all even $ V.fromList [2, 4, 12]
 -- True
--- >>> V.all even $ V.fromList [2, 4, 13 :: Int]
+-- >>> V.all even $ V.fromList [2, 4, 13]
 -- False
 -- >>> V.all even (V.empty :: V.Vector Int)
 -- True
@@ -1721,9 +1721,9 @@ all f = Bundle.and . Bundle.map f . stream
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector as V
--- >>> V.any even $ V.fromList [1, 3, 7 :: Int]
+-- >>> V.any even $ V.fromList [1, 3, 7]
 -- False
--- >>> V.any even $ V.fromList [3, 2, 13 :: Int]
+-- >>> V.any even $ V.fromList [3, 2, 13]
 -- True
 -- >>> V.any even (V.empty :: V.Vector Int)
 -- False
@@ -1762,7 +1762,7 @@ or = Bundle.or . stream
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector as V
--- >>> V.sum $ V.fromList [300,20,1 :: Int]
+-- >>> V.sum $ V.fromList [300,20,1]
 -- 321
 -- >>> V.sum (V.empty :: V.Vector Int)
 -- 0
@@ -1775,7 +1775,7 @@ sum = Bundle.foldl' (+) 0 . stream
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector as V
--- >>> V.product $ V.fromList [1,2,3,4 :: Int]
+-- >>> V.product $ V.fromList [1,2,3,4]
 -- 24
 -- >>> V.product (V.empty :: V.Vector Int)
 -- 1
@@ -2128,9 +2128,9 @@ iscanl' f z =
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector as V
--- >>> V.scanl1 min $ V.fromListN 5 [4,2,4,1,3 :: Int]
+-- >>> V.scanl1 min $ V.fromListN 5 [4,2,4,1,3]
 -- [4,2,2,1,1]
--- >>> V.scanl1 max $ V.fromListN 5 [1,3,2,5,4 :: Int]
+-- >>> V.scanl1 max $ V.fromListN 5 [1,3,2,5,4]
 -- [1,3,3,5,5]
 -- >>> V.scanl1 min (V.empty :: V.Vector Int)
 -- []
@@ -2145,9 +2145,9 @@ scanl1 f = unstream . inplace (S.scanl1 f) id . stream
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector as V
--- >>> V.scanl1' min $ V.fromListN 5 [4,2,4,1,3 :: Int]
+-- >>> V.scanl1' min $ V.fromListN 5 [4,2,4,1,3]
 -- [4,2,2,1,1]
--- >>> V.scanl1' max $ V.fromListN 5 [1,3,2,5,4 :: Int]
+-- >>> V.scanl1' max $ V.fromListN 5 [1,3,2,5,4]
 -- [1,3,3,5,5]
 -- >>> V.scanl1' min (V.empty :: V.Vector Int)
 -- []
@@ -2216,9 +2216,9 @@ iscanr' f z v =
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector as V
--- >>> V.scanr1 min $ V.fromListN 5 [3,1,4,2,4 :: Int]
+-- >>> V.scanr1 min $ V.fromListN 5 [3,1,4,2,4]
 -- [1,1,2,2,4]
--- >>> V.scanr1 max $ V.fromListN 5 [4,5,2,3,1 :: Int]
+-- >>> V.scanr1 max $ V.fromListN 5 [4,5,2,3,1]
 -- [5,5,3,3,1]
 -- >>> V.scanr1 min (V.empty :: V.Vector Int)
 -- []
@@ -2234,9 +2234,9 @@ scanr1 f = unstreamR . inplace (S.scanl1 (flip f)) id . streamR
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector as V
--- >>> V.scanr1' min $ V.fromListN 5 [3,1,4,2,4 :: Int]
+-- >>> V.scanr1' min $ V.fromListN 5 [3,1,4,2,4]
 -- [1,1,2,2,4]
--- >>> V.scanr1' max $ V.fromListN 5 [4,5,2,3,1 :: Int]
+-- >>> V.scanr1' max $ V.fromListN 5 [4,5,2,3,1]
 -- [5,5,3,3,1]
 -- >>> V.scanr1' min (V.empty :: V.Vector Int)
 -- []
@@ -2266,9 +2266,9 @@ fromList = unstream . Bundle.fromList
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector as V
--- >>> V.fromListN 3 [1,2,3,4,5::Int]
+-- >>> V.fromListN 3 [1,2,3,4,5]
 -- [1,2,3]
--- >>> V.fromListN 3 [1::Int]
+-- >>> V.fromListN 3 [1]
 -- [1]
 fromListN :: Vector v a => Int -> [a] -> v a
 {-# INLINE fromListN #-}
@@ -2615,3 +2615,4 @@ dataCast f = gcast1 f
 
 -- $setup
 -- >>> :set -XFlexibleContexts
+-- >>> default (Int)

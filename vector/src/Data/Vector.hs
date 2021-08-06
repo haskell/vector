@@ -1322,7 +1322,7 @@ ifilter = G.ifilter
 -- >>> V.uniq $ V.fromList [1,3,3,200,3]
 -- [1,3,200,3]
 -- >>> import Data.Semigroup
--- >>> V.uniq $ V.fromList [ Arg 1 'a', Arg 1 'b', Arg (1 :: Int) 'c']
+-- >>> V.uniq $ V.fromList [ Arg 1 'a', Arg 1 'b', Arg 1 'c']
 -- [Arg 1 'a']
 uniq :: (Eq a) => Vector a -> Vector a
 {-# INLINE uniq #-}
@@ -1560,9 +1560,9 @@ foldMap' = G.foldMap'
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector as V
--- >>> V.all even $ V.fromList [2, 4, 12 :: Int]
+-- >>> V.all even $ V.fromList [2, 4, 12]
 -- True
--- >>> V.all even $ V.fromList [2, 4, 13 :: Int]
+-- >>> V.all even $ V.fromList [2, 4, 13]
 -- False
 -- >>> V.all even (V.empty :: V.Vector Int)
 -- True
@@ -1575,9 +1575,9 @@ all = G.all
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector as V
--- >>> V.any even $ V.fromList [1, 3, 7 :: Int]
+-- >>> V.any even $ V.fromList [1, 3, 7]
 -- False
--- >>> V.any even $ V.fromList [3, 2, 13 :: Int]
+-- >>> V.any even $ V.fromList [3, 2, 13]
 -- True
 -- >>> V.any even (V.empty :: V.Vector Int)
 -- False
@@ -1616,7 +1616,7 @@ or = G.or
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector as V
--- >>> V.sum $ V.fromList [300,20,1 :: Int]
+-- >>> V.sum $ V.fromList [300,20,1]
 -- 321
 -- >>> V.sum (V.empty :: V.Vector Int)
 -- 0
@@ -1629,7 +1629,7 @@ sum = G.sum
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector as V
--- >>> V.product $ V.fromList [1,2,3,4 :: Int]
+-- >>> V.product $ V.fromList [1,2,3,4]
 -- 24
 -- >>> V.product (V.empty :: V.Vector Int)
 -- 1
@@ -1945,9 +1945,9 @@ iscanl' = G.iscanl'
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector as V
--- >>> V.scanl1 min $ V.fromListN 5 [4,2,4,1,3 :: Int]
+-- >>> V.scanl1 min $ V.fromListN 5 [4,2,4,1,3]
 -- [4,2,2,1,1]
--- >>> V.scanl1 max $ V.fromListN 5 [1,3,2,5,4 :: Int]
+-- >>> V.scanl1 max $ V.fromListN 5 [1,3,2,5,4]
 -- [1,3,3,5,5]
 -- >>> V.scanl1 min (V.empty :: V.Vector Int)
 -- []
@@ -1962,9 +1962,9 @@ scanl1 = G.scanl1
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector as V
--- >>> V.scanl1' min $ V.fromListN 5 [4,2,4,1,3 :: Int]
+-- >>> V.scanl1' min $ V.fromListN 5 [4,2,4,1,3]
 -- [4,2,2,1,1]
--- >>> V.scanl1' max $ V.fromListN 5 [1,3,2,5,4 :: Int]
+-- >>> V.scanl1' max $ V.fromListN 5 [1,3,2,5,4]
 -- [1,3,3,5,5]
 -- >>> V.scanl1' min (V.empty :: V.Vector Int)
 -- []
@@ -2027,9 +2027,9 @@ iscanr' = G.iscanr'
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector as V
--- >>> V.scanr1 min $ V.fromListN 5 [3,1,4,2,4 :: Int]
+-- >>> V.scanr1 min $ V.fromListN 5 [3,1,4,2,4]
 -- [1,1,2,2,4]
--- >>> V.scanr1 max $ V.fromListN 5 [4,5,2,3,1 :: Int]
+-- >>> V.scanr1 max $ V.fromListN 5 [4,5,2,3,1]
 -- [5,5,3,3,1]
 -- >>> V.scanr1 min (V.empty :: V.Vector Int)
 -- []
@@ -2045,9 +2045,9 @@ scanr1 = G.scanr1
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector as V
--- >>> V.scanr1' min $ V.fromListN 5 [3,1,4,2,4 :: Int]
+-- >>> V.scanr1' min $ V.fromListN 5 [3,1,4,2,4]
 -- [1,1,2,2,4]
--- >>> V.scanr1' max $ V.fromListN 5 [4,5,2,3,1 :: Int]
+-- >>> V.scanr1' max $ V.fromListN 5 [4,5,2,3,1]
 -- [5,5,3,3,1]
 -- >>> V.scanr1' min (V.empty :: V.Vector Int)
 -- []
@@ -2175,3 +2175,6 @@ unsafeCopy = G.unsafeCopy
 copy :: PrimMonad m => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE copy #-}
 copy = G.copy
+
+-- $setup
+-- >>> default (Int)
