@@ -18,8 +18,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- Adaptive unboxed vectors: basic implementation
---
+-- Adaptive unboxed vectors: basic implementation.
 
 module Data.Vector.Unboxed.Base (
   MVector(..), IOVector, STVector, Vector(..), Unbox,

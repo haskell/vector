@@ -19,8 +19,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- Class of pure vectors
---
+-- Class of immutable vectors.
 
 module Data.Vector.Generic.Base (
   Vector(..), Mutable
@@ -32,9 +31,8 @@ import           Data.Vector.Fusion.Util (Box(..), liftBox)
 
 import Control.Monad.ST
 
--- | @Mutable v s a@ is the mutable version of the pure vector type @v a@ with
+-- | @Mutable v s a@ is the mutable version of the immutable vector type @v a@ with
 -- the state token @s@. It is injective on GHC 8 and newer.
---
 #if MIN_VERSION_base(4,9,0)
 type family Mutable (v :: * -> *) = (mv :: * -> * -> *) | mv -> v
 #else
@@ -44,7 +42,7 @@ type family Mutable (v :: * -> *) :: * -> * -> *
 -- | Class of immutable vectors. Every immutable vector is associated with its
 -- mutable version through the 'Mutable' type family. Methods of this class
 -- should not be used directly. Instead, "Data.Vector.Generic" and other
--- Data.Vector modules provide safe and fusible wrappers.
+-- @Data.Vector@ modules provide safe and fusible wrappers.
 --
 -- Minimum complete implementation:
 --
@@ -98,7 +96,7 @@ class MVector (Mutable v) a => Vector v a where
   --
   -- > copy mv v ... = ... unsafeWrite mv i (unsafeIndex v i) ...
   --
-  -- For lazy vectors, the indexing would not be evaluated which means that we
+  -- For lazy vectors, the indexing would not be evaluated, which means that we
   -- would retain a reference to the original vector in each element we write.
   -- This is not what we want!
   --
@@ -107,20 +105,19 @@ class MVector (Mutable v) a => Vector v a where
   -- > copy mv v ... = ... case basicUnsafeIndexM v i of
   -- >                       Box x -> unsafeWrite mv i x ...
   --
-  -- which does not have this problem because indexing (but not the returned
+  -- which does not have this problem, because indexing (but not the returned
   -- element!) is evaluated immediately.
-  --
   basicUnsafeIndexM  :: v a -> Int -> Box a
 
   -- |  /Assumed complexity: O(n)/
   --
   -- Copy an immutable vector into a mutable one. The two vectors must have
-  -- the same length but this is not checked.
+  -- the same length, but this is not checked.
   --
   -- Instances of 'Vector' should redefine this method if they wish to support
   -- an efficient block copy operation.
   --
-  -- Default definition: copying basic on 'basicUnsafeIndexM' and
+  -- Default definition: copying based on 'basicUnsafeIndexM' and
   -- 'basicUnsafeWrite'.
   basicUnsafeCopy :: Mutable v s a -> v a -> ST s ()
 
@@ -136,15 +133,14 @@ class MVector (Mutable v) a => Vector v a where
                 | otherwise = return ()
 
   -- | Evaluate @a@ as far as storing it in a vector would and yield @b@.
-  -- The @v a@ argument only fixes the type and is not touched. The method is
+  -- The @v a@ argument only fixes the type and is not touched. This method is
   -- only used for optimisation purposes. Thus, it is safe for instances of
-  -- 'Vector' to evaluate @a@ less than it would be when stored in a vector
+  -- 'Vector' to evaluate @a@ less than it would be when stored in a vector,
   -- although this might result in suboptimal code.
   --
   -- > elemseq v x y = (singleton x `asTypeOf` v) `seq` y
   --
-  -- Default defintion: @a@ is not evaluated at all
-  --
+  -- Default defintion: @a@ is not evaluated at all.
   elemseq :: v a -> a -> b -> b
 
   {-# INLINE elemseq #-}
