@@ -54,6 +54,7 @@ import Data.Data     ( Data(..) )
 import GHC.Exts      ( Down(..) )
 import GHC.Generics
 import Data.Coerce
+import Data.Kind     (Type)
 
 -- Data.Vector.Internal.Check is unused
 #define NOT_VECTOR_MODULE
@@ -332,7 +333,7 @@ idU = id
 -- instance VU.Unbox a => VU.Unbox (Bar a)
 -- :}
 --
-newtype As a b = As a
+newtype As (a :: Type) (b :: Type) = As a
 
 newtype instance MVector s (As a b) = MV_UnboxAs (MVector s b)
 newtype instance Vector    (As a b) = V_UnboxAs  (Vector b)
