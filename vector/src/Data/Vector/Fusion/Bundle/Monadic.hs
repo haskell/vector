@@ -90,6 +90,7 @@ import Data.Vector.Fusion.Bundle.Size
 import Data.Vector.Fusion.Util ( Box(..), delay_inline, Id(..) )
 import Data.Vector.Fusion.Stream.Monadic ( Stream(..), Step(..) )
 import qualified Data.Vector.Fusion.Stream.Monadic as S
+import Data.Vector.Internal.Check (check, Checks(..), HasCallStack)
 import Control.Monad.Primitive
 
 import qualified Data.List as List
@@ -854,16 +855,14 @@ enumFromTo_small x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact 
 -- unsigned types). See http://hackage.haskell.org/trac/ghc/ticket/3744
 --
 
-enumFromTo_int :: forall m v. Monad m => Int -> Int -> Bundle m v Int
+enumFromTo_int :: forall m v. (HasCallStack, Monad m) => Int -> Int -> Bundle m v Int
 {-# INLINE_FUSED enumFromTo_int #-}
 enumFromTo_int x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
-    len :: Int -> Int -> Int
+    len :: HasCallStack => Int -> Int -> Int
     len u v | u > v     = 0
-            | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
-                          (n > 0)
-                        $ n
+            | otherwise = check Bounds "vector too large" (n > 0) n
       where
         n = v-u+1
 
@@ -873,13 +872,14 @@ enumFromTo_int x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (l
                   | z <  y    = return $ Yield z (Just (z+1))
                   | otherwise = return $ Done
 
-enumFromTo_intlike :: (Integral a, Monad m) => a -> a -> Bundle m v a
+enumFromTo_intlike :: forall m v a. (HasCallStack, Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_intlike #-}
 enumFromTo_intlike x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
+    len :: HasCallStack => a -> a -> Int
     len u v | u > v     = 0
-            | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
+            | otherwise = check Bounds "vector too large"
                           (n > 0)
                         $ fromIntegral n
       where
@@ -910,13 +910,14 @@ enumFromTo_intlike x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exac
 
 
 
-enumFromTo_big_word :: (Integral a, Monad m) => a -> a -> Bundle m v a
+enumFromTo_big_word :: forall m v a. (HasCallStack, Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_big_word #-}
 enumFromTo_big_word x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
+    len :: HasCallStack => a -> a -> Int
     len u v | u > v     = 0
-            | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
+            | otherwise = check Bounds "vector too large"
                           (n < fromIntegral (maxBound :: Int))
                         $ fromIntegral (n+1)
       where
@@ -953,13 +954,14 @@ enumFromTo_big_word x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exa
 #if WORD_SIZE_IN_BITS > 32
 
 -- FIXME: the "too large" test is totally wrong
-enumFromTo_big_int :: (Integral a, Monad m) => a -> a -> Bundle m v a
+enumFromTo_big_int :: forall m v a. (HasCallStack, Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_big_int #-}
 enumFromTo_big_int x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
+    len :: HasCallStack => a -> a -> Int
     len u v | u > v     = 0
-            | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
+            | otherwise = check Bounds "vector too large"
                           (n > 0 && n <= fromIntegral (maxBound :: Int))
                         $ fromIntegral n
       where
@@ -1006,17 +1008,16 @@ enumFromTo_char x y = x `seq` y `seq` fromStream (Stream step xn) (Exact n)
 -- Specialise enumFromTo for Float and Double.
 -- Also, try to do something about pairs?
 
-enumFromTo_double :: (Monad m, Ord a, RealFrac a) => a -> a -> Bundle m v a
+enumFromTo_double :: forall m v a. (HasCallStack, Monad m, Ord a, RealFrac a) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_double #-}
 enumFromTo_double n m = n `seq` m `seq` fromStream (Stream step ini) (Max (len n lim))
   where
     lim = m + 1/2 -- important to float out
 
     {-# INLINE [0] len #-}
+    len :: HasCallStack => a -> a -> Int
     len x y | x > y     = 0
-            | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
-                          (l > 0)
-                        $ fromIntegral l
+            | otherwise = check Bounds "vector too large" (l > 0) $ fromIntegral l
       where
         l :: Integer
         l = truncate (y-x)+2
@@ -1122,11 +1123,13 @@ fromVectors us = Bundle (Stream pstep (Left us))
                                Box x -> return $ Yield x (Right (v,i+1,vs))
 
     -- FIXME: work around bug in GHC 7.6.1
-    vstep :: [v a] -> m (Step [v a] (Chunk v a))
+    vstep :: HasCallStack => [v a] -> m (Step [v a] (Chunk v a))
     vstep [] = return Done
     vstep (v:vs) = return $ Yield (Chunk (basicLength v)
-                                         (\mv -> INTERNAL_CHECK(check) "concatVectors" "length mismatch"
-                                                                       (M.basicLength mv == basicLength v)
+                                         (\mv -> check
+                                                 Internal
+                                                 "length mismatch"
+                                                 (M.basicLength mv == basicLength v)
                                                  $ stToPrim $ basicUnsafeCopy mv v)) vs
 
 
@@ -1155,8 +1158,10 @@ concatVectors Bundle{sElems = Stream step t}
       r <- step s
       case r of
         Yield v s' -> return (Yield (Chunk (basicLength v)
-                                           (\mv -> INTERNAL_CHECK(check) "concatVectors" "length mismatch"
-                                                                          (M.basicLength mv == basicLength v)
+                                           (\mv -> check
+                                                   Internal
+                                                   "length mismatch"
+                                                   (M.basicLength mv == basicLength v)
                                                    $ stToPrim $ basicUnsafeCopy mv v)) s')
         Skip    s' -> return (Skip s')
         Done       -> return Done

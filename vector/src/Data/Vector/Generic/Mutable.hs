@@ -84,6 +84,7 @@ import           Data.Vector.Fusion.Stream.Monadic ( Stream )
 import qualified Data.Vector.Fusion.Stream.Monadic as Stream
 import           Data.Vector.Fusion.Bundle.Size
 import           Data.Vector.Fusion.Util        ( delay_inline )
+import           Data.Vector.Internal.Check
 
 import Control.Monad.Primitive ( PrimMonad(..), RealWorld, stToPrim )
 
@@ -238,8 +239,7 @@ unsafeAppend1 v i x
                      return v
   | otherwise    = do
                      v' <- enlarge v
-                     INTERNAL_CHECK(checkIndex) "unsafeAppend1" i (length v')
-                       $ unsafeWrite v' i x
+                     checkIndex Internal i (length v') $ unsafeWrite v' i x
                      return v'
 
 unsafePrepend1 :: (PrimMonad m, MVector v a)
@@ -253,8 +253,7 @@ unsafePrepend1 v i x
   | otherwise = do
                   (v', j) <- enlargeFront v
                   let i' = j-1
-                  INTERNAL_CHECK(checkIndex) "unsafePrepend1" i' (length v')
-                    $ unsafeWrite v' i' x
+                  checkIndex Internal i' (length v') $ unsafeWrite v' i' x
                   return (v', i')
 
 mstream :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Stream m a
@@ -277,8 +276,7 @@ fill v s = v `seq` do
   where
     {-# INLINE_INNER put #-}
     put i x = do
-                INTERNAL_CHECK(checkIndex) "fill" i (length v)
-                  $ unsafeWrite v i x
+                checkIndex Internal i (length v) $ unsafeWrite v i x
                 return (i+1)
 
 transform
@@ -356,14 +354,12 @@ munstreamMax :: (PrimMonad m, MVector v a)
 {-# INLINE munstreamMax #-}
 munstreamMax s n
   = do
-      v <- INTERNAL_CHECK(checkLength) "munstreamMax" n
-           $ unsafeNew n
+      v <- checkLength Internal n $ unsafeNew n
       let put i x = do
-                       INTERNAL_CHECK(checkIndex) "munstreamMax" i n
-                         $ unsafeWrite v i x
+                       checkIndex Internal i n $ unsafeWrite v i x
                        return (i+1)
       n' <- MBundle.foldM' put 0 s
-      return $ INTERNAL_CHECK(checkSlice) "munstreamMax" 0 n' n
+      return $ checkSlice Internal 0 n' n
              $ unsafeSlice 0 n' v
 
 munstreamUnknown :: (PrimMonad m, MVector v a)
@@ -373,7 +369,7 @@ munstreamUnknown s
   = do
       v <- unsafeNew 0
       (v', n) <- MBundle.foldM put (v, 0) s
-      return $ INTERNAL_CHECK(checkSlice) "munstreamUnknown" 0 n (length v')
+      return $ checkSlice Internal 0 n (length v')
              $ unsafeSlice 0 n v'
   where
     {-# INLINE_INNER put #-}
@@ -421,16 +417,15 @@ vmunstreamMax :: (PrimMonad m, V.Vector v a)
 {-# INLINE vmunstreamMax #-}
 vmunstreamMax s n
   = do
-      v <- INTERNAL_CHECK(checkLength) "munstreamMax" n
-           $ unsafeNew n
+      v <- checkLength Internal n $ unsafeNew n
       let {-# INLINE_INNER copyChunk #-}
           copyChunk i (Chunk m f) =
-            INTERNAL_CHECK(checkSlice) "munstreamMax.copyChunk" i m (length v) $ do
+            checkSlice Internal i m (length v) $ do
               f (basicUnsafeSlice i m v)
               return (i+m)
 
       n' <- Stream.foldlM' copyChunk 0 (MBundle.chunks s)
-      return $ INTERNAL_CHECK(checkSlice) "munstreamMax" 0 n' n
+      return $ checkSlice Internal 0 n' n
              $ unsafeSlice 0 n' v
 
 vmunstreamUnknown :: (PrimMonad m, V.Vector v a)
@@ -440,7 +435,7 @@ vmunstreamUnknown s
   = do
       v <- unsafeNew 0
       (v', n) <- Stream.foldlM copyChunk (v,0) (MBundle.chunks s)
-      return $ INTERNAL_CHECK(checkSlice) "munstreamUnknown" 0 n (length v')
+      return $ checkSlice Internal 0 n (length v')
              $ unsafeSlice 0 n v'
   where
     {-# INLINE_INNER copyChunk #-}
@@ -450,8 +445,7 @@ vmunstreamUnknown s
           v' <- if basicLength v < j
                   then unsafeGrow v (delay_inline max (enlarge_delta v) (j - basicLength v))
                   else return v
-          INTERNAL_CHECK(checkSlice) "munstreamUnknown.copyChunk" i n (length v')
-            $ f (basicUnsafeSlice i n v')
+          checkSlice Internal i n (length v') $ f (basicUnsafeSlice i n v')
           return (v',j)
 
 
@@ -481,18 +475,17 @@ munstreamRMax :: (PrimMonad m, MVector v a)
 {-# INLINE munstreamRMax #-}
 munstreamRMax s n
   = do
-      v <- INTERNAL_CHECK(checkLength) "munstreamRMax" n
-           $ unsafeNew n
+      v <- checkLength Internal n $ unsafeNew n
       let put i x = do
                       let i' = i-1
-                      INTERNAL_CHECK(checkIndex) "munstreamRMax" i' n
+                      checkIndex Internal i' n
                         $ unsafeWrite v i' x
                       return i'
       i <- MBundle.foldM' put n s
-      return $ INTERNAL_CHECK(checkSlice) "munstreamRMax" i (n-i) n
+      return $ checkSlice Internal i (n-i) n
              $ unsafeSlice i (n-i) v
 
-munstreamRUnknown :: (PrimMonad m, MVector v a)
+munstreamRUnknown :: (HasCallStack, PrimMonad m, MVector v a)
                   => MBundle m u a -> m (v (PrimState m) a)
 {-# INLINE munstreamRUnknown #-}
 munstreamRUnknown s
@@ -500,7 +493,7 @@ munstreamRUnknown s
       v <- unsafeNew 0
       (v', i) <- MBundle.foldM put (v, 0) s
       let n = length v'
-      return $ INTERNAL_CHECK(checkSlice) "unstreamRUnknown" i (n-i) n
+      return $ checkSlice Internal i (n-i) n
              $ unsafeSlice i (n-i) v'
   where
     {-# INLINE_INNER put #-}
@@ -524,14 +517,13 @@ null v = length v == 0
 
 -- | Yield a part of the mutable vector without copying it. The vector must
 -- contain at least @i+n@ elements.
-slice :: MVector v a
+slice :: (HasCallStack, MVector v a)
       => Int  -- ^ @i@ starting index
       -> Int  -- ^ @n@ length
       -> v s a
       -> v s a
 {-# INLINE slice #-}
-slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
-            $ unsafeSlice i n v
+slice i n v = checkSlice Bounds i n (length v) $ unsafeSlice i n v
 
 -- | Take @n@ first elements of the mutable vector without making a
 -- copy. For negative @n@ empty vector is returned. If @n@ is larger
@@ -579,7 +571,7 @@ unsafeSlice :: MVector v a => Int  -- ^ starting index
                            -> v s a
                            -> v s a
 {-# INLINE unsafeSlice #-}
-unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
+unsafeSlice i n v = checkSlice Unsafe i n (length v)
                   $ basicUnsafeSlice i n v
 
 -- | Same as 'init' but doesn't do range checks.
@@ -616,10 +608,9 @@ overlaps = basicOverlaps
 -- --------------
 
 -- | Create a mutable vector of the given length.
-new :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
+new :: (HasCallStack, PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
 {-# INLINE new #-}
-new n = BOUNDS_CHECK(checkLength) "new" n
-      $ stToPrim
+new n = checkLength Bounds n $ stToPrim
       $ unsafeNew n >>= \v -> basicInitialize v >> return v
 
 -- | Create a mutable vector of the given length. The vector content
@@ -632,9 +623,7 @@ new n = BOUNDS_CHECK(checkLength) "new" n
 -- @since 0.4
 unsafeNew :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
 {-# INLINE unsafeNew #-}
-unsafeNew n = UNSAFE_CHECK(checkLength) "unsafeNew" n
-            $ stToPrim
-            $ basicUnsafeNew n
+unsafeNew n = checkLength Unsafe n $ stToPrim $ basicUnsafeNew n
 
 -- | Create a mutable vector of the given length (0 if the length is negative)
 -- and fill it with an initial value.
@@ -695,10 +684,10 @@ clone v = do
 -- > grow mv 0 === clone mv
 --
 -- @since 0.4.0
-grow :: (PrimMonad m, MVector v a)
+grow :: (HasCallStack, PrimMonad m, MVector v a)
                 => v (PrimState m) a -> Int -> m (v (PrimState m) a)
 {-# INLINE grow #-}
-grow v by = BOUNDS_CHECK(checkLength) "grow" by
+grow v by = checkLength Bounds by
           $ stToPrim
           $ do vnew <- unsafeGrow v by
                basicInitialize $ basicUnsafeSlice (length v) by vnew
@@ -708,10 +697,10 @@ grow v by = BOUNDS_CHECK(checkLength) "grow" by
 -- allocated vector making extra space available at the beginning.
 --
 -- @since 0.11.0.0
-growFront :: (PrimMonad m, MVector v a)
+growFront :: (HasCallStack, PrimMonad m, MVector v a)
                 => v (PrimState m) a -> Int -> m (v (PrimState m) a)
 {-# INLINE growFront #-}
-growFront v by = BOUNDS_CHECK(checkLength) "growFront" by
+growFront v by = checkLength Bounds by
                $ stToPrim
                $ do vnew <- unsafeGrowFront v by
                     basicInitialize $ basicUnsafeSlice 0 by vnew
@@ -767,7 +756,7 @@ unsafeGrow ::
   -- this is not checked.
   -> m (v (PrimState m) a)
 {-# INLINE unsafeGrow #-}
-unsafeGrow v n = UNSAFE_CHECK(checkLength) "unsafeGrow" n
+unsafeGrow v n = checkLength Unsafe n
                $ stToPrim
                $ basicUnsafeGrow v n
 
@@ -778,8 +767,7 @@ unsafeGrow v n = UNSAFE_CHECK(checkLength) "unsafeGrow" n
 unsafeGrowFront :: (PrimMonad m, MVector v a)
                         => v (PrimState m) a -> Int -> m (v (PrimState m) a)
 {-# INLINE unsafeGrowFront #-}
-unsafeGrowFront v by = UNSAFE_CHECK(checkLength) "unsafeGrowFront" by
-                     $ stToPrim $ do
+unsafeGrowFront v by = checkLength Unsafe by $ stToPrim $ do
                          let n = length v
                          v' <- basicUnsafeNew (by+n)
                          basicUnsafeCopy (basicUnsafeSlice by n v') v
@@ -798,48 +786,47 @@ clear = stToPrim . basicClear
 -- -----------------------------
 
 -- | Yield the element at the given position.
-read :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
+read :: (HasCallStack, PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
 {-# INLINE read #-}
-read v i = BOUNDS_CHECK(checkIndex) "read" i (length v)
+read v i = checkIndex Bounds i (length v)
          $ unsafeRead v i
 
 -- | Replace the element at the given position.
-write :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m ()
+write :: (HasCallStack, PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m ()
 {-# INLINE write #-}
-write v i x = BOUNDS_CHECK(checkIndex) "write" i (length v)
+write v i x = checkIndex Bounds i (length v)
             $ unsafeWrite v i x
 
 -- | Modify the element at the given position.
-modify :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> a) -> Int -> m ()
+modify :: (HasCallStack, PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> a) -> Int -> m ()
 {-# INLINE modify #-}
-modify v f i = BOUNDS_CHECK(checkIndex) "modify" i (length v)
+modify v f i = checkIndex Bounds i (length v)
              $ unsafeModify v f i
 
 -- | Modify the element at the given position using a monadic function.
 --
 -- @since 0.12.3.0
-modifyM :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m a) -> Int -> m ()
+modifyM :: (HasCallStack, PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m a) -> Int -> m ()
 {-# INLINE modifyM #-}
-modifyM v f i = BOUNDS_CHECK(checkIndex) "modifyM" i (length v)
+modifyM v f i = checkIndex Bounds i (length v)
               $ unsafeModifyM v f i
 
 -- | Swap the elements at the given positions.
-swap :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> Int -> m ()
+swap :: (HasCallStack, PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> Int -> m ()
 {-# INLINE swap #-}
-swap v i j = BOUNDS_CHECK(checkIndex) "swap" i (length v)
-           $ BOUNDS_CHECK(checkIndex) "swap" j (length v)
+swap v i j = checkIndex Bounds i (length v)
+           $ checkIndex Bounds j (length v)
            $ unsafeSwap v i j
 
 -- | Replace the element at the given position and return the old element.
-exchange :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m a
+exchange :: (HasCallStack, PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m a
 {-# INLINE exchange #-}
-exchange v i x = BOUNDS_CHECK(checkIndex) "exchange" i (length v)
-               $ unsafeExchange v i x
+exchange v i x = checkIndex Bounds i (length v) $ unsafeExchange v i x
 
 -- | Yield the element at the given position. No bounds checks are performed.
 unsafeRead :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
 {-# INLINE unsafeRead #-}
-unsafeRead v i = UNSAFE_CHECK(checkIndex) "unsafeRead" i (length v)
+unsafeRead v i = checkIndex Unsafe i (length v)
                $ stToPrim
                $ basicUnsafeRead v i
 
@@ -847,14 +834,14 @@ unsafeRead v i = UNSAFE_CHECK(checkIndex) "unsafeRead" i (length v)
 unsafeWrite :: (PrimMonad m, MVector v a)
                                 => v (PrimState m) a -> Int -> a -> m ()
 {-# INLINE unsafeWrite #-}
-unsafeWrite v i x = UNSAFE_CHECK(checkIndex) "unsafeWrite" i (length v)
+unsafeWrite v i x = checkIndex Unsafe i (length v)
                   $ stToPrim
                   $ basicUnsafeWrite v i x
 
 -- | Modify the element at the given position. No bounds checks are performed.
 unsafeModify :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> a) -> Int -> m ()
 {-# INLINE unsafeModify #-}
-unsafeModify v f i = UNSAFE_CHECK(checkIndex) "unsafeModify" i (length v)
+unsafeModify v f i = checkIndex Unsafe i (length v)
                    $ stToPrim
                    $ basicUnsafeRead v i >>= \x ->
                      basicUnsafeWrite v i (f x)
@@ -865,15 +852,15 @@ unsafeModify v f i = UNSAFE_CHECK(checkIndex) "unsafeModify" i (length v)
 -- @since 0.12.3.0
 unsafeModifyM :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m a) -> Int -> m ()
 {-# INLINE unsafeModifyM #-}
-unsafeModifyM v f i = UNSAFE_CHECK(checkIndex) "unsafeModifyM" i (length v)
+unsafeModifyM v f i = checkIndex Unsafe i (length v)
                     $ stToPrim . basicUnsafeWrite v i =<< f =<< stToPrim (basicUnsafeRead v i)
 
 -- | Swap the elements at the given positions. No bounds checks are performed.
 unsafeSwap :: (PrimMonad m, MVector v a)
                 => v (PrimState m) a -> Int -> Int -> m ()
 {-# INLINE unsafeSwap #-}
-unsafeSwap v i j = UNSAFE_CHECK(checkIndex) "unsafeSwap" i (length v)
-                 $ UNSAFE_CHECK(checkIndex) "unsafeSwap" j (length v)
+unsafeSwap v i j = checkIndex Unsafe i (length v)
+                 $ checkIndex Unsafe j (length v)
                  $ stToPrim $ do
                      x <- unsafeRead v i
                      y <- unsafeRead v j
@@ -885,8 +872,7 @@ unsafeSwap v i j = UNSAFE_CHECK(checkIndex) "unsafeSwap" i (length v)
 unsafeExchange :: (PrimMonad m, MVector v a)
                                 => v (PrimState m) a -> Int -> a -> m a
 {-# INLINE unsafeExchange #-}
-unsafeExchange v i x = UNSAFE_CHECK(checkIndex) "unsafeExchange" i (length v)
-                     $ stToPrim $ do
+unsafeExchange v i x = checkIndex Unsafe i (length v) $ stToPrim $ do
                          y <- unsafeRead v i
                          unsafeWrite v i x
                          return y
@@ -1077,14 +1063,12 @@ set v = stToPrim . basicSet v
 
 -- | Copy a vector. The two vectors must have the same length and may not
 -- overlap.
-copy :: (PrimMonad m, MVector v a) => v (PrimState m) a   -- ^ target
+copy :: (HasCallStack, PrimMonad m, MVector v a) => v (PrimState m) a   -- ^ target
                                    -> v (PrimState m) a   -- ^ source
                                    -> m ()
 {-# INLINE copy #-}
-copy dst src = BOUNDS_CHECK(check) "copy" "overlapping vectors"
-                                          (not (dst `overlaps` src))
-             $ BOUNDS_CHECK(check) "copy" "length mismatch"
-                                          (length dst == length src)
+copy dst src = check Bounds "overlapping vectors" (not (dst `overlaps` src))
+             $ check Bounds "length mismatch" (length dst == length src)
              $ unsafeCopy dst src
 
 -- | Move the contents of a vector. The two vectors must have the same
@@ -1094,13 +1078,12 @@ copy dst src = BOUNDS_CHECK(check) "copy" "overlapping vectors"
 -- Otherwise, the copying is performed as if the source vector were
 -- copied to a temporary vector and then the temporary vector was copied
 -- to the target vector.
-move :: (PrimMonad m, MVector v a)
+move :: (HasCallStack, PrimMonad m, MVector v a)
      => v (PrimState m) a   -- ^ target
      -> v (PrimState m) a   -- ^ source
      -> m ()
 {-# INLINE move #-}
-move dst src = BOUNDS_CHECK(check) "move" "length mismatch"
-                                          (length dst == length src)
+move dst src = check Bounds "length mismatch" (length dst == length src)
              $ unsafeMove dst src
 
 -- | Copy a vector. The two vectors must have the same length and may not
@@ -1109,10 +1092,8 @@ unsafeCopy :: (PrimMonad m, MVector v a) => v (PrimState m) a   -- ^ target
                                          -> v (PrimState m) a   -- ^ source
                                          -> m ()
 {-# INLINE unsafeCopy #-}
-unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
-                                         (length dst == length src)
-                   $ UNSAFE_CHECK(check) "unsafeCopy" "overlapping vectors"
-                                         (not (dst `overlaps` src))
+unsafeCopy dst src = check Unsafe "length mismatch" (length dst == length src)
+                   $ check Unsafe "overlapping vectors" (not (dst `overlaps` src))
                    $ (dst `seq` src `seq` stToPrim (basicUnsafeCopy dst src))
 
 -- | Move the contents of a vector. The two vectors must have the same
@@ -1126,34 +1107,32 @@ unsafeMove :: (PrimMonad m, MVector v a) => v (PrimState m) a   -- ^ target
                                          -> v (PrimState m) a   -- ^ source
                                          -> m ()
 {-# INLINE unsafeMove #-}
-unsafeMove dst src = UNSAFE_CHECK(check) "unsafeMove" "length mismatch"
-                                         (length dst == length src)
+unsafeMove dst src = check Unsafe "length mismatch" (length dst == length src)
                    $ (dst `seq` src `seq` stToPrim (basicUnsafeMove dst src))
 
 -- Permutations
 -- ------------
 
-accum :: (PrimMonad m, MVector v a)
+accum :: forall m v a b u. (HasCallStack, PrimMonad m, MVector v a)
       => (a -> b -> a) -> v (PrimState m) a -> Bundle u (Int, b) -> m ()
 {-# INLINE accum #-}
 accum f !v s = Bundle.mapM_ upd s
   where
     {-# INLINE_INNER upd #-}
+    upd :: HasCallStack => (Int, b) -> m ()
     upd (i,b) = do
-                  a <- BOUNDS_CHECK(checkIndex) "accum" i n
-                     $ unsafeRead v i
+                  a <- checkIndex Bounds i n $ unsafeRead v i
                   unsafeWrite v i (f a b)
-
     !n = length v
 
-update :: (PrimMonad m, MVector v a)
-                        => v (PrimState m) a -> Bundle u (Int, a) -> m ()
+update :: forall m v a u. (HasCallStack, PrimMonad m, MVector v a)
+       => v (PrimState m) a -> Bundle u (Int, a) -> m ()
 {-# INLINE update #-}
 update !v s = Bundle.mapM_ upd s
   where
     {-# INLINE_INNER upd #-}
-    upd (i,b) = BOUNDS_CHECK(checkIndex) "update" i n
-              $ unsafeWrite v i b
+    upd :: HasCallStack => (Int, a) -> m ()
+    upd (i,b) = checkIndex Bounds i n $ unsafeWrite v i b
 
     !n = length v
 
@@ -1164,10 +1143,8 @@ unsafeAccum f !v s = Bundle.mapM_ upd s
   where
     {-# INLINE_INNER upd #-}
     upd (i,b) = do
-                  a <- UNSAFE_CHECK(checkIndex) "accum" i n
-                     $ unsafeRead v i
+                  a <- checkIndex Unsafe i n $ unsafeRead v i
                   unsafeWrite v i (f a b)
-
     !n = length v
 
 unsafeUpdate :: (PrimMonad m, MVector v a)
@@ -1176,9 +1153,7 @@ unsafeUpdate :: (PrimMonad m, MVector v a)
 unsafeUpdate !v s = Bundle.mapM_ upd s
   where
     {-# INLINE_INNER upd #-}
-    upd (i,b) = UNSAFE_CHECK(checkIndex) "accum" i n
-                  $ unsafeWrite v i b
-
+    upd (i,b) = checkIndex Unsafe i n $ unsafeWrite v i b
     !n = length v
 
 reverse :: (PrimMonad m, MVector v a) => v (PrimState m) a -> m ()
@@ -1233,8 +1208,7 @@ unstablePartitionMax :: (PrimMonad m, MVector v a)
 {-# INLINE unstablePartitionMax #-}
 unstablePartitionMax f s n
   = do
-      v <- INTERNAL_CHECK(checkLength) "unstablePartitionMax" n
-           $ unsafeNew n
+      v <- checkLength Internal n $ unsafeNew n
       let {-# INLINE_INNER put #-}
           put (i, j) x
             | f x       = do
@@ -1260,8 +1234,7 @@ partitionMax :: (PrimMonad m, MVector v a)
 {-# INLINE partitionMax #-}
 partitionMax f s n
   = do
-      v <- INTERNAL_CHECK(checkLength) "unstablePartitionMax" n
-         $ unsafeNew n
+      v <- checkLength Internal n $ unsafeNew n
 
       let {-# INLINE_INNER put #-}
           put (i,j) x
@@ -1275,7 +1248,7 @@ partitionMax f s n
                             return (i,j')
 
       (i,j) <- Bundle.foldM' put (0,n) s
-      INTERNAL_CHECK(check) "partitionMax" "invalid indices" (i <= j)
+      check Internal "invalid indices" (i <= j)
         $ return ()
       let l = unsafeSlice 0 i v
           r = unsafeSlice j (n-j) v
@@ -1290,8 +1263,8 @@ partitionUnknown f s
       v1 <- unsafeNew 0
       v2 <- unsafeNew 0
       (v1', n1, v2', n2) <- Bundle.foldM' put (v1, 0, v2, 0) s
-      INTERNAL_CHECK(checkSlice) "partitionUnknown" 0 n1 (length v1')
-        $ INTERNAL_CHECK(checkSlice) "partitionUnknown" 0 n2 (length v2')
+      checkSlice Internal 0 n1 (length v1')
+        $ checkSlice Internal 0 n2 (length v2')
         $ return (unsafeSlice 0 n1 v1', unsafeSlice 0 n2 v2')
   where
     -- NOTE: The case distinction has to be on the outside because
@@ -1332,8 +1305,8 @@ partitionWithMax f s n
               unsafeWrite v2 i2 c
               return (i1, i2+1)
       (n1, n2) <- Bundle.foldM' put (0, 0) s
-      INTERNAL_CHECK(checkSlice) "partitionEithersMax" 0 n1 (length v1)
-        $ INTERNAL_CHECK(checkSlice) "partitionEithersMax" 0 n2 (length v2)
+      checkSlice Internal 0 n1 (length v1)
+        $ checkSlice Internal 0 n2 (length v2)
         $ return (unsafeSlice 0 n1 v1, unsafeSlice 0 n2 v2)
 
 partitionWithUnknown :: forall m v u a b c.
@@ -1345,8 +1318,8 @@ partitionWithUnknown f s
       v1 <- unsafeNew 0
       v2 <- unsafeNew 0
       (v1', n1, v2', n2) <- Bundle.foldM' put (v1, 0, v2, 0) s
-      INTERNAL_CHECK(checkSlice) "partitionEithersUnknown" 0 n1 (length v1')
-        $ INTERNAL_CHECK(checkSlice) "partitionEithersUnknown" 0 n2 (length v2')
+      checkSlice Internal 0 n1 (length v1')
+        $ checkSlice Internal 0 n2 (length v2')
         $ return (unsafeSlice 0 n1 v1', unsafeSlice 0 n2 v2')
   where
     put :: (v (PrimState m) b, Int, v (PrimState m) c, Int)
