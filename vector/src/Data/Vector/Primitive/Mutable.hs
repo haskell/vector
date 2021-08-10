@@ -61,7 +61,7 @@ module Data.Vector.Primitive.Mutable (
   set, copy, move, unsafeCopy, unsafeMove,
 
   -- * Unsafe conversions
-  unsafeCoerceMVector,
+  unsafeCoerceMVector, unsafeCast,
   -- * Re-exports
   Prim, PrimMonad, PrimState, RealWorld
 ) where
@@ -69,6 +69,7 @@ module Data.Vector.Primitive.Mutable (
 import qualified Data.Vector.Generic.Mutable as G
 import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim, sizeOf )
+import           Data.Vector.Internal.Check
 import           Data.Word ( Word8 )
 import           Control.Monad.Primitive
 import           Control.Monad ( liftM )
@@ -656,3 +657,20 @@ ifoldrM = G.ifoldrM
 ifoldrM' :: (PrimMonad m, Prim a) => (Int -> a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldrM' #-}
 ifoldrM' = G.ifoldrM'
+
+
+-- Unsafe conversions
+-- ------------------
+
+-- | /O(1)/ Unsafely cast a vector from one element type to another.
+-- This operation just changes the type of the vector and does not
+-- modify the elements.
+--
+-- This function will throw an error if elements are of mismatching sizes.
+--
+-- | @since 0.13.0.0
+unsafeCast :: forall a b s. (HasCallStack, Prim a, Prim b) => MVector s a -> MVector s b
+{-# INLINE unsafeCast #-}
+unsafeCast (MVector o n ba)
+  | sizeOf (undefined :: a) == sizeOf (undefined :: b) = MVector o n ba
+  | otherwise = error "Element size mismatch"

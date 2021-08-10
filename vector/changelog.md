@@ -43,6 +43,7 @@
    resulted in an error. This change was introduced in:
    [#382](https://github.com/haskell/vector/pull/382)
 * Remove redundant `Storable` constraints on to/from `ForeignPtr` conversions
+* Add `unsafeCast` to `Primitive` vectors
 
 # Changes in version 0.12.3.0
 
