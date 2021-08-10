@@ -1228,6 +1228,7 @@ zip :: Vector a -> Vector b -> Vector (a, b)
 {-# INLINE zip #-}
 zip = G.zip
 
+-- | Zip together three vectors into a vector of triples.
 zip3 :: Vector a -> Vector b -> Vector c -> Vector (a, b, c)
 {-# INLINE zip3 #-}
 zip3 = G.zip3

@@ -1216,6 +1216,7 @@ izipWith f = \xs ys ->
     unstream (Bundle.zipWith (uncurry f) (Bundle.indexed (stream xs))
                                                          (stream ys))
 
+-- | Zip three vectors and their indices with the given function.
 izipWith3 :: (Vector v a, Vector v b, Vector v c, Vector v d)
          => (Int -> a -> b -> c -> d) -> v a -> v b -> v c -> v d
 {-# INLINE izipWith3 #-}
@@ -1263,6 +1264,7 @@ zip :: (Vector v a, Vector v b, Vector v (a,b)) => v a -> v b -> v (a, b)
 {-# INLINE zip #-}
 zip = zipWith (,)
 
+-- | Zip together three vectors into a vector of triples.
 zip3 :: (Vector v a, Vector v b, Vector v c, Vector v (a, b, c))
      => v a -> v b -> v c -> v (a, b, c)
 {-# INLINE zip3 #-}
