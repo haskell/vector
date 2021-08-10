@@ -189,6 +189,7 @@ import           Data.Vector.Fusion.Stream.Monadic ( Stream )
 import qualified Data.Vector.Fusion.Stream.Monadic as S
 import           Data.Vector.Fusion.Bundle.Size
 import           Data.Vector.Fusion.Util
+import           Data.Vector.Internal.Check
 
 import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
@@ -236,10 +237,9 @@ null = Bundle.null . stream
 
 infixl 9 !
 -- | O(1) Indexing.
-(!) :: Vector v a => v a -> Int -> a
+(!) :: (HasCallStack, Vector v a) => v a -> Int -> a
 {-# INLINE_FUSED (!) #-}
-(!) v i = BOUNDS_CHECK(checkIndex) "(!)" i (length v)
-        $ unBox (basicUnsafeIndexM v i)
+(!) v i = checkIndex Bounds i (length v) $ unBox (basicUnsafeIndexM v i)
 
 infixl 9 !?
 -- | O(1) Safe indexing.
@@ -261,8 +261,7 @@ last v = v ! (length v - 1)
 -- | /O(1)/ Unsafe indexing without bounds checking.
 unsafeIndex :: Vector v a => v a -> Int -> a
 {-# INLINE_FUSED unsafeIndex #-}
-unsafeIndex v i = UNSAFE_CHECK(checkIndex) "unsafeIndex" i (length v)
-                $ unBox (basicUnsafeIndexM v i)
+unsafeIndex v i = checkIndex Unsafe i (length v) $ unBox (basicUnsafeIndexM v i)
 
 -- | /O(1)/ First element, without checking if the vector is empty.
 unsafeHead :: Vector v a => v a -> a
@@ -320,11 +319,9 @@ unsafeLast v = unsafeIndex v (length v - 1)
 --
 -- Here, no references to @v@ are retained because indexing (but /not/ the
 -- element) is evaluated eagerly.
-indexM :: (Vector v a, Monad m) => v a -> Int -> m a
+indexM :: (HasCallStack, Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_FUSED indexM #-}
-indexM v i = BOUNDS_CHECK(checkIndex) "indexM" i (length v)
-           $ liftBox
-           $ basicUnsafeIndexM v i
+indexM v i = checkIndex Bounds i (length v) $ liftBox $ basicUnsafeIndexM v i
 
 -- | /O(1)/ First element of a vector in a monad. See 'indexM' for an
 -- explanation of why this is useful.
@@ -342,7 +339,7 @@ lastM v = indexM v (length v - 1)
 -- explanation of why this is useful.
 unsafeIndexM :: (Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_FUSED unsafeIndexM #-}
-unsafeIndexM v i = UNSAFE_CHECK(checkIndex) "unsafeIndexM" i (length v)
+unsafeIndexM v i = checkIndex Unsafe i (length v)
                  $ liftBox
                  $ basicUnsafeIndexM v i
 
@@ -385,13 +382,13 @@ unsafeLastM v = unsafeIndexM v (length v - 1)
 
 -- | /O(1)/ Yield a slice of the vector without copying it. The vector must
 -- contain at least @i+n@ elements.
-slice :: Vector v a => Int   -- ^ @i@ starting index
-                    -> Int   -- ^ @n@ length
-                    -> v a
-                    -> v a
+slice :: (HasCallStack, Vector v a)
+      => Int   -- ^ @i@ starting index
+      -> Int   -- ^ @n@ length
+      -> v a
+      -> v a
 {-# INLINE_FUSED slice #-}
-slice i n v = BOUNDS_CHECK(checkSlice) "slice" i n (length v)
-            $ basicUnsafeSlice i n v
+slice i n v = checkSlice Bounds i n (length v) $ basicUnsafeSlice i n v
 
 -- | /O(1)/ Yield all but the last element without copying. The vector may not
 -- be empty.
@@ -460,8 +457,7 @@ unsafeSlice :: Vector v a => Int   -- ^ @i@ starting index
                           -> v a
                           -> v a
 {-# INLINE_FUSED unsafeSlice #-}
-unsafeSlice i n v = UNSAFE_CHECK(checkSlice) "unsafeSlice" i n (length v)
-                  $ basicUnsafeSlice i n v
+unsafeSlice i n v = checkSlice Unsafe i n (length v) $ basicUnsafeSlice i n v
 
 -- | /O(1)/ Yield all but the last element without copying. The vector may not
 -- be empty, but this is not checked.
@@ -981,7 +977,7 @@ reverse = unstream . streamR
 -- often much more efficient.
 --
 -- > backpermute <a,b,c,d> <0,3,2,3,1,0> = <a,d,c,d,b,a>
-backpermute :: (Vector v a, Vector v Int)
+backpermute :: forall v a. (HasCallStack, Vector v a, Vector v Int)
             => v a   -- ^ @xs@ value vector
             -> v Int -- ^ @is@ index vector (of length @n@)
             -> v a
@@ -1001,8 +997,8 @@ backpermute v is = seq v
     {-# INLINE index #-}
     -- NOTE: we do it this way to avoid triggering LiberateCase on n in
     -- polymorphic code
-    index i = BOUNDS_CHECK(checkIndex) "backpermute" i n
-            $ basicUnsafeIndexM v i
+    index :: HasCallStack => Int -> Box a
+    index i = checkIndex Bounds i n $ basicUnsafeIndexM v i
 
 -- | Same as 'backpermute', but without bounds checking.
 unsafeBackpermute :: (Vector v a, Vector v Int) => v a -> v Int -> v a
@@ -1019,8 +1015,7 @@ unsafeBackpermute v is = seq v
     {-# INLINE index #-}
     -- NOTE: we do it this way to avoid triggering LiberateCase on n in
     -- polymorphic code
-    index i = UNSAFE_CHECK(checkIndex) "unsafeBackpermute" i n
-            $ basicUnsafeIndexM v i
+    index i = checkIndex Unsafe i n $ basicUnsafeIndexM v i
 
 -- Safe destructive updates
 -- ------------------------
@@ -2371,19 +2366,16 @@ thawMany vs = do
 
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length. This is not checked.
-unsafeCopy
-  :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
+unsafeCopy :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
 {-# INLINE unsafeCopy #-}
-unsafeCopy dst src = UNSAFE_CHECK(check) "unsafeCopy" "length mismatch"
-                                         (M.length dst == basicLength src)
+unsafeCopy dst src = check Unsafe "length mismatch" (M.length dst == basicLength src)
                    $ (dst `seq` src `seq` stToPrim (basicUnsafeCopy dst src))
 
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length.
-copy :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
+copy :: (HasCallStack, PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
 {-# INLINE copy #-}
-copy dst src = BOUNDS_CHECK(check) "copy" "length mismatch"
-                                          (M.length dst == basicLength src)
+copy dst src = check Bounds "length mismatch" (M.length dst == basicLength src)
              $ unsafeCopy dst src
 
 -- Conversions to/from Bundles
@@ -2602,7 +2594,7 @@ mkType :: String -> DataType
 {-# DEPRECATED mkType "Use Data.Data.mkNoRepType" #-}
 mkType = mkNoRepType
 
-gunfold :: (Vector v a, Data a)
+gunfold :: (Vector v a, Data a, HasCallStack)
         => (forall b r. Data b => c (b -> r) -> c r)
         -> (forall r. r -> c r)
         -> Constr -> c (v a)
