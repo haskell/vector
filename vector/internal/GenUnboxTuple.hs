@@ -1,4 +1,5 @@
 {-# LANGUAGE ParallelListComp #-}
+
 module Main where
 
 import Text.PrettyPrint
@@ -52,7 +53,7 @@ generate n =
 
 
     define_zip ty c
-      = sep [text "-- | /O(1)/ Zip" <+> int n <+> text "vectors"
+      = sep [text "-- | /O(1)/ Zip" <+> int n <+> text "vectors."
             ,name <+> text "::"
                   <+> vtuple [text "Unbox" <+> v | v <- vars]
                   <+> text "=>"
@@ -90,10 +91,10 @@ generate n =
      where
        name s | n == 2    = text s
               | otherwise = text s <> int n
-       
+
 
     define_unzip ty c
-      = sep [text "-- | /O(1)/ Unzip" <+> int n <+> text "vectors"
+      = sep [text "-- | /O(1)/ Unzip" <+> int n <+> text "vectors."
             ,name <+> text "::"
                   <+> vtuple [text "Unbox" <+> v | v <- vars]
                   <+> text "=>"
@@ -214,7 +215,7 @@ generate n =
                                 $$ hang (text s <+> p)
                                    4
                                    (char '=' <+> e)
-                             
+
 
     methods_MVector = [("basicLength",            gen_length "MV")
                       ,("basicUnsafeSlice",       gen_unsafeSlice "M" "MV")

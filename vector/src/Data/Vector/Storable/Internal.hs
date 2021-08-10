@@ -10,7 +10,6 @@
 -- Portability : non-portable
 --
 -- Ugly internal utility functions for implementing 'Storable'-based vectors.
---
 
 module Data.Vector.Storable.Internal (
   getPtr, setPtr, updPtr, unsafeWithForeignPtr
