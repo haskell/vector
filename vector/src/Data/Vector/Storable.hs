@@ -811,7 +811,7 @@ unsafeUpdate_ = G.unsafeUpdate_
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.accum (+) (VS.fromList [1000,2000,3000]) [(2,4),(1,6),(0,3),(1,10)]
+-- >>> VS.accum (+) (VS.fromList [1000,2000,3000 :: Int]) [(2,4),(1,6),(0,3),(1,10)]
 -- [1003,2016,3004]
 accum :: Storable a
       => (a -> b -> a) -- ^ accumulating function @f@
@@ -1099,7 +1099,7 @@ ifilter = G.ifilter
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.uniq $ VS.fromList [1,3,3,200,3]
+-- >>> VS.uniq $ VS.fromList [1,3,3,200,3 :: Int]
 -- [1,3,200,3]
 uniq :: (Storable a, Eq a) => Vector a -> Vector a
 {-# INLINE uniq #-}
@@ -1333,9 +1333,9 @@ foldMap' = G.foldMap'
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.all even $ VS.fromList [2, 4, 12]
+-- >>> VS.all even $ VS.fromList [2, 4, 12 :: Int]
 -- True
--- >>> VS.all even $ VS.fromList [2, 4, 13]
+-- >>> VS.all even $ VS.fromList [2, 4, 13 :: Int]
 -- False
 -- >>> VS.all even (VS.empty :: VS.Vector Int)
 -- True
@@ -1348,9 +1348,9 @@ all = G.all
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.any even $ VS.fromList [1, 3, 7]
+-- >>> VS.any even $ VS.fromList [1, 3, 7 :: Int]
 -- False
--- >>> VS.any even $ VS.fromList [3, 2, 13]
+-- >>> VS.any even $ VS.fromList [3, 2, 13 :: Int]
 -- True
 -- >>> VS.any even (VS.empty :: VS.Vector Int)
 -- False
@@ -1389,7 +1389,7 @@ or = G.or
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.sum $ VS.fromList [300,20,1]
+-- >>> VS.sum $ VS.fromList [300,20,1 :: Int]
 -- 321
 -- >>> VS.sum (VS.empty :: VS.Vector Int)
 -- 0
@@ -1402,7 +1402,7 @@ sum = G.sum
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.product $ VS.fromList [1,2,3,4]
+-- >>> VS.product $ VS.fromList [1,2,3,4 :: Int]
 -- 24
 -- >>> VS.product (VS.empty :: VS.Vector Int)
 -- 1
@@ -1416,7 +1416,7 @@ product = G.product
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.maximum $ VS.fromList [2, 1]
+-- >>> VS.maximum $ VS.fromList [2, 1 :: Int]
 -- 2
 maximum :: (Storable a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
@@ -1443,7 +1443,7 @@ maximumOn = G.maximumOn
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.minimum $ VS.fromList [2, 1]
+-- >>> VS.minimum $ VS.fromList [2, 1 :: Int]
 -- 1
 minimum :: (Storable a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
@@ -1576,7 +1576,7 @@ fold1M'_ = G.fold1M'_
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.prescanl (+) 0 (VS.fromList [1,2,3,4])
+-- >>> VS.prescanl (+) 0 (VS.fromList [1,2,3,4 :: Int])
 -- [0,1,3,6]
 prescanl :: (Storable a, Storable b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE prescanl #-}
@@ -1596,7 +1596,7 @@ prescanl' = G.prescanl'
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.postscanl (+) 0 (VS.fromList [1,2,3,4])
+-- >>> VS.postscanl (+) 0 (VS.fromList [1,2,3,4 :: Int])
 -- [1,3,6,10]
 postscanl :: (Storable a, Storable b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE postscanl #-}
@@ -1616,7 +1616,7 @@ postscanl' = G.postscanl'
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.scanl (+) 0 (VS.fromList [1,2,3,4])
+-- >>> VS.scanl (+) 0 (VS.fromList [1,2,3,4 :: Int])
 -- [0,1,3,6,10]
 scanl :: (Storable a, Storable b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE scanl #-}
@@ -1652,9 +1652,9 @@ iscanl' = G.iscanl'
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.scanl1 min $ VS.fromListN 5 [4,2,4,1,3]
+-- >>> VS.scanl1 min $ VS.fromListN 5 [4,2,4,1,3 :: Int]
 -- [4,2,2,1,1]
--- >>> VS.scanl1 max $ VS.fromListN 5 [1,3,2,5,4]
+-- >>> VS.scanl1 max $ VS.fromListN 5 [1,3,2,5,4 :: Int]
 -- [1,3,3,5,5]
 -- >>> VS.scanl1 min (VS.empty :: VS.Vector Int)
 -- []
@@ -1669,9 +1669,9 @@ scanl1 = G.scanl1
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.scanl1' min $ VS.fromListN 5 [4,2,4,1,3]
+-- >>> VS.scanl1' min $ VS.fromListN 5 [4,2,4,1,3 :: Int]
 -- [4,2,2,1,1]
--- >>> VS.scanl1' max $ VS.fromListN 5 [1,3,2,5,4]
+-- >>> VS.scanl1' max $ VS.fromListN 5 [1,3,2,5,4 :: Int]
 -- [1,3,3,5,5]
 -- >>> VS.scanl1' min (VS.empty :: VS.Vector Int)
 -- []
@@ -1734,9 +1734,9 @@ iscanr' = G.iscanr'
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.scanr1 min $ VS.fromListN 5 [3,1,4,2,4]
+-- >>> VS.scanr1 min $ VS.fromListN 5 [3,1,4,2,4 :: Int]
 -- [1,1,2,2,4]
--- >>> VS.scanr1 max $ VS.fromListN 5 [4,5,2,3,1]
+-- >>> VS.scanr1 max $ VS.fromListN 5 [4,5,2,3,1 :: Int]
 -- [5,5,3,3,1]
 -- >>> VS.scanr1 min (VS.empty :: VS.Vector Int)
 -- []
@@ -1752,9 +1752,9 @@ scanr1 = G.scanr1
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.scanr1' min $ VS.fromListN 5 [3,1,4,2,4]
+-- >>> VS.scanr1' min $ VS.fromListN 5 [3,1,4,2,4 :: Int]
 -- [1,1,2,2,4]
--- >>> VS.scanr1' max $ VS.fromListN 5 [4,5,2,3,1]
+-- >>> VS.scanr1' max $ VS.fromListN 5 [4,5,2,3,1 :: Int]
 -- [5,5,3,3,1]
 -- >>> VS.scanr1' min (VS.empty :: VS.Vector Int)
 -- []
@@ -1804,7 +1804,7 @@ fromList = G.fromList
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Storable as VS
--- >>> VS.fromListN 3 [1,2,3,4,5]
+-- >>> VS.fromListN 3 [1,2,3,4,5 :: Int]
 -- [1,2,3]
 -- >>> VS.fromListN 3 [1]
 -- [1]
@@ -1945,6 +1945,3 @@ unsafeToForeignPtr0 (Vector n fp) = (fp, n)
 unsafeWith :: Storable a => Vector a -> (Ptr a -> IO b) -> IO b
 {-# INLINE unsafeWith #-}
 unsafeWith (Vector _ fp) = withForeignPtr fp
-
--- $setup
--- >>> default (Int)

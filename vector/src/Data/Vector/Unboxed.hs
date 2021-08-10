@@ -520,7 +520,7 @@ generate = G.generate
 -- >>> import qualified Data.Vector.Unboxed as VU
 -- >>> VU.iterateN 0 undefined undefined :: VU.Vector Int
 -- []
--- >>> VU.iterateN 3 (\(i, c) -> (pred i, succ c)) (0, 'a')
+-- >>> VU.iterateN 3 (\(i, c) -> (pred i, succ c)) (0 :: Int, 'a')
 -- [(0,'a'),(-1,'b'),(-2,'c')]
 --
 -- @since 0.7.1
@@ -790,7 +790,7 @@ unsafeUpdate_ = G.unsafeUpdate_
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.accum (+) (VU.fromList [1000,2000,3000]) [(2,4),(1,6),(0,3),(1,10)]
+-- >>> VU.accum (+) (VU.fromList [1000,2000,3000 :: Int]) [(2,4),(1,6),(0,3),(1,10)]
 -- [1003,2016,3004]
 accum :: Unbox a
       => (a -> b -> a) -- ^ accumulating function @f@
@@ -806,7 +806,7 @@ accum = G.accum
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.accumulate (+) (VU.fromList [1000,2000,3000]) (VU.fromList [(2,4),(1,6),(0,3),(1,10)])
+-- >>> VU.accumulate (+) (VU.fromList [1000,2000,3000 :: Int]) (VU.fromList [(2,4),(1,6),(0,3),(1,10)])
 -- [1003,2016,3004]
 accumulate :: (Unbox a, Unbox b)
             => (a -> b -> a)  -- ^ accumulating function @f@
@@ -1092,10 +1092,10 @@ ifilter = G.ifilter
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.uniq $ VU.fromList [1,3,3,200,3]
+-- >>> VU.uniq $ VU.fromList [1,3,3,200,3 :: Int]
 -- [1,3,200,3]
 -- >>> import Data.Semigroup
--- >>> VU.uniq $ VU.fromList [ Arg 1 'a', Arg 1 'b', Arg 1 'c']
+-- >>> VU.uniq $ VU.fromList [ Arg 1 'a', Arg 1 'b', Arg (1 :: Int) 'c']
 -- [Arg 1 'a']
 uniq :: (Unbox a, Eq a) => Vector a -> Vector a
 {-# INLINE uniq #-}
@@ -1325,9 +1325,9 @@ foldMap' = G.foldMap'
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.all even $ VU.fromList [2, 4, 12]
+-- >>> VU.all even $ VU.fromList [2, 4, 12 :: Int]
 -- True
--- >>> VU.all even $ VU.fromList [2, 4, 13]
+-- >>> VU.all even $ VU.fromList [2, 4, 13 :: Int]
 -- False
 -- >>> VU.all even (VU.empty :: VU.Vector Int)
 -- True
@@ -1340,9 +1340,9 @@ all = G.all
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.any even $ VU.fromList [1, 3, 7]
+-- >>> VU.any even $ VU.fromList [1, 3, 7 :: Int]
 -- False
--- >>> VU.any even $ VU.fromList [3, 2, 13]
+-- >>> VU.any even $ VU.fromList [3, 2, 13 :: Int]
 -- True
 -- >>> VU.any even (VU.empty :: VU.Vector Int)
 -- False
@@ -1381,7 +1381,7 @@ or = G.or
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.sum $ VU.fromList [300,20,1]
+-- >>> VU.sum $ VU.fromList [300,20,1 :: Int]
 -- 321
 -- >>> VU.sum (VU.empty :: VU.Vector Int)
 -- 0
@@ -1394,7 +1394,7 @@ sum = G.sum
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.product $ VU.fromList [1,2,3,4]
+-- >>> VU.product $ VU.fromList [1,2,3,4 :: Int]
 -- 24
 -- >>> VU.product (VU.empty :: VU.Vector Int)
 -- 1
@@ -1408,12 +1408,12 @@ product = G.product
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.maximum $ VU.fromList [2, 1]
+-- >>> VU.maximum $ VU.fromList [2, 1 :: Int]
 -- 2
 -- >>> import Data.Semigroup
--- >>> VU.maximum $ VU.fromList [Arg 1 'a', Arg 2 'b']
+-- >>> VU.maximum $ VU.fromList [Arg 1 'a', Arg (2 :: Int) 'b']
 -- Arg 2 'b'
--- >>> VU.maximum $ VU.fromList [Arg 1 'a', Arg 1 'b']
+-- >>> VU.maximum $ VU.fromList [Arg 1 'a', Arg (1 :: Int) 'b']
 -- Arg 1 'a'
 maximum :: (Unbox a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
@@ -1428,9 +1428,9 @@ maximum = G.maximum
 --
 -- >>> import Data.Ord
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.maximumBy (comparing fst) $ VU.fromList [(2,'a'), (1,'b')]
+-- >>> VU.maximumBy (comparing fst) $ VU.fromList [(2,'a'), (1 :: Int,'b')]
 -- (2,'a')
--- >>> VU.maximumBy (comparing fst) $ VU.fromList [(1,'a'), (1,'b')]
+-- >>> VU.maximumBy (comparing fst) $ VU.fromList [(1,'a'), (1 :: Int,'b')]
 -- (1,'a')
 maximumBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE maximumBy #-}
@@ -1443,9 +1443,9 @@ maximumBy = G.maximumBy
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.maximumOn fst $ VU.fromList [(2,'a'), (1,'b')]
+-- >>> VU.maximumOn fst $ VU.fromList [(2,'a'), (1 :: Int,'b')]
 -- (2,'a')
--- >>> VU.maximumOn fst $ VU.fromList [(1,'a'), (1,'b')]
+-- >>> VU.maximumOn fst $ VU.fromList [(1,'a'), (1 :: Int,'b')]
 -- (1,'a')
 maximumOn :: (Ord b, Unbox a) => (a -> b) -> Vector a -> a
 {-# INLINE maximumOn #-}
@@ -1460,9 +1460,9 @@ maximumOn = G.maximumOn
 -- >>> VU.minimum $ VU.fromList [2, 1]
 -- 1
 -- >>> import Data.Semigroup
--- >>> VU.minimum $ VU.fromList [Arg 2 'a', Arg 1 'b']
+-- >>> VU.minimum $ VU.fromList [Arg 2 'a', Arg (1 :: Int) 'b']
 -- Arg 1 'b'
--- >>> VU.minimum $ VU.fromList [Arg 1 'a', Arg 1 'b']
+-- >>> VU.minimum $ VU.fromList [Arg 1 'a', Arg (1 :: Int) 'b']
 -- Arg 1 'a'
 minimum :: (Unbox a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
@@ -1476,9 +1476,9 @@ minimum = G.minimum
 --
 -- >>> import Data.Ord
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.minimumBy (comparing fst) $ VU.fromList [(2,'a'), (1,'b')]
+-- >>> VU.minimumBy (comparing fst) $ VU.fromList [(2,'a'), (1 :: Int,'b')]
 -- (1,'b')
--- >>> VU.minimumBy (comparing fst) $ VU.fromList [(1,'a'), (1,'b')]
+-- >>> VU.minimumBy (comparing fst) $ VU.fromList [(1,'a'), (1 :: Int,'b')]
 -- (1,'a')
 minimumBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> a
 -- | /O(n)/ Yield the minimum element of the vector according to the given
@@ -1493,9 +1493,9 @@ minimumBy = G.minimumBy
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.minimumOn fst $ VU.fromList [(2,'a'), (1,'b')]
+-- >>> VU.minimumOn fst $ VU.fromList [(2,'a'), (1 :: Int,'b')]
 -- (1,'b')
--- >>> VU.minimumOn fst $ VU.fromList [(1,'a'), (1,'b')]
+-- >>> VU.minimumOn fst $ VU.fromList [(1,'a'), (1 :: Int,'b')]
 -- (1,'a')
 minimumOn :: (Ord b, Unbox a) => (a -> b) -> Vector a -> a
 {-# INLINE minimumOn #-}
@@ -1624,7 +1624,7 @@ fold1M'_ = G.fold1M'_
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector as VU
--- >>> VU.prescanl (+) 0 (VU.fromList [1,2,3,4])
+-- >>> VU.prescanl (+) 0 (VU.fromList [1,2,3,4 :: Int])
 -- [0,1,3,6]
 prescanl :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE prescanl #-}
@@ -1644,7 +1644,7 @@ prescanl' = G.prescanl'
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.postscanl (+) 0 (VU.fromList [1,2,3,4])
+-- >>> VU.postscanl (+) 0 (VU.fromList [1,2,3,4 :: Int])
 -- [1,3,6,10]
 postscanl :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE postscanl #-}
@@ -1664,7 +1664,7 @@ postscanl' = G.postscanl'
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.scanl (+) 0 (VU.fromList [1,2,3,4])
+-- >>> VU.scanl (+) 0 (VU.fromList [1,2,3,4 :: Int])
 -- [0,1,3,6,10]
 scanl :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE scanl #-}
@@ -1700,9 +1700,9 @@ iscanl' = G.iscanl'
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.scanl1 min $ VU.fromListN 5 [4,2,4,1,3]
+-- >>> VU.scanl1 min $ VU.fromListN 5 [4,2,4,1,3 :: Int]
 -- [4,2,2,1,1]
--- >>> VU.scanl1 max $ VU.fromListN 5 [1,3,2,5,4]
+-- >>> VU.scanl1 max $ VU.fromListN 5 [1,3,2,5,4 :: Int]
 -- [1,3,3,5,5]
 -- >>> VU.scanl1 min (VU.empty :: VU.Vector Int)
 -- []
@@ -1717,9 +1717,9 @@ scanl1 = G.scanl1
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.scanl1' min $ VU.fromListN 5 [4,2,4,1,3]
+-- >>> VU.scanl1' min $ VU.fromListN 5 [4,2,4,1,3 :: Int]
 -- [4,2,2,1,1]
--- >>> VU.scanl1' max $ VU.fromListN 5 [1,3,2,5,4]
+-- >>> VU.scanl1' max $ VU.fromListN 5 [1,3,2,5,4 :: Int]
 -- [1,3,3,5,5]
 -- >>> VU.scanl1' min (VU.empty :: VU.Vector Int)
 -- []
@@ -1782,9 +1782,9 @@ iscanr' = G.iscanr'
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.scanr1 min $ VU.fromListN 5 [3,1,4,2,4]
+-- >>> VU.scanr1 min $ VU.fromListN 5 [3,1,4,2,4 :: Int]
 -- [1,1,2,2,4]
--- >>> VU.scanr1 max $ VU.fromListN 5 [4,5,2,3,1]
+-- >>> VU.scanr1 max $ VU.fromListN 5 [4,5,2,3,1 :: Int]
 -- [5,5,3,3,1]
 -- >>> VU.scanr1 min (VU.empty :: VU.Vector Int)
 -- []
@@ -1800,9 +1800,9 @@ scanr1 = G.scanr1
 --
 -- ==== __Examples__
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.scanr1' min $ VU.fromListN 5 [3,1,4,2,4]
+-- >>> VU.scanr1' min $ VU.fromListN 5 [3,1,4,2,4 :: Int]
 -- [1,1,2,2,4]
--- >>> VU.scanr1' max $ VU.fromListN 5 [4,5,2,3,1]
+-- >>> VU.scanr1' max $ VU.fromListN 5 [4,5,2,3,1 :: Int]
 -- [5,5,3,3,1]
 -- >>> VU.scanr1' min (VU.empty :: VU.Vector Int)
 -- []
@@ -1852,9 +1852,9 @@ fromList = G.fromList
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.fromListN 3 [1,2,3,4,5]
+-- >>> VU.fromListN 3 [1,2,3,4,5 :: Int]
 -- [1,2,3]
--- >>> VU.fromListN 3 [1]
+-- >>> VU.fromListN 3 [1 :: Int]
 -- [1]
 fromListN :: Unbox a => Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
@@ -1924,6 +1924,3 @@ copy = G.copy
 
 #define DEFINE_IMMUTABLE
 #include "unbox-tuple-instances"
-
--- $setup
--- >>> default (Int)
