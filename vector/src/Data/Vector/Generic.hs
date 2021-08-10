@@ -2615,4 +2615,4 @@ dataCast f = gcast1 f
 
 -- $setup
 -- >>> :set -XFlexibleContexts
--- >>> default (Int)
+-- >>> :set -Wno-type-defaults

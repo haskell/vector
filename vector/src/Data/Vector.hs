@@ -1223,7 +1223,7 @@ izipWith6 :: (Int -> a -> b -> c -> d -> e -> f -> g)
 {-# INLINE izipWith6 #-}
 izipWith6 = G.izipWith6
 
--- | /O(min(m,n))/ Tip two vectors.
+-- | /O(min(m,n))/ Zip two vectors.
 zip :: Vector a -> Vector b -> Vector (a, b)
 {-# INLINE zip #-}
 zip = G.zip
@@ -2177,4 +2177,4 @@ copy :: PrimMonad m => MVector (PrimState m) a -> Vector a -> m ()
 copy = G.copy
 
 -- $setup
--- >>> default (Int)
+-- >>> :set -Wno-type-defaults
