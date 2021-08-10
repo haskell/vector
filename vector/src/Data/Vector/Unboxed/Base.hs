@@ -42,19 +42,13 @@ import Control.Monad.Primitive
 import Control.Monad ( liftM )
 
 import Data.Functor.Identity
-#if MIN_VERSION_base(4,9,0)
 import Data.Functor.Compose
-#endif
-
 import Data.Word ( Word8, Word16, Word32, Word64 )
 import Data.Int  ( Int8, Int16, Int32, Int64 )
 import Data.Complex
 import Data.Monoid (Dual(..),Sum(..),Product(..),All(..),Any(..))
 import Data.Monoid (Alt(..))
-#if MIN_VERSION_base(4,9,0)
 import Data.Semigroup (Min(..),Max(..),First(..),Last(..),WrappedMonoid(..),Arg(..))
-#endif
-
 import Data.Typeable ( Typeable )
 import Data.Data     ( Data(..) )
 import GHC.Exts      ( Down(..) )
@@ -691,7 +685,6 @@ deriveNewtypeInstances(Unbox a, Product a, a, Product, V_Product, MV_Product)
 -- Data.Semigroup
 -- --------------
 
-#if MIN_VERSION_base(4,9,0)
 deriveNewtypeInstances(Unbox a, Min a,   a, Min,   V_Min,   MV_Min)
 deriveNewtypeInstances(Unbox a, Max a,   a, Max,   V_Max,   MV_Max)
 deriveNewtypeInstances(Unbox a, First a, a, First, V_First, MV_First)
@@ -750,7 +743,6 @@ instance (Unbox a, Unbox b) => G.Vector Vector (Arg a b) where
                                  = G.basicUnsafeCopy mv v
   elemseq _ (Arg x y) z          = G.elemseq (undefined :: Vector a) x
                                  $ G.elemseq (undefined :: Vector b) y z
-#endif
 
 deriveNewtypeInstances((), Any, Bool, Any, V_Any, MV_Any)
 deriveNewtypeInstances((), All, Bool, All, V_All, MV_All)
@@ -771,9 +763,7 @@ deriveNewtypeInstances(Unbox (f a), Alt f a, f a, Alt, V_Alt, MV_Alt)
 -- Compose
 -- -------
 
-#if MIN_VERSION_base(4,9,0)
 deriveNewtypeInstances(Unbox (f (g a)), Compose f g a, f (g a), Compose, V_Compose, MV_Compose)
-#endif
 
 -- ------
 -- Tuples

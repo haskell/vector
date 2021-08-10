@@ -18,7 +18,6 @@ jobs:
       matrix:
         include:
           # Linux
-          - { cabal: "3.4", os: ubuntu-latest,  ghc: "7.10.3" }
           - { cabal: "3.4", os: ubuntu-latest,  ghc: "8.0.2"  }
           - { cabal: "3.4", os: ubuntu-latest,  ghc: "8.2.2"  }
           - { cabal: "3.4", os: ubuntu-latest,  ghc: "8.4.4"  }
@@ -80,16 +79,10 @@ jobs:
         cd vector
         cabal -vnormal check
     # ----------------
-    # GHC 7.10 fails with PIE-related linker errors. Thus it needs extra
-    # encouragement for linker in form of flags.
     - name: Build
       run: |
-        if [ ${{matrix.ghc}} = 7.10.3 ]; then
-          EXTRA_FLAGS=--ghc-option="-optl-no-pie"
-        fi
-        echo $EXTRA_FLAGS
-        cabal $EXTRA_FLAGS configure --haddock-all --enable-tests --enable-benchmarks --benchmark-option=-l
-        cabal $EXTRA_FLAGS build all --write-ghc-environment-files=always
+        cabal configure --haddock-all --enable-tests --enable-benchmarks --benchmark-option=-l
+        cabal build all --write-ghc-environment-files=always
     # ----------------
     - name: Test
       run: |

@@ -35,7 +35,6 @@ Description:
         * <http://haskell.org/haskellwiki/Numeric_Haskell:_A_Vector_Tutorial>
 
 Tested-With:
-  GHC == 7.10.3,
   GHC == 8.0.2,
   GHC == 8.2.2,
   GHC == 8.4.4,
@@ -135,15 +134,10 @@ Library
   Install-Includes:
         vector.h
 
-  Build-Depends: base >= 4.8 && < 4.16
+  Build-Depends: base >= 4.9 && < 4.16
                , primitive >= 0.6.4.0 && < 0.8
                , ghc-prim >= 0.2 && < 0.8
                , deepseq >= 1.1 && < 1.5
-  if !impl(ghc > 8.0)
-    Build-Depends: fail == 4.9.*
-                 , semigroups >= 0.18 && < 0.20
-                 , call-stack > 0.1.0 && < 1
-    Default-Extensions: FlexibleContexts
 
   Ghc-Options: -O2 -Wall
 
@@ -191,8 +185,6 @@ test-suite vector-tests-O0
                  QuickCheck >= 2.9 && < 2.15, HUnit, tasty,
                  tasty-hunit, tasty-quickcheck,
                  transformers >= 0.2.0.0
-  if !impl(ghc > 8.0)
-    Build-Depends: semigroups
 
   default-extensions: CPP,
               ScopedTypeVariables,
@@ -236,8 +228,6 @@ test-suite vector-tests-O2
                  QuickCheck >= 2.9 && < 2.15, HUnit, tasty,
                  tasty-hunit, tasty-quickcheck,
                  transformers >= 0.2.0.0
-  if !impl(ghc > 8.0)
-    Build-Depends: semigroups
 
   default-extensions: CPP,
               ScopedTypeVariables,
@@ -288,9 +278,6 @@ test-suite vector-inspection
   if impl(ghc >= 8.6)
     Other-modules:  Inspect.DerivingVia
                     Inspect.DerivingVia.OtherFoo
-  -- GHC<8.0 doesn't support plugins
-  if impl(ghc < 8.0)
-    buildable: False
   build-depends:
         base                     -any
       , primitive                >= 0.6.4.0 && < 0.8

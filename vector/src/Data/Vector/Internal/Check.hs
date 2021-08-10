@@ -25,12 +25,7 @@ import GHC.Base( Int(..) )
 import GHC.Prim( Int# )
 import Prelude hiding( error, (&&), (||), not )
 import qualified Prelude as P
-
-#if MIN_VERSION_base(4,9,0)
 import GHC.Stack (HasCallStack)
-#else
-import Data.CallStack (HasCallStack)
-#endif
 
 -- NOTE: This is a workaround for GHC's weird behaviour where it doesn't inline
 -- these functions into unfoldings which makes the intermediate code size
