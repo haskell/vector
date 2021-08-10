@@ -1457,7 +1457,7 @@ maximumOn = G.maximumOn
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
--- >>> VU.minimum $ VU.fromList [2, 1]
+-- >>> VU.minimum $ VU.fromList [2, 1 :: Int]
 -- 1
 -- >>> import Data.Semigroup
 -- >>> VU.minimum $ VU.fromList [Arg 2 'a', Arg (1 :: Int) 'b']

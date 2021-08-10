@@ -1806,7 +1806,7 @@ fromList = G.fromList
 -- >>> import qualified Data.Vector.Storable as VS
 -- >>> VS.fromListN 3 [1,2,3,4,5 :: Int]
 -- [1,2,3]
--- >>> VS.fromListN 3 [1]
+-- >>> VS.fromListN 3 [1 :: Int]
 -- [1]
 fromListN :: Storable a => Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
