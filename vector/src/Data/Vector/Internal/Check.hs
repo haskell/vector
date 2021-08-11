@@ -142,7 +142,7 @@ checkSlice :: HasCallStack => Checks -> Int -> Int -> Int -> a -> a
 checkSlice kind i m n x
   = check kind (checkSlice_msg i m n) (i >= 0 && m >= 0 && m <= n - i) x
 
--- Lengths are never negative, so we can check  0 <= i < length v
+-- Lengths are never negative, so we can check @0 <= i < length v@
 -- using one unsigned comparison.
 inRange :: Int -> Int -> Bool
 {-# INLINE inRange #-}
