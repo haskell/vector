@@ -13,8 +13,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- Generic interface to mutable vectors
---
+-- Generic interface to mutable vectors.
 
 module Data.Vector.Generic.Mutable (
   -- * Class of mutable vector types
@@ -96,7 +95,7 @@ import Prelude hiding ( length, null, replicate, reverse, map, read,
 {-
 type family Immutable (v :: * -> * -> *) :: * -> *
 
--- | Class of mutable vectors parametrised with a primitive state token.
+-- | Class of mutable vectors parameterised with a primitive state token.
 --
 class MBundle.Pointer u a => MVector v a where
   -- | Length of the mutable vector. This method should not be
@@ -258,14 +257,14 @@ unsafePrepend1 v i x
 
 mstream :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Stream m a
 {-# INLINE mstream #-}
-mstream v = v `seq` n `seq` (Stream.unfoldrM get 0)
+mstream v = v `seq` n `seq` Stream.unfoldrM get 0
   where
     n = length v
 
     {-# INLINE_INNER get #-}
     get i | i < n     = do x <- unsafeRead v i
                            return $ Just (x, i+1)
-          | otherwise = return $ Nothing
+          | otherwise = return Nothing
 
 fill :: (PrimMonad m, MVector v a)
      => v (PrimState m) a -> Stream m a -> m (v (PrimState m) a)
@@ -287,7 +286,7 @@ transform f v = fill v (f (mstream v))
 
 mstreamR :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Stream m a
 {-# INLINE mstreamR #-}
-mstreamR v = v `seq` n `seq` (Stream.unfoldrM get n)
+mstreamR v = v `seq` n `seq` Stream.unfoldrM get n
   where
     n = length v
 
@@ -378,11 +377,6 @@ munstreamUnknown s
                     return (v',i+1)
 
 
-
-
-
-
-
 -- | Create a new mutable vector and fill it with elements from the 'Bundle'.
 -- The vector will grow exponentially if the maximum size of the 'Bundle' is
 -- unknown.
@@ -449,8 +443,6 @@ vmunstreamUnknown s
           return (v',j)
 
 
-
-
 -- | Create a new mutable vector and fill it with elements from the 'Bundle'
 -- from right to left. The vector will grow exponentially if the maximum size
 -- of the 'Bundle' is unknown.
@@ -507,7 +499,7 @@ length :: MVector v a => v s a -> Int
 {-# INLINE length #-}
 length = basicLength
 
--- | Check whether the vector is empty
+-- | Check whether the vector is empty.
 null :: MVector v a => v s a -> Bool
 {-# INLINE null #-}
 null v = length v == 0
@@ -525,16 +517,16 @@ slice :: (HasCallStack, MVector v a)
 {-# INLINE slice #-}
 slice i n v = checkSlice Bounds i n (length v) $ unsafeSlice i n v
 
--- | Take @n@ first elements of the mutable vector without making a
--- copy. For negative @n@ empty vector is returned. If @n@ is larger
--- than vector's length empty vector is returned,
+-- | Take the @n@ first elements of the mutable vector without making a
+-- copy. For negative @n@, the empty vector is returned. If @n@ is larger
+-- than the vector's length, the vector is returned unchanged.
 take :: MVector v a => Int -> v s a -> v s a
 {-# INLINE take #-}
 take n v = unsafeSlice 0 (min (max n 0) (length v)) v
 
--- | Drop @n@ first element of the mutable vector without making a
--- copy. For negative @n@ vector is returned unchanged and if @n@ is
--- larger than vector's length empty vector is returned.
+-- | Drop the @n@ first element of the mutable vector without making a
+-- copy. For negative @n@, the vector is returned unchanged. If @n@ is
+-- larger than the vector's length, the empty vector is returned.
 drop :: MVector v a => Int -> v s a -> v s a
 {-# INLINE drop #-}
 drop n v = unsafeSlice (min m n') (max 0 (m - n')) v
@@ -542,8 +534,13 @@ drop n v = unsafeSlice (min m n') (max 0 (m - n')) v
     n' = max n 0
     m  = length v
 
-{-# INLINE splitAt #-}
+-- | /O(1)/ Split the mutable vector into the first @n@ elements
+-- and the remainder, without copying.
+--
+-- Note that @'splitAt' n v@ is equivalent to @('take' n v, 'drop' n v)@,
+-- but slightly more efficient.
 splitAt :: MVector v a => Int -> v s a -> (v s a, v s a)
+{-# INLINE splitAt #-}
 splitAt n v = ( unsafeSlice 0 m v
               , unsafeSlice m (max 0 (len - n')) v
               )
@@ -552,14 +549,14 @@ splitAt n v = ( unsafeSlice 0 m v
       n'  = max n 0
       len = length v
 
--- | Drop last element of the mutable vector without making a copy. If
--- vector is empty exception is thrown.
+-- | Drop the last element of the mutable vector without making a copy.
+-- If the vector is empty, an exception is thrown.
 init :: MVector v a => v s a -> v s a
 {-# INLINE init #-}
 init v = slice 0 (length v - 1) v
 
--- | Drop first element of the mutable vector without making a copy. If
--- vector is empty exception is thrown.
+-- | Drop the first element of the mutable vector without making a copy.
+-- If the vector is empty, an exception is thrown.
 tail :: MVector v a => v s a -> v s a
 {-# INLINE tail #-}
 tail v = slice 1 (length v - 1) v
@@ -574,27 +571,27 @@ unsafeSlice :: MVector v a => Int  -- ^ starting index
 unsafeSlice i n v = checkSlice Unsafe i n (length v)
                   $ basicUnsafeSlice i n v
 
--- | Same as 'init' but doesn't do range checks.
-unsafeInit :: MVector v a => v s a -> v s a
-{-# INLINE unsafeInit #-}
-unsafeInit v = unsafeSlice 0 (length v - 1) v
-
--- | Same as 'tail' but doesn't do range checks.
-unsafeTail :: MVector v a => v s a -> v s a
-{-# INLINE unsafeTail #-}
-unsafeTail v = unsafeSlice 1 (length v - 1) v
-
--- | Unsafe variant of 'take'. If called with out of range @n@ it will
--- simply create invalid slice that likely violate memory safety
+-- | Unsafe variant of 'take'. If @n@ is out of range, it will
+-- simply create an invalid slice that likely violate memory safety.
 unsafeTake :: MVector v a => Int -> v s a -> v s a
 {-# INLINE unsafeTake #-}
 unsafeTake n v = unsafeSlice 0 n v
 
--- | Unsafe variant of 'drop'. If called with out of range @n@ it will
--- simply create invalid slice that likely violate memory safety
+-- | Unsafe variant of 'drop'. If @n@ is out of range, it will
+-- simply create an invalid slice that likely violate memory safety.
 unsafeDrop :: MVector v a => Int -> v s a -> v s a
 {-# INLINE unsafeDrop #-}
 unsafeDrop n v = unsafeSlice n (length v - n) v
+
+-- | Same as 'init', but doesn't do range checks.
+unsafeInit :: MVector v a => v s a -> v s a
+{-# INLINE unsafeInit #-}
+unsafeInit v = unsafeSlice 0 (length v - 1) v
+
+-- | Same as 'tail', but doesn't do range checks.
+unsafeTail :: MVector v a => v s a -> v s a
+{-# INLINE unsafeTail #-}
+unsafeTail v = unsafeSlice 1 (length v - 1) v
 
 -- Overlapping
 -- -----------
@@ -614,11 +611,11 @@ new n = checkLength Bounds n $ stToPrim
       $ unsafeNew n >>= \v -> basicInitialize v >> return v
 
 -- | Create a mutable vector of the given length. The vector content
---   should be presumed uninitialized. However exact semantics depends
---   on vector implementation. For example unboxed and storable
---   vectors will create vector filled with whatever underlying memory
---   buffer happens to contain, while boxed vector's elements are
---   initialized to bottoms which will throw exception when evaluated.
+-- should be assumed to be uninitialized. However, the exact semantics depend
+-- on the vector implementation. For example, unboxed and storable
+-- vectors will create a vector filled with whatever the underlying memory
+-- buffer happens to contain, while boxed vector's elements are
+-- initialized to bottoms which will throw exception when evaluated.
 --
 -- @since 0.4
 unsafeNew :: (PrimMonad m, MVector v a) => Int -> m (v (PrimState m) a)
@@ -639,6 +636,7 @@ replicateM n m = munstream (MBundle.replicateM n m)
 
 -- | /O(n)/ Create a mutable vector of the given length (0 if the length is negative)
 -- and fill it with the results of applying the function to each index.
+-- Iteration starts at index 0.
 --
 -- @since 0.12.3.0
 generate :: (PrimMonad m, MVector v a) => Int -> (Int -> a) -> m (v (PrimState m) a)
@@ -673,19 +671,19 @@ clone v = do
 -- -------
 
 -- | Grow a vector by the given number of elements. The number must not be
--- negative otherwise error is thrown. Semantics of this function is exactly the
--- same as `unsafeGrow`, except that it will initialize the newly
+-- negative, otherwise an exception is thrown. The semantics of this function
+-- are exactly the same as of 'unsafeGrow', except that it will initialize the newly
 -- allocated memory first.
 --
 -- It is important to note that mutating the returned vector will not affect the
--- vector that was used as a source. In other words it does not, nor will it
+-- vector that was used as a source. In other words, it does not, nor will it
 -- ever have the semantics of @realloc@ from C.
 --
 -- > grow mv 0 === clone mv
 --
 -- @since 0.4.0
 grow :: (HasCallStack, PrimMonad m, MVector v a)
-                => v (PrimState m) a -> Int -> m (v (PrimState m) a)
+     => v (PrimState m) a -> Int -> m (v (PrimState m) a)
 {-# INLINE grow #-}
 grow v by = checkLength Bounds by
           $ stToPrim
@@ -693,12 +691,12 @@ grow v by = checkLength Bounds by
                basicInitialize $ basicUnsafeSlice (length v) by vnew
                return vnew
 
--- | Same as `grow`, except that it copies data towards the end of the newly
--- allocated vector making extra space available at the beginning.
+-- | Same as 'grow', except that it copies data towards the end of the newly
+-- allocated vector, making extra space available at the beginning.
 --
 -- @since 0.11.0.0
 growFront :: (HasCallStack, PrimMonad m, MVector v a)
-                => v (PrimState m) a -> Int -> m (v (PrimState m) a)
+          => v (PrimState m) a -> Int -> m (v (PrimState m) a)
 {-# INLINE growFront #-}
 growFront v by = checkLength Bounds by
                $ stToPrim
@@ -709,9 +707,9 @@ growFront v by = checkLength Bounds by
 enlarge_delta :: MVector v a => v s a -> Int
 enlarge_delta v = max (length v) 1
 
--- | Grow a vector logarithmically
+-- | Grow a vector logarithmically.
 enlarge :: (PrimMonad m, MVector v a)
-                => v (PrimState m) a -> m (v (PrimState m) a)
+        => v (PrimState m) a -> m (v (PrimState m) a)
 {-# INLINE enlarge #-}
 enlarge v = stToPrim $ do
   vnew <- unsafeGrow v by
@@ -721,7 +719,7 @@ enlarge v = stToPrim $ do
     by = enlarge_delta v
 
 enlargeFront :: (PrimMonad m, MVector v a)
-                => v (PrimState m) a -> m (v (PrimState m) a, Int)
+             => v (PrimState m) a -> m (v (PrimState m) a, Int)
 {-# INLINE enlargeFront #-}
 enlargeFront v = stToPrim $ do
                    v' <- unsafeGrowFront v by
@@ -731,41 +729,41 @@ enlargeFront v = stToPrim $ do
     by = enlarge_delta v
 
 -- | Grow a vector by allocating a new mutable vector of the same size plus the
--- the given number of elements and copying all the data over to the new vector
+-- the given number of elements and copying all the data over to the new vector,
 -- starting at its beginning. The newly allocated memory is not initialized and
--- the extra space at the end will likely contain garbage data or uninitialzed
--- error. Use `unsafeGrowFront` to make the extra space available in the front
+-- the extra space at the end will likely contain garbage data or bottoms.
+-- Use 'unsafeGrowFront' to make the extra space available in the front
 -- of the new vector.
 --
 -- It is important to note that mutating the returned vector will not affect
--- elements of the vector that was used as a source. In other words it does not,
+-- elements of the vector that was used as a source. In other words, it does not,
 -- nor will it ever have the semantics of @realloc@ from C. Keep in mind,
 -- however, that values themselves can be of a mutable type
--- (eg. `Foreign.Ptr.Ptr`), in which case it would be possible to affect values
+-- (eg. 'Foreign.Ptr.Ptr'), in which case it would be possible to affect values
 -- stored in both vectors.
 --
 -- > unsafeGrow mv 0 === clone mv
 --
 -- @since 0.4.0
-unsafeGrow ::
-     (PrimMonad m, MVector v a)
+unsafeGrow
+  :: (PrimMonad m, MVector v a)
   => v (PrimState m) a
-  -- ^ A mutable vector to copy the data from.
+  -- ^ mutable vector to copy from
   -> Int
-  -- ^ Number of elements to grow the vector by. It must be non-negative but
-  -- this is not checked.
+  -- ^ number of elements to grow the vector by (must be non-negative, but
+  -- this is not checked)
   -> m (v (PrimState m) a)
 {-# INLINE unsafeGrow #-}
 unsafeGrow v n = checkLength Unsafe n
                $ stToPrim
                $ basicUnsafeGrow v n
 
--- | Same as `unsafeGrow`, except that it copies data towards the end of the
--- newly allocated vector making extra space available at the beginning.
+-- | Same as 'unsafeGrow', except that it copies data towards the end of the
+-- newly allocated vector, making extra space available at the beginning.
 --
 -- @since 0.11.0.0
 unsafeGrowFront :: (PrimMonad m, MVector v a)
-                        => v (PrimState m) a -> Int -> m (v (PrimState m) a)
+                => v (PrimState m) a -> Int -> m (v (PrimState m) a)
 {-# INLINE unsafeGrowFront #-}
 unsafeGrowFront v by = checkLength Unsafe by $ stToPrim $ do
                          let n = length v
@@ -831,8 +829,7 @@ unsafeRead v i = checkIndex Unsafe i (length v)
                $ basicUnsafeRead v i
 
 -- | Replace the element at the given position. No bounds checks are performed.
-unsafeWrite :: (PrimMonad m, MVector v a)
-                                => v (PrimState m) a -> Int -> a -> m ()
+unsafeWrite :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m ()
 {-# INLINE unsafeWrite #-}
 unsafeWrite v i x = checkIndex Unsafe i (length v)
                   $ stToPrim
@@ -856,8 +853,7 @@ unsafeModifyM v f i = checkIndex Unsafe i (length v)
                     $ stToPrim . basicUnsafeWrite v i =<< f =<< stToPrim (basicUnsafeRead v i)
 
 -- | Swap the elements at the given positions. No bounds checks are performed.
-unsafeSwap :: (PrimMonad m, MVector v a)
-                => v (PrimState m) a -> Int -> Int -> m ()
+unsafeSwap :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> Int -> m ()
 {-# INLINE unsafeSwap #-}
 unsafeSwap v i j = checkIndex Unsafe i (length v)
                  $ checkIndex Unsafe j (length v)
@@ -869,8 +865,7 @@ unsafeSwap v i j = checkIndex Unsafe i (length v)
 
 -- | Replace the element at the given position and return the old element. No
 -- bounds checks are performed.
-unsafeExchange :: (PrimMonad m, MVector v a)
-                                => v (PrimState m) a -> Int -> a -> m a
+unsafeExchange :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m a
 {-# INLINE unsafeExchange #-}
 unsafeExchange v i x = checkIndex Unsafe i (length v) $ stToPrim $ do
                          y <- unsafeRead v i
@@ -903,7 +898,7 @@ imapM_ :: (PrimMonad m, MVector v a) => (Int -> a -> m b) -> v (PrimState m) a -
 imapM_ f v = forI_ v $ \i -> f i =<< unsafeRead v i
 
 -- | /O(n)/ Apply the monadic action to every element of the vector,
--- discarding the results. It's same as the @flip mapM_@.
+-- discarding the results. It's the same as @flip mapM_@.
 --
 -- @since 0.12.3.0
 forM_ :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m b) -> m ()
@@ -911,7 +906,7 @@ forM_ :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m b) -> m ()
 forM_ = flip mapM_
 
 -- | /O(n)/ Apply the monadic action to every element of the vector
--- and its index, discarding the results. It's same as the @flip imapM_@.
+-- and its index, discarding the results. It's the same as @flip imapM_@.
 --
 -- @since 0.12.3.0
 iforM_ :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (Int -> a -> m b) -> m ()
@@ -932,14 +927,14 @@ foldl' :: (PrimMonad m, MVector v a) => (b -> a -> b) -> b -> v (PrimState m) a 
 {-# INLINE foldl' #-}
 foldl' f = ifoldl' (\b _ -> f b)
 
--- | /O(n)/ Pure left fold (function applied to each element and its index).
+-- | /O(n)/ Pure left fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldl :: (PrimMonad m, MVector v a) => (b -> Int -> a -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldl #-}
 ifoldl f b0 v = stToPrim $ ifoldM (\b i a -> return $ f b i a) b0 v
 
--- | /O(n)/ Pure left fold with strict accumulator (function applied to each element and its index).
+-- | /O(n)/ Pure left fold with strict accumulator using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldl' :: (PrimMonad m, MVector v a) => (b -> Int -> a -> b) -> b -> v (PrimState m) a -> m b
@@ -960,15 +955,15 @@ foldr' :: (PrimMonad m, MVector v a) => (a -> b -> b) -> b -> v (PrimState m) a 
 {-# INLINE foldr' #-}
 foldr' f = ifoldr' (const f)
 
--- | /O(n)/ Pure right fold (function applied to each element and its index).
+-- | /O(n)/ Pure right fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldr :: (PrimMonad m, MVector v a) => (Int -> a -> b -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldr #-}
 ifoldr f b0 v = stToPrim $ ifoldrM (\i a b -> return $ f i a b) b0 v
 
--- | /O(n)/ Pure right fold with strict accumulator (function applied
--- to each element and its index).
+-- | /O(n)/ Pure right fold with strict accumulator using a function applied
+-- to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldr' :: (PrimMonad m, MVector v a) => (Int -> a -> b -> b) -> b -> v (PrimState m) a -> m b
@@ -989,7 +984,7 @@ foldM' :: (PrimMonad m, MVector v a) => (b -> a -> m b) -> b -> v (PrimState m) 
 {-# INLINE foldM' #-}
 foldM' f = ifoldM' (\x _ -> f x)
 
--- | /O(n)/ Monadic fold (action applied to each element and its index).
+-- | /O(n)/ Monadic fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldM :: (PrimMonad m, MVector v a) => (b -> Int -> a -> m b) -> b -> v (PrimState m) a -> m b
@@ -1001,7 +996,7 @@ ifoldM f b0 v = loop 0 b0
                               loop (i + 1) =<< f b i a
     n = length v
 
--- | /O(n)/ Monadic fold with strict accumulator (action applied to each element and its index).
+-- | /O(n)/ Monadic fold with strict accumulator using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldM' :: (PrimMonad m, MVector v a) => (b -> Int -> a -> m b) -> b -> v (PrimState m) a -> m b
@@ -1027,7 +1022,7 @@ foldrM' :: (PrimMonad m, MVector v a) => (a -> b -> m b) -> b -> v (PrimState m)
 {-# INLINE foldrM' #-}
 foldrM' f = ifoldrM' (const f)
 
--- | /O(n)/ Monadic right fold (action applied to each element and its index).
+-- | /O(n)/ Monadic right fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldrM :: (PrimMonad m, MVector v a) => (Int -> a -> b -> m b) -> b -> v (PrimState m) a -> m b
@@ -1039,8 +1034,8 @@ ifoldrM f b0 v = loop (n-1) b0
                               loop (i - 1) =<< f i a b
     n = length v
 
--- | /O(n)/ Monadic right fold with strict accumulator (action applied
--- to each element and its index).
+-- | /O(n)/ Monadic right fold with strict accumulator using a function applied
+-- to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldrM' :: (PrimMonad m, MVector v a) => (Int -> a -> b -> m b) -> b -> v (PrimState m) a -> m b
@@ -1052,6 +1047,44 @@ ifoldrM' f b0 v = loop (n-1) b0
                                loop (i - 1) =<< f i a b
     n = length v
 
+-- Modifying vectors
+-- -----------------
+
+{-
+http://en.wikipedia.org/wiki/Permutation#Algorithms_to_generate_permutations
+
+The following algorithm generates the next permutation lexicographically after
+a given permutation. It changes the given permutation in-place.
+
+1. Find the largest index k such that a[k] < a[k + 1]. If no such index exists,
+   the permutation is the last permutation.
+2. Find the largest index l greater than k such that a[k] < a[l].
+3. Swap the value of a[k] with that of a[l].
+4. Reverse the sequence from a[k + 1] up to and including the final element a[n]
+-}
+
+-- | Compute the (lexicographically) next permutation of the given vector in-place.
+-- Returns False when the input is the last permutation.
+nextPermutation :: (PrimMonad m,Ord e,MVector v e) => v (PrimState m) e -> m Bool
+nextPermutation v
+    | dim < 2 = return False
+    | otherwise = do
+        val <- unsafeRead v 0
+        (k,l) <- loop val (-1) 0 val 1
+        if k < 0
+         then return False
+         else unsafeSwap v k l >>
+              reverse (unsafeSlice (k+1) (dim-k-1) v) >>
+              return True
+    where loop !kval !k !l !prev !i
+              | i == dim = return (k,l)
+              | otherwise  = do
+                  cur <- unsafeRead v i
+                  -- TODO: make tuple unboxed
+                  let (kval',k') = if prev < cur then (prev,i-1) else (kval,k)
+                      l' = if kval' < cur then i else l
+                  loop kval' k' l' cur (i+1)
+          dim = length v
 
 -- Filling and copying
 -- -------------------
@@ -1059,13 +1092,14 @@ ifoldrM' f b0 v = loop (n-1) b0
 -- | Set all elements of the vector to the given value.
 set :: (PrimMonad m, MVector v a) => v (PrimState m) a -> a -> m ()
 {-# INLINE set #-}
-set v = stToPrim . basicSet v 
+set v = stToPrim . basicSet v
 
 -- | Copy a vector. The two vectors must have the same length and may not
 -- overlap.
-copy :: (HasCallStack, PrimMonad m, MVector v a) => v (PrimState m) a   -- ^ target
-                                   -> v (PrimState m) a   -- ^ source
-                                   -> m ()
+copy :: (HasCallStack, PrimMonad m, MVector v a)
+     => v (PrimState m) a   -- ^ target
+     -> v (PrimState m) a   -- ^ source
+     -> m ()
 {-# INLINE copy #-}
 copy dst src = check Bounds "overlapping vectors" (not (dst `overlaps` src))
              $ check Bounds "length mismatch" (length dst == length src)
@@ -1087,14 +1121,15 @@ move dst src = check Bounds "length mismatch" (length dst == length src)
              $ unsafeMove dst src
 
 -- | Copy a vector. The two vectors must have the same length and may not
--- overlap. This is not checked.
-unsafeCopy :: (PrimMonad m, MVector v a) => v (PrimState m) a   -- ^ target
-                                         -> v (PrimState m) a   -- ^ source
-                                         -> m ()
+-- overlap, but this is not checked.
+unsafeCopy :: (PrimMonad m, MVector v a)
+           => v (PrimState m) a   -- ^ target
+           -> v (PrimState m) a   -- ^ source
+           -> m ()
 {-# INLINE unsafeCopy #-}
 unsafeCopy dst src = check Unsafe "length mismatch" (length dst == length src)
                    $ check Unsafe "overlapping vectors" (not (dst `overlaps` src))
-                   $ (dst `seq` src `seq` stToPrim (basicUnsafeCopy dst src))
+                   $ dst `seq` src `seq` stToPrim (basicUnsafeCopy dst src)
 
 -- | Move the contents of a vector. The two vectors must have the same
 -- length, but this is not checked.
@@ -1103,15 +1138,14 @@ unsafeCopy dst src = check Unsafe "length mismatch" (length dst == length src)
 -- Otherwise, the copying is performed as if the source vector were
 -- copied to a temporary vector and then the temporary vector was copied
 -- to the target vector.
-unsafeMove :: (PrimMonad m, MVector v a) => v (PrimState m) a   -- ^ target
-                                         -> v (PrimState m) a   -- ^ source
-                                         -> m ()
+unsafeMove :: (PrimMonad m, MVector v a)
+           => v (PrimState m) a   -- ^ target
+           -> v (PrimState m) a   -- ^ source
+           -> m ()
 {-# INLINE unsafeMove #-}
 unsafeMove dst src = check Unsafe "length mismatch" (length dst == length src)
-                   $ (dst `seq` src `seq` stToPrim (basicUnsafeMove dst src))
+                   $ dst `seq` src `seq` stToPrim (basicUnsafeMove dst src)
 
--- Permutations
--- ------------
 
 accum :: forall m v a b u. (HasCallStack, PrimMonad m, MVector v a)
       => (a -> b -> a) -> v (PrimState m) a -> Bundle u (Int, b) -> m ()
@@ -1333,39 +1367,3 @@ partitionWithUnknown f s
       Right c -> do
         v2' <- unsafeAppend1 v2 i2 c
         return (v1, i1, v2', i2+1)
-
-{-
-http://en.wikipedia.org/wiki/Permutation#Algorithms_to_generate_permutations
-
-The following algorithm generates the next permutation lexicographically after
-a given permutation. It changes the given permutation in-place.
-
-1. Find the largest index k such that a[k] < a[k + 1]. If no such index exists,
-   the permutation is the last permutation.
-2. Find the largest index l greater than k such that a[k] < a[l].
-3. Swap the value of a[k] with that of a[l].
-4. Reverse the sequence from a[k + 1] up to and including the final element a[n]
--}
-
--- | Compute the next (lexicographically) permutation of given vector in-place.
---   Returns False when input is the last permutation
-nextPermutation :: (PrimMonad m,Ord e,MVector v e) => v (PrimState m) e -> m Bool
-nextPermutation v
-    | dim < 2 = return False
-    | otherwise = do
-        val <- unsafeRead v 0
-        (k,l) <- loop val (-1) 0 val 1
-        if k < 0
-         then return False
-         else unsafeSwap v k l >>
-              reverse (unsafeSlice (k+1) (dim-k-1) v) >>
-              return True
-    where loop !kval !k !l !prev !i
-              | i == dim = return (k,l)
-              | otherwise  = do
-                  cur <- unsafeRead v i
-                  -- TODO: make tuple unboxed
-                  let (kval',k') = if prev < cur then (prev,i-1) else (kval,k)
-                      l' = if kval' < cur then i else l
-                  loop kval' k' l' cur (i+1)
-          dim = length v

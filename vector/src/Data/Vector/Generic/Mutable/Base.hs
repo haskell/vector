@@ -11,8 +11,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- Class of mutable vectors
---
+-- Class of mutable vectors.
 
 module Data.Vector.Generic.Mutable.Base (
   MVector(..)
@@ -24,8 +23,7 @@ import Control.Monad.ST
 #define NOT_VECTOR_MODULE
 #include "vector.h"
 
--- | Class of mutable vectors parametrised with a primitive state token.
---
+-- | Class of mutable vectors parameterised with a primitive state token.
 class MVector v a where
   -- | Length of the mutable vector. This method should not be
   -- called directly, use 'length' instead.
