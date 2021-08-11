@@ -145,7 +145,7 @@ module Data.Vector.Primitive (
   toList, fromList, fromListN,
 
   -- ** Other vector types
-  G.convert,
+  G.convert, unsafeCast,
   unsafeCoerceVector,
 
   -- ** Mutable vectors
@@ -157,6 +157,7 @@ module Data.Vector.Primitive (
 
 import qualified Data.Vector.Generic           as G
 import           Data.Vector.Primitive.Mutable ( MVector(..) )
+import           Data.Vector.Internal.Check
 import qualified Data.Vector.Fusion.Bundle as Bundle
 import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim, sizeOf )
@@ -203,7 +204,7 @@ type role Vector nominal
 -- This is marginally safer than 'unsafeCast', since this function imposes an
 -- extra 'Coercible' constraint. This function is still not safe, however,
 -- since it cannot guarantee that the two types have memory-compatible
--- 'Storable' instances.
+-- 'Prim' instances.
 --
 -- Note that this function is unsafe. The @Coercible@ constraint guarantees
 -- that the element types are representationally equal. It however cannot
@@ -1768,6 +1769,22 @@ fromList = G.fromList
 fromListN :: Prim a => Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
 fromListN = G.fromListN
+
+-- Conversions - Unsafe casts
+-- --------------------------
+
+-- | /O(1)/ Unsafely cast a vector from one element type to another.
+-- This operation just changes the type of the vector and does not
+-- modify the elements.
+--
+-- This function will throw an error if elements are of mismatching sizes.
+--
+-- | @since 0.13.0.0
+unsafeCast :: forall a b. (HasCallStack, Prim a, Prim b) => Vector a -> Vector b
+{-# INLINE unsafeCast #-}
+unsafeCast (Vector o n ba)
+  | sizeOf (undefined :: a) == sizeOf (undefined :: b) = Vector o n ba
+  | otherwise = error "Element size mismatch"
 
 -- Conversions - Mutable vectors
 -- -----------------------------
