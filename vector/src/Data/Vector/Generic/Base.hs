@@ -27,10 +27,11 @@ import qualified Data.Vector.Generic.Mutable.Base as M
 import           Data.Vector.Fusion.Util (Box(..), liftBox)
 
 import Control.Monad.ST
+import Data.Kind (Type)
 
 -- | @Mutable v s a@ is the mutable version of the immutable vector type @v a@ with
 -- the state token @s@. It is injective on GHC 8 and newer.
-type family Mutable (v :: * -> *) = (mv :: * -> * -> *) | mv -> v
+type family Mutable (v :: Type -> Type) = (mv :: Type -> Type -> Type) | mv -> v
 
 -- | Class of immutable vectors. Every immutable vector is associated with its
 -- mutable version through the 'Mutable' type family. Methods of this class
