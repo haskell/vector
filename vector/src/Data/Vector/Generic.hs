@@ -245,8 +245,10 @@ infixl 9 !?
 -- | O(1) Safe indexing.
 (!?) :: Vector v a => v a -> Int -> Maybe a
 {-# INLINE_FUSED (!?) #-}
-v !? i | i < 0 || i >= length v = Nothing
-       | otherwise              = Just $ unsafeIndex v i
+-- Use basicUnsafeIndexM @Box to perform the indexing eagerly.
+v !? i | i `inRange` length v = case basicUnsafeIndexM v i of Box a -> Just a
+       | otherwise            = Nothing
+
 
 -- | /O(1)/ First element.
 head :: Vector v a => v a -> a
