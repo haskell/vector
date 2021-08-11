@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Tests.Vector.UnitTests (tests) where
@@ -156,13 +155,11 @@ alignedDoubleVec = Storable.fromList $ map Aligned [1, 2, 3, 4, 5]
 alignedIntVec :: Storable.Vector (Aligned Int)
 alignedIntVec = Storable.fromList $ map Aligned [1, 2, 3, 4, 5]
 
-#if __GLASGOW_HASKELL__ >= 800
 -- Ensure that Mutable is really an injective type family by typechecking a
 -- function which relies on injectivity.
 _f :: (Generic.Vector v a, Generic.Vector w a, PrimMonad f)
    => Generic.Mutable v (PrimState f) a -> f (w a)
 _f v = Generic.convert `fmap` Generic.unsafeFreeze v
-#endif
 
 checkMonadFix :: Assertion
 checkMonadFix = assertBool "checkMonadFix" $

@@ -1,13 +1,10 @@
 {-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
-#if __GLASGOW_HASKELL__ >= 800
 {-# LANGUAGE TypeFamilyDependencies #-}
-#endif
 {-# OPTIONS_HADDOCK hide #-}
 
 -- |
@@ -33,11 +30,7 @@ import Control.Monad.ST
 
 -- | @Mutable v s a@ is the mutable version of the immutable vector type @v a@ with
 -- the state token @s@. It is injective on GHC 8 and newer.
-#if MIN_VERSION_base(4,9,0)
 type family Mutable (v :: * -> *) = (mv :: * -> * -> *) | mv -> v
-#else
-type family Mutable (v :: * -> *) :: * -> * -> *
-#endif
 
 -- | Class of immutable vectors. Every immutable vector is associated with its
 -- mutable version through the 'Mutable' type family. Methods of this class

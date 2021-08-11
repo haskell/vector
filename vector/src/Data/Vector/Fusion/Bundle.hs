@@ -100,10 +100,7 @@ import Prelude hiding ( length, null,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_ )
 
-#if MIN_VERSION_base(4,9,0)
 import Data.Functor.Classes (Eq1 (..), Ord1 (..))
-#endif
-
 import GHC.Base ( build )
 
 -- Data.Vector.Internal.Check is unused
@@ -517,7 +514,6 @@ instance Ord a => Ord (M.Bundle Id v a) where
   {-# INLINE compare #-}
   compare = cmp
 
-#if MIN_VERSION_base(4,9,0)
 instance Eq1 (M.Bundle Id v) where
   {-# INLINE liftEq #-}
   liftEq = eqBy
@@ -525,7 +521,6 @@ instance Eq1 (M.Bundle Id v) where
 instance Ord1 (M.Bundle Id v) where
   {-# INLINE liftCompare #-}
   liftCompare = cmpBy
-#endif
 
 -- Monadic combinators
 -- -------------------
