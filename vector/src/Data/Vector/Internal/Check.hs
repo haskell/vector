@@ -18,7 +18,8 @@ module Data.Vector.Internal.Check (
   Checks(..), doChecks,
 
   internalError,
-  check, checkIndex, checkLength, checkSlice
+  check, checkIndex, checkLength, checkSlice,
+  inRange
 ) where
 
 import GHC.Base( Int(..) )
@@ -112,7 +113,7 @@ checkIndex_msg# i# n# = "index out of bounds " ++ show (I# i#, I# n#)
 checkIndex :: HasCallStack => Checks -> Int -> Int -> a -> a
 {-# INLINE checkIndex #-}
 checkIndex kind i n x
-  = check kind (checkIndex_msg i n) (i >= 0 && i<n) x
+  = check kind (checkIndex_msg i n) (inRange i n) x
 
 
 checkLength_msg :: Int -> String
@@ -141,3 +142,8 @@ checkSlice :: HasCallStack => Checks -> Int -> Int -> Int -> a -> a
 checkSlice kind i m n x
   = check kind (checkSlice_msg i m n) (i >= 0 && m >= 0 && m <= n - i) x
 
+-- Lengths are never negative, so we can check  0 <= i < length v
+-- using one unsigned comparison.
+inRange :: Int -> Int -> Bool
+{-# INLINE inRange #-}
+inRange i n = (fromIntegral i :: Word) < (fromIntegral n :: Word)

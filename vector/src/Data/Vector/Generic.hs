@@ -245,13 +245,10 @@ infixl 9 !?
 -- | O(1) Safe indexing.
 (!?) :: Vector v a => v a -> Int -> Maybe a
 {-# INLINE_FUSED (!?) #-}
--- Lengths are never negative, so we can check  0 <= i < length v
--- using one unsigned comparison.
-v !? i | (fromIntegral i :: Word) >= fromIntegral (length v)
-       = Nothing
-       | otherwise
-         -- Use basicUnsafeIndexM @Maybe to perform the indexing eagerly.
-       = case basicUnsafeIndexM v i of Box a -> Just a
+-- Use basicUnsafeIndexM @Maybe to perform the indexing eagerly.
+v !? i | i `inRange` length v = case basicUnsafeIndexM v i of Box a -> Just a
+       | otherwise            = Nothing
+
 
 -- | /O(1)/ First element.
 head :: Vector v a => v a -> a
