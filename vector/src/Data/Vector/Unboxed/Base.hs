@@ -7,7 +7,9 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_HADDOCK hide #-}
 -- |
 -- Module      : Data.Vector.Unboxed.Base
@@ -227,19 +229,19 @@ instance P.Prim a => M.MVector MVector (UnboxViaPrim a) where
   {-# INLINE basicSet #-}
   {-# INLINE basicUnsafeCopy #-}
   {-# INLINE basicUnsafeGrow #-}
-  basicLength (MV_UnboxViaPrim v) = M.basicLength v
-  basicUnsafeSlice i n (MV_UnboxViaPrim v) = MV_UnboxViaPrim $ M.basicUnsafeSlice i n v
-  basicOverlaps (MV_UnboxViaPrim v1) (MV_UnboxViaPrim v2) = M.basicOverlaps v1 v2
-  basicUnsafeNew n = MV_UnboxViaPrim `liftM` M.basicUnsafeNew n
-  basicInitialize (MV_UnboxViaPrim v) = M.basicInitialize v
-  basicUnsafeReplicate n (UnboxViaPrim x) = MV_UnboxViaPrim `liftM` M.basicUnsafeReplicate n x
-  basicUnsafeRead (MV_UnboxViaPrim v) i = UnboxViaPrim `liftM` M.basicUnsafeRead v i
-  basicUnsafeWrite (MV_UnboxViaPrim v) i (UnboxViaPrim x) = M.basicUnsafeWrite v i x
-  basicClear (MV_UnboxViaPrim v) = M.basicClear v
-  basicSet (MV_UnboxViaPrim v) (UnboxViaPrim x) = M.basicSet v x
-  basicUnsafeCopy (MV_UnboxViaPrim v1) (MV_UnboxViaPrim v2) = M.basicUnsafeCopy v1 v2
-  basicUnsafeMove (MV_UnboxViaPrim v1) (MV_UnboxViaPrim v2) = M.basicUnsafeMove v1 v2
-  basicUnsafeGrow (MV_UnboxViaPrim v) n = MV_UnboxViaPrim `liftM` M.basicUnsafeGrow v n
+  basicLength          = coerce $ M.basicLength          @P.MVector @a
+  basicUnsafeSlice     = coerce $ M.basicUnsafeSlice     @P.MVector @a
+  basicOverlaps        = coerce $ M.basicOverlaps        @P.MVector @a
+  basicUnsafeNew       = coerce $ M.basicUnsafeNew       @P.MVector @a
+  basicInitialize      = coerce $ M.basicInitialize      @P.MVector @a
+  basicUnsafeReplicate = coerce $ M.basicUnsafeReplicate @P.MVector @a
+  basicUnsafeRead      = coerce $ M.basicUnsafeRead      @P.MVector @a
+  basicUnsafeWrite     = coerce $ M.basicUnsafeWrite     @P.MVector @a
+  basicClear           = coerce $ M.basicClear           @P.MVector @a
+  basicSet             = coerce $ M.basicSet             @P.MVector @a
+  basicUnsafeCopy      = coerce $ M.basicUnsafeCopy      @P.MVector @a
+  basicUnsafeMove      = coerce $ M.basicUnsafeMove      @P.MVector @a
+  basicUnsafeGrow      = coerce $ M.basicUnsafeGrow      @P.MVector @a
 
 instance P.Prim a => G.Vector Vector (UnboxViaPrim a) where
   {-# INLINE basicUnsafeFreeze #-}
@@ -248,12 +250,12 @@ instance P.Prim a => G.Vector Vector (UnboxViaPrim a) where
   {-# INLINE basicUnsafeSlice #-}
   {-# INLINE basicUnsafeIndexM #-}
   {-# INLINE elemseq #-}
-  basicUnsafeFreeze (MV_UnboxViaPrim v) = V_UnboxViaPrim `liftM` G.basicUnsafeFreeze v
-  basicUnsafeThaw (V_UnboxViaPrim v) = MV_UnboxViaPrim `liftM` G.basicUnsafeThaw v
-  basicLength (V_UnboxViaPrim v) = G.basicLength v
-  basicUnsafeSlice i n (V_UnboxViaPrim v) = V_UnboxViaPrim $ G.basicUnsafeSlice i n v
-  basicUnsafeIndexM (V_UnboxViaPrim v) i = UnboxViaPrim <$> G.basicUnsafeIndexM v i
-  basicUnsafeCopy (MV_UnboxViaPrim mv) (V_UnboxViaPrim v) = G.basicUnsafeCopy mv v
+  basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @P.Vector @a
+  basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @P.Vector @a
+  basicLength       = coerce $ G.basicLength       @P.Vector @a
+  basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @P.Vector @a
+  basicUnsafeIndexM = coerce $ G.basicUnsafeIndexM @P.Vector @a
+  basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @P.Vector @a
   elemseq _ = seq
 
 -- | Isomorphism between type @a@ and its representation in unboxed
@@ -666,7 +668,7 @@ instance inst_ctxt => G.Vector Vector (inst_head) where { \
 ; basicUnsafeSlice i n (con v)      = con $ G.basicUnsafeSlice i n v      \
 ; basicUnsafeIndexM (con v) i       = tyC `liftM` G.basicUnsafeIndexM v i \
 ; basicUnsafeCopy (mcon mv) (con v) = G.basicUnsafeCopy mv v              \
-; elemseq _ (tyC a)                 = G.elemseq (undefined :: Vector a) a \
+; elemseq _ (tyC a)                 = G.elemseq (undefined :: Vector x) a \
 }
 #define deriveNewtypeInstances(inst_ctxt,inst_head,rep,tyC,con,mcon) \
 newtype instance MVector s (inst_head) = mcon (MVector s (rep)) ;\
