@@ -551,6 +551,69 @@ unsafeExchange :: (PrimMonad m, Storable a) => MVector (PrimState m) a -> Int ->
 {-# INLINE unsafeExchange #-}
 unsafeExchange = G.unsafeExchange
 
+-- Filling and copying
+-- -------------------
+
+-- | Set all elements of the vector to the given value.
+set :: (PrimMonad m, Storable a) => MVector (PrimState m) a -> a -> m ()
+{-# INLINE set #-}
+set = G.set
+
+-- | Copy a vector. The two vectors must have the same length and may not
+-- overlap.
+copy :: (PrimMonad m, Storable a)
+     => MVector (PrimState m) a   -- ^ target
+     -> MVector (PrimState m) a   -- ^ source
+     -> m ()
+{-# INLINE copy #-}
+copy = G.copy
+
+-- | Copy a vector. The two vectors must have the same length and may not
+-- overlap, but this is not checked.
+unsafeCopy :: (PrimMonad m, Storable a)
+           => MVector (PrimState m) a   -- ^ target
+           -> MVector (PrimState m) a   -- ^ source
+           -> m ()
+{-# INLINE unsafeCopy #-}
+unsafeCopy = G.unsafeCopy
+
+-- | Move the contents of a vector. The two vectors must have the same
+-- length.
+--
+-- If the vectors do not overlap, then this is equivalent to 'copy'.
+-- Otherwise, the copying is performed as if the source vector were
+-- copied to a temporary vector and then the temporary vector was copied
+-- to the target vector.
+move :: (PrimMonad m, Storable a)
+     => MVector (PrimState m) a   -- ^ target
+     -> MVector (PrimState m) a   -- ^ source
+     -> m ()
+{-# INLINE move #-}
+move = G.move
+
+-- | Move the contents of a vector. The two vectors must have the same
+-- length, but this is not checked.
+--
+-- If the vectors do not overlap, then this is equivalent to 'unsafeCopy'.
+-- Otherwise, the copying is performed as if the source vector were
+-- copied to a temporary vector and then the temporary vector was copied
+-- to the target vector.
+unsafeMove :: (PrimMonad m, Storable a)
+           => MVector (PrimState m) a   -- ^ target
+           -> MVector (PrimState m) a   -- ^ source
+           -> m ()
+{-# INLINE unsafeMove #-}
+unsafeMove = G.unsafeMove
+
+-- Modifying vectors
+-- -----------------
+
+-- | Compute the (lexicographically) next permutation of the given vector in-place.
+-- Returns False when the input is the last permutation.
+nextPermutation :: (PrimMonad m, Storable e, Ord e) => MVector (PrimState m) e -> m Bool
+{-# INLINE nextPermutation #-}
+nextPermutation = G.nextPermutation
+
 -- Folds
 -- -----
 
@@ -697,69 +760,6 @@ ifoldrM = G.ifoldrM
 ifoldrM' :: (PrimMonad m, Storable a) => (Int -> a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldrM' #-}
 ifoldrM' = G.ifoldrM'
-
--- Modifying vectors
--- -----------------
-
--- | Compute the (lexicographically) next permutation of the given vector in-place.
--- Returns False when the input is the last permutation.
-nextPermutation :: (PrimMonad m, Storable e, Ord e) => MVector (PrimState m) e -> m Bool
-{-# INLINE nextPermutation #-}
-nextPermutation = G.nextPermutation
-
--- Filling and copying
--- -------------------
-
--- | Set all elements of the vector to the given value.
-set :: (PrimMonad m, Storable a) => MVector (PrimState m) a -> a -> m ()
-{-# INLINE set #-}
-set = G.set
-
--- | Copy a vector. The two vectors must have the same length and may not
--- overlap.
-copy :: (PrimMonad m, Storable a)
-     => MVector (PrimState m) a   -- ^ target
-     -> MVector (PrimState m) a   -- ^ source
-     -> m ()
-{-# INLINE copy #-}
-copy = G.copy
-
--- | Move the contents of a vector. The two vectors must have the same
--- length.
---
--- If the vectors do not overlap, then this is equivalent to 'copy'.
--- Otherwise, the copying is performed as if the source vector were
--- copied to a temporary vector and then the temporary vector was copied
--- to the target vector.
-move :: (PrimMonad m, Storable a)
-     => MVector (PrimState m) a   -- ^ target
-     -> MVector (PrimState m) a   -- ^ source
-     -> m ()
-{-# INLINE move #-}
-move = G.move
-
--- | Copy a vector. The two vectors must have the same length and may not
--- overlap, but this is not checked.
-unsafeCopy :: (PrimMonad m, Storable a)
-           => MVector (PrimState m) a   -- ^ target
-           -> MVector (PrimState m) a   -- ^ source
-           -> m ()
-{-# INLINE unsafeCopy #-}
-unsafeCopy = G.unsafeCopy
-
--- | Move the contents of a vector. The two vectors must have the same
--- length, but this is not checked.
---
--- If the vectors do not overlap, then this is equivalent to 'unsafeCopy'.
--- Otherwise, the copying is performed as if the source vector were
--- copied to a temporary vector and then the temporary vector was copied
--- to the target vector.
-unsafeMove :: (PrimMonad m, Storable a)
-           => MVector (PrimState m) a   -- ^ target
-           -> MVector (PrimState m) a   -- ^ source
-           -> m ()
-{-# INLINE unsafeMove #-}
-unsafeMove = G.unsafeMove
 
 -- Unsafe conversions
 -- ------------------

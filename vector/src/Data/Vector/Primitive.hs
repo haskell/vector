@@ -201,9 +201,10 @@ type role Vector nominal
 -- representationally equal type. The operation just changes the type of the
 -- underlying pointer and does not modify the elements.
 --
--- Note that this function is unsafe. The @Coercible@ constraint guarantees
--- that the element types are representationally equal. It however cannot
--- guarantee that their respective 'Prim' instances are compatible.
+-- This is marginally safer than 'unsafeCast', since this function imposes an
+-- extra 'Coercible' constraint. The constraint guarantees that the element types
+-- are representationally equal. It however cannot guarantee
+-- that their respective 'Prim' instances are compatible.
 unsafeCoerceVector :: Coercible a b => Vector a -> Vector b
 unsafeCoerceVector = unsafeCoerce
 

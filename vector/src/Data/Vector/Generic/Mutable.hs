@@ -571,6 +571,16 @@ unsafeSlice :: MVector v a => Int  -- ^ starting index
 unsafeSlice i n v = checkSlice Unsafe i n (length v)
                   $ basicUnsafeSlice i n v
 
+-- | Same as 'init', but doesn't do range checks.
+unsafeInit :: MVector v a => v s a -> v s a
+{-# INLINE unsafeInit #-}
+unsafeInit v = unsafeSlice 0 (length v - 1) v
+
+-- | Same as 'tail', but doesn't do range checks.
+unsafeTail :: MVector v a => v s a -> v s a
+{-# INLINE unsafeTail #-}
+unsafeTail v = unsafeSlice 1 (length v - 1) v
+
 -- | Unsafe variant of 'take'. If @n@ is out of range, it will
 -- simply create an invalid slice that likely violate memory safety.
 unsafeTake :: MVector v a => Int -> v s a -> v s a
@@ -582,16 +592,6 @@ unsafeTake n v = unsafeSlice 0 n v
 unsafeDrop :: MVector v a => Int -> v s a -> v s a
 {-# INLINE unsafeDrop #-}
 unsafeDrop n v = unsafeSlice n (length v - n) v
-
--- | Same as 'init', but doesn't do range checks.
-unsafeInit :: MVector v a => v s a -> v s a
-{-# INLINE unsafeInit #-}
-unsafeInit v = unsafeSlice 0 (length v - 1) v
-
--- | Same as 'tail', but doesn't do range checks.
-unsafeTail :: MVector v a => v s a -> v s a
-{-# INLINE unsafeTail #-}
-unsafeTail v = unsafeSlice 1 (length v - 1) v
 
 -- Overlapping
 -- -----------
@@ -1047,45 +1047,6 @@ ifoldrM' f b0 v = loop (n-1) b0
                                loop (i - 1) =<< f i a b
     n = length v
 
--- Modifying vectors
--- -----------------
-
-{-
-http://en.wikipedia.org/wiki/Permutation#Algorithms_to_generate_permutations
-
-The following algorithm generates the next permutation lexicographically after
-a given permutation. It changes the given permutation in-place.
-
-1. Find the largest index k such that a[k] < a[k + 1]. If no such index exists,
-   the permutation is the last permutation.
-2. Find the largest index l greater than k such that a[k] < a[l].
-3. Swap the value of a[k] with that of a[l].
-4. Reverse the sequence from a[k + 1] up to and including the final element a[n]
--}
-
--- | Compute the (lexicographically) next permutation of the given vector in-place.
--- Returns False when the input is the last permutation.
-nextPermutation :: (PrimMonad m,Ord e,MVector v e) => v (PrimState m) e -> m Bool
-nextPermutation v
-    | dim < 2 = return False
-    | otherwise = do
-        val <- unsafeRead v 0
-        (k,l) <- loop val (-1) 0 val 1
-        if k < 0
-         then return False
-         else unsafeSwap v k l >>
-              reverse (unsafeSlice (k+1) (dim-k-1) v) >>
-              return True
-    where loop !kval !k !l !prev !i
-              | i == dim = return (k,l)
-              | otherwise  = do
-                  cur <- unsafeRead v i
-                  -- TODO: make tuple unboxed
-                  let (kval',k') = if prev < cur then (prev,i-1) else (kval,k)
-                      l' = if kval' < cur then i else l
-                  loop kval' k' l' cur (i+1)
-          dim = length v
-
 -- Filling and copying
 -- -------------------
 
@@ -1367,3 +1328,42 @@ partitionWithUnknown f s
       Right c -> do
         v2' <- unsafeAppend1 v2 i2 c
         return (v1, i1, v2', i2+1)
+
+-- Modifying vectors
+-- -----------------
+
+{-
+http://en.wikipedia.org/wiki/Permutation#Algorithms_to_generate_permutations
+
+The following algorithm generates the next permutation lexicographically after
+a given permutation. It changes the given permutation in-place.
+
+1. Find the largest index k such that a[k] < a[k + 1]. If no such index exists,
+   the permutation is the last permutation.
+2. Find the largest index l greater than k such that a[k] < a[l].
+3. Swap the value of a[k] with that of a[l].
+4. Reverse the sequence from a[k + 1] up to and including the final element a[n]
+-}
+
+-- | Compute the (lexicographically) next permutation of the given vector in-place.
+-- Returns False when the input is the last permutation.
+nextPermutation :: (PrimMonad m,Ord e,MVector v e) => v (PrimState m) e -> m Bool
+nextPermutation v
+    | dim < 2 = return False
+    | otherwise = do
+        val <- unsafeRead v 0
+        (k,l) <- loop val (-1) 0 val 1
+        if k < 0
+         then return False
+         else unsafeSwap v k l >>
+              reverse (unsafeSlice (k+1) (dim-k-1) v) >>
+              return True
+    where loop !kval !k !l !prev !i
+              | i == dim = return (k,l)
+              | otherwise  = do
+                  cur <- unsafeRead v i
+                  -- TODO: make tuple unboxed
+                  let (kval',k') = if prev < cur then (prev,i-1) else (kval,k)
+                      l' = if kval' < cur then i else l
+                  loop kval' k' l' cur (i+1)
+          dim = length v
