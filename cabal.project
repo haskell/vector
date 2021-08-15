@@ -1,1 +1,3 @@
-packages: vector/vector.cabal
+packages:
+  vector
+  vector-stream
