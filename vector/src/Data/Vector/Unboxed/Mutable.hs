@@ -9,8 +9,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- Mutable adaptive unboxed vectors
---
+-- Mutable adaptive unboxed vectors.
 
 module Data.Vector.Unboxed.Mutable (
   -- * Mutable vectors of primitive types
@@ -84,7 +83,7 @@ length :: Unbox a => MVector s a -> Int
 {-# INLINE length #-}
 length = G.length
 
--- | Check whether the vector is empty
+-- | Check whether the vector is empty.
 null :: Unbox a => MVector s a -> Bool
 {-# INLINE null #-}
 null = G.null
@@ -102,32 +101,37 @@ slice :: Unbox a
 {-# INLINE slice #-}
 slice = G.slice
 
--- | Take @n@ first elements of the mutable vector without making a
--- copy. For negative @n@ empty vector is returned. If @n@ is larger
--- than vector's length empty vector is returned,
+-- | Take the @n@ first elements of the mutable vector without making a
+-- copy. For negative @n@, the empty vector is returned. If @n@ is larger
+-- than the vector's length, the vector is returned unchanged.
 take :: Unbox a => Int -> MVector s a -> MVector s a
 {-# INLINE take #-}
 take = G.take
 
--- | Drop @n@ first element of the mutable vector without making a
--- copy. For negative @n@ vector is returned unchanged and if @n@ is
--- larger than vector's length empty vector is returned.
+-- | Drop the @n@ first element of the mutable vector without making a
+-- copy. For negative @n@, the vector is returned unchanged. If @n@ is
+-- larger than the vector's length, the empty vector is returned.
 drop :: Unbox a => Int -> MVector s a -> MVector s a
 {-# INLINE drop #-}
 drop = G.drop
 
+-- | /O(1)/ Split the mutable vector into the first @n@ elements
+-- and the remainder, without copying.
+--
+-- Note that @'splitAt' n v@ is equivalent to @('take' n v, 'drop' n v)@,
+-- but slightly more efficient.
 splitAt :: Unbox a => Int -> MVector s a -> (MVector s a, MVector s a)
 {-# INLINE splitAt #-}
 splitAt = G.splitAt
 
--- | Drop last element of the mutable vector without making a copy. If
--- vector is empty exception is thrown.
+-- | Drop the last element of the mutable vector without making a copy.
+-- If the vector is empty, an exception is thrown.
 init :: Unbox a => MVector s a -> MVector s a
 {-# INLINE init #-}
 init = G.init
 
--- | Drop first element of the mutable vector without making a copy. If
--- vector is empty exception is thrown.
+-- | Drop the first element of the mutable vector without making a copy.
+-- If the vector is empty, an exception is thrown.
 tail :: Unbox a => MVector s a -> MVector s a
 {-# INLINE tail #-}
 tail = G.tail
@@ -142,24 +146,24 @@ unsafeSlice :: Unbox a
 {-# INLINE unsafeSlice #-}
 unsafeSlice = G.unsafeSlice
 
--- | Unsafe variant of 'take'. If called with out of range @n@ it will
--- simply create invalid slice that likely violate memory safety
+-- | Unsafe variant of 'take'. If @n@ is out of range, it will
+-- simply create an invalid slice that likely violate memory safety.
 unsafeTake :: Unbox a => Int -> MVector s a -> MVector s a
 {-# INLINE unsafeTake #-}
 unsafeTake = G.unsafeTake
 
--- | Unsafe variant of 'drop'. If called with out of range @n@ it will
--- simply create invalid slice that likely violate memory safety
+-- | Unsafe variant of 'drop'. If @n@ is out of range, it will
+-- simply create an invalid slice that likely violate memory safety.
 unsafeDrop :: Unbox a => Int -> MVector s a -> MVector s a
 {-# INLINE unsafeDrop #-}
 unsafeDrop = G.unsafeDrop
 
--- | Same as 'init' but doesn't do range checks.
+-- | Same as 'init', but doesn't do range checks.
 unsafeInit :: Unbox a => MVector s a -> MVector s a
 {-# INLINE unsafeInit #-}
 unsafeInit = G.unsafeInit
 
--- | Same as 'tail' but doesn't do range checks.
+-- | Same as 'tail', but doesn't do range checks.
 unsafeTail :: Unbox a => MVector s a -> MVector s a
 {-# INLINE unsafeTail #-}
 unsafeTail = G.unsafeTail
@@ -181,8 +185,8 @@ new :: (PrimMonad m, Unbox a) => Int -> m (MVector (PrimState m) a)
 new = G.new
 
 -- | Create a mutable vector of the given length. The vector content
---   is uninitialized, which means it is filled with whatever underlying memory
---   buffer happens to contain.
+-- is uninitialized, which means it is filled with whatever the
+-- underlying memory buffer happens to contain.
 --
 -- @since 0.5
 unsafeNew :: (PrimMonad m, Unbox a) => Int -> m (MVector (PrimState m) a)
@@ -203,6 +207,7 @@ replicateM = G.replicateM
 
 -- | /O(n)/ Create a mutable vector of the given length (0 if the length is negative)
 -- and fill it with the results of applying the function to each index.
+-- Iteration starts at index 0.
 --
 -- @since 0.12.3.0
 generate :: (PrimMonad m, Unbox a) => Int -> (Int -> a) -> m (MVector (PrimState m) a)
@@ -228,9 +233,9 @@ clone = G.clone
 -- -------
 
 -- | Grow an unboxed vector by the given number of elements. The number must be
--- non-negative. Same semantics as in `G.grow` for generic vector.
+-- non-negative. It has the same semantics as 'G.grow' for generic vectors.
 --
--- ====__Examples__
+-- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
 -- >>> import qualified Data.Vector.Unboxed.Mutable as MVU
@@ -238,10 +243,10 @@ clone = G.clone
 -- >>> mv' <- MVU.grow mv 2
 --
 -- Extra memory at the end of the newly allocated vector is initialized to 0
--- bytes, which for `Unbox` instance will usually correspond to some default
--- value for a particular type, eg. @0@ for @Int@, @False@ for @Bool@,
--- etc. However, if `unsafeGrow` was used instead this would not have been
--- guaranteed and some garbage would be there instead:
+-- bytes, which for 'Unbox' instance will usually correspond to some default
+-- value for a particular type, e.g. @0@ for @Int@, @False@ for @Bool@,
+-- etc. However, if 'unsafeGrow' was used instead, this would not have been
+-- guaranteed and some garbage would be there instead.
 --
 -- >>> VU.freeze mv'
 -- [('a',10),('b',20),('c',30),('\NUL',0),('\NUL',0)]
@@ -263,16 +268,16 @@ clone = G.clone
 --
 -- @since 0.5
 grow :: (PrimMonad m, Unbox a)
-              => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
+     => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE grow #-}
 grow = G.grow
 
--- | Grow a vector by the given number of elements. The number must be non-negative but
--- this is not checked. Same semantics as in `G.unsafeGrow` for generic vector.
+-- | Grow a vector by the given number of elements. The number must be non-negative, but
+-- this is not checked. This has the same semantics as 'G.unsafeGrow' for generic vectors.
 --
 -- @since 0.5
 unsafeGrow :: (PrimMonad m, Unbox a)
-               => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
+           => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE unsafeGrow #-}
 unsafeGrow = G.unsafeGrow
 
@@ -326,8 +331,7 @@ unsafeRead :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> Int -> m a
 unsafeRead = G.unsafeRead
 
 -- | Replace the element at the given position. No bounds checks are performed.
-unsafeWrite
-    :: (PrimMonad m, Unbox a) =>  MVector (PrimState m) a -> Int -> a -> m ()
+unsafeWrite :: (PrimMonad m, Unbox a) =>  MVector (PrimState m) a -> Int -> a -> m ()
 {-# INLINE unsafeWrite #-}
 unsafeWrite = G.unsafeWrite
 
@@ -345,8 +349,7 @@ unsafeModifyM :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> (a -> m a)
 unsafeModifyM = G.unsafeModifyM
 
 -- | Swap the elements at the given positions. No bounds checks are performed.
-unsafeSwap
-    :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> Int -> Int -> m ()
+unsafeSwap :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> Int -> Int -> m ()
 {-# INLINE unsafeSwap #-}
 unsafeSwap = G.unsafeSwap
 
@@ -374,7 +377,7 @@ copy :: (PrimMonad m, Unbox a)
 copy = G.copy
 
 -- | Copy a vector. The two vectors must have the same length and may not
--- overlap. This is not checked.
+-- overlap, but this is not checked.
 unsafeCopy :: (PrimMonad m, Unbox a)
            => MVector (PrimState m) a   -- ^ target
            -> MVector (PrimState m) a   -- ^ source
@@ -410,12 +413,14 @@ unsafeMove :: (PrimMonad m, Unbox a)
 {-# INLINE unsafeMove #-}
 unsafeMove = G.unsafeMove
 
--- | Compute the next (lexicographically) permutation of given vector in-place.
---   Returns False when input is the last permutation
+-- Modifying vectors
+-- -----------------
+
+-- | Compute the (lexicographically) next permutation of the given vector in-place.
+-- Returns False when the input is the last permutation.
 nextPermutation :: (PrimMonad m,Ord e,Unbox e) => MVector (PrimState m) e -> m Bool
 {-# INLINE nextPermutation #-}
 nextPermutation = G.nextPermutation
-
 
 -- Folds
 -- -----
@@ -436,7 +441,7 @@ imapM_ :: (PrimMonad m, Unbox a) => (Int -> a -> m b) -> MVector (PrimState m) a
 imapM_ = G.imapM_
 
 -- | /O(n)/ Apply the monadic action to every element of the vector,
--- discarding the results. It's same as the @flip mapM_@.
+-- discarding the results. It's the same as @flip mapM_@.
 --
 -- @since 0.12.3.0
 forM_ :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> (a -> m b) -> m ()
@@ -444,7 +449,7 @@ forM_ :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> (a -> m b) -> m ()
 forM_ = G.forM_
 
 -- | /O(n)/ Apply the monadic action to every element of the vector
--- and its index, discarding the results. It's same as the @flip imapM_@.
+-- and its index, discarding the results. It's the same as @flip imapM_@.
 --
 -- @since 0.12.3.0
 iforM_ :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> (Int -> a -> m b) -> m ()
@@ -465,14 +470,14 @@ foldl' :: (PrimMonad m, Unbox a) => (b -> a -> b) -> b -> MVector (PrimState m) 
 {-# INLINE foldl' #-}
 foldl' = G.foldl'
 
--- | /O(n)/ Pure left fold (function applied to each element and its index).
+-- | /O(n)/ Pure left fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldl :: (PrimMonad m, Unbox a) => (b -> Int -> a -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldl #-}
 ifoldl = G.ifoldl
 
--- | /O(n)/ Pure left fold with strict accumulator (function applied to each element and its index).
+-- | /O(n)/ Pure left fold with strict accumulator using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldl' :: (PrimMonad m, Unbox a) => (b -> Int -> a -> b) -> b -> MVector (PrimState m) a -> m b
@@ -493,15 +498,15 @@ foldr' :: (PrimMonad m, Unbox a) => (a -> b -> b) -> b -> MVector (PrimState m) 
 {-# INLINE foldr' #-}
 foldr' = G.foldr'
 
--- | /O(n)/ Pure right fold (function applied to each element and its index).
+-- | /O(n)/ Pure right fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldr :: (PrimMonad m, Unbox a) => (Int -> a -> b -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldr #-}
 ifoldr = G.ifoldr
 
--- | /O(n)/ Pure right fold with strict accumulator (function applied
--- to each element and its index).
+-- | /O(n)/ Pure right fold with strict accumulator using a function applied
+-- to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldr' :: (PrimMonad m, Unbox a) => (Int -> a -> b -> b) -> b -> MVector (PrimState m) a -> m b
@@ -522,14 +527,14 @@ foldM' :: (PrimMonad m, Unbox a) => (b -> a -> m b) -> b -> MVector (PrimState m
 {-# INLINE foldM' #-}
 foldM' = G.foldM'
 
--- | /O(n)/ Monadic fold (action applied to each element and its index).
+-- | /O(n)/ Monadic fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldM :: (PrimMonad m, Unbox a) => (b -> Int -> a -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldM #-}
 ifoldM = G.ifoldM
 
--- | /O(n)/ Monadic fold with strict accumulator (action applied to each element and its index).
+-- | /O(n)/ Monadic fold with strict accumulator using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldM' :: (PrimMonad m, Unbox a) => (b -> Int -> a -> m b) -> b -> MVector (PrimState m) a -> m b
@@ -550,15 +555,15 @@ foldrM' :: (PrimMonad m, Unbox a) => (a -> b -> m b) -> b -> MVector (PrimState 
 {-# INLINE foldrM' #-}
 foldrM' = G.foldrM'
 
--- | /O(n)/ Monadic right fold (action applied to each element and its index).
+-- | /O(n)/ Monadic right fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldrM :: (PrimMonad m, Unbox a) => (Int -> a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldrM #-}
 ifoldrM = G.ifoldrM
 
--- | /O(n)/ Monadic right fold with strict accumulator (action applied
--- to each element and its index).
+-- | /O(n)/ Monadic right fold with strict accumulator using a function applied
+-- to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldrM' :: (PrimMonad m, Unbox a) => (Int -> a -> b -> m b) -> b -> MVector (PrimState m) a -> m b

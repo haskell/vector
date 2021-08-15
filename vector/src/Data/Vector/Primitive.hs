@@ -202,13 +202,9 @@ type role Vector nominal
 -- underlying pointer and does not modify the elements.
 --
 -- This is marginally safer than 'unsafeCast', since this function imposes an
--- extra 'Coercible' constraint. This function is still not safe, however,
--- since it cannot guarantee that the two types have memory-compatible
--- 'Prim' instances.
---
--- Note that this function is unsafe. The @Coercible@ constraint guarantees
--- that the element types are representationally equal. It however cannot
--- guarantee that their respective 'Prim' are compatible.
+-- extra 'Coercible' constraint. The constraint guarantees that the element types
+-- are representationally equal. It however cannot guarantee
+-- that their respective 'Prim' instances are compatible.
 unsafeCoerceVector :: Coercible a b => Vector a -> Vector b
 unsafeCoerceVector = unsafeCoerce
 
