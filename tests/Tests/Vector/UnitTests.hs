@@ -13,6 +13,7 @@ import Data.Typeable
 import qualified Data.List as List
 import qualified Data.Vector.Generic  as Generic
 import qualified Data.Vector as Boxed
+import qualified Data.Vector.Internal.Check as Check
 import qualified Data.Vector.Mutable as MBoxed
 import qualified Data.Vector.Primitive as Primitive
 import qualified Data.Vector.Storable as Storable
@@ -44,6 +45,12 @@ checkAddressAlignment xs = Storable.unsafeWith xs $ \ptr -> do
     dummy :: a
     dummy = undefined
 
+withBoundsChecksOnly :: [TestTree] -> [TestTree]
+withBoundsChecksOnly ts =
+  if Check.doChecks Check.Bounds
+     then ts
+     else []
+
 tests :: [TestTree]
 tests =
   [ testGroup "Data.Vector.Storable.Vector Alignment"
@@ -67,14 +74,15 @@ tests =
       , regression188 ([] :: [Char])
       ]
     ]
-  , testGroup "Negative tests"
-    [ testGroup "slice out of bounds #257"
+  , testGroup "Negative tests" $
+    withBoundsChecksOnly [ testGroup "slice out of bounds #257"
       [ testGroup "Boxed" $ testsSliceOutOfBounds Boxed.slice
       , testGroup "Primitive" $ testsSliceOutOfBounds Primitive.slice
       , testGroup "Storable" $ testsSliceOutOfBounds Storable.slice
       , testGroup "Unboxed" $ testsSliceOutOfBounds Unboxed.slice
-      ]
-    , testGroup "take #282"
+      ]]
+    ++
+    [ testGroup "take #282"
       [ testCase "Boxed" $ testTakeOutOfMemory Boxed.take
       , testCase "Primitive" $ testTakeOutOfMemory Primitive.take
       , testCase "Storable" $ testTakeOutOfMemory Storable.take
