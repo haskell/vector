@@ -304,7 +304,7 @@ instance Prim a => Monoid (Vector a) where
   mempty = empty
 
   {-# INLINE mappend #-}
-  mappend = (++)
+  mappend = (<>)
 
   {-# INLINE mconcat #-}
   mconcat = concat
