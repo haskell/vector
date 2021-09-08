@@ -590,42 +590,41 @@ instance (Unbox a) => M.MVector MVector (Complex a) where
   {-# INLINE basicOverlaps #-}
   {-# INLINE basicUnsafeNew #-}
   {-# INLINE basicInitialize #-}
+  {-# INLINE basicClear #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeGrow #-}
+  basicLength      = coerce $ M.basicLength      @MVector @(a,a)
+  basicUnsafeSlice = coerce $ M.basicUnsafeSlice @MVector @(a,a)
+  basicOverlaps    = coerce $ M.basicOverlaps    @MVector @(a,a)
+  basicUnsafeNew   = coerce $ M.basicUnsafeNew   @MVector @(a,a)
+  basicInitialize  = coerce $ M.basicInitialize  @MVector @(a,a)
+  basicUnsafeCopy  = coerce $ M.basicUnsafeCopy  @MVector @(a,a)
+  basicUnsafeMove  = coerce $ M.basicUnsafeMove  @MVector @(a,a)
+  basicUnsafeGrow  = coerce $ M.basicUnsafeGrow  @MVector @(a,a)
+  basicClear       = coerce $ M.basicClear       @MVector @(a,a)
   {-# INLINE basicUnsafeReplicate #-}
   {-# INLINE basicUnsafeRead #-}
   {-# INLINE basicUnsafeWrite #-}
-  {-# INLINE basicClear #-}
   {-# INLINE basicSet #-}
-  {-# INLINE basicUnsafeCopy #-}
-  {-# INLINE basicUnsafeGrow #-}
-  basicLength (MV_Complex v) = M.basicLength v
-  basicUnsafeSlice i n (MV_Complex v) = MV_Complex $ M.basicUnsafeSlice i n v
-  basicOverlaps (MV_Complex v1) (MV_Complex v2) = M.basicOverlaps v1 v2
-  basicUnsafeNew n = MV_Complex `liftM` M.basicUnsafeNew n
-  basicInitialize (MV_Complex v) = M.basicInitialize v
-  basicUnsafeReplicate n (x :+ y) = MV_Complex `liftM` M.basicUnsafeReplicate n (x,y)
-  basicUnsafeRead (MV_Complex v) i = uncurry (:+) `liftM` M.basicUnsafeRead v i
+  basicUnsafeReplicate n (x :+ y) = MV_Complex <$> M.basicUnsafeReplicate n (x,y)
+  basicUnsafeRead (MV_Complex v) i = uncurry (:+) <$> M.basicUnsafeRead v i
   basicUnsafeWrite (MV_Complex v) i (x :+ y) = M.basicUnsafeWrite v i (x,y)
-  basicClear (MV_Complex v) = M.basicClear v
   basicSet (MV_Complex v) (x :+ y) = M.basicSet v (x,y)
-  basicUnsafeCopy (MV_Complex v1) (MV_Complex v2) = M.basicUnsafeCopy v1 v2
-  basicUnsafeMove (MV_Complex v1) (MV_Complex v2) = M.basicUnsafeMove v1 v2
-  basicUnsafeGrow (MV_Complex v) n = MV_Complex `liftM` M.basicUnsafeGrow v n
 
 instance (Unbox a) => G.Vector Vector (Complex a) where
   {-# INLINE basicUnsafeFreeze #-}
   {-# INLINE basicUnsafeThaw #-}
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
+  basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @Vector @(a,a)
+  basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @Vector @(a,a)
+  basicLength       = coerce $ G.basicLength       @Vector @(a,a)
+  basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @Vector @(a,a)
+  basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @Vector @(a,a)
   {-# INLINE basicUnsafeIndexM #-}
   {-# INLINE elemseq #-}
-  basicUnsafeFreeze (MV_Complex v) = V_Complex `liftM` G.basicUnsafeFreeze v
-  basicUnsafeThaw (V_Complex v) = MV_Complex `liftM` G.basicUnsafeThaw v
-  basicLength (V_Complex v) = G.basicLength v
-  basicUnsafeSlice i n (V_Complex v) = V_Complex $ G.basicUnsafeSlice i n v
   basicUnsafeIndexM (V_Complex v) i
-                = uncurry (:+) `liftM` G.basicUnsafeIndexM v i
-  basicUnsafeCopy (MV_Complex mv) (V_Complex v)
-                = G.basicUnsafeCopy mv v
+                = uncurry (:+) <$> G.basicUnsafeIndexM v i
   elemseq _ (x :+ y) z = G.elemseq (undefined :: Vector a) x
                        $ G.elemseq (undefined :: Vector a) y z
 
