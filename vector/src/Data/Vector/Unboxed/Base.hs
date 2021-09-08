@@ -592,6 +592,7 @@ instance (Unbox a) => M.MVector MVector (Complex a) where
   {-# INLINE basicInitialize #-}
   {-# INLINE basicClear #-}
   {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeMove #-}
   {-# INLINE basicUnsafeGrow #-}
   basicLength      = coerce $ M.basicLength      @MVector @(a,a)
   basicUnsafeSlice = coerce $ M.basicUnsafeSlice @MVector @(a,a)
@@ -616,6 +617,7 @@ instance (Unbox a) => G.Vector Vector (Complex a) where
   {-# INLINE basicUnsafeThaw #-}
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicUnsafeCopy #-}
   basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @Vector @(a,a)
   basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @Vector @(a,a)
   basicLength       = coerce $ G.basicLength       @Vector @(a,a)
