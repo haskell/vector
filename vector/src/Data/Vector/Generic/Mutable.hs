@@ -210,16 +210,6 @@ munstream s = case upperBound (MBundle.size s) of
                Just n  -> munstreamMax     s n
                Nothing -> munstreamUnknown s
 
--- FIXME: I can't think of how to prevent GHC from floating out
--- unstreamUnknown. That is bad because SpecConstr then generates two
--- specialisations: one for when it is called from unstream (it doesn't know
--- the shape of the vector) and one for when the vector has grown. To see the
--- problem simply compile this:
---
--- fromList = Data.Vector.Unboxed.unstream . Bundle.fromList
---
--- I'm not sure this still applies (19/04/2010)
-
 munstreamMax :: (PrimMonad m, MVector v a)
              => MBundle m u a -> Int -> m (v (PrimState m) a)
 {-# INLINE munstreamMax #-}
