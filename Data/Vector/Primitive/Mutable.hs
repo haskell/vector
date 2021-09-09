@@ -111,7 +111,7 @@ instance Prim a => G.MVector MVector a where
   {-# INLINE basicUnsafeNew #-}
   basicUnsafeNew n
     | n < 0 = error $ "Primitive.basicUnsafeNew: negative length: " ++ show n
-    | n > mx = error $ "Primitive.basicUnsafeNew: length to large: " ++ show n
+    | n > mx = error $ "Primitive.basicUnsafeNew: length too large: " ++ show n
     | otherwise = MVector 0 n `liftM` newByteArray (n * size)
     where
       size = sizeOf (undefined :: a)
