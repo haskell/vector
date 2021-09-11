@@ -7,7 +7,9 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_HADDOCK hide #-}
 -- |
 -- Module      : Data.Vector.Unboxed.Base
@@ -227,19 +229,19 @@ instance P.Prim a => M.MVector MVector (UnboxViaPrim a) where
   {-# INLINE basicSet #-}
   {-# INLINE basicUnsafeCopy #-}
   {-# INLINE basicUnsafeGrow #-}
-  basicLength (MV_UnboxViaPrim v) = M.basicLength v
-  basicUnsafeSlice i n (MV_UnboxViaPrim v) = MV_UnboxViaPrim $ M.basicUnsafeSlice i n v
-  basicOverlaps (MV_UnboxViaPrim v1) (MV_UnboxViaPrim v2) = M.basicOverlaps v1 v2
-  basicUnsafeNew n = MV_UnboxViaPrim `liftM` M.basicUnsafeNew n
-  basicInitialize (MV_UnboxViaPrim v) = M.basicInitialize v
-  basicUnsafeReplicate n (UnboxViaPrim x) = MV_UnboxViaPrim `liftM` M.basicUnsafeReplicate n x
-  basicUnsafeRead (MV_UnboxViaPrim v) i = UnboxViaPrim `liftM` M.basicUnsafeRead v i
-  basicUnsafeWrite (MV_UnboxViaPrim v) i (UnboxViaPrim x) = M.basicUnsafeWrite v i x
-  basicClear (MV_UnboxViaPrim v) = M.basicClear v
-  basicSet (MV_UnboxViaPrim v) (UnboxViaPrim x) = M.basicSet v x
-  basicUnsafeCopy (MV_UnboxViaPrim v1) (MV_UnboxViaPrim v2) = M.basicUnsafeCopy v1 v2
-  basicUnsafeMove (MV_UnboxViaPrim v1) (MV_UnboxViaPrim v2) = M.basicUnsafeMove v1 v2
-  basicUnsafeGrow (MV_UnboxViaPrim v) n = MV_UnboxViaPrim `liftM` M.basicUnsafeGrow v n
+  basicLength          = coerce $ M.basicLength          @P.MVector @a
+  basicUnsafeSlice     = coerce $ M.basicUnsafeSlice     @P.MVector @a
+  basicOverlaps        = coerce $ M.basicOverlaps        @P.MVector @a
+  basicUnsafeNew       = coerce $ M.basicUnsafeNew       @P.MVector @a
+  basicInitialize      = coerce $ M.basicInitialize      @P.MVector @a
+  basicUnsafeReplicate = coerce $ M.basicUnsafeReplicate @P.MVector @a
+  basicUnsafeRead      = coerce $ M.basicUnsafeRead      @P.MVector @a
+  basicUnsafeWrite     = coerce $ M.basicUnsafeWrite     @P.MVector @a
+  basicClear           = coerce $ M.basicClear           @P.MVector @a
+  basicSet             = coerce $ M.basicSet             @P.MVector @a
+  basicUnsafeCopy      = coerce $ M.basicUnsafeCopy      @P.MVector @a
+  basicUnsafeMove      = coerce $ M.basicUnsafeMove      @P.MVector @a
+  basicUnsafeGrow      = coerce $ M.basicUnsafeGrow      @P.MVector @a
 
 instance P.Prim a => G.Vector Vector (UnboxViaPrim a) where
   {-# INLINE basicUnsafeFreeze #-}
@@ -248,12 +250,12 @@ instance P.Prim a => G.Vector Vector (UnboxViaPrim a) where
   {-# INLINE basicUnsafeSlice #-}
   {-# INLINE basicUnsafeIndexM #-}
   {-# INLINE elemseq #-}
-  basicUnsafeFreeze (MV_UnboxViaPrim v) = V_UnboxViaPrim `liftM` G.basicUnsafeFreeze v
-  basicUnsafeThaw (V_UnboxViaPrim v) = MV_UnboxViaPrim `liftM` G.basicUnsafeThaw v
-  basicLength (V_UnboxViaPrim v) = G.basicLength v
-  basicUnsafeSlice i n (V_UnboxViaPrim v) = V_UnboxViaPrim $ G.basicUnsafeSlice i n v
-  basicUnsafeIndexM (V_UnboxViaPrim v) i = UnboxViaPrim <$> G.basicUnsafeIndexM v i
-  basicUnsafeCopy (MV_UnboxViaPrim mv) (V_UnboxViaPrim v) = G.basicUnsafeCopy mv v
+  basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @P.Vector @a
+  basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @P.Vector @a
+  basicLength       = coerce $ G.basicLength       @P.Vector @a
+  basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @P.Vector @a
+  basicUnsafeIndexM = coerce $ G.basicUnsafeIndexM @P.Vector @a
+  basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @P.Vector @a
   elemseq _ = seq
 
 -- | Isomorphism between type @a@ and its representation in unboxed
@@ -339,46 +341,52 @@ newtype instance MVector s (As a b) = MV_UnboxAs (MVector s b)
 newtype instance Vector    (As a b) = V_UnboxAs  (Vector b)
 
 instance (IsoUnbox a b, Unbox b) => M.MVector MVector (As a b) where
+  -- Methods that just use underlying vector
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
   {-# INLINE basicOverlaps #-}
   {-# INLINE basicUnsafeNew #-}
   {-# INLINE basicInitialize #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeMove #-}
+  {-# INLINE basicUnsafeGrow #-}
+  {-# INLINE basicClear #-}
+  basicLength      = coerce $ M.basicLength      @MVector @b
+  basicUnsafeSlice = coerce $ M.basicUnsafeSlice @MVector @b
+  basicOverlaps    = coerce $ M.basicOverlaps    @MVector @b
+  basicUnsafeNew   = coerce $ M.basicUnsafeNew   @MVector @b
+  basicInitialize  = coerce $ M.basicInitialize  @MVector @b
+  basicUnsafeCopy  = coerce $ M.basicUnsafeCopy  @MVector @b
+  basicUnsafeMove  = coerce $ M.basicUnsafeMove  @MVector @b
+  basicUnsafeGrow  = coerce $ M.basicUnsafeGrow  @MVector @b
+  basicClear       = coerce $ M.basicClear       @MVector @b
+  -- Conversion to/from underlying representation
   {-# INLINE basicUnsafeReplicate #-}
   {-# INLINE basicUnsafeRead #-}
   {-# INLINE basicUnsafeWrite #-}
-  {-# INLINE basicClear #-}
   {-# INLINE basicSet #-}
-  {-# INLINE basicUnsafeCopy #-}
-  {-# INLINE basicUnsafeGrow #-}
-  basicLength (MV_UnboxAs v) = M.basicLength v
-  basicUnsafeSlice i n (MV_UnboxAs v) = MV_UnboxAs $ M.basicUnsafeSlice i n v
-  basicOverlaps (MV_UnboxAs v1) (MV_UnboxAs v2) = M.basicOverlaps v1 v2
-  basicUnsafeNew n = MV_UnboxAs `liftM` M.basicUnsafeNew n
-  basicInitialize (MV_UnboxAs v) = M.basicInitialize v
-  basicUnsafeReplicate n (As x) = MV_UnboxAs `liftM` M.basicUnsafeReplicate n (toURepr x)
-  basicUnsafeRead (MV_UnboxAs v) i = (As . fromURepr) `liftM` M.basicUnsafeRead v i
+  basicUnsafeReplicate n (As x) = MV_UnboxAs <$> M.basicUnsafeReplicate n (toURepr x)
+  basicUnsafeRead (MV_UnboxAs v) i = As . fromURepr <$> M.basicUnsafeRead v i
   basicUnsafeWrite (MV_UnboxAs v) i (As x) = M.basicUnsafeWrite v i (toURepr x)
-  basicClear (MV_UnboxAs v) = M.basicClear v
   basicSet (MV_UnboxAs v) (As x) = M.basicSet v (toURepr x)
-  basicUnsafeCopy (MV_UnboxAs v1) (MV_UnboxAs v2) = M.basicUnsafeCopy v1 v2
-  basicUnsafeMove (MV_UnboxAs v1) (MV_UnboxAs v2) = M.basicUnsafeMove v1 v2
-  basicUnsafeGrow (MV_UnboxAs v) n = MV_UnboxAs `liftM` M.basicUnsafeGrow v n
 
 instance (IsoUnbox a b, Unbox b) => G.Vector Vector (As a b) where
+  -- Method that just use underlying vector
   {-# INLINE basicUnsafeFreeze #-}
   {-# INLINE basicUnsafeThaw #-}
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
-  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE basicUnsafeCopy #-}
   {-# INLINE elemseq #-}
-  basicUnsafeFreeze (MV_UnboxAs v) = V_UnboxAs `liftM` G.basicUnsafeFreeze v
-  basicUnsafeThaw (V_UnboxAs v) = MV_UnboxAs `liftM` G.basicUnsafeThaw v
-  basicLength (V_UnboxAs v) = G.basicLength v
-  basicUnsafeSlice i n (V_UnboxAs v) = V_UnboxAs $ G.basicUnsafeSlice i n v
+  basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @Vector @b
+  basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @Vector @b
+  basicLength       = coerce $ G.basicLength       @Vector @b
+  basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @Vector @b
+  basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @Vector @b
+  elemseq _         = seq
+  -- Conversion to/from underlying representation
+  {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (V_UnboxAs v) i = As . fromURepr <$> G.basicUnsafeIndexM v i
-  basicUnsafeCopy (MV_UnboxAs mv) (V_UnboxAs v) = G.basicUnsafeCopy mv v
-  elemseq _ = seq
 
 
 #define primMVector(ty,con)                                             \
@@ -582,42 +590,43 @@ instance (Unbox a) => M.MVector MVector (Complex a) where
   {-# INLINE basicOverlaps #-}
   {-# INLINE basicUnsafeNew #-}
   {-# INLINE basicInitialize #-}
+  {-# INLINE basicClear #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeMove #-}
+  {-# INLINE basicUnsafeGrow #-}
+  basicLength      = coerce $ M.basicLength      @MVector @(a,a)
+  basicUnsafeSlice = coerce $ M.basicUnsafeSlice @MVector @(a,a)
+  basicOverlaps    = coerce $ M.basicOverlaps    @MVector @(a,a)
+  basicUnsafeNew   = coerce $ M.basicUnsafeNew   @MVector @(a,a)
+  basicInitialize  = coerce $ M.basicInitialize  @MVector @(a,a)
+  basicUnsafeCopy  = coerce $ M.basicUnsafeCopy  @MVector @(a,a)
+  basicUnsafeMove  = coerce $ M.basicUnsafeMove  @MVector @(a,a)
+  basicUnsafeGrow  = coerce $ M.basicUnsafeGrow  @MVector @(a,a)
+  basicClear       = coerce $ M.basicClear       @MVector @(a,a)
   {-# INLINE basicUnsafeReplicate #-}
   {-# INLINE basicUnsafeRead #-}
   {-# INLINE basicUnsafeWrite #-}
-  {-# INLINE basicClear #-}
   {-# INLINE basicSet #-}
-  {-# INLINE basicUnsafeCopy #-}
-  {-# INLINE basicUnsafeGrow #-}
-  basicLength (MV_Complex v) = M.basicLength v
-  basicUnsafeSlice i n (MV_Complex v) = MV_Complex $ M.basicUnsafeSlice i n v
-  basicOverlaps (MV_Complex v1) (MV_Complex v2) = M.basicOverlaps v1 v2
-  basicUnsafeNew n = MV_Complex `liftM` M.basicUnsafeNew n
-  basicInitialize (MV_Complex v) = M.basicInitialize v
-  basicUnsafeReplicate n (x :+ y) = MV_Complex `liftM` M.basicUnsafeReplicate n (x,y)
-  basicUnsafeRead (MV_Complex v) i = uncurry (:+) `liftM` M.basicUnsafeRead v i
+  basicUnsafeReplicate n (x :+ y) = MV_Complex <$> M.basicUnsafeReplicate n (x,y)
+  basicUnsafeRead (MV_Complex v) i = uncurry (:+) <$> M.basicUnsafeRead v i
   basicUnsafeWrite (MV_Complex v) i (x :+ y) = M.basicUnsafeWrite v i (x,y)
-  basicClear (MV_Complex v) = M.basicClear v
   basicSet (MV_Complex v) (x :+ y) = M.basicSet v (x,y)
-  basicUnsafeCopy (MV_Complex v1) (MV_Complex v2) = M.basicUnsafeCopy v1 v2
-  basicUnsafeMove (MV_Complex v1) (MV_Complex v2) = M.basicUnsafeMove v1 v2
-  basicUnsafeGrow (MV_Complex v) n = MV_Complex `liftM` M.basicUnsafeGrow v n
 
 instance (Unbox a) => G.Vector Vector (Complex a) where
   {-# INLINE basicUnsafeFreeze #-}
   {-# INLINE basicUnsafeThaw #-}
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicUnsafeCopy #-}
+  basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @Vector @(a,a)
+  basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @Vector @(a,a)
+  basicLength       = coerce $ G.basicLength       @Vector @(a,a)
+  basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @Vector @(a,a)
+  basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @Vector @(a,a)
   {-# INLINE basicUnsafeIndexM #-}
   {-# INLINE elemseq #-}
-  basicUnsafeFreeze (MV_Complex v) = V_Complex `liftM` G.basicUnsafeFreeze v
-  basicUnsafeThaw (V_Complex v) = MV_Complex `liftM` G.basicUnsafeThaw v
-  basicLength (V_Complex v) = G.basicLength v
-  basicUnsafeSlice i n (V_Complex v) = V_Complex $ G.basicUnsafeSlice i n v
   basicUnsafeIndexM (V_Complex v) i
-                = uncurry (:+) `liftM` G.basicUnsafeIndexM v i
-  basicUnsafeCopy (MV_Complex mv) (V_Complex v)
-                = G.basicUnsafeCopy mv v
+                = uncurry (:+) <$> G.basicUnsafeIndexM v i
   elemseq _ (x :+ y) z = G.elemseq (undefined :: Vector a) x
                        $ G.elemseq (undefined :: Vector a) y z
 
@@ -666,7 +675,7 @@ instance inst_ctxt => G.Vector Vector (inst_head) where { \
 ; basicUnsafeSlice i n (con v)      = con $ G.basicUnsafeSlice i n v      \
 ; basicUnsafeIndexM (con v) i       = tyC `liftM` G.basicUnsafeIndexM v i \
 ; basicUnsafeCopy (mcon mv) (con v) = G.basicUnsafeCopy mv v              \
-; elemseq _ (tyC a)                 = G.elemseq (undefined :: Vector a) a \
+; elemseq _ (tyC a)                 = G.elemseq (undefined :: Vector x) a \
 }
 #define deriveNewtypeInstances(inst_ctxt,inst_head,rep,tyC,con,mcon) \
 newtype instance MVector s (inst_head) = mcon (MVector s (rep)) ;\
@@ -707,41 +716,43 @@ instance (Unbox a, Unbox b) => M.MVector MVector (Arg a b) where
   {-# INLINE basicOverlaps #-}
   {-# INLINE basicUnsafeNew #-}
   {-# INLINE basicInitialize #-}
+  {-# INLINE basicClear #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeMove #-}
+  {-# INLINE basicUnsafeGrow #-}
+  basicLength      = coerce $ M.basicLength      @MVector @(a,b)
+  basicUnsafeSlice = coerce $ M.basicUnsafeSlice @MVector @(a,b)
+  basicOverlaps    = coerce $ M.basicOverlaps    @MVector @(a,b)
+  basicUnsafeNew   = coerce $ M.basicUnsafeNew   @MVector @(a,b)
+  basicInitialize  = coerce $ M.basicInitialize  @MVector @(a,b)
+  basicUnsafeCopy  = coerce $ M.basicUnsafeCopy  @MVector @(a,b)
+  basicUnsafeMove  = coerce $ M.basicUnsafeMove  @MVector @(a,b)
+  basicUnsafeGrow  = coerce $ M.basicUnsafeGrow  @MVector @(a,b)
+  basicClear       = coerce $ M.basicClear       @MVector @(a,b)
   {-# INLINE basicUnsafeReplicate #-}
   {-# INLINE basicUnsafeRead #-}
   {-# INLINE basicUnsafeWrite #-}
-  {-# INLINE basicClear #-}
   {-# INLINE basicSet #-}
-  {-# INLINE basicUnsafeCopy #-}
-  {-# INLINE basicUnsafeGrow #-}
-  basicLength (MV_Arg v)                  = M.basicLength v
-  basicUnsafeSlice i n (MV_Arg v)         = MV_Arg $ M.basicUnsafeSlice i n v
-  basicOverlaps (MV_Arg v1) (MV_Arg v2)   = M.basicOverlaps v1 v2
-  basicUnsafeNew n                        = MV_Arg `liftM` M.basicUnsafeNew n
-  basicInitialize (MV_Arg v)              = M.basicInitialize v
-  basicUnsafeReplicate n (Arg x y)        = MV_Arg `liftM` M.basicUnsafeReplicate n (x,y)
-  basicUnsafeRead (MV_Arg v) i            = uncurry Arg `liftM` M.basicUnsafeRead v i
+  basicUnsafeReplicate n (Arg x y)        = MV_Arg <$> M.basicUnsafeReplicate n (x,y)
+  basicUnsafeRead (MV_Arg v) i            = uncurry Arg <$> M.basicUnsafeRead v i
   basicUnsafeWrite (MV_Arg v) i (Arg x y) = M.basicUnsafeWrite v i (x,y)
-  basicClear (MV_Arg v)                   = M.basicClear v
   basicSet (MV_Arg v) (Arg x y)           = M.basicSet v (x,y)
-  basicUnsafeCopy (MV_Arg v1) (MV_Arg v2) = M.basicUnsafeCopy v1 v2
-  basicUnsafeMove (MV_Arg v1) (MV_Arg v2) = M.basicUnsafeMove v1 v2
-  basicUnsafeGrow (MV_Arg v) n            = MV_Arg `liftM` M.basicUnsafeGrow v n
+
 
 instance (Unbox a, Unbox b) => G.Vector Vector (Arg a b) where
   {-# INLINE basicUnsafeFreeze #-}
   {-# INLINE basicUnsafeThaw #-}
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicUnsafeCopy #-}
+  basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @Vector @(a,b)
+  basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @Vector @(a,b)
+  basicLength       = coerce $ G.basicLength       @Vector @(a,b)
+  basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @Vector @(a,b)
+  basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @Vector @(a,b)
   {-# INLINE basicUnsafeIndexM #-}
   {-# INLINE elemseq #-}
-  basicUnsafeFreeze (MV_Arg v)   = V_Arg `liftM` G.basicUnsafeFreeze v
-  basicUnsafeThaw (V_Arg v)      = MV_Arg `liftM` G.basicUnsafeThaw v
-  basicLength (V_Arg v)          = G.basicLength v
-  basicUnsafeSlice i n (V_Arg v) = V_Arg $ G.basicUnsafeSlice i n v
   basicUnsafeIndexM (V_Arg v) i  = uncurry Arg `liftM` G.basicUnsafeIndexM v i
-  basicUnsafeCopy (MV_Arg mv) (V_Arg v)
-                                 = G.basicUnsafeCopy mv v
   elemseq _ (Arg x y) z          = G.elemseq (undefined :: Vector a) x
                                  $ G.elemseq (undefined :: Vector b) y z
 
