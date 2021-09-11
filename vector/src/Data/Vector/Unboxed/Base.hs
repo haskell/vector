@@ -4,6 +4,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -624,73 +625,71 @@ instance (Unbox a) => G.Vector Vector (Complex a) where
 -- -------
 -- Identity
 -- -------
-#define newtypeMVector(inst_ctxt,inst_head,tyC,con) \
-instance inst_ctxt => M.MVector MVector (inst_head) where { \
-; {-# INLINE basicLength          #-}                                         \
-; {-# INLINE basicUnsafeSlice     #-}                                         \
-; {-# INLINE basicOverlaps        #-}                                         \
-; {-# INLINE basicUnsafeNew       #-}                                         \
-; {-# INLINE basicInitialize      #-}                                         \
-; {-# INLINE basicUnsafeReplicate #-}                                         \
-; {-# INLINE basicUnsafeRead      #-}                                         \
-; {-# INLINE basicUnsafeWrite     #-}                                         \
-; {-# INLINE basicClear           #-}                                         \
-; {-# INLINE basicSet             #-}                                         \
-; {-# INLINE basicUnsafeCopy      #-}                                         \
-; {-# INLINE basicUnsafeGrow      #-}                                         \
-; basicLength (con v)                = M.basicLength v                        \
-; basicUnsafeSlice i n (con v)       = con $ M.basicUnsafeSlice i n v         \
-; basicOverlaps (con v1) (con v2)    = M.basicOverlaps v1 v2                  \
-; basicUnsafeNew n                   = con `liftM` M.basicUnsafeNew n         \
-; basicInitialize (con v)            = M.basicInitialize v                    \
-; basicUnsafeReplicate n (tyC x)     = con `liftM` M.basicUnsafeReplicate n x \
-; basicUnsafeRead (con v) i          = tyC `liftM` M.basicUnsafeRead v i      \
-; basicUnsafeWrite (con v) i (tyC x) = M.basicUnsafeWrite v i x               \
-; basicClear (con v)                 = M.basicClear v                         \
-; basicSet (con v) (tyC x)           = M.basicSet v x                         \
-; basicUnsafeCopy (con v1) (con v2)  = M.basicUnsafeCopy v1 v2                \
-; basicUnsafeMove (con v1) (con v2)  = M.basicUnsafeMove v1 v2                \
-; basicUnsafeGrow (con v) n          = con `liftM` M.basicUnsafeGrow v n      \
-}
-#define newtypeVector(inst_ctxt,inst_head,tyC,con,mcon) \
-instance inst_ctxt => G.Vector Vector (inst_head) where { \
-; {-# INLINE basicUnsafeFreeze  #-}                                       \
-; {-# INLINE basicUnsafeThaw    #-}                                       \
-; {-# INLINE basicLength        #-}                                       \
-; {-# INLINE basicUnsafeSlice   #-}                                       \
-; {-# INLINE basicUnsafeIndexM  #-}                                       \
-; {-# INLINE elemseq            #-}                                       \
-; basicUnsafeFreeze (mcon v)        = con `liftM` G.basicUnsafeFreeze v   \
-; basicUnsafeThaw (con v)           = mcon `liftM` G.basicUnsafeThaw v    \
-; basicLength (con v)               = G.basicLength v                     \
-; basicUnsafeSlice i n (con v)      = con $ G.basicUnsafeSlice i n v      \
-; basicUnsafeIndexM (con v) i       = tyC `liftM` G.basicUnsafeIndexM v i \
-; basicUnsafeCopy (mcon mv) (con v) = G.basicUnsafeCopy mv v              \
-; elemseq _ (tyC a)                 = G.elemseq (undefined :: Vector a) a \
-}
-#define deriveNewtypeInstances(inst_ctxt,inst_head,rep,tyC,con,mcon) \
-newtype instance MVector s (inst_head) = mcon (MVector s (rep)) ;\
-newtype instance Vector    (inst_head) = con  (Vector (rep))    ;\
-instance inst_ctxt => Unbox (inst_head)                         ;\
-newtypeMVector(inst_ctxt, inst_head, tyC, mcon)                 ;\
-newtypeVector(inst_ctxt,  inst_head, tyC, con, mcon)
 
-deriveNewtypeInstances(Unbox a, Identity a, a, Identity, V_Identity, MV_Identity)
-deriveNewtypeInstances(Unbox a, Down a,    a, Down,    V_Down,    MV_Down)
-deriveNewtypeInstances(Unbox a, Dual a,    a, Dual,    V_Dual,    MV_Dual)
-deriveNewtypeInstances(Unbox a, Sum a,     a, Sum,     V_Sum,     MV_Sum)
-deriveNewtypeInstances(Unbox a, Product a, a, Product, V_Product, MV_Product)
+newtype instance MVector s (Identity a) = MV_Identity (MVector s a)
+newtype instance Vector    (Identity a) = V_Identity  (Vector a)
+deriving instance Unbox a => G.Vector  Vector  (Identity a)
+deriving instance Unbox a => M.MVector MVector (Identity a)
+instance Unbox a => Unbox (Identity a)
 
+newtype instance MVector s (Down a) = MV_Down (MVector s a)
+newtype instance Vector    (Down a) = V_Down  (Vector a)
+deriving instance Unbox a => G.Vector  Vector  (Down a)
+deriving instance Unbox a => M.MVector MVector (Down a)
+instance Unbox a => Unbox (Down a)
+
+newtype instance MVector s (Dual a) = MV_Dual (MVector s a)
+newtype instance Vector    (Dual a) = V_Dual  (Vector a)
+deriving instance Unbox a => G.Vector  Vector  (Dual a)
+deriving instance Unbox a => M.MVector MVector (Dual a)
+instance Unbox a => Unbox (Dual a)
+
+newtype instance MVector s (Sum a) = MV_Sum (MVector s a)
+newtype instance Vector    (Sum a) = V_Sum  (Vector a)
+deriving instance Unbox a => G.Vector  Vector  (Sum a)
+deriving instance Unbox a => M.MVector MVector (Sum a)
+instance Unbox a => Unbox (Sum a)
+
+newtype instance MVector s (Product a) = MV_Product (MVector s a)
+newtype instance Vector    (Product a) = V_Product  (Vector a)
+deriving instance Unbox a => G.Vector  Vector  (Product a)
+deriving instance Unbox a => M.MVector MVector (Product a)
+instance Unbox a => Unbox (Product a)
 
 -- --------------
 -- Data.Semigroup
 -- --------------
 
-deriveNewtypeInstances(Unbox a, Min a,   a, Min,   V_Min,   MV_Min)
-deriveNewtypeInstances(Unbox a, Max a,   a, Max,   V_Max,   MV_Max)
-deriveNewtypeInstances(Unbox a, First a, a, First, V_First, MV_First)
-deriveNewtypeInstances(Unbox a, Last a,  a, Last,  V_Last,  MV_Last)
-deriveNewtypeInstances(Unbox a, WrappedMonoid a, a, WrapMonoid, V_WrappedMonoid, MV_WrappedMonoid)
+
+newtype instance MVector s (Min a) = MV_Min (MVector s a)
+newtype instance Vector    (Min a) = V_Min  (Vector a)
+deriving instance Unbox a => G.Vector  Vector  (Min a)
+deriving instance Unbox a => M.MVector MVector (Min a)
+instance Unbox a => Unbox (Min a)
+
+newtype instance MVector s (Max a) = MV_Max (MVector s a)
+newtype instance Vector    (Max a) = V_Max  (Vector a)
+deriving instance Unbox a => G.Vector  Vector  (Max a)
+deriving instance Unbox a => M.MVector MVector (Max a)
+instance Unbox a => Unbox (Max a)
+
+newtype instance MVector s (First a) = MV_First (MVector s a)
+newtype instance Vector    (First a) = V_First  (Vector a)
+deriving instance Unbox a => G.Vector  Vector  (First a)
+deriving instance Unbox a => M.MVector MVector (First a)
+instance Unbox a => Unbox (First a)
+
+newtype instance MVector s (Last a) = MV_Last (MVector s a)
+newtype instance Vector    (Last a) = V_Last  (Vector a)
+deriving instance Unbox a => G.Vector  Vector  (Last a)
+deriving instance Unbox a => M.MVector MVector (Last a)
+instance Unbox a => Unbox (Last a)
+
+newtype instance MVector s (WrappedMonoid a) = MV_WrappedMonoid (MVector s a)
+newtype instance Vector    (WrappedMonoid a) = V_WrappedMonoid  (Vector a)
+deriving instance Unbox a => G.Vector  Vector  (WrappedMonoid a)
+deriving instance Unbox a => M.MVector MVector (WrappedMonoid a)
+instance Unbox a => Unbox (WrappedMonoid a)
 
 -- ------------------
 -- Data.Semigroup.Arg
@@ -745,26 +744,47 @@ instance (Unbox a, Unbox b) => G.Vector Vector (Arg a b) where
   elemseq _ (Arg x y) z          = G.elemseq (undefined :: Vector a) x
                                  $ G.elemseq (undefined :: Vector b) y z
 
-deriveNewtypeInstances((), Any, Bool, Any, V_Any, MV_Any)
-deriveNewtypeInstances((), All, Bool, All, V_All, MV_All)
+newtype instance MVector s Any = MV_Any (MVector s Bool)
+newtype instance Vector    Any = V_Any  (Vector    Bool)
+deriving instance G.Vector  Vector  Any
+deriving instance M.MVector MVector Any
+instance Unbox Any
+
+newtype instance MVector s All = MV_All (MVector s Bool)
+newtype instance Vector    All = V_All  (Vector    Bool)
+deriving instance G.Vector  Vector  All
+deriving instance M.MVector MVector All
+instance Unbox All
 
 -- -------
 -- Const
 -- -------
 
-deriveNewtypeInstances(Unbox a, Const a b, a, Const, V_Const, MV_Const)
+newtype instance MVector s (Const b a) = MV_Const (MVector s b)
+newtype instance Vector    (Const b a) = V_Const  (Vector    b)
+deriving instance Unbox b => G.Vector  Vector  (Const b a)
+deriving instance Unbox b => M.MVector MVector (Const b a)
+instance Unbox b => Unbox (Const b a)
 
 -- ---
 -- Alt
 -- ---
 
-deriveNewtypeInstances(Unbox (f a), Alt f a, f a, Alt, V_Alt, MV_Alt)
+newtype instance MVector s (Alt f a) = MV_Alt (MVector s (f a))
+newtype instance Vector    (Alt f a) = V_Alt  (Vector    (f a))
+deriving instance Unbox (f a) => G.Vector  Vector  (Alt f a)
+deriving instance Unbox (f a) => M.MVector MVector (Alt f a)
+instance Unbox (f a) => Unbox (Alt f a)
 
 -- -------
 -- Compose
 -- -------
 
-deriveNewtypeInstances(Unbox (f (g a)), Compose f g a, f (g a), Compose, V_Compose, MV_Compose)
+newtype instance MVector s (Compose f g a) = MV_Compose (MVector s (f (g a)))
+newtype instance Vector    (Compose f g a) = V_Compose  (Vector    (f (g a)))
+deriving instance Unbox (f (g a)) => G.Vector  Vector  (Compose f g a)
+deriving instance Unbox (f (g a)) => M.MVector MVector (Compose f g a)
+instance Unbox (f (g a)) => Unbox (Compose f g a)
 
 -- ------
 -- Tuples
