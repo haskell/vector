@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds #-}
 module Tests.Bundle ( tests ) where
 
 import Boilerplater
@@ -16,13 +17,10 @@ import Data.List           (foldl', foldl1', unfoldr, find, findIndex)
 -- migration from testframework to tasty
 type Test = TestTree
 
-#define COMMON_CONTEXT(a) \
- VANILLA_CONTEXT(a)
+type CommonContext a = ( Eq a, Show a, Arbitrary a, CoArbitrary a, TestData a
+                       , Model a ~ a, EqTest a ~ Property)
 
-#define VANILLA_CONTEXT(a) \
-  Eq a,     Show a,     Arbitrary a,     CoArbitrary a,     TestData a,     Model a ~ a,        EqTest a ~ Property
-
-testSanity :: forall v a. (COMMON_CONTEXT(a)) => S.Bundle v a -> [Test]
+testSanity :: forall v a. (CommonContext a) => S.Bundle v a -> [Test]
 testSanity _ = [
         testProperty "fromList.toList == id" prop_fromList_toList,
         testProperty "toList.fromList == id" prop_toList_fromList
@@ -33,7 +31,7 @@ testSanity _ = [
     prop_toList_fromList :: P ([a] -> [a])
         = (S.toList . (S.fromList :: [a] -> S.Bundle v a)) `eq` id
 
-testPolymorphicFunctions :: forall v a. (COMMON_CONTEXT(a)) => S.Bundle v a -> [Test]
+testPolymorphicFunctions :: forall v a. (CommonContext a) => S.Bundle v a -> [Test]
 testPolymorphicFunctions _ = $(testProperties [
         'prop_eq,
 
