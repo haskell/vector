@@ -10,7 +10,7 @@ import GHC.Exts (inline)
 testGeneralPrimitiveVector
   :: forall a. ( CommonContext a Data.Vector.Primitive.Vector
                , Data.Vector.Primitive.Prim a, Ord a, Data a)
-  => Data.Vector.Primitive.Vector a -> [Test]
+  => Data.Vector.Primitive.Vector a -> [TestTree]
 testGeneralPrimitiveVector dummy = concatMap ($ dummy)
   [
     testSanity
@@ -23,7 +23,7 @@ testGeneralPrimitiveVector dummy = concatMap ($ dummy)
 testNumericPrimitiveVector
   :: forall a. ( CommonContext a Data.Vector.Primitive.Vector
                , Data.Vector.Primitive.Prim a, Ord a, Num a, Enum a, Random a, Data a)
-  => Data.Vector.Primitive.Vector a -> [Test]
+  => Data.Vector.Primitive.Vector a -> [TestTree]
 testNumericPrimitiveVector dummy = concatMap ($ dummy)
   [
     testGeneralPrimitiveVector

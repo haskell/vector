@@ -9,7 +9,7 @@ import Tests.Vector.Property
 
 testGeneralUnboxedVector
   :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Data a)
-  => Data.Vector.Unboxed.Vector a -> [Test]
+  => Data.Vector.Unboxed.Vector a -> [TestTree]
 testGeneralUnboxedVector dummy = concatMap ($ dummy)
   [
     testSanity
@@ -34,7 +34,7 @@ testBoolUnboxedVector dummy = concatMap ($ dummy)
 testNumericUnboxedVector
   :: forall a. ( CommonContext a Data.Vector.Unboxed.Vector
                , Data.Vector.Unboxed.Unbox a, Ord a, Num a, Enum a, Random a, Data a)
-  => Data.Vector.Unboxed.Vector a -> [Test]
+  => Data.Vector.Unboxed.Vector a -> [TestTree]
 testNumericUnboxedVector dummy = concatMap ($ dummy)
   [
     testGeneralUnboxedVector
@@ -44,7 +44,7 @@ testNumericUnboxedVector dummy = concatMap ($ dummy)
 
 testTupleUnboxedVector
   :: forall a. ( CommonContext a Data.Vector.Unboxed.Vector
-               , Data.Vector.Unboxed.Unbox a, Ord a, Data a) => Data.Vector.Unboxed.Vector a -> [Test]
+               , Data.Vector.Unboxed.Unbox a, Ord a, Data a) => Data.Vector.Unboxed.Vector a -> [TestTree]
 testTupleUnboxedVector dummy = concatMap ($ dummy)
   [
     testGeneralUnboxedVector
