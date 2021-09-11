@@ -18,6 +18,7 @@ module Tests.Vector.Property
   , testNumFunctions
   , testNestedVectorFunctions
   , testDataFunctions
+  , testUnstream
   -- re-exports
   , Data
   , Random
@@ -797,3 +798,32 @@ testDataFunctions _ = $(testProperties ['prop_glength])
 
         toA :: Data b => b -> Int
         toA x = maybe (glength x) (const 1) (cast x :: Maybe a)
+
+testUnstream :: forall v. (CommonContext Int v) => v Int -> [TestTree]
+{-# INLINE testUnstream #-}
+testUnstream _ =
+  [ testProperty "unstream == vunstream (exact)" $ \(n :: Int) ->
+      let v1,v2 :: v Int
+          v1 = runST $ V.freeze =<< MV.unstream  (streamExact n)
+          v2 = runST $ V.freeze =<< MV.vunstream (streamExact n)
+      in v1 == v2
+  , testProperty "unstream == vunstream (unknown)" $ \(n :: Int) ->
+      let v1,v2 :: v Int
+          v1 = runST $ V.freeze =<< MV.unstream  (streamUnknown n)
+          v2 = runST $ V.freeze =<< MV.vunstream (streamUnknown n)
+      in v1 == v2
+  --
+  , testProperty "unstreamR ~= vunstream (exact)" $ \(n :: Int) ->
+      let v1,v2 :: v Int
+          v1 = runST $ V.freeze =<< MV.unstreamR (streamExact n)
+          v2 = runST $ V.freeze =<< MV.vunstream (streamExact n)
+      in V.reverse v1 == v2
+  , testProperty "unstreamR ~= vunstream (unknown)" $ \(n :: Int) ->
+      let v1,v2 :: v Int
+          v1 = runST $ V.freeze =<< MV.unstreamR (streamUnknown n)
+          v2 = runST $ V.freeze =<< MV.vunstream (streamUnknown n)
+      in V.reverse v1 == v2
+  ]
+  where
+    streamExact n = S.generate (abs n) id
+    streamUnknown = S.unfoldr (\i -> if i > 0 then (Just (i-1,i-1)) else Nothing) . abs

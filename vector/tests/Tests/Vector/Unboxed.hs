@@ -66,4 +66,5 @@ tests =
   , testGroup "(Int,Bool,Int)" $
     testTupleUnboxedVector
       (undefined :: Data.Vector.Unboxed.Vector (Int, Bool, Int))
+  , testGroup "unstream" $ testUnstream (undefined :: Data.Vector.Unboxed.Vector Int)
   ]

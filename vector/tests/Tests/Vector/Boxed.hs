@@ -48,4 +48,5 @@ tests =
     testBoolBoxedVector (undefined :: Data.Vector.Vector Bool)
   , testGroup "Int" $
     testNumericBoxedVector (undefined :: Data.Vector.Vector Int)
+  , testGroup "unstream" $ testUnstream (undefined :: Data.Vector.Vector Int)
   ]

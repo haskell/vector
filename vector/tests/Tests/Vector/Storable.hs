@@ -36,4 +36,5 @@ tests =
     testNumericStorableVector (undefined :: Data.Vector.Storable.Vector Int)
   , testGroup "Data.Vector.Storable.Vector (Double)" $
     testNumericStorableVector (undefined :: Data.Vector.Storable.Vector Double)
+  , testGroup "unstream" $ testUnstream (undefined :: Data.Vector.Storable.Vector Int)
   ]

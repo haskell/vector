@@ -37,4 +37,5 @@ tests =
   , testGroup "Double" $
     testNumericPrimitiveVector
       (undefined :: Data.Vector.Primitive.Vector Double)
+  , testGroup "unstream" $ testUnstream (undefined :: Data.Vector.Primitive.Vector Int)
   ]
