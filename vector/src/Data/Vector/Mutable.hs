@@ -47,7 +47,8 @@ module Data.Vector.Mutable (
   read, write, modify, modifyM, swap, exchange,
   unsafeRead, unsafeWrite, unsafeModify, unsafeModifyM, unsafeSwap, unsafeExchange,
 
-  -- * Folds
+  -- * Maps and folds
+  mapM, imapM, forM, iforM,
   mapM_, imapM_, forM_, iforM_,
   foldl, foldl', foldM, foldM',
   foldr, foldr', foldrM, foldrM',
@@ -74,7 +75,7 @@ import           Data.Primitive.Array
 import           Control.Monad.Primitive
 
 import Prelude hiding ( length, null, replicate, reverse, read,
-                        take, drop, splitAt, init, tail, foldr, foldl, mapM_ )
+                        take, drop, splitAt, init, tail, foldr, foldl, mapM, mapM_ )
 
 import Data.Typeable ( Typeable )
 
@@ -552,7 +553,38 @@ nextPermutation = G.nextPermutation
 -- Folds
 -- -----
 
+-- | /O(n)/ Apply the monadic action to every element of the vector, modifying it.
+--
+-- @since 0.13.0.1
+mapM :: (PrimMonad m) => (a -> m a) -> MVector (PrimState m) a -> m ()
+{-# INLINE mapM #-}
+mapM = G.mapM
+
+-- | /O(n)/ Apply the monadic action to every element of the vector and its index, modifying the vector.
+--
+-- @since 0.13.0.1
+imapM :: (PrimMonad m) => (Int -> a -> m a) -> MVector (PrimState m) a -> m ()
+{-# INLINE imapM #-}
+imapM = G.imapM
+
+-- | /O(n)/ Apply the monadic action to every element of the vector,
+-- modifying it. It's the same as @flip mapM_@.
+--
+-- @since 0.13.0.1
+forM :: (PrimMonad m) => MVector (PrimState m) a -> (a -> m a) -> m ()
+{-# INLINE forM #-}
+forM = G.forM
+
+-- | /O(n)/ Apply the monadic action to every element of the vector
+-- and its index, modifying the vector. It's the same as @flip imapM_@.
+--
+-- @since 0.13.0.1
+iforM :: (PrimMonad m) => MVector (PrimState m) a -> (Int -> a -> m a) -> m ()
+{-# INLINE iforM #-}
+iforM = G.iforM
+
 -- | /O(n)/ Apply the monadic action to every element of the vector, discarding the results.
+-- The vector is not modified.
 --
 -- @since 0.12.3.0
 mapM_ :: (PrimMonad m) => (a -> m b) -> MVector (PrimState m) a -> m ()
@@ -560,6 +592,7 @@ mapM_ :: (PrimMonad m) => (a -> m b) -> MVector (PrimState m) a -> m ()
 mapM_ = G.mapM_
 
 -- | /O(n)/ Apply the monadic action to every element of the vector and its index, discarding the results.
+-- The vector is not modified.
 --
 -- @since 0.12.3.0
 imapM_ :: (PrimMonad m) => (Int -> a -> m b) -> MVector (PrimState m) a -> m ()
@@ -567,7 +600,9 @@ imapM_ :: (PrimMonad m) => (Int -> a -> m b) -> MVector (PrimState m) a -> m ()
 imapM_ = G.imapM_
 
 -- | /O(n)/ Apply the monadic action to every element of the vector,
--- discarding the results. It's the same as @flip mapM_@.
+-- discarding the results. The vector is not modified.
+--
+-- It's the same as @flip mapM_@.
 --
 -- @since 0.12.3.0
 forM_ :: (PrimMonad m) => MVector (PrimState m) a -> (a -> m b) -> m ()
@@ -575,7 +610,9 @@ forM_ :: (PrimMonad m) => MVector (PrimState m) a -> (a -> m b) -> m ()
 forM_ = G.forM_
 
 -- | /O(n)/ Apply the monadic action to every element of the vector
--- and its index, discarding the results. It's the same as @flip imapM_@.
+-- and its index, discarding the results. The vector is not modified.
+--
+-- It's the same as @flip imapM_@.
 --
 -- @since 0.12.3.0
 iforM_ :: (PrimMonad m) => MVector (PrimState m) a -> (Int -> a -> m b) -> m ()

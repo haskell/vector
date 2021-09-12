@@ -47,7 +47,8 @@ module Data.Vector.Generic.Mutable (
   read, write, modify, modifyM, swap, exchange,
   unsafeRead, unsafeWrite, unsafeModify, unsafeModifyM, unsafeSwap, unsafeExchange,
 
-  -- * Folds
+  -- * Maps and folds
+  mapM, imapM, forM, iforM,
   mapM_, imapM_, forM_, iforM_,
   foldl, foldl', foldM, foldM',
   foldr, foldr', foldrM, foldrM',
@@ -88,7 +89,7 @@ import           Data.Vector.Internal.Check
 import Control.Monad.Primitive ( PrimMonad(..), RealWorld, stToPrim )
 
 import Prelude hiding ( length, null, replicate, reverse, map, read,
-                        take, drop, splitAt, init, tail, mapM_, foldr, foldl )
+                        take, drop, splitAt, init, tail, mapM, mapM_, foldr, foldl )
 
 #include "vector.h"
 
@@ -727,6 +728,44 @@ unsafeExchange v i x = checkIndex Unsafe i (length v) $ stToPrim $ do
 -- Folds
 -- -----
 
+forI :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (Int -> m a) -> m ()
+{-# INLINE forI #-}
+forI v f = loop 0
+  where
+    loop i | i >= n    = return ()
+           | otherwise = f i >>= unsafeWrite v i >> loop (i + 1)
+    n = length v
+
+-- | /O(n)/ Apply the monadic action to every element of the vector, modifying it.
+--
+-- @since 0.13.0.1
+mapM :: (PrimMonad m, MVector v a) => (a -> m a) -> v (PrimState m) a -> m ()
+{-# INLINE mapM #-}
+mapM f v = forI v $ \i -> f =<< unsafeRead v i
+
+-- | /O(n)/ Apply the monadic action to every element of the vector and its index, modifying the vector.
+--
+-- @since 0.13.0.1
+imapM :: (PrimMonad m, MVector v a) => (Int -> a -> m a) -> v (PrimState m) a -> m ()
+{-# INLINE imapM #-}
+imapM f v = forI v $ \i -> f i =<< unsafeRead v i
+
+-- | /O(n)/ Apply the monadic action to every element of the vector,
+-- modifying it. It's the same as @flip mapM_@.
+--
+-- @since 0.13.0.1
+forM :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m a) -> m ()
+{-# INLINE forM #-}
+forM = flip mapM
+
+-- | /O(n)/ Apply the monadic action to every element of the vector
+-- and its index, modifying the vector. It's the same as @flip imapM_@.
+--
+-- @since 0.13.0.1
+iforM :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (Int -> a -> m a) -> m ()
+{-# INLINE iforM #-}
+iforM = flip imapM
+
 forI_ :: (Monad m, MVector v a) => v (PrimState m) a -> (Int -> m b) -> m ()
 {-# INLINE forI_ #-}
 forI_ v f = loop 0
@@ -736,6 +775,7 @@ forI_ v f = loop 0
     n = length v
 
 -- | /O(n)/ Apply the monadic action to every element of the vector, discarding the results.
+-- The vector is not modified.
 --
 -- @since 0.12.3.0
 mapM_ :: (PrimMonad m, MVector v a) => (a -> m b) -> v (PrimState m) a -> m ()
@@ -743,6 +783,7 @@ mapM_ :: (PrimMonad m, MVector v a) => (a -> m b) -> v (PrimState m) a -> m ()
 mapM_ f v = forI_ v $ \i -> f =<< unsafeRead v i
 
 -- | /O(n)/ Apply the monadic action to every element of the vector and its index, discarding the results.
+-- The vector is not modified.
 --
 -- @since 0.12.3.0
 imapM_ :: (PrimMonad m, MVector v a) => (Int -> a -> m b) -> v (PrimState m) a -> m ()
@@ -750,7 +791,9 @@ imapM_ :: (PrimMonad m, MVector v a) => (Int -> a -> m b) -> v (PrimState m) a -
 imapM_ f v = forI_ v $ \i -> f i =<< unsafeRead v i
 
 -- | /O(n)/ Apply the monadic action to every element of the vector,
--- discarding the results. It's the same as @flip mapM_@.
+-- discarding the results. The vector is not modified.
+--
+-- It's the same as @flip mapM_@.
 --
 -- @since 0.12.3.0
 forM_ :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m b) -> m ()
@@ -758,7 +801,9 @@ forM_ :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m b) -> m ()
 forM_ = flip mapM_
 
 -- | /O(n)/ Apply the monadic action to every element of the vector
--- and its index, discarding the results. It's the same as @flip imapM_@.
+-- and its index, discarding the results. The vector is not modified.
+--
+-- It's the same as @flip imapM_@.
 --
 -- @since 0.12.3.0
 iforM_ :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (Int -> a -> m b) -> m ()
