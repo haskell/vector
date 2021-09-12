@@ -44,7 +44,7 @@ module Data.Vector.Storable.Mutable(
   clear,
 
   -- * Accessing individual elements
-  read, write, modify, modifyM, swap, exchange,
+  read, readMaybe, write, modify, modifyM, swap, exchange,
   unsafeRead, unsafeWrite, unsafeModify, unsafeModifyM, unsafeSwap, unsafeExchange,
 
   -- * Folds
@@ -485,18 +485,35 @@ clear = G.clear
 -- Accessing individual elements
 -- -----------------------------
 
--- | Yield the element at the given position. Will throw exception if
--- index is out of range.
+-- | Yield the element at the given position. Will throw an exception if
+-- the index is out of range.
 --
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Storable.Mutable as MVS
--- >>> v <- MV.generate 10 (\x -> x*x)
--- >>> MV.read v 3
+-- >>> v <- MVS.generate 10 (\x -> x*x)
+-- >>> MVS.read v 3
 -- 9
 read :: (PrimMonad m, Storable a) => MVector (PrimState m) a -> Int -> m a
 {-# INLINE read #-}
 read = G.read
+
+-- | Yield the element at the given position. Returns 'Nothing' if
+-- the index is out of range.
+--
+-- @since 0.13
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Storable.Mutable as MVS
+-- >>> v <- MVS.generate 10 (\x -> x*x)
+-- >>> MVS.readMaybe v 3
+-- Just 9
+-- >>> MVS.readMaybe v 13
+-- Nothing
+readMaybe :: (PrimMonad m, Storable a) => MVector (PrimState m) a -> Int -> m (Maybe a)
+{-# INLINE readMaybe #-}
+readMaybe = G.readMaybe
 
 -- | Replace the element at the given position.
 write

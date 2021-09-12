@@ -44,7 +44,7 @@ module Data.Vector.Generic.Mutable (
   clear,
 
   -- * Accessing individual elements
-  read, write, modify, modifyM, swap, exchange,
+  read, readMaybe, write, modify, modifyM, swap, exchange,
   unsafeRead, unsafeWrite, unsafeModify, unsafeModifyM, unsafeSwap, unsafeExchange,
 
   -- * Folds
@@ -635,8 +635,8 @@ clear = stToPrim . basicClear
 -- Accessing individual elements
 -- -----------------------------
 
--- | Yield the element at the given position. Will throw exception if
--- index is out of range.
+-- | Yield the element at the given position. Will throw an exception if
+-- the index is out of range.
 --
 -- ==== __Examples__
 --
@@ -648,6 +648,24 @@ read :: (HasCallStack, PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> 
 {-# INLINE read #-}
 read v i = checkIndex Bounds i (length v)
          $ unsafeRead v i
+
+-- | Yield the element at the given position. Returns 'Nothing' if
+-- the index is out of range.
+--
+-- @since 0.13
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Mutable as MV
+-- >>> v <- MV.generate 10 (\x -> x*x)
+-- >>> MV.readMaybe v 3
+-- Just 9
+-- >>> MV.readMaybe v 13
+-- Nothing
+readMaybe :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m (Maybe a)
+{-# INLINE readMaybe #-}
+readMaybe v i | i `inRange` (length v) = Just <$> unsafeRead v i
+              | otherwise              = pure Nothing
 
 -- | Replace the element at the given position.
 write :: (HasCallStack, PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m ()
