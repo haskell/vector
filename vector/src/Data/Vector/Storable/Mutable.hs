@@ -214,7 +214,9 @@ storableSet (MVector n fp) x
                   1 -> storableSetAsPrim n fp x (undefined :: Word8)
                   2 -> storableSetAsPrim n fp x (undefined :: Word16)
                   4 -> storableSetAsPrim n fp x (undefined :: Word32)
+#if !defined(ghcjs_HOST_OS)
                   8 -> storableSetAsPrim n fp x (undefined :: Word64)
+#endif
                   _ -> unsafeWithForeignPtr fp $ \p -> do
                        poke p x
 
