@@ -45,6 +45,14 @@
 * Remove redundant `Storable` constraints on to/from `ForeignPtr` conversions
 * Add `unsafeCast` to `Primitive` vectors
 
+# Changes in version 0.12.3.1
+
+* Bugfix for ghcjs and `Double` memset for `Storable` vector:
+  [#410](https://github.com/haskell/vector/issues/410)
+* Avoid haddock bug: [#383](https://github.com/haskell/vector/issues/383)
+* Improve haddock and doctests
+* Disable problematic tests with -boundschecks [#407](https://github.com/haskell/vector/pull/407)
+
 # Changes in version 0.12.3.0
 
  * Fix performance regression due to introduction of `keepAlive#` primop in ghc-9.0: [#372](https://github.com/haskell/vector/pull/372)
