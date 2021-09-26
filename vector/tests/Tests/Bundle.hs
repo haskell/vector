@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds #-}
 module Tests.Bundle ( tests ) where
 
 import Boilerplater
@@ -13,16 +14,11 @@ import Test.Tasty.QuickCheck hiding (testProperties)
 import Text.Show.Functions ()
 import Data.List           (foldl', foldl1', unfoldr, find, findIndex)
 
--- migration from testframework to tasty
-type Test = TestTree
 
-#define COMMON_CONTEXT(a) \
- VANILLA_CONTEXT(a)
+type CommonContext a = ( Eq a, Show a, Arbitrary a, CoArbitrary a, TestData a
+                       , Model a ~ a, EqTest a ~ Property)
 
-#define VANILLA_CONTEXT(a) \
-  Eq a,     Show a,     Arbitrary a,     CoArbitrary a,     TestData a,     Model a ~ a,        EqTest a ~ Property
-
-testSanity :: forall v a. (COMMON_CONTEXT(a)) => S.Bundle v a -> [Test]
+testSanity :: forall v a. (CommonContext a) => S.Bundle v a -> [TestTree]
 testSanity _ = [
         testProperty "fromList.toList == id" prop_fromList_toList,
         testProperty "toList.fromList == id" prop_toList_fromList
@@ -33,7 +29,7 @@ testSanity _ = [
     prop_toList_fromList :: P ([a] -> [a])
         = (S.toList . (S.fromList :: [a] -> S.Bundle v a)) `eq` id
 
-testPolymorphicFunctions :: forall v a. (COMMON_CONTEXT(a)) => S.Bundle v a -> [Test]
+testPolymorphicFunctions :: forall v a. (CommonContext a) => S.Bundle v a -> [TestTree]
 testPolymorphicFunctions _ = $(testProperties [
         'prop_eq,
 
@@ -151,7 +147,7 @@ testPolymorphicFunctions _ = $(testProperties [
          = (\n f a -> S.unfoldr (limitUnfolds f) (a, n))
            `eq` (\n f a -> unfoldr (limitUnfolds f) (a, n))
 
-testBoolFunctions :: forall v. S.Bundle v Bool -> [Test]
+testBoolFunctions :: forall v. S.Bundle v Bool -> [TestTree]
 testBoolFunctions _ = $(testProperties ['prop_and, 'prop_or ])
   where
     prop_and :: P (S.Bundle v Bool -> Bool) = S.and `eq` and

@@ -18,10 +18,10 @@ module Tests.Vector.Property
   , testNumFunctions
   , testNestedVectorFunctions
   , testDataFunctions
+  , testUnstream
   -- re-exports
   , Data
   , Random
-  , Test
   ) where
 
 import Boilerplater
@@ -64,8 +64,6 @@ type VanillaContext a   = ( Eq a , Show a, Arbitrary a, CoArbitrary a
 type VectorContext  a v = ( Eq (v a), Show (v a), Arbitrary (v a), CoArbitrary (v a)
                           , TestData (v a), Model (v a) ~ [a],  EqTest (v a) ~ Property, V.Vector v a)
 
--- | migration hack for moving from TestFramework to Tasty
-type Test = TestTree
 -- TODO: implement Vector equivalents of list functions for some of the commented out properties
 
 -- TODO: add tests for the other extra functions
@@ -74,7 +72,7 @@ type Test = TestTree
 --  new,
 --  unsafeSlice, unsafeIndex,
 
-testSanity :: forall a v. (CommonContext a v) => v a -> [Test]
+testSanity :: forall a v. (CommonContext a v) => v a -> [TestTree]
 {-# INLINE testSanity #-}
 testSanity _ = [
         testProperty "fromList.toList == id" prop_fromList_toList,
@@ -88,7 +86,7 @@ testSanity _ = [
     prop_unstream_stream (v :: v a)        = (V.unstream . V.stream)                        v == v
     prop_stream_unstream (s :: S.Bundle v a) = ((V.stream :: v a -> S.Bundle v a) . V.unstream) s == s
 
-testPolymorphicFunctions :: forall a v. (CommonContext a v, VectorContext Int v) => v a -> [Test]
+testPolymorphicFunctions :: forall a v. (CommonContext a v, VectorContext Int v) => v a -> [TestTree]
 -- FIXME: inlining of unboxed properties blows up the memory during compilation. See #272
 --{-# INLINE testPolymorphicFunctions #-}
 testPolymorphicFunctions _ = $(testProperties [
@@ -601,7 +599,7 @@ testTuplyFunctions
                  , VectorContext (a, a, a) v
                  , VectorContext (Int, a)  v
                  )
-  => v a -> [Test]
+  => v a -> [TestTree]
 {-# INLINE testTuplyFunctions #-}
 testTuplyFunctions _ = $(testProperties [ 'prop_zip, 'prop_zip3
                                         , 'prop_unzip, 'prop_unzip3
@@ -620,7 +618,7 @@ testTuplyFunctions _ = $(testProperties [ 'prop_zip, 'prop_zip3
       where
         prop :: P (v a -> [(Int,a)] -> v a) = (V.//) `eq` (//)
 
-testOrdFunctions :: forall a v. (CommonContext a v, Ord a, Ord (v a)) => v a -> [Test]
+testOrdFunctions :: forall a v. (CommonContext a v, Ord a, Ord (v a)) => v a -> [TestTree]
 {-# INLINE testOrdFunctions #-}
 testOrdFunctions _ = $(testProperties
   ['prop_compare,
@@ -672,7 +670,7 @@ instance (Ord a) => Semigroup  (FirstMaxWith a i)   where
              | otherwise = x
 
 
-testEnumFunctions :: forall a v. (CommonContext a v, Enum a, Ord a, Num a, Random a) => v a -> [Test]
+testEnumFunctions :: forall a v. (CommonContext a v, Enum a, Ord a, Num a, Random a) => v a -> [TestTree]
 {-# INLINE testEnumFunctions #-}
 testEnumFunctions _ = $(testProperties
   [ 'prop_enumFromN, 'prop_enumFromThenN,
@@ -704,7 +702,7 @@ testEnumFunctions _ = $(testProperties
           where
             d = abs (j-i)
 
-testMonoidFunctions :: forall a v. (CommonContext a v, Monoid (v a)) => v a -> [Test]
+testMonoidFunctions :: forall a v. (CommonContext a v, Monoid (v a)) => v a -> [TestTree]
 {-# INLINE testMonoidFunctions #-}
 testMonoidFunctions _ = $(testProperties
   [ 'prop_mempty, 'prop_mappend, 'prop_mconcat ])
@@ -713,14 +711,14 @@ testMonoidFunctions _ = $(testProperties
     prop_mappend :: P (v a -> v a -> v a) = mappend `eq` mappend
     prop_mconcat :: P ([v a] -> v a)      = mconcat `eq` mconcat
 
-testFunctorFunctions :: forall a v. (CommonContext a v, Functor v) => v a -> [Test]
+testFunctorFunctions :: forall a v. (CommonContext a v, Functor v) => v a -> [TestTree]
 {-# INLINE testFunctorFunctions #-}
 testFunctorFunctions _ = $(testProperties
   [ 'prop_fmap ])
   where
     prop_fmap :: P ((a -> a) -> v a -> v a) = fmap `eq` fmap
 
-testMonadFunctions :: forall a v. (CommonContext a v, VectorContext (a, a) v, MonadZip v) => v a -> [Test]
+testMonadFunctions :: forall a v. (CommonContext a v, VectorContext (a, a) v, MonadZip v) => v a -> [TestTree]
 {-# INLINE testMonadFunctions #-}
 testMonadFunctions _ = $(testProperties [ 'prop_return, 'prop_bind
                                         , 'prop_mzip, 'prop_munzip
@@ -739,7 +737,7 @@ testSequenceFunctions
                  , Show      (v (Writer [a] a))
                  , TestData  (v (Writer [a] a))
                  )
-  => v a -> [Test]
+  => v a -> [TestTree]
 testSequenceFunctions _ = $(testProperties [ 'prop_sequence, 'prop_sequence_
                                            ])
   where
@@ -748,7 +746,7 @@ testSequenceFunctions _ = $(testProperties [ 'prop_sequence, 'prop_sequence_
     prop_sequence_ :: P (v (Writer [a] a) -> Writer [a] ())
       = V.sequence_ `eq` sequence_
 
-testApplicativeFunctions :: forall a v. (CommonContext a v, V.Vector v (a -> a), Applicative.Applicative v) => v a -> [Test]
+testApplicativeFunctions :: forall a v. (CommonContext a v, V.Vector v (a -> a), Applicative.Applicative v) => v a -> [TestTree]
 {-# INLINE testApplicativeFunctions #-}
 testApplicativeFunctions _ = $(testProperties
   [ 'prop_applicative_pure, 'prop_applicative_appl ])
@@ -758,7 +756,7 @@ testApplicativeFunctions _ = $(testProperties
     prop_applicative_appl :: [a -> a] -> P (v a -> v a)
       = \fs -> (Applicative.<*>) (V.fromList fs) `eq` (Applicative.<*>) fs
 
-testAlternativeFunctions :: forall a v. (CommonContext a v, Applicative.Alternative v) => v a -> [Test]
+testAlternativeFunctions :: forall a v. (CommonContext a v, Applicative.Alternative v) => v a -> [TestTree]
 {-# INLINE testAlternativeFunctions #-}
 testAlternativeFunctions _ = $(testProperties
   [ 'prop_alternative_empty, 'prop_alternative_or ])
@@ -767,21 +765,21 @@ testAlternativeFunctions _ = $(testProperties
     prop_alternative_or :: P (v a -> v a -> v a)
       = (Applicative.<|>) `eq` (Applicative.<|>)
 
-testBoolFunctions :: forall v. (CommonContext Bool v) => v Bool -> [Test]
+testBoolFunctions :: forall v. (CommonContext Bool v) => v Bool -> [TestTree]
 {-# INLINE testBoolFunctions #-}
 testBoolFunctions _ = $(testProperties ['prop_and, 'prop_or])
   where
     prop_and :: P (v Bool -> Bool) = V.and `eq` and
     prop_or  :: P (v Bool -> Bool) = V.or `eq` or
 
-testNumFunctions :: forall a v. (CommonContext a v, Num a) => v a -> [Test]
+testNumFunctions :: forall a v. (CommonContext a v, Num a) => v a -> [TestTree]
 {-# INLINE testNumFunctions #-}
 testNumFunctions _ = $(testProperties ['prop_sum, 'prop_product])
   where
     prop_sum     :: P (v a -> a) = V.sum `eq` sum
     prop_product :: P (v a -> a) = V.product `eq` product
 
-testNestedVectorFunctions :: forall a v. (CommonContext a v) => v a -> [Test]
+testNestedVectorFunctions :: forall a v. (CommonContext a v) => v a -> [TestTree]
 {-# INLINE testNestedVectorFunctions #-}
 testNestedVectorFunctions _ = $(testProperties
   [ 'prop_concat
@@ -789,7 +787,7 @@ testNestedVectorFunctions _ = $(testProperties
   where
     prop_concat :: P ([v a] -> v a) = V.concat `eq` concat
 
-testDataFunctions :: forall a v. (CommonContext a v, Data a, Data (v a)) => v a -> [Test]
+testDataFunctions :: forall a v. (CommonContext a v, Data a, Data (v a)) => v a -> [TestTree]
 {-# INLINE testDataFunctions #-}
 testDataFunctions _ = $(testProperties ['prop_glength])
   where
@@ -800,3 +798,32 @@ testDataFunctions _ = $(testProperties ['prop_glength])
 
         toA :: Data b => b -> Int
         toA x = maybe (glength x) (const 1) (cast x :: Maybe a)
+
+testUnstream :: forall v. (CommonContext Int v) => v Int -> [TestTree]
+{-# INLINE testUnstream #-}
+testUnstream _ =
+  [ testProperty "unstream == vunstream (exact)" $ \(n :: Int) ->
+      let v1,v2 :: v Int
+          v1 = runST $ V.freeze =<< MV.unstream  (streamExact n)
+          v2 = runST $ V.freeze =<< MV.vunstream (streamExact n)
+      in v1 == v2
+  , testProperty "unstream == vunstream (unknown)" $ \(n :: Int) ->
+      let v1,v2 :: v Int
+          v1 = runST $ V.freeze =<< MV.unstream  (streamUnknown n)
+          v2 = runST $ V.freeze =<< MV.vunstream (streamUnknown n)
+      in v1 == v2
+  --
+  , testProperty "unstreamR ~= vunstream (exact)" $ \(n :: Int) ->
+      let v1,v2 :: v Int
+          v1 = runST $ V.freeze =<< MV.unstreamR (streamExact n)
+          v2 = runST $ V.freeze =<< MV.vunstream (streamExact n)
+      in V.reverse v1 == v2
+  , testProperty "unstreamR ~= vunstream (unknown)" $ \(n :: Int) ->
+      let v1,v2 :: v Int
+          v1 = runST $ V.freeze =<< MV.unstreamR (streamUnknown n)
+          v2 = runST $ V.freeze =<< MV.vunstream (streamUnknown n)
+      in V.reverse v1 == v2
+  ]
+  where
+    streamExact n = S.generate (abs n) id
+    streamUnknown = S.unfoldr (\i -> if i > 0 then (Just (i-1,i-1)) else Nothing) . abs
