@@ -424,7 +424,15 @@ clear = G.clear
 -- Accessing individual elements
 -- -----------------------------
 
--- | Yield the element at the given position.
+-- | Yield the element at the given position. Will throw exception if
+-- index is out of range.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Mutable as MV
+-- >>> v <- MV.generate 10 (\x -> x*x)
+-- >>> MV.read v 3
+-- 9
 read :: PrimMonad m => MVector (PrimState m) a -> Int -> m a
 {-# INLINE read #-}
 read = G.read
