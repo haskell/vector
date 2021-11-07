@@ -25,6 +25,7 @@ jobs:
           - { cabal: "3.4", os: ubuntu-latest,  ghc: "8.8.4"  }
           - { cabal: "3.4", os: ubuntu-latest,  ghc: "8.10.7" }
           - { cabal: "3.4", os: ubuntu-latest,  ghc: "9.0.1"  }
+          - { cabal: "3.4", os: ubuntu-latest,  ghc: "9.2.1"  }
           # Win
           - { cabal: "3.2", os: windows-latest, ghc: "8.4.4"  }
           - { cabal: "3.2", os: windows-latest, ghc: "8.6.5"  }
