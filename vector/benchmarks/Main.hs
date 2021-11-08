@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 module Main where
 
 import Bench.Vector.Algo.MutableSet (mutableSet)
@@ -39,18 +40,15 @@ main = do
 
   gen <- newIOGenM (mkStdGen useSeed)
 
-  let (lparens, rparens) = parenTree useSize
-  (nodes, edges1, edges2) <- randomGraph gen useSize
-  lparens `seq` rparens `seq` nodes `seq` edges1 `seq` edges2 `seq` return ()
+  let (!lparens, !rparens) = parenTree useSize
+  (!nodes, !edges1, !edges2) <- randomGraph gen useSize
 
   let randomVector l = U.replicateM l (uniformDoublePositive01M gen)
-  as <- randomVector useSize
-  bs <- randomVector useSize
-  cs <- randomVector useSize
-  ds <- randomVector useSize
-  sp <- randomVector (floor $ sqrt $ fromIntegral useSize)
-  as `seq` bs `seq` cs `seq` ds `seq` sp `seq` return ()
-
+  !as <- randomVector useSize
+  !bs <- randomVector useSize
+  !cs <- randomVector useSize
+  !ds <- randomVector useSize
+  !sp <- randomVector (floor $ sqrt $ fromIntegral useSize)
   vi <- MV.new useSize
 
   defaultMainWithIngredients ingredients $ bgroup "All"
