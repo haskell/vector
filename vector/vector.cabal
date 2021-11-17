@@ -266,7 +266,7 @@ test-suite vector-doctest
     buildable: False
   build-depends:
         base      -any
-      , doctest   >=0.15 && <0.19
+      , doctest   >=0.15 && <0.20
       , primitive >= 0.6.4.0 && < 0.8
       , vector    -any
 
