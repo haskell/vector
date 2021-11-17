@@ -234,9 +234,6 @@ instance (Unbox a, Eq a) => Eq (Vector a) where
   {-# INLINE (==) #-}
   xs == ys = Bundle.eq (G.stream xs) (G.stream ys)
 
-  {-# INLINE (/=) #-}
-  xs /= ys = not (Bundle.eq (G.stream xs) (G.stream ys))
-
 -- See http://trac.haskell.org/vector/ticket/12
 instance (Unbox a, Ord a) => Ord (Vector a) where
   {-# INLINE compare #-}
