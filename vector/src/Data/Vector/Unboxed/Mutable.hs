@@ -43,7 +43,7 @@ module Data.Vector.Unboxed.Mutable (
   unzip, unzip3, unzip4, unzip5, unzip6,
 
   -- * Accessing individual elements
-  read, write, modify, modifyM, swap, exchange,
+  read, readMaybe, write, modify, modifyM, swap, exchange,
   unsafeRead, unsafeWrite, unsafeModify, unsafeModifyM, unsafeSwap, unsafeExchange,
 
   -- * Folds
@@ -293,10 +293,35 @@ clear = G.clear
 -- Accessing individual elements
 -- -----------------------------
 
--- | Yield the element at the given position.
+-- | Yield the element at the given position. Will throw an exception if
+-- the index is out of range.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed.Mutable as MVU
+-- >>> v <- MVU.generate 10 (\x -> x*x)
+-- >>> MVU.read v 3
+-- 9
 read :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> Int -> m a
 {-# INLINE read #-}
 read = G.read
+
+-- | Yield the element at the given position. Returns 'Nothing' if
+-- the index is out of range.
+--
+-- @since 0.13
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed.Mutable as MVU
+-- >>> v <- MVU.generate 10 (\x -> x*x)
+-- >>> MVU.readMaybe v 3
+-- Just 9
+-- >>> MVU.readMaybe v 13
+-- Nothing
+readMaybe :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> Int -> m (Maybe a)
+{-# INLINE readMaybe #-}
+readMaybe = G.readMaybe
 
 -- | Replace the element at the given position.
 write :: (PrimMonad m, Unbox a) => MVector (PrimState m) a -> Int -> a -> m ()
