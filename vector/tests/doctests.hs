@@ -1,4 +1,9 @@
-import Test.DocTest (doctest)
+{-# LANGUAGE OverloadedStrings #-}
+
+module Main where
+
+import Test.DocTest (mainFromCabal)
+import System.Environment (getArgs)
 
 main :: IO ()
-main = doctest ["-Iinclude", "-Iinternal", "src/Data"]
+main = mainFromCabal "vector" =<< getArgs
