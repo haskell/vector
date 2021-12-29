@@ -1,3 +1,7 @@
 packages:
   vector
   vector-stream
+source-repository-package
+  type: git
+  location: https://github.com/martijnbastiaan/doctest-parallel
+  tag: 45a91dc9ca990ca514263263ee8463a9ebcf0e8e

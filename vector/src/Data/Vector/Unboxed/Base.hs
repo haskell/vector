@@ -321,6 +321,7 @@ idU = id
 --
 -- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia -XDeriveGeneric
 -- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
+-- >>> import GHC.Generics
 -- >>> import qualified Data.Vector.Unboxed         as VU
 -- >>> import qualified Data.Vector.Generic         as VG
 -- >>> import qualified Data.Vector.Generic.Mutable as VGM
