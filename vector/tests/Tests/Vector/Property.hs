@@ -169,6 +169,7 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_partition, {- 'prop_unstablePartition, -}
         'prop_partitionWith,
         'prop_span, 'prop_break,
+        'prop_groupBy,
 
         -- Searching
         'prop_elem, 'prop_notElem,
@@ -334,6 +335,7 @@ testPolymorphicFunctions _ = $(testProperties [
       = V.partitionWith `eq` partitionWith
     prop_span :: P ((a -> Bool) -> v a -> (v a, v a)) = V.span `eq` span
     prop_break :: P ((a -> Bool) -> v a -> (v a, v a)) = V.break `eq` break
+    prop_groupBy :: P ((a -> a -> Bool) -> v a -> [v a]) = V.groupBy `eq` groupBy
 
     prop_elem    :: P (a -> v a -> Bool) = V.elem `eq` elem
     prop_notElem :: P (a -> v a -> Bool) = V.notElem `eq` notElem

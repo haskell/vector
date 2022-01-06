@@ -107,7 +107,7 @@ module Data.Vector.Generic (
   takeWhile, dropWhile,
 
   -- ** Partitioning
-  partition, partitionWith, unstablePartition, span, break,
+  partition, partitionWith, unstablePartition, span, break, groupBy, group,
 
   -- ** Searching
   elem, notElem, find, findIndex, findIndexR, findIndices, elemIndex, elemIndices,
@@ -1552,6 +1552,47 @@ break f xs = case findIndex f xs of
                Just i  -> (unsafeSlice 0 i xs, unsafeSlice i (length xs - i) xs)
                Nothing -> (xs, empty)
 
+-- | /O(n)/ Split a vector into a list of slices.
+--
+-- The concatenation of this list of slices is equal to the argument vector,
+-- and each slice contains only equal elements, as determined by the equality
+-- predicate function.
+--
+-- >>> import qualified Data.Vector as V
+-- >>> import           Data.Char (isUpper)
+-- >>> V.groupBy (\a b -> isUpper a == isUpper b) (V.fromList "Mississippi River")
+-- ["M","ississippi ","R","iver"]
+--
+-- See also 'Data.List.groupBy'.
+--
+-- @since 0.13.0.1
+{-# INLINE groupBy #-}
+groupBy :: (Vector v a) => (a -> a -> Bool) -> v a -> [v a]
+groupBy _ v | null v = []
+groupBy f v =
+  let h = unsafeHead v
+      tl = unsafeTail v
+   in case findIndex (not . f h) tl of
+      Nothing -> [v]
+      Just n -> unsafeTake (n + 1) v : groupBy f (unsafeDrop (n + 1) v)
+
+-- | /O(n)/ Split a vector into a list of slices.
+--
+-- The concatenation of this list of slices is equal to the argument vector,
+-- and each slice contains only equal elements.
+--
+-- This is the equivalent of 'groupBy (==)'.
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.group (V.fromList "Mississippi")
+-- ["M","i","ss","i","ss","i","pp","i"]
+--
+-- See also 'Data.List.group'.
+--
+-- @since 0.13.0.1
+group :: (Vector v a , Eq a) => v a -> [v a]
+{-# INLINE group #-}
+group = groupBy (==)
 
 -- Searching
 -- ---------
