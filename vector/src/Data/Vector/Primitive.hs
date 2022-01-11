@@ -104,7 +104,7 @@ module Data.Vector.Primitive (
   takeWhile, dropWhile,
 
   -- ** Partitioning
-  partition, unstablePartition, partitionWith, span, break,
+  partition, unstablePartition, partitionWith, span, break, groupBy, group,
 
   -- ** Searching
   elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
@@ -1168,6 +1168,46 @@ span = G.span
 break :: Prim a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE break #-}
 break = G.break
+
+-- | /O(n)/ Split a vector into a list of slices, using a predicate function.
+--
+-- The concatenation of this list of slices is equal to the argument vector,
+-- and each slice contains only equal elements, as determined by the equality
+-- predicate function.
+--
+-- Does not fuse.
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> import           Data.Char (isUpper)
+-- >>> VP.groupBy (\a b -> isUpper a == isUpper b) (VP.fromList "Mississippi River")
+-- ["M","ississippi ","R","iver"]
+--
+-- See also 'Data.List.groupBy', 'group'.
+--
+-- @since 0.13.0.1
+groupBy :: Prim a => (a -> a -> Bool) -> Vector a -> [Vector a]
+{-# INLINE groupBy #-}
+groupBy = G.groupBy
+
+-- | /O(n)/ Split a vector into a list of slices of the input vector.
+--
+-- The concatenation of this list of slices is equal to the argument vector,
+-- and each slice contains only equal elements.
+--
+-- Does not fuse.
+--
+-- This is the equivalent of 'groupBy (==)'.
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> VP.group (VP.fromList "Mississippi")
+-- ["M","i","ss","i","ss","i","pp","i"]
+--
+-- See also 'Data.List.group'.
+--
+-- @since 0.13.0.1
+group :: (Prim a, Eq a) => Vector a -> [Vector a]
+{-# INLINE group #-}
+group = G.groupBy (==)
 
 -- Searching
 -- ---------

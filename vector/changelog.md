@@ -44,6 +44,9 @@
    [#382](https://github.com/haskell/vector/pull/382)
 * Remove redundant `Storable` constraints on to/from `ForeignPtr` conversions
 * Add `unsafeCast` to `Primitive` vectors
+* Add `groupBy` and `group` for `Data.Vector.Generic` and the specialized
+  version in `Data.Vector`, `Data.Vector.Unboxed`, `Data.Vector.Storable` and
+  `Data.Vector.Primitive`.
 
 # Changes in version 0.12.3.1
 

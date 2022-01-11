@@ -119,7 +119,7 @@ module Data.Vector (
   takeWhile, dropWhile,
 
   -- ** Partitioning
-  partition, unstablePartition, partitionWith, span, break,
+  partition, unstablePartition, partitionWith, span, break, groupBy, group,
 
   -- ** Searching
   elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
@@ -1409,6 +1409,46 @@ span = G.span
 break :: (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE break #-}
 break = G.break
+
+-- | /O(n)/ Split a vector into a list of slices, using a predicate function.
+--
+-- The concatenation of this list of slices is equal to the argument vector,
+-- and each slice contains only equal elements, as determined by the equality
+-- predicate function.
+--
+-- Does not fuse.
+--
+-- >>> import qualified Data.Vector as V
+-- >>> import           Data.Char (isUpper)
+-- >>> V.groupBy (\a b -> isUpper a == isUpper b) (V.fromList "Mississippi River")
+-- ["M","ississippi ","R","iver"]
+--
+-- See also 'Data.List.groupBy', 'group'.
+--
+-- @since 0.13.0.1
+groupBy :: (a -> a -> Bool) -> Vector a -> [Vector a]
+{-# INLINE groupBy #-}
+groupBy = G.groupBy
+
+-- | /O(n)/ Split a vector into a list of slices of the input vector.
+--
+-- The concatenation of this list of slices is equal to the argument vector,
+-- and each slice contains only equal elements.
+--
+-- Does not fuse.
+--
+-- This is the equivalent of 'groupBy (==)'.
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.group (V.fromList "Mississippi")
+-- ["M","i","ss","i","ss","i","pp","i"]
+--
+-- See also 'Data.List.group'.
+--
+-- @since 0.13.0.1
+group :: Eq a => Vector a -> [Vector a]
+{-# INLINE group #-}
+group = G.groupBy (==)
 
 -- Searching
 -- ---------
