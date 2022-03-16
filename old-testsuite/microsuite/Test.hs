@@ -166,7 +166,7 @@ left_over_vector = compile "Data\\.Vector\\.Unboxed\\.Base\\.Vector" []
 -- >  > readProcess "date" [] []
 -- >  Right "Thu Feb  7 10:03:39 PST 2008\n"
 --
--- The argumenst are:
+-- The arguments are:
 --
 -- * The command to run, which must be in the $PATH, or an absolute path 
 --  

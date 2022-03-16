@@ -1561,7 +1561,7 @@ enumFromTo_double n m = n `seq` m `seq` Stream step ini
     lim = m + 1/2 -- important to float out
 
 -- GHC changed definition of Enum for Double in GHC8.6 so we have to
--- accomodate both definitions in order to preserve validity of
+-- accommodate both definitions in order to preserve validity of
 -- rewrite rule
 --
 --  ISSUE:  https://gitlab.haskell.org/ghc/ghc/issues/15081

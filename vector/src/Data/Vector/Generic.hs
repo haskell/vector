@@ -1637,14 +1637,14 @@ findIndices f = unstream
               . inplace (S.map fst . S.filter (f . snd) . S.indexed) toMax
               . stream
 
--- | /O(n)/ Yield 'Just' the index of the first occurence of the given element or
+-- | /O(n)/ Yield 'Just' the index of the first occurrence of the given element or
 -- 'Nothing' if the vector does not contain the element. This is a specialised
 -- version of 'findIndex'.
 elemIndex :: (Vector v a, Eq a) => a -> v a -> Maybe Int
 {-# INLINE elemIndex #-}
 elemIndex x = findIndex (x ==)
 
--- | /O(n)/ Yield the indices of all occurences of the given element in
+-- | /O(n)/ Yield the indices of all occurrences of the given element in
 -- ascending order. This is a specialised version of 'findIndices'.
 elemIndices :: (Vector v a, Vector v Int, Eq a) => a -> v a -> v Int
 {-# INLINE elemIndices #-}

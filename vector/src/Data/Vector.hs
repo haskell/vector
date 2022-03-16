@@ -1483,14 +1483,14 @@ findIndices :: (a -> Bool) -> Vector a -> Vector Int
 {-# INLINE findIndices #-}
 findIndices = G.findIndices
 
--- | /O(n)/ Yield 'Just' the index of the first occurence of the given element or
+-- | /O(n)/ Yield 'Just' the index of the first occurrence of the given element or
 -- 'Nothing' if the vector does not contain the element. This is a specialised
 -- version of 'findIndex'.
 elemIndex :: Eq a => a -> Vector a -> Maybe Int
 {-# INLINE elemIndex #-}
 elemIndex = G.elemIndex
 
--- | /O(n)/ Yield the indices of all occurences of the given element in
+-- | /O(n)/ Yield the indices of all occurrences of the given element in
 -- ascending order. This is a specialised version of 'findIndices'.
 elemIndices :: Eq a => a -> Vector a -> Vector Int
 {-# INLINE elemIndices #-}
@@ -1563,7 +1563,7 @@ ifoldr' = G.ifoldr'
 
 -- | /O(n)/ Map each element of the structure to a monoid and combine
 -- the results. It uses the same implementation as the corresponding method
--- of the 'Foldable' type cless. Note that it's implemented in terms of 'foldr'
+-- of the 'Foldable' type class. Note that it's implemented in terms of 'foldr'
 -- and won't fuse with functions that traverse the vector from left to
 -- right ('map', 'generate', etc.).
 --
