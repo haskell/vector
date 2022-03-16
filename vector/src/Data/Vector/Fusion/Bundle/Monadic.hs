@@ -732,7 +732,7 @@ postscanl' :: Monad m => (a -> b -> a) -> a -> Bundle m v b -> Bundle m v a
 {-# INLINE postscanl' #-}
 postscanl' f = postscanlM' (\a b -> return (f a b))
 
--- | Suffix scan with strict acccumulator and a monadic operator
+-- | Suffix scan with strict accumulator and a monadic operator
 postscanlM' :: Monad m => (a -> b -> m a) -> a -> Bundle m v b -> Bundle m v a
 {-# INLINE_FUSED postscanlM' #-}
 postscanlM' f z Bundle{sElems = s, sSize = sz} = fromStream (S.postscanlM' f z s) sz
@@ -1024,7 +1024,7 @@ enumFromTo_double n m = n `seq` m `seq` fromStream (Stream step ini) (Max (len n
 
     {-# INLINE_INNER step #-}
 -- GHC changed definition of Enum for Double in GHC8.6 so we have to
--- accomodate both definitions in order to preserve validity of
+-- accommodate both definitions in order to preserve validity of
 -- rewrite rule
 --
 --  ISSUE:  https://gitlab.haskell.org/ghc/ghc/issues/15081
