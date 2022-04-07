@@ -177,7 +177,7 @@ left_over_vector = compile "Data\\.Vector\\.Unboxed\\.Base\\.Vector" []
 readProcess :: FilePath                     -- ^ command to run
             -> [String]                     -- ^ any arguments
             -> String                       -- ^ standard input
-            -> IO (Either (ExitCode,String) String)  -- ^ either the stdout, or an exitcode and any output
+            -> IO (Either (ExitCode,String) String)  -- ^ either the stdout, or an exit code and any output
 
 readProcess cmd args input = C.handle (return . handler) $ do
     (inh,outh,errh,pid) <- runInteractiveProcess cmd args Nothing Nothing

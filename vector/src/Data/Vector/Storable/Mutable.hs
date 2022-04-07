@@ -233,7 +233,7 @@ storableSetAsPrim
 {-# INLINE [0] storableSetAsPrim #-}
 storableSetAsPrim n fp x _y = unsafeWithForeignPtr fp $ \ ptr  -> do
     poke ptr x
-     -- we dont equate storable and prim reps, so we need to write to a slot
+     -- we don't equate storable and prim reps, so we need to write to a slot
      -- in storable
      -- then read it back as a prim
     w<- peakPrimPtr_vector (castPtr ptr :: Ptr  b) 0
