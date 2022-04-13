@@ -435,7 +435,7 @@ unfoldrExactN :: Int -> (s -> (a, s)) -> s -> Bundle v a
 {-# INLINE unfoldrExactN #-}
 unfoldrExactN = M.unfoldrExactN
 
--- | /O(n)/ Apply function \(\max(n - 1, 0)\) times to an initial value, producing a pure
+-- | \(O(n)\) Apply function \(\max(n - 1, 0)\) times to an initial value, producing a pure
 -- bundle of exact length \(\max(n, 0)\). Zeroth element will contain the initial value.
 iterateN :: Int -> (a -> a) -> a -> Bundle v a
 {-# INLINE iterateN #-}
@@ -549,7 +549,7 @@ filterM :: Monad m => (a -> m Bool) -> Bundle v a -> M.Bundle m v a
 {-# INLINE filterM #-}
 filterM f = M.filterM f . lift
 
--- | /O(n)/ Apply monadic function to each element of a bundle and
+-- | \(O(n)\) Apply monadic function to each element of a bundle and
 -- discard elements returning Nothing.
 --
 -- @since 0.12.2.0

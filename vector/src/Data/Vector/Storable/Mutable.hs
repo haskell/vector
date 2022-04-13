@@ -111,7 +111,7 @@ import Unsafe.Coerce
 
 type role MVector nominal nominal
 
--- | /O(1)/ Unsafely coerce a mutable vector from one element type to another,
+-- | \(O(1)\) Unsafely coerce a mutable vector from one element type to another,
 -- representationally equal type. The operation just changes the type of the
 -- underlying pointer and does not modify the elements.
 --
@@ -307,7 +307,7 @@ drop :: Storable a => Int -> MVector s a -> MVector s a
 {-# INLINE drop #-}
 drop = G.drop
 
--- | /O(1)/ Split the mutable vector into the first @n@ elements
+-- | \(O(1)\) Split the mutable vector into the first @n@ elements
 -- and the remainder, without copying.
 --
 -- Note that @'splitAt' n v@ is equivalent to @('take' n v, 'drop' n v)@,
@@ -397,7 +397,7 @@ replicateM :: (PrimMonad m, Storable a) => Int -> m a -> m (MVector (PrimState m
 {-# INLINE replicateM #-}
 replicateM = G.replicateM
 
--- | /O(n)/ Create a mutable vector of the given length (0 if the length is negative)
+-- | \(O(n)\) Create a mutable vector of the given length (0 if the length is negative)
 -- and fill it with the results of applying the function to each index.
 -- Iteration starts at index 0.
 --
@@ -406,7 +406,7 @@ generate :: (PrimMonad m, Storable a) => Int -> (Int -> a) -> m (MVector (PrimSt
 {-# INLINE generate #-}
 generate = G.generate
 
--- | /O(n)/ Create a mutable vector of the given length (0 if the length is
+-- | \(O(n)\) Create a mutable vector of the given length (0 if the length is
 -- negative) and fill it with the results of applying the monadic function to each
 -- index. Iteration starts at index 0.
 --
@@ -644,21 +644,21 @@ nextPermutation = G.nextPermutation
 -- Folds
 -- -----
 
--- | /O(n)/ Apply the monadic action to every element of the vector, discarding the results.
+-- | \(O(n)\) Apply the monadic action to every element of the vector, discarding the results.
 --
 -- @since 0.12.3.0
 mapM_ :: (PrimMonad m, Storable a) => (a -> m b) -> MVector (PrimState m) a -> m ()
 {-# INLINE mapM_ #-}
 mapM_ = G.mapM_
 
--- | /O(n)/ Apply the monadic action to every element of the vector and its index, discarding the results.
+-- | \(O(n)\) Apply the monadic action to every element of the vector and its index, discarding the results.
 --
 -- @since 0.12.3.0
 imapM_ :: (PrimMonad m, Storable a) => (Int -> a -> m b) -> MVector (PrimState m) a -> m ()
 {-# INLINE imapM_ #-}
 imapM_ = G.imapM_
 
--- | /O(n)/ Apply the monadic action to every element of the vector,
+-- | \(O(n)\) Apply the monadic action to every element of the vector,
 -- discarding the results. It's the same as @flip mapM_@.
 --
 -- @since 0.12.3.0
@@ -666,7 +666,7 @@ forM_ :: (PrimMonad m, Storable a) => MVector (PrimState m) a -> (a -> m b) -> m
 {-# INLINE forM_ #-}
 forM_ = G.forM_
 
--- | /O(n)/ Apply the monadic action to every element of the vector
+-- | \(O(n)\) Apply the monadic action to every element of the vector
 -- and its index, discarding the results. It's the same as @flip imapM_@.
 --
 -- @since 0.12.3.0
@@ -674,56 +674,56 @@ iforM_ :: (PrimMonad m, Storable a) => MVector (PrimState m) a -> (Int -> a -> m
 {-# INLINE iforM_ #-}
 iforM_ = G.iforM_
 
--- | /O(n)/ Pure left fold.
+-- | \(O(n)\) Pure left fold.
 --
 -- @since 0.12.3.0
 foldl :: (PrimMonad m, Storable a) => (b -> a -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldl #-}
 foldl = G.foldl
 
--- | /O(n)/ Pure left fold with strict accumulator.
+-- | \(O(n)\) Pure left fold with strict accumulator.
 --
 -- @since 0.12.3.0
 foldl' :: (PrimMonad m, Storable a) => (b -> a -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldl' #-}
 foldl' = G.foldl'
 
--- | /O(n)/ Pure left fold using a function applied to each element and its index.
+-- | \(O(n)\) Pure left fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldl :: (PrimMonad m, Storable a) => (b -> Int -> a -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldl #-}
 ifoldl = G.ifoldl
 
--- | /O(n)/ Pure left fold with strict accumulator using a function applied to each element and its index.
+-- | \(O(n)\) Pure left fold with strict accumulator using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldl' :: (PrimMonad m, Storable a) => (b -> Int -> a -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldl' #-}
 ifoldl' = G.ifoldl'
 
--- | /O(n)/ Pure right fold.
+-- | \(O(n)\) Pure right fold.
 --
 -- @since 0.12.3.0
 foldr :: (PrimMonad m, Storable a) => (a -> b -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldr #-}
 foldr = G.foldr
 
--- | /O(n)/ Pure right fold with strict accumulator.
+-- | \(O(n)\) Pure right fold with strict accumulator.
 --
 -- @since 0.12.3.0
 foldr' :: (PrimMonad m, Storable a) => (a -> b -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldr' #-}
 foldr' = G.foldr'
 
--- | /O(n)/ Pure right fold using a function applied to each element and its index.
+-- | \(O(n)\) Pure right fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldr :: (PrimMonad m, Storable a) => (Int -> a -> b -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldr #-}
 ifoldr = G.ifoldr
 
--- | /O(n)/ Pure right fold with strict accumulator using a function applied
+-- | \(O(n)\) Pure right fold with strict accumulator using a function applied
 -- to each element and its index.
 --
 -- @since 0.12.3.0
@@ -731,56 +731,56 @@ ifoldr' :: (PrimMonad m, Storable a) => (Int -> a -> b -> b) -> b -> MVector (Pr
 {-# INLINE ifoldr' #-}
 ifoldr' = G.ifoldr'
 
--- | /O(n)/ Monadic fold.
+-- | \(O(n)\) Monadic fold.
 --
 -- @since 0.12.3.0
 foldM :: (PrimMonad m, Storable a) => (b -> a -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldM #-}
 foldM = G.foldM
 
--- | /O(n)/ Monadic fold with strict accumulator.
+-- | \(O(n)\) Monadic fold with strict accumulator.
 --
 -- @since 0.12.3.0
 foldM' :: (PrimMonad m, Storable a) => (b -> a -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldM' #-}
 foldM' = G.foldM'
 
--- | /O(n)/ Monadic fold using a function applied to each element and its index.
+-- | \(O(n)\) Monadic fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldM :: (PrimMonad m, Storable a) => (b -> Int -> a -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldM #-}
 ifoldM = G.ifoldM
 
--- | /O(n)/ Monadic fold with strict accumulator using a function applied to each element and its index.
+-- | \(O(n)\) Monadic fold with strict accumulator using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldM' :: (PrimMonad m, Storable a) => (b -> Int -> a -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldM' #-}
 ifoldM' = G.ifoldM'
 
--- | /O(n)/ Monadic right fold.
+-- | \(O(n)\) Monadic right fold.
 --
 -- @since 0.12.3.0
 foldrM :: (PrimMonad m, Storable a) => (a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldrM #-}
 foldrM = G.foldrM
 
--- | /O(n)/ Monadic right fold with strict accumulator.
+-- | \(O(n)\) Monadic right fold with strict accumulator.
 --
 -- @since 0.12.3.0
 foldrM' :: (PrimMonad m, Storable a) => (a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldrM' #-}
 foldrM' = G.foldrM'
 
--- | /O(n)/ Monadic right fold using a function applied to each element and its index.
+-- | \(O(n)\) Monadic right fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldrM :: (PrimMonad m, Storable a) => (Int -> a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldrM #-}
 ifoldrM = G.ifoldrM
 
--- | /O(n)/ Monadic right fold with strict accumulator using a function applied
+-- | \(O(n)\) Monadic right fold with strict accumulator using a function applied
 -- to each element and its index.
 --
 -- @since 0.12.3.0
@@ -791,7 +791,7 @@ ifoldrM' = G.ifoldrM'
 -- Unsafe conversions
 -- ------------------
 
--- | /O(1)/ Unsafely cast a mutable vector from one element type to another.
+-- | \(O(1)\) Unsafely cast a mutable vector from one element type to another.
 -- The operation just changes the type of the underlying pointer and does not
 -- modify the elements.
 --
@@ -807,7 +807,7 @@ unsafeCast (MVector n fp)
 -- Raw pointers
 -- ------------
 
--- | /O(1)/ Create a mutable vector from a 'ForeignPtr' with an offset and a length.
+-- | \(O(1)\) Create a mutable vector from a 'ForeignPtr' with an offset and a length.
 --
 -- Modifying data through the 'ForeignPtr' afterwards is unsafe if the vector
 -- could have been frozen before the modification.
@@ -828,7 +828,7 @@ unsafeFromForeignPtr fp i n = unsafeFromForeignPtr0 fp' n
   unsafeFromForeignPtr fp 0 n = unsafeFromForeignPtr0 fp n   #-}
 
 
--- | /O(1)/ Create a mutable vector from a 'ForeignPtr' and a length.
+-- | \(O(1)\) Create a mutable vector from a 'ForeignPtr' and a length.
 --
 -- It is assumed that the pointer points directly to the data (no offset).
 -- Use 'unsafeFromForeignPtr' if you need to specify an offset.
@@ -841,14 +841,14 @@ unsafeFromForeignPtr0 :: ForeignPtr a    -- ^ pointer
 {-# INLINE unsafeFromForeignPtr0 #-}
 unsafeFromForeignPtr0 fp n = MVector n fp
 
--- | /O(1)/ Yield the underlying 'ForeignPtr' together with the offset to the data
+-- | \(O(1)\) Yield the underlying 'ForeignPtr' together with the offset to the data
 -- and its length. Modifying the data through the 'ForeignPtr' is
 -- unsafe if the vector could have been frozen before the modification.
 unsafeToForeignPtr :: MVector s a -> (ForeignPtr a, Int, Int)
 {-# INLINE unsafeToForeignPtr #-}
 unsafeToForeignPtr (MVector n fp) = (fp, 0, n)
 
--- | /O(1)/ Yield the underlying 'ForeignPtr' together with its length.
+-- | \(O(1)\) Yield the underlying 'ForeignPtr' together with its length.
 --
 -- You can assume that the pointer points directly to the data (no offset).
 --
