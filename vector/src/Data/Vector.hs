@@ -486,12 +486,12 @@ null = G.null
 -- Indexing
 -- --------
 
--- | O(1) Indexing.
+-- | \(O(1)\) Indexing.
 (!) :: Vector a -> Int -> a
 {-# INLINE (!) #-}
 (!) = (G.!)
 
--- | O(1) Safe indexing.
+-- | \(O(1)\) Safe indexing.
 (!?) :: Vector a -> Int -> Maybe a
 {-# INLINE (!?) #-}
 (!?) = (G.!?)

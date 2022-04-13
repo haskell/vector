@@ -340,12 +340,12 @@ null = G.null
 -- Indexing
 -- --------
 
--- | O(1) Indexing.
+-- | \(O(1)\) Indexing.
 (!) :: Storable a => Vector a -> Int -> a
 {-# INLINE (!) #-}
 (!) = (G.!)
 
--- | O(1) Safe indexing.
+-- | \(O(1)\) Safe indexing.
 (!?) :: Storable a => Vector a -> Int -> Maybe a
 {-# INLINE (!?) #-}
 (!?) = (G.!?)

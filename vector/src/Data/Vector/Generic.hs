@@ -236,13 +236,13 @@ null = Bundle.null . stream
 -- --------
 
 infixl 9 !
--- | O(1) Indexing.
+-- | \(O(1)\) Indexing.
 (!) :: (HasCallStack, Vector v a) => v a -> Int -> a
 {-# INLINE_FUSED (!) #-}
 (!) v i = checkIndex Bounds i (length v) $ unBox (basicUnsafeIndexM v i)
 
 infixl 9 !?
--- | O(1) Safe indexing.
+-- | \(O(1)\) Safe indexing.
 (!?) :: Vector v a => v a -> Int -> Maybe a
 {-# INLINE_FUSED (!?) #-}
 -- Use basicUnsafeIndexM @Box to perform the indexing eagerly.
