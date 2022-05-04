@@ -1,4 +1,4 @@
-The `vector` package [![Build Status](https://travis-ci.org/haskell/vector.png?branch=master)](https://travis-ci.org/haskell/vector)
+The `vector` package [![Build Status](https://github.com/haskell/vector/workflows/CI/badge.svg)](https://github.com/haskell/vector/actions?query=branch%3Amaster)
 ====================
 
 An efficient implementation of `Int`-indexed arrays (both mutable and immutable), with a powerful loop optimisation framework.
