@@ -284,12 +284,12 @@ instance (Unbox e) => Exts.IsList (Vector e) where
 -- Length information
 -- ------------------
 
--- | \(O(1)\) Yield the length of the vector.
+-- | \(\mathcal{O}(1)\) Yield the length of the vector.
 length :: Unbox a => Vector a -> Int
 {-# INLINE length #-}
 length = G.length
 
--- | \(O(1)\) Test whether a vector is empty.
+-- | \(\mathcal{O}(1)\) Test whether a vector is empty.
 null :: Unbox a => Vector a -> Bool
 {-# INLINE null #-}
 null = G.null
@@ -297,37 +297,37 @@ null = G.null
 -- Indexing
 -- --------
 
--- | \(O(1)\) Indexing.
+-- | \(\mathcal{O}(1)\) Indexing.
 (!) :: Unbox a => Vector a -> Int -> a
 {-# INLINE (!) #-}
 (!) = (G.!)
 
--- | \(O(1)\) Safe indexing.
+-- | \(\mathcal{O}(1)\) Safe indexing.
 (!?) :: Unbox a => Vector a -> Int -> Maybe a
 {-# INLINE (!?) #-}
 (!?) = (G.!?)
 
--- | \(O(1)\) First element.
+-- | \(\mathcal{O}(1)\) First element.
 head :: Unbox a => Vector a -> a
 {-# INLINE head #-}
 head = G.head
 
--- | \(O(1)\) Last element.
+-- | \(\mathcal{O}(1)\) Last element.
 last :: Unbox a => Vector a -> a
 {-# INLINE last #-}
 last = G.last
 
--- | \(O(1)\) Unsafe indexing without bounds checking.
+-- | \(\mathcal{O}(1)\) Unsafe indexing without bounds checking.
 unsafeIndex :: Unbox a => Vector a -> Int -> a
 {-# INLINE unsafeIndex #-}
 unsafeIndex = G.unsafeIndex
 
--- | \(O(1)\) First element, without checking if the vector is empty.
+-- | \(\mathcal{O}(1)\) First element, without checking if the vector is empty.
 unsafeHead :: Unbox a => Vector a -> a
 {-# INLINE unsafeHead #-}
 unsafeHead = G.unsafeHead
 
--- | \(O(1)\) Last element, without checking if the vector is empty.
+-- | \(\mathcal{O}(1)\) Last element, without checking if the vector is empty.
 unsafeLast :: Unbox a => Vector a -> a
 {-# INLINE unsafeLast #-}
 unsafeLast = G.unsafeLast
@@ -335,7 +335,7 @@ unsafeLast = G.unsafeLast
 -- Monadic indexing
 -- ----------------
 
--- | \(O(1)\) Indexing in a monad.
+-- | \(\mathcal{O}(1)\) Indexing in a monad.
 --
 -- The monad allows operations to be strict in the vector when necessary.
 -- Suppose vector copying is implemented like this:
@@ -357,31 +357,31 @@ indexM :: (Unbox a, Monad m) => Vector a -> Int -> m a
 {-# INLINE indexM #-}
 indexM = G.indexM
 
--- | \(O(1)\) First element of a vector in a monad. See 'indexM' for an
+-- | \(\mathcal{O}(1)\) First element of a vector in a monad. See 'indexM' for an
 -- explanation of why this is useful.
 headM :: (Unbox a, Monad m) => Vector a -> m a
 {-# INLINE headM #-}
 headM = G.headM
 
--- | \(O(1)\) Last element of a vector in a monad. See 'indexM' for an
+-- | \(\mathcal{O}(1)\) Last element of a vector in a monad. See 'indexM' for an
 -- explanation of why this is useful.
 lastM :: (Unbox a, Monad m) => Vector a -> m a
 {-# INLINE lastM #-}
 lastM = G.lastM
 
--- | \(O(1)\) Indexing in a monad, without bounds checks. See 'indexM' for an
+-- | \(\mathcal{O}(1)\) Indexing in a monad, without bounds checks. See 'indexM' for an
 -- explanation of why this is useful.
 unsafeIndexM :: (Unbox a, Monad m) => Vector a -> Int -> m a
 {-# INLINE unsafeIndexM #-}
 unsafeIndexM = G.unsafeIndexM
 
--- | \(O(1)\) First element in a monad, without checking for empty vectors.
+-- | \(\mathcal{O}(1)\) First element in a monad, without checking for empty vectors.
 -- See 'indexM' for an explanation of why this is useful.
 unsafeHeadM :: (Unbox a, Monad m) => Vector a -> m a
 {-# INLINE unsafeHeadM #-}
 unsafeHeadM = G.unsafeHeadM
 
--- | \(O(1)\) Last element in a monad, without checking for empty vectors.
+-- | \(\mathcal{O}(1)\) Last element in a monad, without checking for empty vectors.
 -- See 'indexM' for an explanation of why this is useful.
 unsafeLastM :: (Unbox a, Monad m) => Vector a -> m a
 {-# INLINE unsafeLastM #-}
@@ -390,7 +390,7 @@ unsafeLastM = G.unsafeLastM
 -- Extracting subvectors (slicing)
 -- -------------------------------
 
--- | \(O(1)\) Yield a slice of the vector without copying it. The vector must
+-- | \(\mathcal{O}(1)\) Yield a slice of the vector without copying it. The vector must
 -- contain at least @i+n@ elements.
 slice :: Unbox a => Int   -- ^ @i@ starting index
                  -> Int   -- ^ @n@ length
@@ -399,31 +399,31 @@ slice :: Unbox a => Int   -- ^ @i@ starting index
 {-# INLINE slice #-}
 slice = G.slice
 
--- | \(O(1)\) Yield all but the last element without copying. The vector may not
+-- | \(\mathcal{O}(1)\) Yield all but the last element without copying. The vector may not
 -- be empty.
 init :: Unbox a => Vector a -> Vector a
 {-# INLINE init #-}
 init = G.init
 
--- | \(O(1)\) Yield all but the first element without copying. The vector may not
+-- | \(\mathcal{O}(1)\) Yield all but the first element without copying. The vector may not
 -- be empty.
 tail :: Unbox a => Vector a -> Vector a
 {-# INLINE tail #-}
 tail = G.tail
 
--- | \(O(1)\) Yield at the first @n@ elements without copying. The vector may
+-- | \(\mathcal{O}(1)\) Yield at the first @n@ elements without copying. The vector may
 -- contain less than @n@ elements, in which case it is returned unchanged.
 take :: Unbox a => Int -> Vector a -> Vector a
 {-# INLINE take #-}
 take = G.take
 
--- | \(O(1)\) Yield all but the first @n@ elements without copying. The vector may
+-- | \(\mathcal{O}(1)\) Yield all but the first @n@ elements without copying. The vector may
 -- contain less than @n@ elements, in which case an empty vector is returned.
 drop :: Unbox a => Int -> Vector a -> Vector a
 {-# INLINE drop #-}
 drop = G.drop
 
--- | \(O(1)\) Yield the first @n@ elements paired with the remainder, without copying.
+-- | \(\mathcal{O}(1)\) Yield the first @n@ elements paired with the remainder, without copying.
 --
 -- Note that @'splitAt' n v@ is equivalent to @('take' n v, 'drop' n v)@,
 -- but slightly more efficient.
@@ -433,7 +433,7 @@ splitAt :: Unbox a => Int -> Vector a -> (Vector a, Vector a)
 {-# INLINE splitAt #-}
 splitAt = G.splitAt
 
--- | \(O(1)\) Yield the 'head' and 'tail' of the vector, or 'Nothing' if
+-- | \(\mathcal{O}(1)\) Yield the 'head' and 'tail' of the vector, or 'Nothing' if
 -- the vector is empty.
 --
 -- @since 0.12.2.0
@@ -441,7 +441,7 @@ uncons :: Unbox a => Vector a -> Maybe (a, Vector a)
 {-# INLINE uncons #-}
 uncons = G.uncons
 
--- | \(O(1)\) Yield the 'last' and 'init' of the vector, or 'Nothing' if
+-- | \(\mathcal{O}(1)\) Yield the 'last' and 'init' of the vector, or 'Nothing' if
 -- the vector is empty.
 --
 -- @since 0.12.2.0
@@ -449,7 +449,7 @@ unsnoc :: Unbox a => Vector a -> Maybe (Vector a, a)
 {-# INLINE unsnoc #-}
 unsnoc = G.unsnoc
 
--- | \(O(1)\) Yield a slice of the vector without copying. The vector must
+-- | \(\mathcal{O}(1)\) Yield a slice of the vector without copying. The vector must
 -- contain at least @i+n@ elements, but this is not checked.
 unsafeSlice :: Unbox a => Int   -- ^ @i@ starting index
                        -> Int   -- ^ @n@ length
@@ -458,25 +458,25 @@ unsafeSlice :: Unbox a => Int   -- ^ @i@ starting index
 {-# INLINE unsafeSlice #-}
 unsafeSlice = G.unsafeSlice
 
--- | \(O(1)\) Yield all but the last element without copying. The vector may not
+-- | \(\mathcal{O}(1)\) Yield all but the last element without copying. The vector may not
 -- be empty, but this is not checked.
 unsafeInit :: Unbox a => Vector a -> Vector a
 {-# INLINE unsafeInit #-}
 unsafeInit = G.unsafeInit
 
--- | \(O(1)\) Yield all but the first element without copying. The vector may not
+-- | \(\mathcal{O}(1)\) Yield all but the first element without copying. The vector may not
 -- be empty, but this is not checked.
 unsafeTail :: Unbox a => Vector a -> Vector a
 {-# INLINE unsafeTail #-}
 unsafeTail = G.unsafeTail
 
--- | \(O(1)\) Yield the first @n@ elements without copying. The vector must
+-- | \(\mathcal{O}(1)\) Yield the first @n@ elements without copying. The vector must
 -- contain at least @n@ elements, but this is not checked.
 unsafeTake :: Unbox a => Int -> Vector a -> Vector a
 {-# INLINE unsafeTake #-}
 unsafeTake = G.unsafeTake
 
--- | \(O(1)\) Yield all but the first @n@ elements without copying. The vector
+-- | \(\mathcal{O}(1)\) Yield all but the first @n@ elements without copying. The vector
 -- must contain at least @n@ elements, but this is not checked.
 unsafeDrop :: Unbox a => Int -> Vector a -> Vector a
 {-# INLINE unsafeDrop #-}
@@ -485,28 +485,28 @@ unsafeDrop = G.unsafeDrop
 -- Initialisation
 -- --------------
 
--- | \(O(1)\) The empty vector.
+-- | \(\mathcal{O}(1)\) The empty vector.
 empty :: Unbox a => Vector a
 {-# INLINE empty #-}
 empty = G.empty
 
--- | \(O(1)\) A vector with exactly one element.
+-- | \(\mathcal{O}(1)\) A vector with exactly one element.
 singleton :: Unbox a => a -> Vector a
 {-# INLINE singleton #-}
 singleton = G.singleton
 
--- | \(O(n)\) A vector of the given length with the same value in each position.
+-- | \(\mathcal{O}(n)\) A vector of the given length with the same value in each position.
 replicate :: Unbox a => Int -> a -> Vector a
 {-# INLINE replicate #-}
 replicate = G.replicate
 
--- | \(O(n)\) Construct a vector of the given length by applying the function to
+-- | \(\mathcal{O}(n)\) Construct a vector of the given length by applying the function to
 -- each index.
 generate :: Unbox a => Int -> (Int -> a) -> Vector a
 {-# INLINE generate #-}
 generate = G.generate
 
--- | \(O(n)\) Apply the function \(\max(n - 1, 0)\) times to an initial value, producing a vector
+-- | \(\mathcal{O}(n)\) Apply the function \(\max(n - 1, 0)\) times to an initial value, producing a vector
 -- of length \(\max(n, 0)\). The 0th element will contain the initial value, which is why there
 -- is one less function application than the number of elements in the produced vector.
 --
@@ -528,7 +528,7 @@ iterateN = G.iterateN
 -- Unfolding
 -- ---------
 
--- | \(O(n)\) Construct a vector by repeatedly applying the generator function
+-- | \(\mathcal{O}(n)\) Construct a vector by repeatedly applying the generator function
 -- to a seed. The generator function yields 'Just' the next element and the
 -- new seed or 'Nothing' if there are no more elements.
 --
@@ -538,7 +538,7 @@ unfoldr :: Unbox a => (b -> Maybe (a, b)) -> b -> Vector a
 {-# INLINE unfoldr #-}
 unfoldr = G.unfoldr
 
--- | \(O(n)\) Construct a vector with at most @n@ elements by repeatedly applying
+-- | \(\mathcal{O}(n)\) Construct a vector with at most @n@ elements by repeatedly applying
 -- the generator function to a seed. The generator function yields 'Just' the
 -- next element and the new seed or 'Nothing' if there are no more elements.
 --
@@ -547,7 +547,7 @@ unfoldrN :: Unbox a => Int -> (b -> Maybe (a, b)) -> b -> Vector a
 {-# INLINE unfoldrN #-}
 unfoldrN = G.unfoldrN
 
--- | \(O(n)\) Construct a vector with exactly @n@ elements by repeatedly applying
+-- | \(\mathcal{O}(n)\) Construct a vector with exactly @n@ elements by repeatedly applying
 -- the generator function to a seed. The generator function yields the
 -- next element and the new seed.
 --
@@ -558,7 +558,7 @@ unfoldrExactN  :: Unbox a => Int -> (b -> (a, b)) -> b -> Vector a
 {-# INLINE unfoldrExactN #-}
 unfoldrExactN = G.unfoldrExactN
 
--- | \(O(n)\) Construct a vector by repeatedly applying the monadic
+-- | \(\mathcal{O}(n)\) Construct a vector by repeatedly applying the monadic
 -- generator function to a seed. The generator function yields 'Just'
 -- the next element and the new seed or 'Nothing' if there are no more
 -- elements.
@@ -566,7 +566,7 @@ unfoldrM :: (Monad m, Unbox a) => (b -> m (Maybe (a, b))) -> b -> m (Vector a)
 {-# INLINE unfoldrM #-}
 unfoldrM = G.unfoldrM
 
--- | \(O(n)\) Construct a vector by repeatedly applying the monadic
+-- | \(\mathcal{O}(n)\) Construct a vector by repeatedly applying the monadic
 -- generator function to a seed. The generator function yields 'Just'
 -- the next element and the new seed or 'Nothing' if there are no more
 -- elements.
@@ -574,7 +574,7 @@ unfoldrNM :: (Monad m, Unbox a) => Int -> (b -> m (Maybe (a, b))) -> b -> m (Vec
 {-# INLINE unfoldrNM #-}
 unfoldrNM = G.unfoldrNM
 
--- | \(O(n)\) Construct a vector with exactly @n@ elements by repeatedly
+-- | \(\mathcal{O}(n)\) Construct a vector with exactly @n@ elements by repeatedly
 -- applying the monadic generator function to a seed. The generator
 -- function yields the next element and the new seed.
 --
@@ -583,7 +583,7 @@ unfoldrExactNM :: (Monad m, Unbox a) => Int -> (b -> m (a, b)) -> b -> m (Vector
 {-# INLINE unfoldrExactNM #-}
 unfoldrExactNM = G.unfoldrExactNM
 
--- | \(O(n)\) Construct a vector with @n@ elements by repeatedly applying the
+-- | \(\mathcal{O}(n)\) Construct a vector with @n@ elements by repeatedly applying the
 -- generator function to the already constructed part of the vector.
 --
 -- > constructN 3 f = let a = f <> ; b = f <a> ; c = f <a,b> in <a,b,c>
@@ -591,7 +591,7 @@ constructN :: Unbox a => Int -> (Vector a -> a) -> Vector a
 {-# INLINE constructN #-}
 constructN = G.constructN
 
--- | \(O(n)\) Construct a vector with @n@ elements from right to left by
+-- | \(\mathcal{O}(n)\) Construct a vector with @n@ elements from right to left by
 -- repeatedly applying the generator function to the already constructed part
 -- of the vector.
 --
@@ -603,7 +603,7 @@ constructrN = G.constructrN
 -- Enumeration
 -- -----------
 
--- | \(O(n)\) Yield a vector of the given length, containing the values @x@, @x+1@
+-- | \(\mathcal{O}(n)\) Yield a vector of the given length, containing the values @x@, @x+1@
 -- etc. This operation is usually more efficient than 'enumFromTo'.
 --
 -- > enumFromN 5 3 = <5,6,7>
@@ -611,7 +611,7 @@ enumFromN :: (Unbox a, Num a) => a -> Int -> Vector a
 {-# INLINE enumFromN #-}
 enumFromN = G.enumFromN
 
--- | \(O(n)\) Yield a vector of the given length, containing the values @x@, @x+y@,
+-- | \(\mathcal{O}(n)\) Yield a vector of the given length, containing the values @x@, @x+y@,
 -- @x+y+y@ etc. This operations is usually more efficient than 'enumFromThenTo'.
 --
 -- > enumFromStepN 1 2 5 = <1,3,5,7,9>
@@ -619,7 +619,7 @@ enumFromStepN :: (Unbox a, Num a) => a -> a -> Int -> Vector a
 {-# INLINE enumFromStepN #-}
 enumFromStepN = G.enumFromStepN
 
--- | \(O(n)\) Enumerate values from @x@ to @y@.
+-- | \(\mathcal{O}(n)\) Enumerate values from @x@ to @y@.
 --
 -- /WARNING:/ This operation can be very inefficient. If possible, use
 -- 'enumFromN' instead.
@@ -627,7 +627,7 @@ enumFromTo :: (Unbox a, Enum a) => a -> a -> Vector a
 {-# INLINE enumFromTo #-}
 enumFromTo = G.enumFromTo
 
--- | \(O(n)\) Enumerate values from @x@ to @y@ with a specific step @z@.
+-- | \(\mathcal{O}(n)\) Enumerate values from @x@ to @y@ with a specific step @z@.
 --
 -- /WARNING:/ This operation can be very inefficient. If possible, use
 -- 'enumFromStepN' instead.
@@ -638,23 +638,23 @@ enumFromThenTo = G.enumFromThenTo
 -- Concatenation
 -- -------------
 
--- | \(O(n)\) Prepend an element.
+-- | \(\mathcal{O}(n)\) Prepend an element.
 cons :: Unbox a => a -> Vector a -> Vector a
 {-# INLINE cons #-}
 cons = G.cons
 
--- | \(O(n)\) Append an element.
+-- | \(\mathcal{O}(n)\) Append an element.
 snoc :: Unbox a => Vector a -> a -> Vector a
 {-# INLINE snoc #-}
 snoc = G.snoc
 
 infixr 5 ++
--- | \(O(m+n)\) Concatenate two vectors.
+-- | \(\mathcal{O}(m+n)\) Concatenate two vectors.
 (++) :: Unbox a => Vector a -> Vector a -> Vector a
 {-# INLINE (++) #-}
 (++) = (G.++)
 
--- | \(O(n)\) Concatenate all vectors in the list.
+-- | \(\mathcal{O}(n)\) Concatenate all vectors in the list.
 concat :: Unbox a => [Vector a] -> Vector a
 {-# INLINE concat #-}
 concat = G.concat
@@ -662,19 +662,19 @@ concat = G.concat
 -- Monadic initialisation
 -- ----------------------
 
--- | \(O(n)\) Execute the monadic action the given number of times and store the
+-- | \(\mathcal{O}(n)\) Execute the monadic action the given number of times and store the
 -- results in a vector.
 replicateM :: (Monad m, Unbox a) => Int -> m a -> m (Vector a)
 {-# INLINE replicateM #-}
 replicateM = G.replicateM
 
--- | \(O(n)\) Construct a vector of the given length by applying the monadic
+-- | \(\mathcal{O}(n)\) Construct a vector of the given length by applying the monadic
 -- action to each index.
 generateM :: (Monad m, Unbox a) => Int -> (Int -> m a) -> m (Vector a)
 {-# INLINE generateM #-}
 generateM = G.generateM
 
--- | \(O(n)\) Apply the monadic function \(\max(n - 1, 0)\) times to an initial value, producing a vector
+-- | \(\mathcal{O}(n)\) Apply the monadic function \(\max(n - 1, 0)\) times to an initial value, producing a vector
 -- of length \(\max(n, 0)\). The 0th element will contain the initial value, which is why there
 -- is one less function application than the number of elements in the produced vector.
 --
@@ -703,7 +703,7 @@ createT p = G.createT p
 -- Restricting memory usage
 -- ------------------------
 
--- | \(O(n)\) Yield the argument, but force it not to retain any extra memory,
+-- | \(\mathcal{O}(n)\) Yield the argument, but force it not to retain any extra memory,
 -- possibly by copying it.
 --
 -- This is especially useful when dealing with slices. For example:
@@ -720,7 +720,7 @@ force = G.force
 -- Bulk updates
 -- ------------
 
--- | \(O(m+n)\) For each pair @(i,a)@ from the list of idnex/value pairs,
+-- | \(\mathcal{O}(m+n)\) For each pair @(i,a)@ from the list of idnex/value pairs,
 -- replace the vector element at position @i@ by @a@.
 --
 -- > <5,9,2,7> // [(2,1),(0,3),(2,8)] = <3,9,8,7>
@@ -731,7 +731,7 @@ force = G.force
 {-# INLINE (//) #-}
 (//) = (G.//)
 
--- | \(O(m+n)\) For each pair @(i,a)@ from the vector of index/value pairs,
+-- | \(\mathcal{O}(m+n)\) For each pair @(i,a)@ from the vector of index/value pairs,
 -- replace the vector element at position @i@ by @a@.
 --
 -- > update <5,9,2,7> <(2,1),(0,3),(2,8)> = <3,9,8,7>
@@ -743,7 +743,7 @@ update :: Unbox a
 {-# INLINE update #-}
 update = G.update
 
--- | \(O(m+\min(n_1,n_2))\) For each index @i@ from the index vector and the
+-- | \(\mathcal{O}(m+\min(n_1,n_2))\) For each index @i@ from the index vector and the
 -- corresponding value @a@ from the value vector, replace the element of the
 -- initial vector at position @i@ by @a@.
 --
@@ -781,7 +781,7 @@ unsafeUpdate_ = G.unsafeUpdate_
 -- Accumulations
 -- -------------
 
--- | \(O(m+n)\) For each pair @(i,b)@ from the list, replace the vector element
+-- | \(\mathcal{O}(m+n)\) For each pair @(i,b)@ from the list, replace the vector element
 -- @a@ at position @i@ by @f a b@.
 --
 -- ==== __Examples__
@@ -797,7 +797,7 @@ accum :: Unbox a
 {-# INLINE accum #-}
 accum = G.accum
 
--- | \(O(m+n)\) For each pair @(i,b)@ from the vector of pairs, replace the vector
+-- | \(\mathcal{O}(m+n)\) For each pair @(i,b)@ from the vector of pairs, replace the vector
 -- element @a@ at position @i@ by @f a b@.
 --
 -- ==== __Examples__
@@ -813,7 +813,7 @@ accumulate :: (Unbox a, Unbox b)
 {-# INLINE accumulate #-}
 accumulate = G.accumulate
 
--- | \(O(m+\min(n_1,n_2))\) For each index @i@ from the index vector and the
+-- | \(\mathcal{O}(m+\min(n_1,n_2))\) For each index @i@ from the index vector and the
 -- corresponding value @b@ from the the value vector,
 -- replace the element of the initial vector at
 -- position @i@ by @f a b@.
@@ -855,12 +855,12 @@ unsafeAccumulate_ = G.unsafeAccumulate_
 -- Permutations
 -- ------------
 
--- | \(O(n)\) Reverse a vector.
+-- | \(\mathcal{O}(n)\) Reverse a vector.
 reverse :: Unbox a => Vector a -> Vector a
 {-# INLINE reverse #-}
 reverse = G.reverse
 
--- | \(O(n)\) Yield the vector obtained by replacing each element @i@ of the
+-- | \(\mathcal{O}(n)\) Yield the vector obtained by replacing each element @i@ of the
 -- index vector by @xs'!'i@. This is equivalent to @'map' (xs'!') is@, but is
 -- often much more efficient.
 --
@@ -891,7 +891,7 @@ modify p = G.modify p
 -- Indexing
 -- --------
 
--- | \(O(n)\) Pair each element in a vector with its index.
+-- | \(\mathcal{O}(n)\) Pair each element in a vector with its index.
 indexed :: Unbox a => Vector a -> Vector (Int,a)
 {-# INLINE indexed #-}
 indexed = G.indexed
@@ -899,12 +899,12 @@ indexed = G.indexed
 -- Mapping
 -- -------
 
--- | \(O(n)\) Map a function over a vector.
+-- | \(\mathcal{O}(n)\) Map a function over a vector.
 map :: (Unbox a, Unbox b) => (a -> b) -> Vector a -> Vector b
 {-# INLINE map #-}
 map = G.map
 
--- | \(O(n)\) Apply a function to every element of a vector and its index.
+-- | \(\mathcal{O}(n)\) Apply a function to every element of a vector and its index.
 imap :: (Unbox a, Unbox b) => (Int -> a -> b) -> Vector a -> Vector b
 {-# INLINE imap #-}
 imap = G.imap
@@ -917,44 +917,44 @@ concatMap = G.concatMap
 -- Monadic mapping
 -- ---------------
 
--- | \(O(n)\) Apply the monadic action to all elements of the vector, yielding a
+-- | \(\mathcal{O}(n)\) Apply the monadic action to all elements of the vector, yielding a
 -- vector of results.
 mapM :: (Monad m, Unbox a, Unbox b) => (a -> m b) -> Vector a -> m (Vector b)
 {-# INLINE mapM #-}
 mapM = G.mapM
 
--- | \(O(n)\) Apply the monadic action to every element of a vector and its
+-- | \(\mathcal{O}(n)\) Apply the monadic action to every element of a vector and its
 -- index, yielding a vector of results.
 imapM :: (Monad m, Unbox a, Unbox b)
       => (Int -> a -> m b) -> Vector a -> m (Vector b)
 {-# INLINE imapM #-}
 imapM = G.imapM
 
--- | \(O(n)\) Apply the monadic action to all elements of a vector and ignore the
+-- | \(\mathcal{O}(n)\) Apply the monadic action to all elements of a vector and ignore the
 -- results.
 mapM_ :: (Monad m, Unbox a) => (a -> m b) -> Vector a -> m ()
 {-# INLINE mapM_ #-}
 mapM_ = G.mapM_
 
--- | \(O(n)\) Apply the monadic action to every element of a vector and its
+-- | \(\mathcal{O}(n)\) Apply the monadic action to every element of a vector and its
 -- index, ignoring the results.
 imapM_ :: (Monad m, Unbox a) => (Int -> a -> m b) -> Vector a -> m ()
 {-# INLINE imapM_ #-}
 imapM_ = G.imapM_
 
--- | \(O(n)\) Apply the monadic action to all elements of the vector, yielding a
+-- | \(\mathcal{O}(n)\) Apply the monadic action to all elements of the vector, yielding a
 -- vector of results. Equivalent to @flip 'mapM'@.
 forM :: (Monad m, Unbox a, Unbox b) => Vector a -> (a -> m b) -> m (Vector b)
 {-# INLINE forM #-}
 forM = G.forM
 
--- | \(O(n)\) Apply the monadic action to all elements of a vector and ignore the
+-- | \(\mathcal{O}(n)\) Apply the monadic action to all elements of a vector and ignore the
 -- results. Equivalent to @flip 'mapM_'@.
 forM_ :: (Monad m, Unbox a) => Vector a -> (a -> m b) -> m ()
 {-# INLINE forM_ #-}
 forM_ = G.forM_
 
--- | \(O(n)\) Apply the monadic action to all elements of the vector and their indices, yielding a
+-- | \(\mathcal{O}(n)\) Apply the monadic action to all elements of the vector and their indices, yielding a
 -- vector of results. Equivalent to @'flip' 'imapM'@.
 --
 -- @since 0.12.2.0
@@ -962,7 +962,7 @@ iforM :: (Monad m, Unbox a, Unbox b) => Vector a -> (Int -> a -> m b) -> m (Vect
 {-# INLINE iforM #-}
 iforM = G.iforM
 
--- | \(O(n)\) Apply the monadic action to all elements of the vector and their indices
+-- | \(\mathcal{O}(n)\) Apply the monadic action to all elements of the vector and their indices
 -- and ignore the results. Equivalent to @'flip' 'imapM_'@.
 --
 -- @since 0.12.2.0
@@ -973,7 +973,7 @@ iforM_ = G.iforM_
 -- Zipping
 -- -------
 
--- | \(O(\min(m,n))\) Zip two vectors with the given function.
+-- | \(\mathcal{O}(\min(m,n))\) Zip two vectors with the given function.
 zipWith :: (Unbox a, Unbox b, Unbox c)
         => (a -> b -> c) -> Vector a -> Vector b -> Vector c
 {-# INLINE zipWith #-}
@@ -1005,7 +1005,7 @@ zipWith6 :: (Unbox a, Unbox b, Unbox c, Unbox d, Unbox e, Unbox f, Unbox g)
 {-# INLINE zipWith6 #-}
 zipWith6 = G.zipWith6
 
--- | \(O(\min(m,n))\) Zip two vectors with a function that also takes the
+-- | \(\mathcal{O}(\min(m,n))\) Zip two vectors with a function that also takes the
 -- elements' indices.
 izipWith :: (Unbox a, Unbox b, Unbox c)
          => (Int -> a -> b -> c) -> Vector a -> Vector b -> Vector c
@@ -1042,28 +1042,28 @@ izipWith6 = G.izipWith6
 -- Monadic zipping
 -- ---------------
 
--- | \(O(\min(m,n))\) Zip the two vectors with the monadic action and yield a
+-- | \(\mathcal{O}(\min(m,n))\) Zip the two vectors with the monadic action and yield a
 -- vector of results.
 zipWithM :: (Monad m, Unbox a, Unbox b, Unbox c)
          => (a -> b -> m c) -> Vector a -> Vector b -> m (Vector c)
 {-# INLINE zipWithM #-}
 zipWithM = G.zipWithM
 
--- | \(O(\min(m,n))\) Zip the two vectors with a monadic action that also takes
+-- | \(\mathcal{O}(\min(m,n))\) Zip the two vectors with a monadic action that also takes
 -- the element index and yield a vector of results.
 izipWithM :: (Monad m, Unbox a, Unbox b, Unbox c)
           => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m (Vector c)
 {-# INLINE izipWithM #-}
 izipWithM = G.izipWithM
 
--- | \(O(\min(m,n))\) Zip the two vectors with the monadic action and ignore the
+-- | \(\mathcal{O}(\min(m,n))\) Zip the two vectors with the monadic action and ignore the
 -- results.
 zipWithM_ :: (Monad m, Unbox a, Unbox b)
           => (a -> b -> m c) -> Vector a -> Vector b -> m ()
 {-# INLINE zipWithM_ #-}
 zipWithM_ = G.zipWithM_
 
--- | \(O(\min(m,n))\) Zip the two vectors with a monadic action that also takes
+-- | \(\mathcal{O}(\min(m,n))\) Zip the two vectors with a monadic action that also takes
 -- the element index and ignore the results.
 izipWithM_ :: (Monad m, Unbox a, Unbox b)
            => (Int -> a -> b -> m c) -> Vector a -> Vector b -> m ()
@@ -1073,18 +1073,18 @@ izipWithM_ = G.izipWithM_
 -- Filtering
 -- ---------
 
--- | \(O(n)\) Drop all elements that do not satisfy the predicate.
+-- | \(\mathcal{O}(n)\) Drop all elements that do not satisfy the predicate.
 filter :: Unbox a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE filter #-}
 filter = G.filter
 
--- | \(O(n)\) Drop all elements that do not satisfy the predicate which is applied to
+-- | \(\mathcal{O}(n)\) Drop all elements that do not satisfy the predicate which is applied to
 -- the values and their indices.
 ifilter :: Unbox a => (Int -> a -> Bool) -> Vector a -> Vector a
 {-# INLINE ifilter #-}
 ifilter = G.ifilter
 
--- | \(O(n)\) Drop repeated adjacent elements. The first element in each group is returned.
+-- | \(\mathcal{O}(n)\) Drop repeated adjacent elements. The first element in each group is returned.
 --
 -- ==== __Examples__
 --
@@ -1098,22 +1098,22 @@ uniq :: (Unbox a, Eq a) => Vector a -> Vector a
 {-# INLINE uniq #-}
 uniq = G.uniq
 
--- | \(O(n)\) Map the values and collect the 'Just' results.
+-- | \(\mathcal{O}(n)\) Map the values and collect the 'Just' results.
 mapMaybe :: (Unbox a, Unbox b) => (a -> Maybe b) -> Vector a -> Vector b
 {-# INLINE mapMaybe #-}
 mapMaybe = G.mapMaybe
 
--- | \(O(n)\) Map the indices/values and collect the 'Just' results.
+-- | \(\mathcal{O}(n)\) Map the indices/values and collect the 'Just' results.
 imapMaybe :: (Unbox a, Unbox b) => (Int -> a -> Maybe b) -> Vector a -> Vector b
 {-# INLINE imapMaybe #-}
 imapMaybe = G.imapMaybe
 
--- | \(O(n)\) Drop all elements that do not satisfy the monadic predicate.
+-- | \(\mathcal{O}(n)\) Drop all elements that do not satisfy the monadic predicate.
 filterM :: (Monad m, Unbox a) => (a -> m Bool) -> Vector a -> m (Vector a)
 {-# INLINE filterM #-}
 filterM = G.filterM
 
--- | \(O(n)\) Apply the monadic function to each element of the vector and
+-- | \(\mathcal{O}(n)\) Apply the monadic function to each element of the vector and
 -- discard elements returning 'Nothing'.
 --
 -- @since 0.12.2.0
@@ -1121,7 +1121,7 @@ mapMaybeM :: (Monad m, Unbox a, Unbox b) => (a -> m (Maybe b)) -> Vector a -> m 
 {-# INLINE mapMaybeM #-}
 mapMaybeM = G.mapMaybeM
 
--- | \(O(n)\) Apply the monadic function to each element of the vector and its index.
+-- | \(\mathcal{O}(n)\) Apply the monadic function to each element of the vector and its index.
 -- Discard elements returning 'Nothing'.
 --
 -- @since 0.12.2.0
@@ -1129,14 +1129,14 @@ imapMaybeM :: (Monad m, Unbox a, Unbox b) => (Int -> a -> m (Maybe b)) -> Vector
 {-# INLINE imapMaybeM #-}
 imapMaybeM = G.imapMaybeM
 
--- | \(O(n)\) Yield the longest prefix of elements satisfying the predicate.
+-- | \(\mathcal{O}(n)\) Yield the longest prefix of elements satisfying the predicate.
 -- The current implementation is not copy-free, unless the result vector is
 -- fused away.
 takeWhile :: Unbox a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE takeWhile #-}
 takeWhile = G.takeWhile
 
--- | \(O(n)\) Drop the longest prefix of elements that satisfy the predicate
+-- | \(\mathcal{O}(n)\) Drop the longest prefix of elements that satisfy the predicate
 -- without copying.
 dropWhile :: Unbox a => (a -> Bool) -> Vector a -> Vector a
 {-# INLINE dropWhile #-}
@@ -1145,7 +1145,7 @@ dropWhile = G.dropWhile
 -- Partitioning
 -- -------------
 
--- | \(O(n)\) Split the vector in two parts, the first one containing those
+-- | \(\mathcal{O}(n)\) Split the vector in two parts, the first one containing those
 -- elements that satisfy the predicate and the second one those that don't. The
 -- relative order of the elements is preserved at the cost of a sometimes
 -- reduced performance compared to 'unstablePartition'.
@@ -1153,7 +1153,7 @@ partition :: Unbox a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE partition #-}
 partition = G.partition
 
--- | \(O(n)\) Split the vector into two parts, the first one containing the
+-- | \(\mathcal{O}(n)\) Split the vector into two parts, the first one containing the
 -- @`Left`@ elements and the second containing the @`Right`@ elements.
 -- The relative order of the elements is preserved.
 --
@@ -1162,7 +1162,7 @@ partitionWith :: (Unbox a, Unbox b, Unbox c) => (a -> Either b c) -> Vector a ->
 {-# INLINE partitionWith #-}
 partitionWith = G.partitionWith
 
--- | \(O(n)\) Split the vector in two parts, the first one containing those
+-- | \(\mathcal{O}(n)\) Split the vector in two parts, the first one containing those
 -- elements that satisfy the predicate and the second one those that don't.
 -- The order of the elements is not preserved, but the operation is often
 -- faster than 'partition'.
@@ -1170,19 +1170,19 @@ unstablePartition :: Unbox a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE unstablePartition #-}
 unstablePartition = G.unstablePartition
 
--- | \(O(n)\) Split the vector into the longest prefix of elements that satisfy
+-- | \(\mathcal{O}(n)\) Split the vector into the longest prefix of elements that satisfy
 -- the predicate and the rest without copying.
 span :: Unbox a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE span #-}
 span = G.span
 
--- | \(O(n)\) Split the vector into the longest prefix of elements that do not
+-- | \(\mathcal{O}(n)\) Split the vector into the longest prefix of elements that do not
 -- satisfy the predicate and the rest without copying.
 break :: Unbox a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE break #-}
 break = G.break
 
--- | \(O(n)\) Split a vector into a list of slices, using a predicate function.
+-- | \(\mathcal{O}(n)\) Split a vector into a list of slices, using a predicate function.
 --
 -- The concatenation of this list of slices is equal to the argument vector,
 -- and each slice contains only equal elements, as determined by the equality
@@ -1201,7 +1201,7 @@ break = G.break
 groupBy :: Unbox a => (a -> a -> Bool) -> Vector a -> [Vector a]
 groupBy = G.groupBy
 
--- | \(O(n)\) Split a vector into a list of slices of the input vector.
+-- | \(\mathcal{O}(n)\) Split a vector into a list of slices of the input vector.
 --
 -- The concatenation of this list of slices is equal to the argument vector,
 -- and each slice contains only equal elements.
@@ -1224,43 +1224,43 @@ group = G.groupBy (==)
 -- ---------
 
 infix 4 `elem`
--- | \(O(n)\) Check if the vector contains an element.
+-- | \(\mathcal{O}(n)\) Check if the vector contains an element.
 elem :: (Unbox a, Eq a) => a -> Vector a -> Bool
 {-# INLINE elem #-}
 elem = G.elem
 
 infix 4 `notElem`
--- | \(O(n)\) Check if the vector does not contain an element (inverse of 'elem').
+-- | \(\mathcal{O}(n)\) Check if the vector does not contain an element (inverse of 'elem').
 notElem :: (Unbox a, Eq a) => a -> Vector a -> Bool
 {-# INLINE notElem #-}
 notElem = G.notElem
 
--- | \(O(n)\) Yield 'Just' the first element matching the predicate or 'Nothing'
+-- | \(\mathcal{O}(n)\) Yield 'Just' the first element matching the predicate or 'Nothing'
 -- if no such element exists.
 find :: Unbox a => (a -> Bool) -> Vector a -> Maybe a
 {-# INLINE find #-}
 find = G.find
 
--- | \(O(n)\) Yield 'Just' the index of the first element matching the predicate
+-- | \(\mathcal{O}(n)\) Yield 'Just' the index of the first element matching the predicate
 -- or 'Nothing' if no such element exists.
 findIndex :: Unbox a => (a -> Bool) -> Vector a -> Maybe Int
 {-# INLINE findIndex #-}
 findIndex = G.findIndex
 
--- | \(O(n)\) Yield the indices of elements satisfying the predicate in ascending
+-- | \(\mathcal{O}(n)\) Yield the indices of elements satisfying the predicate in ascending
 -- order.
 findIndices :: Unbox a => (a -> Bool) -> Vector a -> Vector Int
 {-# INLINE findIndices #-}
 findIndices = G.findIndices
 
--- | \(O(n)\) Yield 'Just' the index of the first occurrence of the given element or
+-- | \(\mathcal{O}(n)\) Yield 'Just' the index of the first occurrence of the given element or
 -- 'Nothing' if the vector does not contain the element. This is a specialised
 -- version of 'findIndex'.
 elemIndex :: (Unbox a, Eq a) => a -> Vector a -> Maybe Int
 {-# INLINE elemIndex #-}
 elemIndex = G.elemIndex
 
--- | \(O(n)\) Yield the indices of all occurrences of the given element in
+-- | \(\mathcal{O}(n)\) Yield the indices of all occurrences of the given element in
 -- ascending order. This is a specialised version of 'findIndices'.
 elemIndices :: (Unbox a, Eq a) => a -> Vector a -> Vector Int
 {-# INLINE elemIndices #-}
@@ -1269,69 +1269,69 @@ elemIndices = G.elemIndices
 -- Folding
 -- -------
 
--- | \(O(n)\) Left fold.
+-- | \(\mathcal{O}(n)\) Left fold.
 foldl :: Unbox b => (a -> b -> a) -> a -> Vector b -> a
 {-# INLINE foldl #-}
 foldl = G.foldl
 
--- | \(O(n)\) Left fold on non-empty vectors.
+-- | \(\mathcal{O}(n)\) Left fold on non-empty vectors.
 foldl1 :: Unbox a => (a -> a -> a) -> Vector a -> a
 {-# INLINE foldl1 #-}
 foldl1 = G.foldl1
 
--- | \(O(n)\) Left fold with strict accumulator.
+-- | \(\mathcal{O}(n)\) Left fold with strict accumulator.
 foldl' :: Unbox b => (a -> b -> a) -> a -> Vector b -> a
 {-# INLINE foldl' #-}
 foldl' = G.foldl'
 
--- | \(O(n)\) Left fold on non-empty vectors with strict accumulator.
+-- | \(\mathcal{O}(n)\) Left fold on non-empty vectors with strict accumulator.
 foldl1' :: Unbox a => (a -> a -> a) -> Vector a -> a
 {-# INLINE foldl1' #-}
 foldl1' = G.foldl1'
 
--- | \(O(n)\) Right fold.
+-- | \(\mathcal{O}(n)\) Right fold.
 foldr :: Unbox a => (a -> b -> b) -> b -> Vector a -> b
 {-# INLINE foldr #-}
 foldr = G.foldr
 
--- | \(O(n)\) Right fold on non-empty vectors.
+-- | \(\mathcal{O}(n)\) Right fold on non-empty vectors.
 foldr1 :: Unbox a => (a -> a -> a) -> Vector a -> a
 {-# INLINE foldr1 #-}
 foldr1 = G.foldr1
 
--- | \(O(n)\) Right fold with a strict accumulator.
+-- | \(\mathcal{O}(n)\) Right fold with a strict accumulator.
 foldr' :: Unbox a => (a -> b -> b) -> b -> Vector a -> b
 {-# INLINE foldr' #-}
 foldr' = G.foldr'
 
--- | \(O(n)\) Right fold on non-empty vectors with strict accumulator.
+-- | \(\mathcal{O}(n)\) Right fold on non-empty vectors with strict accumulator.
 foldr1' :: Unbox a => (a -> a -> a) -> Vector a -> a
 {-# INLINE foldr1' #-}
 foldr1' = G.foldr1'
 
--- | \(O(n)\) Left fold using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Left fold using a function applied to each element and its index.
 ifoldl :: Unbox b => (a -> Int -> b -> a) -> a -> Vector b -> a
 {-# INLINE ifoldl #-}
 ifoldl = G.ifoldl
 
--- | \(O(n)\) Left fold with strict accumulator using a function applied to each element
+-- | \(\mathcal{O}(n)\) Left fold with strict accumulator using a function applied to each element
 -- and its index.
 ifoldl' :: Unbox b => (a -> Int -> b -> a) -> a -> Vector b -> a
 {-# INLINE ifoldl' #-}
 ifoldl' = G.ifoldl'
 
--- | \(O(n)\) Right fold using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Right fold using a function applied to each element and its index.
 ifoldr :: Unbox a => (Int -> a -> b -> b) -> b -> Vector a -> b
 {-# INLINE ifoldr #-}
 ifoldr = G.ifoldr
 
--- | \(O(n)\) Right fold with strict accumulator using a function applied to each
+-- | \(\mathcal{O}(n)\) Right fold with strict accumulator using a function applied to each
 -- element and its index.
 ifoldr' :: Unbox a => (Int -> a -> b -> b) -> b -> Vector a -> b
 {-# INLINE ifoldr' #-}
 ifoldr' = G.ifoldr'
 
--- | \(O(n)\) Map each element of the structure to a monoid and combine
+-- | \(\mathcal{O}(n)\) Map each element of the structure to a monoid and combine
 -- the results. It uses the same implementation as the corresponding method
 -- of the 'Foldable' type cless. Note that it's implemented in terms of 'foldr'
 -- and won't fuse with functions that traverse the vector from left to
@@ -1342,7 +1342,7 @@ foldMap :: (Monoid m, Unbox a) => (a -> m) -> Vector a -> m
 {-# INLINE foldMap #-}
 foldMap = G.foldMap
 
--- | \(O(n)\) Like 'foldMap', but strict in the accumulator. It uses the same
+-- | \(\mathcal{O}(n)\) Like 'foldMap', but strict in the accumulator. It uses the same
 -- implementation as the corresponding method of the 'Foldable' type class.
 -- Note that it's implemented in terms of 'foldl'', so it fuses in most
 -- contexts.
@@ -1355,7 +1355,7 @@ foldMap' = G.foldMap'
 -- Specialised folds
 -- -----------------
 
--- | \(O(n)\) Check if all elements satisfy the predicate.
+-- | \(\mathcal{O}(n)\) Check if all elements satisfy the predicate.
 --
 -- ==== __Examples__
 --
@@ -1370,7 +1370,7 @@ all :: Unbox a => (a -> Bool) -> Vector a -> Bool
 {-# INLINE all #-}
 all = G.all
 
--- | \(O(n)\) Check if any element satisfies the predicate.
+-- | \(\mathcal{O}(n)\) Check if any element satisfies the predicate.
 --
 -- ==== __Examples__
 --
@@ -1385,7 +1385,7 @@ any :: Unbox a => (a -> Bool) -> Vector a -> Bool
 {-# INLINE any #-}
 any = G.any
 
--- | \(O(n)\) Check if all elements are 'True'.
+-- | \(\mathcal{O}(n)\) Check if all elements are 'True'.
 --
 -- ==== __Examples__
 --
@@ -1398,7 +1398,7 @@ and :: Vector Bool -> Bool
 {-# INLINE and #-}
 and = G.and
 
--- | \(O(n)\) Check if any element is 'True'.
+-- | \(\mathcal{O}(n)\) Check if any element is 'True'.
 --
 -- ==== __Examples__
 --
@@ -1411,7 +1411,7 @@ or :: Vector Bool -> Bool
 {-# INLINE or #-}
 or = G.or
 
--- | \(O(n)\) Compute the sum of the elements.
+-- | \(\mathcal{O}(n)\) Compute the sum of the elements.
 --
 -- ==== __Examples__
 --
@@ -1424,7 +1424,7 @@ sum :: (Unbox a, Num a) => Vector a -> a
 {-# INLINE sum #-}
 sum = G.sum
 
--- | \(O(n)\) Compute the product of the elements.
+-- | \(\mathcal{O}(n)\) Compute the product of the elements.
 --
 -- ==== __Examples__
 --
@@ -1437,7 +1437,7 @@ product :: (Unbox a, Num a) => Vector a -> a
 {-# INLINE product #-}
 product = G.product
 
--- | \(O(n)\) Yield the maximum element of the vector. The vector may not be
+-- | \(\mathcal{O}(n)\) Yield the maximum element of the vector. The vector may not be
 -- empty. In case of a tie, the first occurrence wins.
 --
 -- ==== __Examples__
@@ -1454,7 +1454,7 @@ maximum :: (Unbox a, Ord a) => Vector a -> a
 {-# INLINE maximum #-}
 maximum = G.maximum
 
--- | \(O(n)\) Yield the maximum element of the vector according to the
+-- | \(\mathcal{O}(n)\) Yield the maximum element of the vector according to the
 -- given comparison function. The vector may not be empty. In case of
 -- a tie, the first occurrence wins. This behavior is different from
 -- 'Data.List.maximumBy' which returns the last tie.
@@ -1471,7 +1471,7 @@ maximumBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> a
 {-# INLINE maximumBy #-}
 maximumBy = G.maximumBy
 
--- | \(O(n)\) Yield the maximum element of the vector by comparing the results
+-- | \(\mathcal{O}(n)\) Yield the maximum element of the vector by comparing the results
 -- of a key function on each element. In case of a tie, the first occurrence
 -- wins. The vector may not be empty.
 --
@@ -1486,7 +1486,7 @@ maximumOn :: (Ord b, Unbox a) => (a -> b) -> Vector a -> a
 {-# INLINE maximumOn #-}
 maximumOn = G.maximumOn
 
--- | \(O(n)\) Yield the minimum element of the vector. The vector may not be
+-- | \(\mathcal{O}(n)\) Yield the minimum element of the vector. The vector may not be
 -- empty. In case of a tie, the first occurrence wins.
 --
 -- ==== __Examples__
@@ -1503,7 +1503,7 @@ minimum :: (Unbox a, Ord a) => Vector a -> a
 {-# INLINE minimum #-}
 minimum = G.minimum
 
--- | \(O(n)\) Yield the minimum element of the vector according to the
+-- | \(\mathcal{O}(n)\) Yield the minimum element of the vector according to the
 -- given comparison function. The vector may not be empty. In case of
 -- a tie, the first occurrence wins.
 --
@@ -1516,12 +1516,12 @@ minimum = G.minimum
 -- >>> VU.minimumBy (comparing fst) $ VU.fromList [(1,'a'), (1 :: Int,'b')]
 -- (1,'a')
 minimumBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> a
--- | \(O(n)\) Yield the minimum element of the vector according to the given
+-- | \(\mathcal{O}(n)\) Yield the minimum element of the vector according to the given
 -- comparison function. The vector may not be empty.
 {-# INLINE minimumBy #-}
 minimumBy = G.minimumBy
 
--- | \(O(n)\) Yield the minimum element of the vector by comparing the results
+-- | \(\mathcal{O}(n)\) Yield the minimum element of the vector by comparing the results
 -- of a key function on each element. In case of a tie, the first occurrence
 -- wins. The vector may not be empty.
 --
@@ -1536,13 +1536,13 @@ minimumOn :: (Ord b, Unbox a) => (a -> b) -> Vector a -> a
 {-# INLINE minimumOn #-}
 minimumOn = G.minimumOn
 
--- | \(O(n)\) Yield the index of the maximum element of the vector. The vector
+-- | \(\mathcal{O}(n)\) Yield the index of the maximum element of the vector. The vector
 -- may not be empty.
 maxIndex :: (Unbox a, Ord a) => Vector a -> Int
 {-# INLINE maxIndex #-}
 maxIndex = G.maxIndex
 
--- | \(O(n)\) Yield the index of the maximum element of the vector
+-- | \(\mathcal{O}(n)\) Yield the index of the maximum element of the vector
 -- according to the given comparison function. The vector may not be
 -- empty. In case of a tie, the first occurrence wins.
 --
@@ -1558,13 +1558,13 @@ maxIndexBy :: Unbox a => (a -> a -> Ordering) -> Vector a -> Int
 {-# INLINE maxIndexBy #-}
 maxIndexBy = G.maxIndexBy
 
--- | \(O(n)\) Yield the index of the minimum element of the vector. The vector
+-- | \(\mathcal{O}(n)\) Yield the index of the minimum element of the vector. The vector
 -- may not be empty.
 minIndex :: (Unbox a, Ord a) => Vector a -> Int
 {-# INLINE minIndex #-}
 minIndex = G.minIndex
 
--- | \(O(n)\) Yield the index of the minimum element of the vector according to
+-- | \(\mathcal{O}(n)\) Yield the index of the minimum element of the vector according to
 -- the given comparison function. The vector may not be empty.
 --
 -- ==== __Examples__
@@ -1582,66 +1582,66 @@ minIndexBy = G.minIndexBy
 -- Monadic folds
 -- -------------
 
--- | \(O(n)\) Monadic fold.
+-- | \(\mathcal{O}(n)\) Monadic fold.
 foldM :: (Monad m, Unbox b) => (a -> b -> m a) -> a -> Vector b -> m a
 {-# INLINE foldM #-}
 foldM = G.foldM
 
--- | \(O(n)\) Monadic fold using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Monadic fold using a function applied to each element and its index.
 ifoldM :: (Monad m, Unbox b) => (a -> Int -> b -> m a) -> a -> Vector b -> m a
 {-# INLINE ifoldM #-}
 ifoldM = G.ifoldM
 
--- | \(O(n)\) Monadic fold over non-empty vectors.
+-- | \(\mathcal{O}(n)\) Monadic fold over non-empty vectors.
 fold1M :: (Monad m, Unbox a) => (a -> a -> m a) -> Vector a -> m a
 {-# INLINE fold1M #-}
 fold1M = G.fold1M
 
--- | \(O(n)\) Monadic fold with strict accumulator.
+-- | \(\mathcal{O}(n)\) Monadic fold with strict accumulator.
 foldM' :: (Monad m, Unbox b) => (a -> b -> m a) -> a -> Vector b -> m a
 {-# INLINE foldM' #-}
 foldM' = G.foldM'
 
--- | \(O(n)\) Monadic fold with strict accumulator using a function applied to each
+-- | \(\mathcal{O}(n)\) Monadic fold with strict accumulator using a function applied to each
 -- element and its index.
 ifoldM' :: (Monad m, Unbox b) => (a -> Int -> b -> m a) -> a -> Vector b -> m a
 {-# INLINE ifoldM' #-}
 ifoldM' = G.ifoldM'
 
--- | \(O(n)\) Monadic fold over non-empty vectors with strict accumulator.
+-- | \(\mathcal{O}(n)\) Monadic fold over non-empty vectors with strict accumulator.
 fold1M' :: (Monad m, Unbox a) => (a -> a -> m a) -> Vector a -> m a
 {-# INLINE fold1M' #-}
 fold1M' = G.fold1M'
 
--- | \(O(n)\) Monadic fold that discards the result.
+-- | \(\mathcal{O}(n)\) Monadic fold that discards the result.
 foldM_ :: (Monad m, Unbox b) => (a -> b -> m a) -> a -> Vector b -> m ()
 {-# INLINE foldM_ #-}
 foldM_ = G.foldM_
 
--- | \(O(n)\) Monadic fold that discards the result using a function applied to
+-- | \(\mathcal{O}(n)\) Monadic fold that discards the result using a function applied to
 -- each element and its index.
 ifoldM_ :: (Monad m, Unbox b) => (a -> Int -> b -> m a) -> a -> Vector b -> m ()
 {-# INLINE ifoldM_ #-}
 ifoldM_ = G.ifoldM_
 
--- | \(O(n)\) Monadic fold over non-empty vectors that discards the result.
+-- | \(\mathcal{O}(n)\) Monadic fold over non-empty vectors that discards the result.
 fold1M_ :: (Monad m, Unbox a) => (a -> a -> m a) -> Vector a -> m ()
 {-# INLINE fold1M_ #-}
 fold1M_ = G.fold1M_
 
--- | \(O(n)\) Monadic fold with strict accumulator that discards the result.
+-- | \(\mathcal{O}(n)\) Monadic fold with strict accumulator that discards the result.
 foldM'_ :: (Monad m, Unbox b) => (a -> b -> m a) -> a -> Vector b -> m ()
 {-# INLINE foldM'_ #-}
 foldM'_ = G.foldM'_
 
--- | \(O(n)\) Monadic fold with strict accumulator that discards the result
+-- | \(\mathcal{O}(n)\) Monadic fold with strict accumulator that discards the result
 -- using a function applied to each element and its index.
 ifoldM'_ :: (Monad m, Unbox b)
          => (a -> Int -> b -> m a) -> a -> Vector b -> m ()
 {-# INLINE ifoldM'_ #-}
 ifoldM'_ = G.ifoldM'_
 
--- | \(O(n)\) Monadic fold over non-empty vectors with strict accumulator
+-- | \(\mathcal{O}(n)\) Monadic fold over non-empty vectors with strict accumulator
 -- that discards the result.
 fold1M'_ :: (Monad m, Unbox a) => (a -> a -> m a) -> Vector a -> m ()
 {-# INLINE fold1M'_ #-}
@@ -1650,7 +1650,7 @@ fold1M'_ = G.fold1M'_
 -- Scans
 -- -----
 
--- | \(O(n)\) Left-to-right prescan.
+-- | \(\mathcal{O}(n)\) Left-to-right prescan.
 --
 -- @
 -- prescanl f z = 'init' . 'scanl' f z
@@ -1665,12 +1665,12 @@ prescanl :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE prescanl #-}
 prescanl = G.prescanl
 
--- | \(O(n)\) Left-to-right prescan with strict accumulator.
+-- | \(\mathcal{O}(n)\) Left-to-right prescan with strict accumulator.
 prescanl' :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE prescanl' #-}
 prescanl' = G.prescanl'
 
--- | \(O(n)\) Left-to-right postscan.
+-- | \(\mathcal{O}(n)\) Left-to-right postscan.
 --
 -- @
 -- postscanl f z = 'tail' . 'scanl' f z
@@ -1685,12 +1685,12 @@ postscanl :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE postscanl #-}
 postscanl = G.postscanl
 
--- | \(O(n)\) Left-to-right postscan with strict accumulator.
+-- | \(\mathcal{O}(n)\) Left-to-right postscan with strict accumulator.
 postscanl' :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE postscanl' #-}
 postscanl' = G.postscanl'
 
--- | \(O(n)\) Left-to-right scan.
+-- | \(\mathcal{O}(n)\) Left-to-right scan.
 --
 -- > scanl f z <x1,...,xn> = <y1,...,y(n+1)>
 -- >   where y1 = z
@@ -1705,26 +1705,26 @@ scanl :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE scanl #-}
 scanl = G.scanl
 
--- | \(O(n)\) Left-to-right scan with strict accumulator.
+-- | \(\mathcal{O}(n)\) Left-to-right scan with strict accumulator.
 scanl' :: (Unbox a, Unbox b) => (a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE scanl' #-}
 scanl' = G.scanl'
 
--- | \(O(n)\) Left-to-right scan over a vector with its index.
+-- | \(\mathcal{O}(n)\) Left-to-right scan over a vector with its index.
 --
 -- @since 0.12.2.0
 iscanl :: (Unbox a, Unbox b) => (Int -> a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE iscanl #-}
 iscanl = G.iscanl
 
--- | \(O(n)\) Left-to-right scan over a vector (strictly) with its index.
+-- | \(\mathcal{O}(n)\) Left-to-right scan over a vector (strictly) with its index.
 --
 -- @since 0.12.2.0
 iscanl' :: (Unbox a, Unbox b) => (Int -> a -> b -> a) -> a -> Vector b -> Vector a
 {-# INLINE iscanl' #-}
 iscanl' = G.iscanl'
 
--- | \(O(n)\) Initial-value free left-to-right scan over a vector.
+-- | \(\mathcal{O}(n)\) Initial-value free left-to-right scan over a vector.
 --
 -- > scanl f <x1,...,xn> = <y1,...,yn>
 -- >   where y1 = x1
@@ -1745,7 +1745,7 @@ scanl1 :: Unbox a => (a -> a -> a) -> Vector a -> Vector a
 {-# INLINE scanl1 #-}
 scanl1 = G.scanl1
 
--- | \(O(n)\) Initial-value free left-to-right scan over a vector with a strict accumulator.
+-- | \(\mathcal{O}(n)\) Initial-value free left-to-right scan over a vector with a strict accumulator.
 --
 -- Note: Since 0.13, application of this to an empty vector no longer
 -- results in an error; instead it produces an empty vector.
@@ -1762,7 +1762,7 @@ scanl1' :: Unbox a => (a -> a -> a) -> Vector a -> Vector a
 {-# INLINE scanl1' #-}
 scanl1' = G.scanl1'
 
--- | \(O(n)\) Right-to-left prescan.
+-- | \(\mathcal{O}(n)\) Right-to-left prescan.
 --
 -- @
 -- prescanr f z = 'reverse' . 'prescanl' (flip f) z . 'reverse'
@@ -1771,46 +1771,46 @@ prescanr :: (Unbox a, Unbox b) => (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE prescanr #-}
 prescanr = G.prescanr
 
--- | \(O(n)\) Right-to-left prescan with strict accumulator.
+-- | \(\mathcal{O}(n)\) Right-to-left prescan with strict accumulator.
 prescanr' :: (Unbox a, Unbox b) => (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE prescanr' #-}
 prescanr' = G.prescanr'
 
--- | \(O(n)\) Right-to-left postscan.
+-- | \(\mathcal{O}(n)\) Right-to-left postscan.
 postscanr :: (Unbox a, Unbox b) => (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE postscanr #-}
 postscanr = G.postscanr
 
--- | \(O(n)\) Right-to-left postscan with strict accumulator.
+-- | \(\mathcal{O}(n)\) Right-to-left postscan with strict accumulator.
 postscanr' :: (Unbox a, Unbox b) => (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE postscanr' #-}
 postscanr' = G.postscanr'
 
--- | \(O(n)\) Right-to-left scan.
+-- | \(\mathcal{O}(n)\) Right-to-left scan.
 scanr :: (Unbox a, Unbox b) => (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE scanr #-}
 scanr = G.scanr
 
--- | \(O(n)\) Right-to-left scan with strict accumulator.
+-- | \(\mathcal{O}(n)\) Right-to-left scan with strict accumulator.
 scanr' :: (Unbox a, Unbox b) => (a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE scanr' #-}
 scanr' = G.scanr'
 
--- | \(O(n)\) Right-to-left scan over a vector with its index.
+-- | \(\mathcal{O}(n)\) Right-to-left scan over a vector with its index.
 --
 -- @since 0.12.2.0
 iscanr :: (Unbox a, Unbox b) => (Int -> a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE iscanr #-}
 iscanr = G.iscanr
 
--- | \(O(n)\) Right-to-left scan over a vector (strictly) with its index.
+-- | \(\mathcal{O}(n)\) Right-to-left scan over a vector (strictly) with its index.
 --
 -- @sinqce 0.12.2.0
 iscanr' :: (Unbox a, Unbox b) => (Int -> a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE iscanr' #-}
 iscanr' = G.iscanr'
 
--- | \(O(n)\) Right-to-left, initial-value free scan over a vector.
+-- | \(\mathcal{O}(n)\) Right-to-left, initial-value free scan over a vector.
 --
 -- Note: Since 0.13, application of this to an empty vector no longer
 -- results in an error; instead it produces an empty vector.
@@ -1827,7 +1827,7 @@ scanr1 :: Unbox a => (a -> a -> a) -> Vector a -> Vector a
 {-# INLINE scanr1 #-}
 scanr1 = G.scanr1
 
--- | \(O(n)\) Right-to-left, initial-value free scan over a vector with a strict
+-- | \(\mathcal{O}(n)\) Right-to-left, initial-value free scan over a vector with a strict
 -- accumulator.
 --
 -- Note: Since 0.13, application of this to an empty vector no longer
@@ -1848,7 +1848,7 @@ scanr1' = G.scanr1'
 -- Comparisons
 -- ------------------------
 
--- | \(O(n)\) Check if two vectors are equal using the supplied equality
+-- | \(\mathcal{O}(n)\) Check if two vectors are equal using the supplied equality
 -- predicate.
 --
 -- @since 0.12.2.0
@@ -1856,7 +1856,7 @@ eqBy :: (Unbox a, Unbox b) => (a -> b -> Bool) -> Vector a -> Vector b -> Bool
 {-# INLINE eqBy #-}
 eqBy = G.eqBy
 
--- | \(O(n)\) Compare two vectors using the supplied comparison function for
+-- | \(\mathcal{O}(n)\) Compare two vectors using the supplied comparison function for
 -- vector elements. Comparison works the same as for lists.
 --
 -- > cmpBy compare == compare
@@ -1868,17 +1868,17 @@ cmpBy = G.cmpBy
 -- Conversions - Lists
 -- ------------------------
 
--- | \(O(n)\) Convert a vector to a list.
+-- | \(\mathcal{O}(n)\) Convert a vector to a list.
 toList :: Unbox a => Vector a -> [a]
 {-# INLINE toList #-}
 toList = G.toList
 
--- | \(O(n)\) Convert a list to a vector.
+-- | \(\mathcal{O}(n)\) Convert a list to a vector.
 fromList :: Unbox a => [a] -> Vector a
 {-# INLINE fromList #-}
 fromList = G.fromList
 
--- | \(O(n)\) Convert the first @n@ elements of a list to a vector.
+-- | \(\mathcal{O}(n)\) Convert the first @n@ elements of a list to a vector.
 --
 -- @
 -- fromListN n xs = 'fromList' ('take' n xs)
@@ -1898,18 +1898,18 @@ fromListN = G.fromListN
 -- Conversions - Mutable vectors
 -- -----------------------------
 
--- | \(O(1)\) Unsafely convert a mutable vector to an immutable one without
+-- | \(\mathcal{O}(1)\) Unsafely convert a mutable vector to an immutable one without
 -- copying. The mutable vector may not be used after this operation.
 unsafeFreeze :: (Unbox a, PrimMonad m) => MVector (PrimState m) a -> m (Vector a)
 {-# INLINE unsafeFreeze #-}
 unsafeFreeze = G.unsafeFreeze
 
--- | \(O(n)\) Yield an immutable copy of the mutable vector.
+-- | \(\mathcal{O}(n)\) Yield an immutable copy of the mutable vector.
 freeze :: (Unbox a, PrimMonad m) => MVector (PrimState m) a -> m (Vector a)
 {-# INLINE freeze #-}
 freeze = G.freeze
 
--- | \(O(1)\) Unsafely convert an immutable vector to a mutable one
+-- | \(\mathcal{O}(1)\) Unsafely convert an immutable vector to a mutable one
 -- without copying. Note that this is a very dangerous function and
 -- generally it's only safe to read from the resulting vector. In this
 -- case, the immutable vector could be used safely as well.
@@ -1938,19 +1938,19 @@ unsafeThaw :: (Unbox a, PrimMonad m) => Vector a -> m (MVector (PrimState m) a)
 {-# INLINE unsafeThaw #-}
 unsafeThaw = G.unsafeThaw
 
--- | \(O(n)\) Yield a mutable copy of an immutable vector.
+-- | \(\mathcal{O}(n)\) Yield a mutable copy of an immutable vector.
 thaw :: (Unbox a, PrimMonad m) => Vector a -> m (MVector (PrimState m) a)
 {-# INLINE thaw #-}
 thaw = G.thaw
 
--- | \(O(n)\) Copy an immutable vector into a mutable one. The two vectors must
+-- | \(\mathcal{O}(n)\) Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length. This is not checked.
 unsafeCopy
   :: (Unbox a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE unsafeCopy #-}
 unsafeCopy = G.unsafeCopy
 
--- | \(O(n)\) Copy an immutable vector into a mutable one. The two vectors must
+-- | \(\mathcal{O}(n)\) Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length.
 copy :: (Unbox a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE copy #-}

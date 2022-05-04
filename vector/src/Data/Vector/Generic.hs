@@ -222,12 +222,12 @@ import qualified Data.Traversable as T (Traversable(mapM))
 -- Length information
 -- ------------------
 
--- | \(O(1)\) Yield the length of the vector.
+-- | \(\mathcal{O}(1)\) Yield the length of the vector.
 length :: Vector v a => v a -> Int
 {-# INLINE length #-}
 length = Bundle.length . stream
 
--- | \(O(1)\) Test whether a vector is empty.
+-- | \(\mathcal{O}(1)\) Test whether a vector is empty.
 null :: Vector v a => v a -> Bool
 {-# INLINE null #-}
 null = Bundle.null . stream
@@ -236,13 +236,13 @@ null = Bundle.null . stream
 -- --------
 
 infixl 9 !
--- | \(O(1)\) Indexing.
+-- | \(\mathcal{O}(1)\) Indexing.
 (!) :: (HasCallStack, Vector v a) => v a -> Int -> a
 {-# INLINE_FUSED (!) #-}
 (!) v i = checkIndex Bounds i (length v) $ unBox (basicUnsafeIndexM v i)
 
 infixl 9 !?
--- | \(O(1)\) Safe indexing.
+-- | \(\mathcal{O}(1)\) Safe indexing.
 (!?) :: Vector v a => v a -> Int -> Maybe a
 {-# INLINE_FUSED (!?) #-}
 -- Use basicUnsafeIndexM @Box to perform the indexing eagerly.
@@ -250,27 +250,27 @@ v !? i | i `inRange` length v = case basicUnsafeIndexM v i of Box a -> Just a
        | otherwise            = Nothing
 
 
--- | \(O(1)\) First element.
+-- | \(\mathcal{O}(1)\) First element.
 head :: Vector v a => v a -> a
 {-# INLINE_FUSED head #-}
 head v = v ! 0
 
--- | \(O(1)\) Last element.
+-- | \(\mathcal{O}(1)\) Last element.
 last :: Vector v a => v a -> a
 {-# INLINE_FUSED last #-}
 last v = v ! (length v - 1)
 
--- | \(O(1)\) Unsafe indexing without bounds checking.
+-- | \(\mathcal{O}(1)\) Unsafe indexing without bounds checking.
 unsafeIndex :: Vector v a => v a -> Int -> a
 {-# INLINE_FUSED unsafeIndex #-}
 unsafeIndex v i = checkIndex Unsafe i (length v) $ unBox (basicUnsafeIndexM v i)
 
--- | \(O(1)\) First element, without checking if the vector is empty.
+-- | \(\mathcal{O}(1)\) First element, without checking if the vector is empty.
 unsafeHead :: Vector v a => v a -> a
 {-# INLINE_FUSED unsafeHead #-}
 unsafeHead v = unsafeIndex v 0
 
--- | \(O(1)\) Last element, without checking if the vector is empty.
+-- | \(\mathcal{O}(1)\) Last element, without checking if the vector is empty.
 unsafeLast :: Vector v a => v a -> a
 {-# INLINE_FUSED unsafeLast #-}
 unsafeLast v = unsafeIndex v (length v - 1)
@@ -303,7 +303,7 @@ unsafeLast v = unsafeIndex v (length v - 1)
 -- Monadic indexing
 -- ----------------
 
--- | \(O(1)\) Indexing in a monad.
+-- | \(\mathcal{O}(1)\) Indexing in a monad.
 --
 -- The monad allows operations to be strict in the vector when necessary.
 -- Suppose vector copying is implemented like this:
@@ -325,19 +325,19 @@ indexM :: (HasCallStack, Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_FUSED indexM #-}
 indexM v i = checkIndex Bounds i (length v) $ liftBox $ basicUnsafeIndexM v i
 
--- | \(O(1)\) First element of a vector in a monad. See 'indexM' for an
+-- | \(\mathcal{O}(1)\) First element of a vector in a monad. See 'indexM' for an
 -- explanation of why this is useful.
 headM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_FUSED headM #-}
 headM v = indexM v 0
 
--- | \(O(1)\) Last element of a vector in a monad. See 'indexM' for an
+-- | \(\mathcal{O}(1)\) Last element of a vector in a monad. See 'indexM' for an
 -- explanation of why this is useful.
 lastM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_FUSED lastM #-}
 lastM v = indexM v (length v - 1)
 
--- | \(O(1)\) Indexing in a monad, without bounds checks. See 'indexM' for an
+-- | \(\mathcal{O}(1)\) Indexing in a monad, without bounds checks. See 'indexM' for an
 -- explanation of why this is useful.
 unsafeIndexM :: (Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_FUSED unsafeIndexM #-}
@@ -345,13 +345,13 @@ unsafeIndexM v i = checkIndex Unsafe i (length v)
                  $ liftBox
                  $ basicUnsafeIndexM v i
 
--- | \(O(1)\) First element in a monad, without checking for empty vectors.
+-- | \(\mathcal{O}(1)\) First element in a monad, without checking for empty vectors.
 -- See 'indexM' for an explanation of why this is useful.
 unsafeHeadM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_FUSED unsafeHeadM #-}
 unsafeHeadM v = unsafeIndexM v 0
 
--- | \(O(1)\) Last element in a monad, without checking for empty vectors.
+-- | \(\mathcal{O}(1)\) Last element in a monad, without checking for empty vectors.
 -- See 'indexM' for an explanation of why this is useful.
 unsafeLastM :: (Vector v a, Monad m) => v a -> m a
 {-# INLINE_FUSED unsafeLastM #-}
@@ -382,7 +382,7 @@ unsafeLastM v = unsafeIndexM v (length v - 1)
 -- Extracting subvectors (slicing)
 -- -------------------------------
 
--- | \(O(1)\) Yield a slice of the vector without copying it. The vector must
+-- | \(\mathcal{O}(1)\) Yield a slice of the vector without copying it. The vector must
 -- contain at least @i+n@ elements.
 slice :: (HasCallStack, Vector v a)
       => Int   -- ^ @i@ starting index
@@ -392,26 +392,26 @@ slice :: (HasCallStack, Vector v a)
 {-# INLINE_FUSED slice #-}
 slice i n v = checkSlice Bounds i n (length v) $ basicUnsafeSlice i n v
 
--- | \(O(1)\) Yield all but the last element without copying. The vector may not
+-- | \(\mathcal{O}(1)\) Yield all but the last element without copying. The vector may not
 -- be empty.
 init :: Vector v a => v a -> v a
 {-# INLINE_FUSED init #-}
 init v = slice 0 (length v - 1) v
 
--- | \(O(1)\) Yield all but the first element without copying. The vector may not
+-- | \(\mathcal{O}(1)\) Yield all but the first element without copying. The vector may not
 -- be empty.
 tail :: Vector v a => v a -> v a
 {-# INLINE_FUSED tail #-}
 tail v = slice 1 (length v - 1) v
 
--- | \(O(1)\) Yield the first @n@ elements without copying. The vector may
+-- | \(\mathcal{O}(1)\) Yield the first @n@ elements without copying. The vector may
 -- contain less than @n@ elements, in which case it is returned unchanged.
 take :: Vector v a => Int -> v a -> v a
 {-# INLINE_FUSED take #-}
 take n v = unsafeSlice 0 (delay_inline min n' (length v)) v
   where n' = max n 0
 
--- | \(O(1)\) Yield all but the first @n@ elements without copying. The vector may
+-- | \(\mathcal{O}(1)\) Yield all but the first @n@ elements without copying. The vector may
 -- contain less than @n@ elements, in which case an empty vector is returned.
 drop :: Vector v a => Int -> v a -> v a
 {-# INLINE_FUSED drop #-}
@@ -420,7 +420,7 @@ drop n v = unsafeSlice (delay_inline min n' len)
   where n' = max n 0
         len = length v
 
--- | \(O(1)\) Yield the first @n@ elements paired with the remainder, without copying.
+-- | \(\mathcal{O}(1)\) Yield the first @n@ elements paired with the remainder, without copying.
 --
 -- Note that @'splitAt' n v@ is equivalent to @('take' n v, 'drop' n v)@,
 -- but slightly more efficient.
@@ -436,7 +436,7 @@ splitAt n v = ( unsafeSlice 0 m v
       n'  = max n 0
       len = length v
 
--- | \(O(1)\) Yield the 'head' and 'tail' of the vector, or 'Nothing' if
+-- | \(\mathcal{O}(1)\) Yield the 'head' and 'tail' of the vector, or 'Nothing' if
 -- the vector is empty.
 --
 -- @since 0.12.2.0
@@ -444,7 +444,7 @@ uncons :: Vector v a => v a -> Maybe (a, v a)
 {-# INLINE_FUSED uncons #-}
 uncons xs = flip (,) (unsafeTail xs) <$> xs !? 0
 
--- | \(O(1)\) Yield the 'last' and 'init' of the vector, or 'Nothing' if
+-- | \(\mathcal{O}(1)\) Yield the 'last' and 'init' of the vector, or 'Nothing' if
 -- the vector is empty.
 --
 -- @since 0.12.2.0
@@ -452,7 +452,7 @@ unsnoc :: Vector v a => v a -> Maybe (v a, a)
 {-# INLINE_FUSED unsnoc #-}
 unsnoc xs = (,) (unsafeInit xs) <$> xs !? (length xs - 1)
 
--- | \(O(1)\) Yield a slice of the vector without copying. The vector must
+-- | \(\mathcal{O}(1)\) Yield a slice of the vector without copying. The vector must
 -- contain at least @i+n@ elements, but this is not checked.
 unsafeSlice :: Vector v a => Int   -- ^ @i@ starting index
                           -> Int   -- ^ @n@ length
@@ -461,25 +461,25 @@ unsafeSlice :: Vector v a => Int   -- ^ @i@ starting index
 {-# INLINE_FUSED unsafeSlice #-}
 unsafeSlice i n v = checkSlice Unsafe i n (length v) $ basicUnsafeSlice i n v
 
--- | \(O(1)\) Yield all but the last element without copying. The vector may not
+-- | \(\mathcal{O}(1)\) Yield all but the last element without copying. The vector may not
 -- be empty, but this is not checked.
 unsafeInit :: Vector v a => v a -> v a
 {-# INLINE_FUSED unsafeInit #-}
 unsafeInit v = unsafeSlice 0 (length v - 1) v
 
--- | \(O(1)\) Yield all but the first element without copying. The vector may not
+-- | \(\mathcal{O}(1)\) Yield all but the first element without copying. The vector may not
 -- be empty, but this is not checked.
 unsafeTail :: Vector v a => v a -> v a
 {-# INLINE_FUSED unsafeTail #-}
 unsafeTail v = unsafeSlice 1 (length v - 1) v
 
--- | \(O(1)\) Yield the first @n@ elements without copying. The vector must
+-- | \(\mathcal{O}(1)\) Yield the first @n@ elements without copying. The vector must
 -- contain at least @n@ elements, but this is not checked.
 unsafeTake :: Vector v a => Int -> v a -> v a
 {-# INLINE unsafeTake #-}
 unsafeTake n v = unsafeSlice 0 n v
 
--- | \(O(1)\) Yield all but the first @n@ elements without copying. The vector
+-- | \(\mathcal{O}(1)\) Yield all but the first @n@ elements without copying. The vector
 -- must contain at least @n@ elements, but this is not checked.
 unsafeDrop :: Vector v a => Int -> v a -> v a
 {-# INLINE unsafeDrop #-}
@@ -518,31 +518,31 @@ unsafeDrop n v = unsafeSlice n (length v - n) v
 -- Initialisation
 -- --------------
 
--- | \(O(1)\) The empty vector.
+-- | \(\mathcal{O}(1)\) The empty vector.
 empty :: Vector v a => v a
 {-# INLINE empty #-}
 empty = unstream Bundle.empty
 
--- | \(O(1)\) A vector with exactly one element.
+-- | \(\mathcal{O}(1)\) A vector with exactly one element.
 singleton :: forall v a. Vector v a => a -> v a
 {-# INLINE singleton #-}
 singleton x = elemseq (undefined :: v a) x
             $ unstream (Bundle.singleton x)
 
--- | \(O(n)\) A vector of the given length with the same value in each position.
+-- | \(\mathcal{O}(n)\) A vector of the given length with the same value in each position.
 replicate :: forall v a. Vector v a => Int -> a -> v a
 {-# INLINE replicate #-}
 replicate n x = elemseq (undefined :: v a) x
               $ unstream
               $ Bundle.replicate n x
 
--- | \(O(n)\) Construct a vector of the given length by applying the function to
+-- | \(\mathcal{O}(n)\) Construct a vector of the given length by applying the function to
 -- each index.
 generate :: Vector v a => Int -> (Int -> a) -> v a
 {-# INLINE generate #-}
 generate n f = unstream (Bundle.generate n f)
 
--- | \(O(n)\) Apply the function \(\max(n - 1, 0)\) times to an initial value, producing a vector
+-- | \(\mathcal{O}(n)\) Apply the function \(\max(n - 1, 0)\) times to an initial value, producing a vector
 -- of length \(\max(n, 0)\). The 0th element will contain the initial value, which is why there
 -- is one less function application than the number of elements in the produced vector.
 --
@@ -556,7 +556,7 @@ iterateN n f x = unstream (Bundle.iterateN n f x)
 -- Unfolding
 -- ---------
 
--- | \(O(n)\) Construct a vector by repeatedly applying the generator function
+-- | \(\mathcal{O}(n)\) Construct a vector by repeatedly applying the generator function
 -- to a seed. The generator function yields 'Just' the next element and the
 -- new seed or 'Nothing' if there are no more elements.
 --
@@ -566,7 +566,7 @@ unfoldr :: Vector v a => (b -> Maybe (a, b)) -> b -> v a
 {-# INLINE unfoldr #-}
 unfoldr f = unstream . Bundle.unfoldr f
 
--- | \(O(n)\) Construct a vector with at most @n@ elements by repeatedly applying
+-- | \(\mathcal{O}(n)\) Construct a vector with at most @n@ elements by repeatedly applying
 -- the generator function to a seed. The generator function yields 'Just' the
 -- next element and the new seed or 'Nothing' if there are no more elements.
 --
@@ -575,7 +575,7 @@ unfoldrN  :: Vector v a => Int -> (b -> Maybe (a, b)) -> b -> v a
 {-# INLINE unfoldrN #-}
 unfoldrN n f = unstream . Bundle.unfoldrN n f
 
--- | \(O(n)\) Construct a vector with exactly @n@ elements by repeatedly applying
+-- | \(\mathcal{O}(n)\) Construct a vector with exactly @n@ elements by repeatedly applying
 -- the generator function to a seed. The generator function yields the
 -- next element and the new seed.
 --
@@ -586,7 +586,7 @@ unfoldrExactN  :: Vector v a => Int -> (b -> (a, b)) -> b -> v a
 {-# INLINE unfoldrExactN #-}
 unfoldrExactN n f = unstream . Bundle.unfoldrExactN n f
 
--- | \(O(n)\) Construct a vector by repeatedly applying the monadic
+-- | \(\mathcal{O}(n)\) Construct a vector by repeatedly applying the monadic
 -- generator function to a seed. The generator function yields 'Just'
 -- the next element and the new seed or 'Nothing' if there are no more
 -- elements.
@@ -594,7 +594,7 @@ unfoldrM :: (Monad m, Vector v a) => (b -> m (Maybe (a, b))) -> b -> m (v a)
 {-# INLINE unfoldrM #-}
 unfoldrM f = unstreamM . MBundle.unfoldrM f
 
--- | \(O(n)\) Construct a vector by repeatedly applying the monadic
+-- | \(\mathcal{O}(n)\) Construct a vector by repeatedly applying the monadic
 -- generator function to a seed. The generator function yields 'Just'
 -- the next element and the new seed or 'Nothing' if there are no more
 -- elements.
@@ -602,7 +602,7 @@ unfoldrNM :: (Monad m, Vector v a) => Int -> (b -> m (Maybe (a, b))) -> b -> m (
 {-# INLINE unfoldrNM #-}
 unfoldrNM n f = unstreamM . MBundle.unfoldrNM n f
 
--- | \(O(n)\) Construct a vector with exactly @n@ elements by repeatedly
+-- | \(\mathcal{O}(n)\) Construct a vector with exactly @n@ elements by repeatedly
 -- applying the monadic generator function to a seed. The generator
 -- function yields the next element and the new seed.
 --
@@ -611,7 +611,7 @@ unfoldrExactNM :: (Monad m, Vector v a) => Int -> (b -> m (a, b)) -> b -> m (v a
 {-# INLINE unfoldrExactNM #-}
 unfoldrExactNM n f = unstreamM . MBundle.unfoldrExactNM n f
 
--- | \(O(n)\) Construct a vector with @n@ elements by repeatedly applying the
+-- | \(\mathcal{O}(n)\) Construct a vector with @n@ elements by repeatedly applying the
 -- generator function to the already constructed part of the vector.
 --
 -- > constructN 3 f = let a = f <> ; b = f <a> ; c = f <a,b> in <a,b,c>
@@ -635,7 +635,7 @@ constructN !n f = runST (
                           fill v'' (i+1)
     fill v _ = return v
 
--- | \(O(n)\) Construct a vector with @n@ elements from right to left by
+-- | \(\mathcal{O}(n)\) Construct a vector with @n@ elements from right to left by
 -- repeatedly applying the generator function to the already constructed part
 -- of the vector.
 --
@@ -664,7 +664,7 @@ constructrN !n f = runST (
 -- Enumeration
 -- -----------
 
--- | \(O(n)\) Yield a vector of the given length, containing the values @x@, @x+1@
+-- | \(\mathcal{O}(n)\) Yield a vector of the given length, containing the values @x@, @x+1@
 -- etc. This operation is usually more efficient than 'enumFromTo'.
 --
 -- > enumFromN 5 3 = <5,6,7>
@@ -672,7 +672,7 @@ enumFromN :: (Vector v a, Num a) => a -> Int -> v a
 {-# INLINE enumFromN #-}
 enumFromN x n = enumFromStepN x 1 n
 
--- | \(O(n)\) Yield a vector of the given length, containing the values @x@, @x+y@,
+-- | \(\mathcal{O}(n)\) Yield a vector of the given length, containing the values @x@, @x+y@,
 -- @x+y+y@ etc. This operations is usually more efficient than 'enumFromThenTo'.
 --
 -- > enumFromStepN 1 2 5 = <1,3,5,7,9>
@@ -683,7 +683,7 @@ enumFromStepN x y n = elemseq (undefined :: v a) x
                     $ unstream
                     $ Bundle.enumFromStepN  x y n
 
--- | \(O(n)\) Enumerate values from @x@ to @y@.
+-- | \(\mathcal{O}(n)\) Enumerate values from @x@ to @y@.
 --
 -- /WARNING:/ This operation can be very inefficient. If possible, use
 -- 'enumFromN' instead.
@@ -691,7 +691,7 @@ enumFromTo :: (Vector v a, Enum a) => a -> a -> v a
 {-# INLINE enumFromTo #-}
 enumFromTo x y = unstream (Bundle.enumFromTo x y)
 
--- | \(O(n)\) Enumerate values from @x@ to @y@ with a specific step @z@.
+-- | \(\mathcal{O}(n)\) Enumerate values from @x@ to @y@ with a specific step @z@.
 --
 -- /WARNING:/ This operation can be very inefficient. If possible, use
 -- 'enumFromStepN' instead.
@@ -702,7 +702,7 @@ enumFromThenTo x y z = unstream (Bundle.enumFromThenTo x y z)
 -- Concatenation
 -- -------------
 
--- | \(O(n)\) Prepend an element.
+-- | \(\mathcal{O}(n)\) Prepend an element.
 cons :: forall v a. Vector v a => a -> v a -> v a
 {-# INLINE cons #-}
 cons x v = elemseq (undefined :: v a) x
@@ -710,7 +710,7 @@ cons x v = elemseq (undefined :: v a) x
          $ Bundle.cons x
          $ stream v
 
--- | \(O(n)\) Append an element.
+-- | \(\mathcal{O}(n)\) Append an element.
 snoc :: forall v a. Vector v a => v a -> a -> v a
 {-# INLINE snoc #-}
 snoc v x = elemseq (undefined :: v a) x
@@ -718,12 +718,12 @@ snoc v x = elemseq (undefined :: v a) x
          $ Bundle.snoc (stream v) x
 
 infixr 5 ++
--- | \(O(m+n)\) Concatenate two vectors.
+-- | \(\mathcal{O}(m+n)\) Concatenate two vectors.
 (++) :: Vector v a => v a -> v a -> v a
 {-# INLINE (++) #-}
 v ++ w = unstream (stream v Bundle.++ stream w)
 
--- | \(O(n)\) Concatenate all vectors in the list.
+-- | \(\mathcal{O}(n)\) Concatenate all vectors in the list.
 concat :: Vector v a => [v a] -> v a
 {-# INLINE concat #-}
 concat = unstream . Bundle.fromVectors
@@ -744,26 +744,26 @@ concat vs = unstream (Bundle.flatten mk step (Exact n) (Bundle.fromList vs))
            k `seq` (v,0,k)
 -}
 
--- | \(O(n)\) Concatenate all vectors in the non-empty list.
+-- | \(\mathcal{O}(n)\) Concatenate all vectors in the non-empty list.
 concatNE :: Vector v a => NonEmpty.NonEmpty (v a) -> v a
 concatNE = concat . NonEmpty.toList
 
 -- Monadic initialisation
 -- ----------------------
 
--- | \(O(n)\) Execute the monadic action the given number of times and store the
+-- | \(\mathcal{O}(n)\) Execute the monadic action the given number of times and store the
 -- results in a vector.
 replicateM :: (Monad m, Vector v a) => Int -> m a -> m (v a)
 {-# INLINE replicateM #-}
 replicateM n m = unstreamM (MBundle.replicateM n m)
 
--- | \(O(n)\) Construct a vector of the given length by applying the monadic
+-- | \(\mathcal{O}(n)\) Construct a vector of the given length by applying the monadic
 -- action to each index.
 generateM :: (Monad m, Vector v a) => Int -> (Int -> m a) -> m (v a)
 {-# INLINE generateM #-}
 generateM n f = unstreamM (MBundle.generateM n f)
 
--- | \(O(n)\) Apply the monadic function \(\max(n - 1, 0)\) times to an initial value, producing a vector
+-- | \(\mathcal{O}(n)\) Apply the monadic function \(\max(n - 1, 0)\) times to an initial value, producing a vector
 -- of length \(\max(n, 0)\). The 0th element will contain the initial value, which is why there
 -- is one less function application than the number of elements in the produced vector.
 --
@@ -793,7 +793,7 @@ createT p = runST (p >>= T.mapM unsafeFreeze)
 -- Restricting memory usage
 -- ------------------------
 
--- | \(O(n)\) Yield the argument, but force it not to retain any extra memory,
+-- | \(\mathcal{O}(n)\) Yield the argument, but force it not to retain any extra memory,
 -- possibly by copying it.
 --
 -- This is especially useful when dealing with slices. For example:
@@ -812,7 +812,7 @@ force v = new (clone v)
 -- Bulk updates
 -- ------------
 
--- | \(O(m+n)\) For each pair @(i,a)@ from the list of index/value pairs,
+-- | \(\mathcal{O}(m+n)\) For each pair @(i,a)@ from the list of index/value pairs,
 -- replace the vector element at position @i@ by @a@.
 --
 -- > <5,9,2,7> // [(2,1),(0,3),(2,8)] = <3,9,8,7>
@@ -823,7 +823,7 @@ force v = new (clone v)
 {-# INLINE (//) #-}
 v // us = update_stream v (Bundle.fromList us)
 
--- | \(O(m+n)\) For each pair @(i,a)@ from the vector of index/value pairs,
+-- | \(\mathcal{O}(m+n)\) For each pair @(i,a)@ from the vector of index/value pairs,
 -- replace the vector element at position @i@ by @a@.
 --
 -- > update <5,9,2,7> <(2,1),(0,3),(2,8)> = <3,9,8,7>
@@ -835,7 +835,7 @@ update :: (Vector v a, Vector v (Int, a))
 {-# INLINE update #-}
 update v w = update_stream v (stream w)
 
--- | \(O(m+\min(n_1,n_2))\) For each index @i@ from the index vector and the
+-- | \(\mathcal{O}(m+\min(n_1,n_2))\) For each index @i@ from the index vector and the
 -- corresponding value @a@ from the value vector, replace the element of the
 -- initial vector at position @i@ by @a@.
 --
@@ -882,7 +882,7 @@ unsafeUpdate_stream = modifyWithBundle M.unsafeUpdate
 -- Accumulations
 -- -------------
 
--- | \(O(m+n)\) For each pair @(i,b)@ from the list, replace the vector element
+-- | \(\mathcal{O}(m+n)\) For each pair @(i,b)@ from the list, replace the vector element
 -- @a@ at position @i@ by @f a b@.
 --
 -- ==== __Examples__
@@ -898,7 +898,7 @@ accum :: Vector v a
 {-# INLINE accum #-}
 accum f v us = accum_stream f v (Bundle.fromList us)
 
--- | \(O(m+n)\) For each pair @(i,b)@ from the vector of pairs, replace the vector
+-- | \(\mathcal{O}(m+n)\) For each pair @(i,b)@ from the vector of pairs, replace the vector
 -- element @a@ at position @i@ by @f a b@.
 --
 -- ==== __Examples__
@@ -914,7 +914,7 @@ accumulate :: (Vector v a, Vector v (Int, b))
 {-# INLINE accumulate #-}
 accumulate f v us = accum_stream f v (stream us)
 
--- | \(O(m+\min(n_1,n_2))\) For each index @i@ from the index vector and the
+-- | \(\mathcal{O}(m+\min(n_1,n_2))\) For each index @i@ from the index vector and the
 -- corresponding value @b@ from the the value vector,
 -- replace the element of the initial vector at
 -- position @i@ by @f a b@.
@@ -968,13 +968,13 @@ unsafeAccum_stream f = modifyWithBundle (M.unsafeAccum f)
 -- Permutations
 -- ------------
 
--- | \(O(n)\) Reverse a vector.
+-- | \(\mathcal{O}(n)\) Reverse a vector.
 reverse :: (Vector v a) => v a -> v a
 {-# INLINE reverse #-}
 -- FIXME: make this fuse better, add support for recycling
 reverse = unstream . streamR
 
--- | \(O(n)\) Yield the vector obtained by replacing each element @i@ of the
+-- | \(\mathcal{O}(n)\) Yield the vector obtained by replacing each element @i@ of the
 -- index vector by @xs'!'i@. This is equivalent to @'map' (xs'!') is@, but is
 -- often much more efficient.
 --
@@ -1044,7 +1044,7 @@ modifyWithBundle p v s = new (New.modifyWithBundle p (clone v) s)
 -- Indexing
 -- --------
 
--- | \(O(n)\) Pair each element in a vector with its index.
+-- | \(\mathcal{O}(n)\) Pair each element in a vector with its index.
 indexed :: (Vector v a, Vector v (Int,a)) => v a -> v (Int,a)
 {-# INLINE indexed #-}
 indexed = unstream . Bundle.indexed . stream
@@ -1052,12 +1052,12 @@ indexed = unstream . Bundle.indexed . stream
 -- Mapping
 -- -------
 
--- | \(O(n)\) Map a function over a vector.
+-- | \(\mathcal{O}(n)\) Map a function over a vector.
 map :: (Vector v a, Vector v b) => (a -> b) -> v a -> v b
 {-# INLINE map #-}
 map f = unstream . inplace (S.map f) id . stream
 
--- | \(O(n)\) Apply a function to every element of a vector and its index.
+-- | \(\mathcal{O}(n)\) Apply a function to every element of a vector and its index.
 imap :: (Vector v a, Vector v b) => (Int -> a -> b) -> v a -> v b
 {-# INLINE imap #-}
 imap f = unstream . inplace (S.map (uncurry f) . S.indexed) id
@@ -1101,43 +1101,43 @@ concatMap f = unstream
 -- Monadic mapping
 -- ---------------
 
--- | \(O(n)\) Apply the monadic action to all elements of the vector, yielding a
+-- | \(\mathcal{O}(n)\) Apply the monadic action to all elements of the vector, yielding a
 -- vector of results.
 mapM :: (Monad m, Vector v a, Vector v b) => (a -> m b) -> v a -> m (v b)
 {-# INLINE mapM #-}
 mapM f = unstreamM . Bundle.mapM f . stream
 
--- | \(O(n)\) Apply the monadic action to every element of a vector and its
+-- | \(\mathcal{O}(n)\) Apply the monadic action to every element of a vector and its
 -- index, yielding a vector of results.
 imapM :: (Monad m, Vector v a, Vector v b)
       => (Int -> a -> m b) -> v a -> m (v b)
 imapM f = unstreamM . Bundle.mapM (uncurry f) . Bundle.indexed . stream
 
--- | \(O(n)\) Apply the monadic action to all elements of a vector and ignore the
+-- | \(\mathcal{O}(n)\) Apply the monadic action to all elements of a vector and ignore the
 -- results.
 mapM_ :: (Monad m, Vector v a) => (a -> m b) -> v a -> m ()
 {-# INLINE mapM_ #-}
 mapM_ f = Bundle.mapM_ f . stream
 
--- | \(O(n)\) Apply the monadic action to every element of a vector and its
+-- | \(\mathcal{O}(n)\) Apply the monadic action to every element of a vector and its
 -- index, ignoring the results.
 imapM_ :: (Monad m, Vector v a) => (Int -> a -> m b) -> v a -> m ()
 {-# INLINE imapM_ #-}
 imapM_ f = Bundle.mapM_ (uncurry f) . Bundle.indexed . stream
 
--- | \(O(n)\) Apply the monadic action to all elements of the vector, yielding a
+-- | \(\mathcal{O}(n)\) Apply the monadic action to all elements of the vector, yielding a
 -- vector of results. Equivalent to @flip 'mapM'@.
 forM :: (Monad m, Vector v a, Vector v b) => v a -> (a -> m b) -> m (v b)
 {-# INLINE forM #-}
 forM as f = mapM f as
 
--- | \(O(n)\) Apply the monadic action to all elements of a vector and ignore the
+-- | \(\mathcal{O}(n)\) Apply the monadic action to all elements of a vector and ignore the
 -- results. Equivalent to @flip 'mapM_'@.
 forM_ :: (Monad m, Vector v a) => v a -> (a -> m b) -> m ()
 {-# INLINE forM_ #-}
 forM_ as f = mapM_ f as
 
--- | \(O(n)\) Apply the monadic action to all elements of the vector and their indices, yielding a
+-- | \(\mathcal{O}(n)\) Apply the monadic action to all elements of the vector and their indices, yielding a
 -- vector of results. Equivalent to @'flip' 'imapM'@.
 --
 -- @since 0.12.2.0
@@ -1145,7 +1145,7 @@ iforM :: (Monad m, Vector v a, Vector v b) => v a -> (Int -> a -> m b) -> m (v b
 {-# INLINE iforM #-}
 iforM as f = imapM f as
 
--- | \(O(n)\) Apply the monadic action to all elements of the vector and their indices
+-- | \(\mathcal{O}(n)\) Apply the monadic action to all elements of the vector and their indices
 -- and ignore the results. Equivalent to @'flip' 'imapM_'@.
 --
 -- @since 0.12.2.0
@@ -1156,7 +1156,7 @@ iforM_ as f = imapM_ f as
 -- Zipping
 -- -------
 
--- | \(O(\min(m,n))\) Zip two vectors with the given function.
+-- | \(\mathcal{O}(\min(m,n))\) Zip two vectors with the given function.
 zipWith :: (Vector v a, Vector v b, Vector v c)
         => (a -> b -> c) -> v a -> v b -> v c
 {-# INLINE zipWith #-}
@@ -1204,7 +1204,7 @@ zipWith6 f = \as bs cs ds es fs ->
                                 (stream es)
                                 (stream fs))
 
--- | \(O(\min(m,n))\) Zip two vectors with a function that also takes the
+-- | \(\mathcal{O}(\min(m,n))\) Zip two vectors with a function that also takes the
 -- elements' indices.
 izipWith :: (Vector v a, Vector v b, Vector v c)
         => (Int -> a -> b -> c) -> v a -> v b -> v c
@@ -1256,7 +1256,7 @@ izipWith6 f = \as bs cs ds es fs ->
                                                           (stream es)
                                                           (stream fs))
 
--- | \(O(\min(m,n))\) Zip two vectors.
+-- | \(\mathcal{O}(\min(m,n))\) Zip two vectors.
 zip :: (Vector v a, Vector v b, Vector v (a,b)) => v a -> v b -> v (a, b)
 {-# INLINE zip #-}
 zip = zipWith (,)
@@ -1287,7 +1287,7 @@ zip6 = zipWith6 (,,,,,)
 -- Monadic zipping
 -- ---------------
 
--- | \(O(\min(m,n))\) Zip the two vectors with the monadic action and yield a
+-- | \(\mathcal{O}(\min(m,n))\) Zip the two vectors with the monadic action and yield a
 -- vector of results.
 zipWithM :: (Monad m, Vector v a, Vector v b, Vector v c)
          => (a -> b -> m c) -> v a -> v b -> m (v c)
@@ -1295,7 +1295,7 @@ zipWithM :: (Monad m, Vector v a, Vector v b, Vector v c)
 {-# INLINE zipWithM #-}
 zipWithM f = \as bs -> unstreamM $ Bundle.zipWithM f (stream as) (stream bs)
 
--- | \(O(\min(m,n))\) Zip the two vectors with a monadic action that also takes
+-- | \(\mathcal{O}(\min(m,n))\) Zip the two vectors with a monadic action that also takes
 -- the element index and yield a vector of results.
 izipWithM :: (Monad m, Vector v a, Vector v b, Vector v c)
          => (Int -> a -> b -> m c) -> v a -> v b -> m (v c)
@@ -1304,14 +1304,14 @@ izipWithM m as bs = unstreamM . Bundle.zipWithM (uncurry m)
                                 (Bundle.indexed (stream as))
                                 $ stream bs
 
--- | \(O(\min(m,n))\) Zip the two vectors with the monadic action and ignore the
+-- | \(\mathcal{O}(\min(m,n))\) Zip the two vectors with the monadic action and ignore the
 -- results.
 zipWithM_ :: (Monad m, Vector v a, Vector v b)
           => (a -> b -> m c) -> v a -> v b -> m ()
 {-# INLINE zipWithM_ #-}
 zipWithM_ f = \as bs -> Bundle.zipWithM_ f (stream as) (stream bs)
 
--- | \(O(\min(m,n))\) Zip the two vectors with a monadic action that also takes
+-- | \(\mathcal{O}(\min(m,n))\) Zip the two vectors with a monadic action that also takes
 -- the element index and ignore the results.
 izipWithM_ :: (Monad m, Vector v a, Vector v b)
           => (Int -> a -> b -> m c) -> v a -> v b -> m ()
@@ -1323,7 +1323,7 @@ izipWithM_ m as bs = Bundle.zipWithM_ (uncurry m)
 -- Unzipping
 -- ---------
 
--- | \(O(\min(m,n))\) Unzip a vector of pairs.
+-- | \(\mathcal{O}(\min(m,n))\) Unzip a vector of pairs.
 unzip :: (Vector v a, Vector v b, Vector v (a,b)) => v (a, b) -> (v a, v b)
 {-# INLINE unzip #-}
 unzip xs = (map fst xs, map snd xs)
@@ -1368,12 +1368,12 @@ unzip6 xs = (map (\(a, _, _, _, _, _) -> a) xs,
 -- Filtering
 -- ---------
 
--- | \(O(n)\) Drop all elements that do not satisfy the predicate.
+-- | \(\mathcal{O}(n)\) Drop all elements that do not satisfy the predicate.
 filter :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE filter #-}
 filter f = unstream . inplace (S.filter f) toMax . stream
 
--- | \(O(n)\) Drop all elements that do not satisfy the predicate which is applied to
+-- | \(\mathcal{O}(n)\) Drop all elements that do not satisfy the predicate which is applied to
 -- the values and their indices.
 ifilter :: Vector v a => (Int -> a -> Bool) -> v a -> v a
 {-# INLINE ifilter #-}
@@ -1381,7 +1381,7 @@ ifilter f = unstream
           . inplace (S.map snd . S.filter (uncurry f) . S.indexed) toMax
           . stream
 
--- | \(O(n)\) Drop repeated adjacent elements. The first element in each group is returned.
+-- | \(\mathcal{O}(n)\) Drop repeated adjacent elements. The first element in each group is returned.
 --
 -- ==== __Examples__
 --
@@ -1395,12 +1395,12 @@ uniq :: (Vector v a, Eq a) => v a -> v a
 {-# INLINE uniq #-}
 uniq = unstream . inplace S.uniq toMax . stream
 
--- | \(O(n)\) Map the values and collect the 'Just' results.
+-- | \(\mathcal{O}(n)\) Map the values and collect the 'Just' results.
 mapMaybe :: (Vector v a, Vector v b) => (a -> Maybe b) -> v a -> v b
 {-# INLINE mapMaybe #-}
 mapMaybe f = unstream . inplace (S.mapMaybe f) toMax . stream
 
--- | \(O(n)\) Map the indices/values and collect the 'Just' results.
+-- | \(\mathcal{O}(n)\) Map the indices/values and collect the 'Just' results.
 imapMaybe :: (Vector v a, Vector v b) => (Int -> a -> Maybe b) -> v a -> v b
 {-# INLINE imapMaybe #-}
 imapMaybe f = unstream
@@ -1408,12 +1408,12 @@ imapMaybe f = unstream
           . stream
 
 
--- | \(O(n)\) Drop all elements that do not satisfy the monadic predicate.
+-- | \(\mathcal{O}(n)\) Drop all elements that do not satisfy the monadic predicate.
 filterM :: (Monad m, Vector v a) => (a -> m Bool) -> v a -> m (v a)
 {-# INLINE filterM #-}
 filterM f = unstreamM . Bundle.filterM f . stream
 
--- | \(O(n)\) Apply the monadic function to each element of the vector and
+-- | \(\mathcal{O}(n)\) Apply the monadic function to each element of the vector and
 -- discard elements returning 'Nothing'.
 --
 -- @since 0.12.2.0
@@ -1421,7 +1421,7 @@ mapMaybeM :: (Monad m, Vector v a, Vector v b) => (a -> m (Maybe b)) -> v a -> m
 {-# INLINE mapMaybeM #-}
 mapMaybeM f = unstreamM . Bundle.mapMaybeM f . stream
 
--- | \(O(n)\) Apply the monadic function to each element of the vector and its index.
+-- | \(\mathcal{O}(n)\) Apply the monadic function to each element of the vector and its index.
 -- Discard elements returning 'Nothing'.
 --
 -- @since 0.12.2.0
@@ -1430,14 +1430,14 @@ imapMaybeM :: (Monad m, Vector v a, Vector v b)
 {-# INLINE imapMaybeM #-}
 imapMaybeM f = unstreamM . Bundle.mapMaybeM (\(i, a) -> f i a) . Bundle.indexed . stream
 
--- | \(O(n)\) Yield the longest prefix of elements satisfying the predicate.
+-- | \(\mathcal{O}(n)\) Yield the longest prefix of elements satisfying the predicate.
 -- The current implementation is not copy-free, unless the result vector is
 -- fused away.
 takeWhile :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE takeWhile #-}
 takeWhile f = unstream . Bundle.takeWhile f . stream
 
--- | \(O(n)\) Drop the longest prefix of elements that satisfy the predicate
+-- | \(\mathcal{O}(n)\) Drop the longest prefix of elements that satisfy the predicate
 -- without copying.
 dropWhile :: Vector v a => (a -> Bool) -> v a -> v a
 {-# INLINE_FUSED dropWhile #-}
@@ -1462,7 +1462,7 @@ dropWhile f xs = case findIndex (not . f) xs of
 -- Parititioning
 -- -------------
 
--- | \(O(n)\) Split the vector in two parts, the first one containing those
+-- | \(\mathcal{O}(n)\) Split the vector in two parts, the first one containing those
 -- elements that satisfy the predicate and the second one those that don't. The
 -- relative order of the elements is preserved at the cost of a sometimes
 -- reduced performance compared to 'unstablePartition'.
@@ -1482,7 +1482,7 @@ partition_stream f s = s `seq` runST (
     v2 <- unsafeFreeze mv2
     return (v1,v2))
 
--- | \(O(n)\) Split the vector into two parts, the first one containing the
+-- | \(\mathcal{O}(n)\) Split the vector into two parts, the first one containing the
 -- @`Left`@ elements and the second containing the @`Right`@ elements.
 -- The relative order of the elements is preserved.
 --
@@ -1500,7 +1500,7 @@ partition_with_stream f s = s `seq` runST (
     v2 <- unsafeFreeze mv2
     return (v1,v2))
 
--- | \(O(n)\) Split the vector in two parts, the first one containing those
+-- | \(\mathcal{O}(n)\) Split the vector in two parts, the first one containing those
 -- elements that satisfy the predicate and the second one those that don't.
 -- The order of the elements is not preserved, but the operation is often
 -- faster than 'partition'.
@@ -1538,13 +1538,13 @@ unstablePartition_new f (New.New p) = runST (
 
 -- FIXME: make span and break fusible
 
--- | \(O(n)\) Split the vector into the longest prefix of elements that satisfy
+-- | \(\mathcal{O}(n)\) Split the vector into the longest prefix of elements that satisfy
 -- the predicate and the rest without copying.
 span :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 {-# INLINE span #-}
 span f = break (not . f)
 
--- | \(O(n)\) Split the vector into the longest prefix of elements that do not
+-- | \(\mathcal{O}(n)\) Split the vector into the longest prefix of elements that do not
 -- satisfy the predicate and the rest without copying.
 break :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 {-# INLINE break #-}
@@ -1552,7 +1552,7 @@ break f xs = case findIndex f xs of
                Just i  -> (unsafeSlice 0 i xs, unsafeSlice i (length xs - i) xs)
                Nothing -> (xs, empty)
 
--- | \(O(n)\) Split a vector into a list of slices.
+-- | \(\mathcal{O}(n)\) Split a vector into a list of slices.
 --
 -- The concatenation of this list of slices is equal to the argument vector,
 -- and each slice contains only equal elements, as determined by the equality
@@ -1576,7 +1576,7 @@ groupBy f v =
       Nothing -> [v]
       Just n -> unsafeTake (n + 1) v : groupBy f (unsafeDrop (n + 1) v)
 
--- | \(O(n)\) Split a vector into a list of slices.
+-- | \(\mathcal{O}(n)\) Split a vector into a list of slices.
 --
 -- The concatenation of this list of slices is equal to the argument vector,
 -- and each slice contains only equal elements.
@@ -1598,30 +1598,30 @@ group = groupBy (==)
 -- ---------
 
 infix 4 `elem`
--- | \(O(n)\) Check if the vector contains an element.
+-- | \(\mathcal{O}(n)\) Check if the vector contains an element.
 elem :: (Vector v a, Eq a) => a -> v a -> Bool
 {-# INLINE elem #-}
 elem x = Bundle.elem x . stream
 
 infix 4 `notElem`
--- | \(O(n)\) Check if the vector does not contain an element (inverse of 'elem').
+-- | \(\mathcal{O}(n)\) Check if the vector does not contain an element (inverse of 'elem').
 notElem :: (Vector v a, Eq a) => a -> v a -> Bool
 {-# INLINE notElem #-}
 notElem x = Bundle.notElem x . stream
 
--- | \(O(n)\) Yield 'Just' the first element matching the predicate or 'Nothing'
+-- | \(\mathcal{O}(n)\) Yield 'Just' the first element matching the predicate or 'Nothing'
 -- if no such element exists.
 find :: Vector v a => (a -> Bool) -> v a -> Maybe a
 {-# INLINE find #-}
 find f = Bundle.find f . stream
 
--- | \(O(n)\) Yield 'Just' the index of the first element matching the predicate
+-- | \(\mathcal{O}(n)\) Yield 'Just' the index of the first element matching the predicate
 -- or 'Nothing' if no such element exists.
 findIndex :: Vector v a => (a -> Bool) -> v a -> Maybe Int
 {-# INLINE findIndex #-}
 findIndex f = Bundle.findIndex f . stream
 
--- | \(O(n)\) Yield 'Just' the index of the /last/ element matching the predicate
+-- | \(\mathcal{O}(n)\) Yield 'Just' the index of the /last/ element matching the predicate
 -- or 'Nothing' if no such element exists.
 --
 -- @since 0.12.2.0
@@ -1629,7 +1629,7 @@ findIndexR :: Vector v a => (a -> Bool) -> v a -> Maybe Int
 {-# INLINE findIndexR #-}
 findIndexR f v = fmap (length v - 1 -) . Bundle.findIndex f $ streamR v
 
--- | \(O(n)\) Yield the indices of elements satisfying the predicate in ascending
+-- | \(\mathcal{O}(n)\) Yield the indices of elements satisfying the predicate in ascending
 -- order.
 findIndices :: (Vector v a, Vector v Int) => (a -> Bool) -> v a -> v Int
 {-# INLINE findIndices #-}
@@ -1637,14 +1637,14 @@ findIndices f = unstream
               . inplace (S.map fst . S.filter (f . snd) . S.indexed) toMax
               . stream
 
--- | \(O(n)\) Yield 'Just' the index of the first occurrence of the given element or
+-- | \(\mathcal{O}(n)\) Yield 'Just' the index of the first occurrence of the given element or
 -- 'Nothing' if the vector does not contain the element. This is a specialised
 -- version of 'findIndex'.
 elemIndex :: (Vector v a, Eq a) => a -> v a -> Maybe Int
 {-# INLINE elemIndex #-}
 elemIndex x = findIndex (x ==)
 
--- | \(O(n)\) Yield the indices of all occurrences of the given element in
+-- | \(\mathcal{O}(n)\) Yield the indices of all occurrences of the given element in
 -- ascending order. This is a specialised version of 'findIndices'.
 elemIndices :: (Vector v a, Vector v Int, Eq a) => a -> v a -> v Int
 {-# INLINE elemIndices #-}
@@ -1653,70 +1653,70 @@ elemIndices x = findIndices (x ==)
 -- Folding
 -- -------
 
--- | \(O(n)\) Left fold.
+-- | \(\mathcal{O}(n)\) Left fold.
 foldl :: Vector v b => (a -> b -> a) -> a -> v b -> a
 {-# INLINE foldl #-}
 foldl f z = Bundle.foldl f z . stream
 
--- | \(O(n)\) Left fold on non-empty vectors.
+-- | \(\mathcal{O}(n)\) Left fold on non-empty vectors.
 foldl1 :: Vector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldl1 #-}
 foldl1 f = Bundle.foldl1 f . stream
 
--- | \(O(n)\) Left fold with strict accumulator.
+-- | \(\mathcal{O}(n)\) Left fold with strict accumulator.
 foldl' :: Vector v b => (a -> b -> a) -> a -> v b -> a
 {-# INLINE foldl' #-}
 foldl' f z = Bundle.foldl' f z . stream
 
--- | \(O(n)\) Left fold on non-empty vectors with strict accumulator.
+-- | \(\mathcal{O}(n)\) Left fold on non-empty vectors with strict accumulator.
 foldl1' :: Vector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldl1' #-}
 foldl1' f = Bundle.foldl1' f . stream
 
--- | \(O(n)\) Right fold.
+-- | \(\mathcal{O}(n)\) Right fold.
 foldr :: Vector v a => (a -> b -> b) -> b -> v a -> b
 {-# INLINE foldr #-}
 foldr f z = Bundle.foldr f z . stream
 
--- | \(O(n)\) Right fold on non-empty vectors.
+-- | \(\mathcal{O}(n)\) Right fold on non-empty vectors.
 foldr1 :: Vector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldr1 #-}
 foldr1 f = Bundle.foldr1 f . stream
 
--- | \(O(n)\) Right fold with a strict accumulator.
+-- | \(\mathcal{O}(n)\) Right fold with a strict accumulator.
 foldr' :: Vector v a => (a -> b -> b) -> b -> v a -> b
 {-# INLINE foldr' #-}
 foldr' f z = Bundle.foldl' (flip f) z . streamR
 
--- | \(O(n)\) Right fold on non-empty vectors with strict accumulator.
+-- | \(\mathcal{O}(n)\) Right fold on non-empty vectors with strict accumulator.
 foldr1' :: Vector v a => (a -> a -> a) -> v a -> a
 {-# INLINE foldr1' #-}
 foldr1' f = Bundle.foldl1' (flip f) . streamR
 
--- | \(O(n)\) Left fold using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Left fold using a function applied to each element and its index.
 ifoldl :: Vector v b => (a -> Int -> b -> a) -> a -> v b -> a
 {-# INLINE ifoldl #-}
 ifoldl f z = Bundle.foldl (uncurry . f) z . Bundle.indexed . stream
 
--- | \(O(n)\) Left fold with strict accumulator using a function applied to each element
+-- | \(\mathcal{O}(n)\) Left fold with strict accumulator using a function applied to each element
 -- and its index.
 ifoldl' :: Vector v b => (a -> Int -> b -> a) -> a -> v b -> a
 {-# INLINE ifoldl' #-}
 ifoldl' f z = Bundle.foldl' (uncurry . f) z . Bundle.indexed . stream
 
--- | \(O(n)\) Right fold using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Right fold using a function applied to each element and its index.
 ifoldr :: Vector v a => (Int -> a -> b -> b) -> b -> v a -> b
 {-# INLINE ifoldr #-}
 ifoldr f z = Bundle.foldr (uncurry f) z . Bundle.indexed . stream
 
--- | \(O(n)\) Right fold with strict accumulator using a function applied to each
+-- | \(\mathcal{O}(n)\) Right fold with strict accumulator using a function applied to each
 -- element and its index.
 ifoldr' :: Vector v a => (Int -> a -> b -> b) -> b -> v a -> b
 {-# INLINE ifoldr' #-}
 ifoldr' f z xs = Bundle.foldl' (flip (uncurry f)) z
                $ Bundle.indexedR (length xs) $ streamR xs
 
--- | \(O(n)\) Map each element of the structure to a monoid and combine
+-- | \(\mathcal{O}(n)\) Map each element of the structure to a monoid and combine
 -- the results. It uses the same implementation as the corresponding method
 -- of the 'Foldable' type cless. Note that it's implemented in terms of 'foldr'
 -- and won't fuse with functions that traverse the vector from left to
@@ -1727,7 +1727,7 @@ foldMap :: (Monoid m, Vector v a) => (a -> m) -> v a -> m
 {-# INLINE foldMap #-}
 foldMap f = foldr (mappend . f) mempty
 
--- | \(O(n)\) Like 'foldMap', but strict in the accumulator. It uses the same
+-- | \(\mathcal{O}(n)\) Like 'foldMap', but strict in the accumulator. It uses the same
 -- implementation as the corresponding method of the 'Foldable' type class.
 -- Note that it's implemented in terms of 'foldl'', so it fuses in most
 -- contexts.
@@ -1741,7 +1741,7 @@ foldMap' f = foldl' (\acc a -> acc `mappend` f a) mempty
 -- Specialised folds
 -- -----------------
 
--- | \(O(n)\) Check if all elements satisfy the predicate.
+-- | \(\mathcal{O}(n)\) Check if all elements satisfy the predicate.
 --
 -- ==== __Examples__
 --
@@ -1756,7 +1756,7 @@ all :: Vector v a => (a -> Bool) -> v a -> Bool
 {-# INLINE all #-}
 all f = Bundle.and . Bundle.map f . stream
 
--- | \(O(n)\) Check if any element satisfies the predicate.
+-- | \(\mathcal{O}(n)\) Check if any element satisfies the predicate.
 --
 -- ==== __Examples__
 --
@@ -1771,7 +1771,7 @@ any :: Vector v a => (a -> Bool) -> v a -> Bool
 {-# INLINE any #-}
 any f = Bundle.or . Bundle.map f . stream
 
--- | \(O(n)\) Check if all elements are 'True'.
+-- | \(\mathcal{O}(n)\) Check if all elements are 'True'.
 --
 -- ==== __Examples__
 --
@@ -1784,7 +1784,7 @@ and :: Vector v Bool => v Bool -> Bool
 {-# INLINE and #-}
 and = Bundle.and . stream
 
--- | \(O(n)\) Check if any element is 'True'.
+-- | \(\mathcal{O}(n)\) Check if any element is 'True'.
 --
 -- ==== __Examples__
 --
@@ -1797,7 +1797,7 @@ or :: Vector v Bool => v Bool -> Bool
 {-# INLINE or #-}
 or = Bundle.or . stream
 
--- | \(O(n)\) Compute the sum of the elements.
+-- | \(\mathcal{O}(n)\) Compute the sum of the elements.
 --
 -- ==== __Examples__
 --
@@ -1810,7 +1810,7 @@ sum :: (Vector v a, Num a) => v a -> a
 {-# INLINE sum #-}
 sum = Bundle.foldl' (+) 0 . stream
 
--- | \(O(n)\) Compute the product of the elements.
+-- | \(\mathcal{O}(n)\) Compute the product of the elements.
 --
 -- ==== __Examples__
 --
@@ -1823,7 +1823,7 @@ product :: (Vector v a, Num a) => v a -> a
 {-# INLINE product #-}
 product = Bundle.foldl' (*) 1 . stream
 
--- | \(O(n)\) Yield the maximum element of the vector. The vector may not be
+-- | \(\mathcal{O}(n)\) Yield the maximum element of the vector. The vector may not be
 -- empty. In case of a tie, the first occurrence wins.
 --
 -- ==== __Examples__
@@ -1840,7 +1840,7 @@ maximum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE maximum #-}
 maximum = Bundle.foldl1' max . stream
 
--- | \(O(n)\) Yield the maximum element of the vector according to the
+-- | \(\mathcal{O}(n)\) Yield the maximum element of the vector according to the
 -- given comparison function. The vector may not be empty. In case of
 -- a tie, the first occurrence wins. This behavior is different from
 -- 'Data.List.maximumBy' which returns the last tie.
@@ -1862,7 +1862,7 @@ maximumBy cmpr = Bundle.foldl1' maxBy . stream
                   LT -> y
                   _  -> x
 
--- | \(O(n)\) Yield the maximum element of the vector by comparing the results
+-- | \(\mathcal{O}(n)\) Yield the maximum element of the vector by comparing the results
 -- of a key function on each element. In case of a tie, the first occurrence
 -- wins. The vector may not be empty.
 --
@@ -1882,7 +1882,7 @@ maximumOn f = fst . Bundle.foldl1' maxBy . Bundle.map (\a -> (a, f a)) . stream
                   LT -> y
                   _  -> x
 
--- | \(O(n)\) Yield the minimum element of the vector. The vector may not be
+-- | \(\mathcal{O}(n)\) Yield the minimum element of the vector. The vector may not be
 -- empty. In case of a tie, the first occurrence wins.
 --
 -- ==== __Examples__
@@ -1899,7 +1899,7 @@ minimum :: (Vector v a, Ord a) => v a -> a
 {-# INLINE minimum #-}
 minimum = Bundle.foldl1' min . stream
 
--- | \(O(n)\) Yield the minimum element of the vector according to the
+-- | \(\mathcal{O}(n)\) Yield the minimum element of the vector according to the
 -- given comparison function. The vector may not be empty. In case of
 -- a tie, the first occurrence wins.
 --
@@ -1920,7 +1920,7 @@ minimumBy cmpr = Bundle.foldl1' minBy . stream
                   GT -> y
                   _  -> x
 
--- | \(O(n)\) Yield the minimum element of the vector by comparing the results
+-- | \(\mathcal{O}(n)\) Yield the minimum element of the vector by comparing the results
 -- of a key function on each element. In case of a tie, the first occurrence
 -- wins. The vector may not be empty.
 --
@@ -1940,13 +1940,13 @@ minimumOn f = fst . Bundle.foldl1' minBy . Bundle.map (\a -> (a, f a)) . stream
                   GT -> y
                   _  -> x
 
--- | \(O(n)\) Yield the index of the maximum element of the vector. The vector
+-- | \(\mathcal{O}(n)\) Yield the index of the maximum element of the vector. The vector
 -- may not be empty.
 maxIndex :: (Vector v a, Ord a) => v a -> Int
 {-# INLINE maxIndex #-}
 maxIndex = maxIndexBy compare
 
--- | \(O(n)\) Yield the index of the maximum element of the vector
+-- | \(\mathcal{O}(n)\) Yield the index of the maximum element of the vector
 -- according to the given comparison function. The vector may not be
 -- empty. In case of a tie, the first occurrence wins.
 --
@@ -1967,13 +1967,13 @@ maxIndexBy cmpr = fst . Bundle.foldl1' imax . Bundle.indexed . stream
                          LT -> (j,y)
                          _  -> (i,x)
 
--- | \(O(n)\) Yield the index of the minimum element of the vector. The vector
+-- | \(\mathcal{O}(n)\) Yield the index of the minimum element of the vector. The vector
 -- may not be empty.
 minIndex :: (Vector v a, Ord a) => v a -> Int
 {-# INLINE minIndex #-}
 minIndex = minIndexBy compare
 
--- | \(O(n)\) Yield the index of the minimum element of the vector according to
+-- | \(\mathcal{O}(n)\) Yield the index of the minimum element of the vector according to
 -- the given comparison function. The vector may not be empty.
 --
 -- ==== __Examples__
@@ -1996,33 +1996,33 @@ minIndexBy cmpr = fst . Bundle.foldl1' imin . Bundle.indexed . stream
 -- Monadic folds
 -- -------------
 
--- | \(O(n)\) Monadic fold.
+-- | \(\mathcal{O}(n)\) Monadic fold.
 foldM :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m a
 {-# INLINE foldM #-}
 foldM m z = Bundle.foldM m z . stream
 
--- | \(O(n)\) Monadic fold using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Monadic fold using a function applied to each element and its index.
 ifoldM :: (Monad m, Vector v b) => (a -> Int -> b -> m a) -> a -> v b -> m a
 {-# INLINE ifoldM #-}
 ifoldM m z = Bundle.foldM (uncurry . m) z . Bundle.indexed . stream
 
--- | \(O(n)\) Monadic fold over non-empty vectors.
+-- | \(\mathcal{O}(n)\) Monadic fold over non-empty vectors.
 fold1M :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m a
 {-# INLINE fold1M #-}
 fold1M m = Bundle.fold1M m . stream
 
--- | \(O(n)\) Monadic fold with strict accumulator.
+-- | \(\mathcal{O}(n)\) Monadic fold with strict accumulator.
 foldM' :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m a
 {-# INLINE foldM' #-}
 foldM' m z = Bundle.foldM' m z . stream
 
--- | \(O(n)\) Monadic fold with strict accumulator using a function applied to each
+-- | \(\mathcal{O}(n)\) Monadic fold with strict accumulator using a function applied to each
 -- element and its index.
 ifoldM' :: (Monad m, Vector v b) => (a -> Int -> b -> m a) -> a -> v b -> m a
 {-# INLINE ifoldM' #-}
 ifoldM' m z = Bundle.foldM' (uncurry . m) z . Bundle.indexed . stream
 
--- | \(O(n)\) Monadic fold over non-empty vectors with strict accumulator.
+-- | \(\mathcal{O}(n)\) Monadic fold over non-empty vectors with strict accumulator.
 fold1M' :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m a
 {-# INLINE fold1M' #-}
 fold1M' m = Bundle.fold1M' m . stream
@@ -2031,34 +2031,34 @@ discard :: Monad m => m a -> m ()
 {-# INLINE discard #-}
 discard m = m >> return ()
 
--- | \(O(n)\) Monadic fold that discards the result.
+-- | \(\mathcal{O}(n)\) Monadic fold that discards the result.
 foldM_ :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m ()
 {-# INLINE foldM_ #-}
 foldM_ m z = discard . Bundle.foldM m z . stream
 
--- | \(O(n)\) Monadic fold that discards the result using a function applied to
+-- | \(\mathcal{O}(n)\) Monadic fold that discards the result using a function applied to
 -- each element and its index.
 ifoldM_ :: (Monad m, Vector v b) => (a -> Int -> b -> m a) -> a -> v b -> m ()
 {-# INLINE ifoldM_ #-}
 ifoldM_ m z = discard . Bundle.foldM (uncurry . m) z . Bundle.indexed . stream
 
--- | \(O(n)\) Monadic fold over non-empty vectors that discards the result.
+-- | \(\mathcal{O}(n)\) Monadic fold over non-empty vectors that discards the result.
 fold1M_ :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m ()
 {-# INLINE fold1M_ #-}
 fold1M_ m = discard . Bundle.fold1M m . stream
 
--- | \(O(n)\) Monadic fold with strict accumulator that discards the result.
+-- | \(\mathcal{O}(n)\) Monadic fold with strict accumulator that discards the result.
 foldM'_ :: (Monad m, Vector v b) => (a -> b -> m a) -> a -> v b -> m ()
 {-# INLINE foldM'_ #-}
 foldM'_ m z = discard . Bundle.foldM' m z . stream
 
--- | \(O(n)\) Monadic fold with strict accumulator that discards the result
+-- | \(\mathcal{O}(n)\) Monadic fold with strict accumulator that discards the result
 -- using a function applied to each element and its index.
 ifoldM'_ :: (Monad m, Vector v b) => (a -> Int -> b -> m a) -> a -> v b -> m ()
 {-# INLINE ifoldM'_ #-}
 ifoldM'_ m z = discard . Bundle.foldM' (uncurry . m) z . Bundle.indexed . stream
 
--- | \(O(n)\) Monad fold over non-empty vectors with strict accumulator
+-- | \(\mathcal{O}(n)\) Monad fold over non-empty vectors with strict accumulator
 -- that discards the result.
 fold1M'_ :: (Monad m, Vector v a) => (a -> a -> m a) -> v a -> m ()
 {-# INLINE fold1M'_ #-}
@@ -2080,7 +2080,7 @@ sequence_ = mapM_ id
 -- Scans
 -- -----
 
--- | \(O(n)\) Left-to-right prescan.
+-- | \(\mathcal{O}(n)\) Left-to-right prescan.
 --
 -- @
 -- prescanl f z = 'init' . 'scanl' f z
@@ -2095,12 +2095,12 @@ prescanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE prescanl #-}
 prescanl f z = unstream . inplace (S.prescanl f z) id . stream
 
--- | \(O(n)\) Left-to-right prescan with strict accumulator.
+-- | \(\mathcal{O}(n)\) Left-to-right prescan with strict accumulator.
 prescanl' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE prescanl' #-}
 prescanl' f z = unstream . inplace (S.prescanl' f z) id . stream
 
--- | \(O(n)\) Left-to-right postscan.
+-- | \(\mathcal{O}(n)\) Left-to-right postscan.
 --
 -- @
 -- postscanl f z = 'tail' . 'scanl' f z
@@ -2115,12 +2115,12 @@ postscanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE postscanl #-}
 postscanl f z = unstream . inplace (S.postscanl f z) id . stream
 
--- | \(O(n)\) Left-to-right postscan with strict accumulator.
+-- | \(\mathcal{O}(n)\) Left-to-right postscan with strict accumulator.
 postscanl' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE postscanl' #-}
 postscanl' f z = unstream . inplace (S.postscanl' f z) id . stream
 
--- | \(O(n)\) Left-to-right scan.
+-- | \(\mathcal{O}(n)\) Left-to-right scan.
 --
 -- > scanl f z <x1,...,xn> = <y1,...,y(n+1)>
 -- >   where y1 = z
@@ -2135,12 +2135,12 @@ scanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE scanl #-}
 scanl f z = unstream . Bundle.scanl f z . stream
 
--- | \(O(n)\) Left-to-right scan with strict accumulator.
+-- | \(\mathcal{O}(n)\) Left-to-right scan with strict accumulator.
 scanl' :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
 {-# INLINE scanl' #-}
 scanl' f z = unstream . Bundle.scanl' f z . stream
 
--- | \(O(n)\) Left-to-right scan over a vector with its index.
+-- | \(\mathcal{O}(n)\) Left-to-right scan over a vector with its index.
 iscanl :: (Vector v a, Vector v b) => (Int -> a -> b -> a) -> a -> v b -> v a
 {-# INLINE iscanl #-}
 iscanl f z =
@@ -2148,7 +2148,7 @@ iscanl f z =
   . inplace (S.scanl (\a (i, b) -> f i a b) z . S.indexed) (+1)
   . stream
 
--- | \(O(n)\) Left-to-right scan over a vector (strictly) with its index.
+-- | \(\mathcal{O}(n)\) Left-to-right scan over a vector (strictly) with its index.
 iscanl' :: (Vector v a, Vector v b) => (Int -> a -> b -> a) -> a -> v b -> v a
 {-# INLINE iscanl' #-}
 iscanl' f z =
@@ -2157,7 +2157,7 @@ iscanl' f z =
   . stream
 
 
--- | \(O(n)\) Initial-value free left-to-right scan over a vector.
+-- | \(\mathcal{O}(n)\) Initial-value free left-to-right scan over a vector.
 --
 -- > scanl f <x1,...,xn> = <y1,...,yn>
 -- >   where y1 = x1
@@ -2178,7 +2178,7 @@ scanl1 :: Vector v a => (a -> a -> a) -> v a -> v a
 {-# INLINE scanl1 #-}
 scanl1 f = unstream . inplace (S.scanl1 f) id . stream
 
--- | \(O(n)\) Initial-value free left-to-right scan over a vector with a strict accumulator.
+-- | \(\mathcal{O}(n)\) Initial-value free left-to-right scan over a vector with a strict accumulator.
 --
 -- Note: Since 0.13, application of this to an empty vector no longer
 -- results in an error; instead it produces an empty vector.
@@ -2195,7 +2195,7 @@ scanl1' :: Vector v a => (a -> a -> a) -> v a -> v a
 {-# INLINE scanl1' #-}
 scanl1' f = unstream . inplace (S.scanl1' f) id . stream
 
--- | \(O(n)\) Right-to-left prescan.
+-- | \(\mathcal{O}(n)\) Right-to-left prescan.
 --
 -- @
 -- prescanr f z = 'reverse' . 'prescanl' (flip f) z . 'reverse'
@@ -2204,32 +2204,32 @@ prescanr :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
 {-# INLINE prescanr #-}
 prescanr f z = unstreamR . inplace (S.prescanl (flip f) z) id . streamR
 
--- | \(O(n)\) Right-to-left prescan with strict accumulator.
+-- | \(\mathcal{O}(n)\) Right-to-left prescan with strict accumulator.
 prescanr' :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
 {-# INLINE prescanr' #-}
 prescanr' f z = unstreamR . inplace (S.prescanl' (flip f) z) id . streamR
 
--- | \(O(n)\) Right-to-left postscan.
+-- | \(\mathcal{O}(n)\) Right-to-left postscan.
 postscanr :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
 {-# INLINE postscanr #-}
 postscanr f z = unstreamR . inplace (S.postscanl (flip f) z) id . streamR
 
--- | \(O(n)\) Right-to-left postscan with strict accumulator.
+-- | \(\mathcal{O}(n)\) Right-to-left postscan with strict accumulator.
 postscanr' :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
 {-# INLINE postscanr' #-}
 postscanr' f z = unstreamR . inplace (S.postscanl' (flip f) z) id . streamR
 
--- | \(O(n)\) Right-to-left scan.
+-- | \(\mathcal{O}(n)\) Right-to-left scan.
 scanr :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
 {-# INLINE scanr #-}
 scanr f z = unstreamR . Bundle.scanl (flip f) z . streamR
 
--- | \(O(n)\) Right-to-left scan with strict accumulator.
+-- | \(\mathcal{O}(n)\) Right-to-left scan with strict accumulator.
 scanr' :: (Vector v a, Vector v b) => (a -> b -> b) -> b -> v a -> v b
 {-# INLINE scanr' #-}
 scanr' f z = unstreamR . Bundle.scanl' (flip f) z . streamR
 
--- | \(O(n)\) Right-to-left scan over a vector with its index.
+-- | \(\mathcal{O}(n)\) Right-to-left scan over a vector with its index.
 iscanr :: (Vector v a, Vector v b) => (Int -> a -> b -> b) -> b -> v a -> v b
 {-# INLINE iscanr #-}
 iscanr f z v =
@@ -2239,7 +2239,7 @@ iscanr f z v =
   $ v
  where n = length v
 
--- | \(O(n)\) Right-to-left scan over a vector (strictly) with its index.
+-- | \(\mathcal{O}(n)\) Right-to-left scan over a vector (strictly) with its index.
 iscanr' :: (Vector v a, Vector v b) => (Int -> a -> b -> b) -> b -> v a -> v b
 {-# INLINE iscanr' #-}
 iscanr' f z v =
@@ -2249,7 +2249,7 @@ iscanr' f z v =
   $ v
  where n = length v
 
--- | \(O(n)\) Right-to-left, initial-value free scan over a vector.
+-- | \(\mathcal{O}(n)\) Right-to-left, initial-value free scan over a vector.
 --
 -- Note: Since 0.13, application of this to an empty vector no longer
 -- results in an error; instead it produces an empty vector.
@@ -2266,7 +2266,7 @@ scanr1 :: Vector v a => (a -> a -> a) -> v a -> v a
 {-# INLINE scanr1 #-}
 scanr1 f = unstreamR . inplace (S.scanl1 (flip f)) id . streamR
 
--- | \(O(n)\) Right-to-left, initial-value free scan over a vector with a strict
+-- | \(\mathcal{O}(n)\) Right-to-left, initial-value free scan over a vector with a strict
 -- accumulator.
 --
 -- Note: Since 0.13, application of this to an empty vector no longer
@@ -2287,17 +2287,17 @@ scanr1' f = unstreamR . inplace (S.scanl1' (flip f)) id . streamR
 -- Conversions - Lists
 -- ------------------------
 
--- | \(O(n)\) Convert a vector to a list.
+-- | \(\mathcal{O}(n)\) Convert a vector to a list.
 toList :: Vector v a => v a -> [a]
 {-# INLINE toList #-}
 toList = Bundle.toList . stream
 
--- | \(O(n)\) Convert a list to a vector.
+-- | \(\mathcal{O}(n)\) Convert a list to a vector.
 fromList :: Vector v a => [a] -> v a
 {-# INLINE fromList #-}
 fromList = unstream . Bundle.fromList
 
--- | \(O(n)\) Convert the first @n@ elements of a list to a vector.
+-- | \(\mathcal{O}(n)\) Convert the first @n@ elements of a list to a vector.
 --
 -- @
 -- fromListN n xs = 'fromList' ('take' n xs)
@@ -2317,7 +2317,7 @@ fromListN n = unstream . Bundle.fromListN n
 -- Conversions - Immutable vectors
 -- -------------------------------
 
--- | \(O(n)\) Convert between different vector types.
+-- | \(\mathcal{O}(n)\) Convert between different vector types.
 convert :: (Vector v a, Vector w a) => v a -> w a
 {-# INLINE convert #-}
 convert = unstream . Bundle.reVector . stream
@@ -2325,19 +2325,19 @@ convert = unstream . Bundle.reVector . stream
 -- Conversions - Mutable vectors
 -- -----------------------------
 
--- | \(O(1)\) Unsafely convert a mutable vector to an immutable one without
+-- | \(\mathcal{O}(1)\) Unsafely convert a mutable vector to an immutable one without
 -- copying. The mutable vector may not be used after this operation.
 unsafeFreeze
   :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m (v a)
 {-# INLINE unsafeFreeze #-}
 unsafeFreeze = stToPrim . basicUnsafeFreeze
 
--- | \(O(n)\) Yield an immutable copy of the mutable vector.
+-- | \(\mathcal{O}(n)\) Yield an immutable copy of the mutable vector.
 freeze :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m (v a)
 {-# INLINE freeze #-}
 freeze mv = unsafeFreeze =<< M.clone mv
 
--- | \(O(1)\) Unsafely convert an immutable vector to a mutable one
+-- | \(\mathcal{O}(1)\) Unsafely convert an immutable vector to a mutable one
 -- without copying. Note that this is a very dangerous function and
 -- generally it's only safe to read from the resulting vector. In this
 -- case, the immutable vector could be used safely as well.
@@ -2366,7 +2366,7 @@ unsafeThaw :: (PrimMonad m, Vector v a) => v a -> m (Mutable v (PrimState m) a)
 {-# INLINE_FUSED unsafeThaw #-}
 unsafeThaw = stToPrim . basicUnsafeThaw
 
--- | \(O(n)\) Yield a mutable copy of an immutable vector.
+-- | \(\mathcal{O}(n)\) Yield a mutable copy of an immutable vector.
 thaw :: (PrimMonad m, Vector v a) => v a -> m (Mutable v (PrimState m) a)
 {-# INLINE_FUSED thaw #-}
 thaw v = do
@@ -2385,7 +2385,7 @@ thaw v = do
 
 
 {-
--- | \(O(n)\) Yield a mutable vector containing copies of each vector in the
+-- | \(\mathcal{O}(n)\) Yield a mutable vector containing copies of each vector in the
 -- list.
 thawMany :: (PrimMonad m, Vector v a) => [v a] -> m (Mutable v (PrimState m) a)
 {-# INLINE_FUSED thawMany #-}
@@ -2407,14 +2407,14 @@ thawMany vs = do
           thaw_loop (M.unsafeDrop n mv) vs
 -}
 
--- | \(O(n)\) Copy an immutable vector into a mutable one. The two vectors must
+-- | \(\mathcal{O}(n)\) Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length. This is not checked.
 unsafeCopy :: (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
 {-# INLINE unsafeCopy #-}
 unsafeCopy dst src = check Unsafe "length mismatch" (M.length dst == basicLength src)
                    $ (dst `seq` src `seq` stToPrim (basicUnsafeCopy dst src))
 
--- | \(O(n)\) Copy an immutable vector into a mutable one. The two vectors must
+-- | \(\mathcal{O}(n)\) Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length.
 copy :: (HasCallStack, PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> v a -> m ()
 {-# INLINE copy #-}
@@ -2424,7 +2424,7 @@ copy dst src = check Bounds "length mismatch" (M.length dst == basicLength src)
 -- Conversions to/from Bundles
 -- ---------------------------
 
--- | \(O(1)\) Convert a vector to a 'Bundle'.
+-- | \(\mathcal{O}(1)\) Convert a vector to a 'Bundle'.
 stream :: Vector v a => v a -> Bundle v a
 {-# INLINE_FUSED stream #-}
 stream v = Bundle.fromVector v
@@ -2441,7 +2441,7 @@ stream v = v `seq` n `seq` (Bundle.unfoldr get 0 `Bundle.sized` Exact n)
           | otherwise = case basicUnsafeIndexM v i of Box x -> Just (x, i+1)
 -}
 
--- | \(O(n)\) Construct a vector from a 'Bundle'.
+-- | \(\mathcal{O}(n)\) Construct a vector from a 'Bundle'.
 unstream :: Vector v a => Bundle v a -> v a
 {-# INLINE unstream #-}
 unstream s = new (New.unstream s)
@@ -2467,7 +2467,7 @@ unstream s = new (New.unstream s)
 
 
 
--- | \(O(1)\) Convert a vector to a 'Bundle', proceeding from right to left.
+-- | \(\mathcal{O}(1)\) Convert a vector to a 'Bundle', proceeding from right to left.
 streamR :: Vector v a => v a -> Bundle u a
 {-# INLINE_FUSED streamR #-}
 streamR v = v `seq` n `seq` (Bundle.unfoldr get n `Bundle.sized` Exact n)
@@ -2480,7 +2480,7 @@ streamR v = v `seq` n `seq` (Bundle.unfoldr get n `Bundle.sized` Exact n)
             in
             case basicUnsafeIndexM v i' of Box x -> Just (x, i')
 
--- | \(O(n)\) Construct a vector from a 'Bundle', proceeding from right to left.
+-- | \(\mathcal{O}(n)\) Construct a vector from a 'Bundle', proceeding from right to left.
 unstreamR :: Vector v a => Bundle v a -> v a
 {-# INLINE unstreamR #-}
 unstreamR s = new (New.unstreamR s)
@@ -2560,7 +2560,7 @@ clone v = v `seq` New.create (
 -- Comparisons
 -- -----------
 
--- | \(O(n)\) Check if two vectors are equal. All 'Vector' instances are also
+-- | \(\mathcal{O}(n)\) Check if two vectors are equal. All 'Vector' instances are also
 -- instances of 'Eq' and it is usually more appropriate to use those. This
 -- function is primarily intended for implementing 'Eq' instances for new
 -- vector types.
@@ -2568,13 +2568,13 @@ eq :: (Vector v a, Eq a) => v a -> v a -> Bool
 {-# INLINE eq #-}
 xs `eq` ys = stream xs == stream ys
 
--- | \(O(n)\) Check if two vectors are equal using the supplied equality
+-- | \(\mathcal{O}(n)\) Check if two vectors are equal using the supplied equality
 -- predicate.
 eqBy :: (Vector v a, Vector v b) => (a -> b -> Bool) -> v a -> v b -> Bool
 {-# INLINE eqBy #-}
 eqBy e xs ys = Bundle.eqBy e (stream xs) (stream ys)
 
--- | \(O(n)\) Compare two vectors lexicographically. All 'Vector' instances are
+-- | \(\mathcal{O}(n)\) Compare two vectors lexicographically. All 'Vector' instances are
 -- also instances of 'Ord' and it is usually more appropriate to use those. This
 -- function is primarily intended for implementing 'Ord' instances for new
 -- vector types.
@@ -2582,7 +2582,7 @@ cmp :: (Vector v a, Ord a) => v a -> v a -> Ordering
 {-# INLINE cmp #-}
 cmp xs ys = compare (stream xs) (stream ys)
 
--- | \(O(n)\) Compare two vectors using the supplied comparison function for
+-- | \(\mathcal{O}(n)\) Compare two vectors using the supplied comparison function for
 -- vector elements. Comparison works the same as for lists.
 --
 -- > cmpBy compare == cmp

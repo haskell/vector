@@ -386,7 +386,7 @@ drop n v = unsafeSlice (min m n') (max 0 (m - n')) v
     n' = max n 0
     m  = length v
 
--- | \(O(1)\) Split the mutable vector into the first @n@ elements
+-- | \(\mathcal{O}(1)\) Split the mutable vector into the first @n@ elements
 -- and the remainder, without copying.
 --
 -- Note that @'splitAt' n v@ is equivalent to @('take' n v, 'drop' n v)@,
@@ -486,7 +486,7 @@ replicateM :: (PrimMonad m, MVector v a) => Int -> m a -> m (v (PrimState m) a)
 {-# INLINE replicateM #-}
 replicateM n m = munstream (MBundle.replicateM n m)
 
--- | \(O(n)\) Create a mutable vector of the given length (0 if the length is negative)
+-- | \(\mathcal{O}(n)\) Create a mutable vector of the given length (0 if the length is negative)
 -- and fill it with the results of applying the function to each index.
 -- Iteration starts at index 0.
 --
@@ -495,7 +495,7 @@ generate :: (PrimMonad m, MVector v a) => Int -> (Int -> a) -> m (v (PrimState m
 {-# INLINE generate #-}
 generate n f = stToPrim $ generateM n (return . f)
 
--- | \(O(n)\) Create a mutable vector of the given length (0 if the length is
+-- | \(\mathcal{O}(n)\) Create a mutable vector of the given length (0 if the length is
 -- negative) and fill it with the results of applying the monadic function to each
 -- index. Iteration starts at index 0.
 --
@@ -761,21 +761,21 @@ forI_ v f = loop 0
            | otherwise = f i >> loop (i + 1)
     n = length v
 
--- | \(O(n)\) Apply the monadic action to every element of the vector, discarding the results.
+-- | \(\mathcal{O}(n)\) Apply the monadic action to every element of the vector, discarding the results.
 --
 -- @since 0.12.3.0
 mapM_ :: (PrimMonad m, MVector v a) => (a -> m b) -> v (PrimState m) a -> m ()
 {-# INLINE mapM_ #-}
 mapM_ f v = forI_ v $ \i -> f =<< unsafeRead v i
 
--- | \(O(n)\) Apply the monadic action to every element of the vector and its index, discarding the results.
+-- | \(\mathcal{O}(n)\) Apply the monadic action to every element of the vector and its index, discarding the results.
 --
 -- @since 0.12.3.0
 imapM_ :: (PrimMonad m, MVector v a) => (Int -> a -> m b) -> v (PrimState m) a -> m ()
 {-# INLINE imapM_ #-}
 imapM_ f v = forI_ v $ \i -> f i =<< unsafeRead v i
 
--- | \(O(n)\) Apply the monadic action to every element of the vector,
+-- | \(\mathcal{O}(n)\) Apply the monadic action to every element of the vector,
 -- discarding the results. It's the same as @flip mapM_@.
 --
 -- @since 0.12.3.0
@@ -783,7 +783,7 @@ forM_ :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m b) -> m ()
 {-# INLINE forM_ #-}
 forM_ = flip mapM_
 
--- | \(O(n)\) Apply the monadic action to every element of the vector
+-- | \(\mathcal{O}(n)\) Apply the monadic action to every element of the vector
 -- and its index, discarding the results. It's the same as @flip imapM_@.
 --
 -- @since 0.12.3.0
@@ -791,56 +791,56 @@ iforM_ :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (Int -> a -> m b) -
 {-# INLINE iforM_ #-}
 iforM_ = flip imapM_
 
--- | \(O(n)\) Pure left fold.
+-- | \(\mathcal{O}(n)\) Pure left fold.
 --
 -- @since 0.12.3.0
 foldl :: (PrimMonad m, MVector v a) => (b -> a -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldl #-}
 foldl f = ifoldl (\b _ -> f b)
 
--- | \(O(n)\) Pure left fold with strict accumulator.
+-- | \(\mathcal{O}(n)\) Pure left fold with strict accumulator.
 --
 -- @since 0.12.3.0
 foldl' :: (PrimMonad m, MVector v a) => (b -> a -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldl' #-}
 foldl' f = ifoldl' (\b _ -> f b)
 
--- | \(O(n)\) Pure left fold using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Pure left fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldl :: (PrimMonad m, MVector v a) => (b -> Int -> a -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldl #-}
 ifoldl f b0 v = stToPrim $ ifoldM (\b i a -> return $ f b i a) b0 v
 
--- | \(O(n)\) Pure left fold with strict accumulator using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Pure left fold with strict accumulator using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldl' :: (PrimMonad m, MVector v a) => (b -> Int -> a -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldl' #-}
 ifoldl' f b0 v = stToPrim $ ifoldM' (\b i a -> return $ f b i a) b0 v
 
--- | \(O(n)\) Pure right fold.
+-- | \(\mathcal{O}(n)\) Pure right fold.
 --
 -- @since 0.12.3.0
 foldr :: (PrimMonad m, MVector v a) => (a -> b -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldr #-}
 foldr f = ifoldr (const f)
 
--- | \(O(n)\) Pure right fold with strict accumulator.
+-- | \(\mathcal{O}(n)\) Pure right fold with strict accumulator.
 --
 -- @since 0.12.3.0
 foldr' :: (PrimMonad m, MVector v a) => (a -> b -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldr' #-}
 foldr' f = ifoldr' (const f)
 
--- | \(O(n)\) Pure right fold using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Pure right fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldr :: (PrimMonad m, MVector v a) => (Int -> a -> b -> b) -> b -> v (PrimState m) a -> m b
 {-# INLINE ifoldr #-}
 ifoldr f b0 v = stToPrim $ ifoldrM (\i a b -> return $ f i a b) b0 v
 
--- | \(O(n)\) Pure right fold with strict accumulator using a function applied
+-- | \(\mathcal{O}(n)\) Pure right fold with strict accumulator using a function applied
 -- to each element and its index.
 --
 -- @since 0.12.3.0
@@ -848,21 +848,21 @@ ifoldr' :: (PrimMonad m, MVector v a) => (Int -> a -> b -> b) -> b -> v (PrimSta
 {-# INLINE ifoldr' #-}
 ifoldr' f b0 v = stToPrim $ ifoldrM' (\i a b -> return $ f i a b) b0 v
 
--- | \(O(n)\) Monadic fold.
+-- | \(\mathcal{O}(n)\) Monadic fold.
 --
 -- @since 0.12.3.0
 foldM :: (PrimMonad m, MVector v a) => (b -> a -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldM #-}
 foldM f = ifoldM (\x _ -> f x)
 
--- | \(O(n)\) Monadic fold with strict accumulator.
+-- | \(\mathcal{O}(n)\) Monadic fold with strict accumulator.
 --
 -- @since 0.12.3.0
 foldM' :: (PrimMonad m, MVector v a) => (b -> a -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldM' #-}
 foldM' f = ifoldM' (\x _ -> f x)
 
--- | \(O(n)\) Monadic fold using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Monadic fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldM :: (PrimMonad m, MVector v a) => (b -> Int -> a -> m b) -> b -> v (PrimState m) a -> m b
@@ -874,7 +874,7 @@ ifoldM f b0 v = loop 0 b0
                               loop (i + 1) =<< f b i a
     n = length v
 
--- | \(O(n)\) Monadic fold with strict accumulator using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Monadic fold with strict accumulator using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldM' :: (PrimMonad m, MVector v a) => (b -> Int -> a -> m b) -> b -> v (PrimState m) a -> m b
@@ -886,21 +886,21 @@ ifoldM' f b0 v = loop 0 b0
                                loop (i + 1) =<< f b i a
     n = length v
 
--- | \(O(n)\) Monadic right fold.
+-- | \(\mathcal{O}(n)\) Monadic right fold.
 --
 -- @since 0.12.3.0
 foldrM :: (PrimMonad m, MVector v a) => (a -> b -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldrM #-}
 foldrM f = ifoldrM (const f)
 
--- | \(O(n)\) Monadic right fold with strict accumulator.
+-- | \(\mathcal{O}(n)\) Monadic right fold with strict accumulator.
 --
 -- @since 0.12.3.0
 foldrM' :: (PrimMonad m, MVector v a) => (a -> b -> m b) -> b -> v (PrimState m) a -> m b
 {-# INLINE foldrM' #-}
 foldrM' f = ifoldrM' (const f)
 
--- | \(O(n)\) Monadic right fold using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Monadic right fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldrM :: (PrimMonad m, MVector v a) => (Int -> a -> b -> m b) -> b -> v (PrimState m) a -> m b
@@ -912,7 +912,7 @@ ifoldrM f b0 v = loop (n-1) b0
                               loop (i - 1) =<< f i a b
     n = length v
 
--- | \(O(n)\) Monadic right fold with strict accumulator using a function applied
+-- | \(\mathcal{O}(n)\) Monadic right fold with strict accumulator using a function applied
 -- to each element and its index.
 --
 -- @since 0.12.3.0

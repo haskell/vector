@@ -53,7 +53,7 @@ generate n =
 
 
     define_zip ty c
-      = sep [text "-- | \(O(1)\) Zip" <+> int n <+> text "vectors."
+      = sep [text "-- | \(\mathcal{O}(1)\) Zip" <+> int n <+> text "vectors."
             ,name <+> text "::"
                   <+> vtuple [text "Unbox" <+> v | v <- vars]
                   <+> text "=>"
@@ -94,7 +94,7 @@ generate n =
 
 
     define_unzip ty c
-      = sep [text "-- | \(O(1)\) Unzip" <+> int n <+> text "vectors."
+      = sep [text "-- | \(\mathcal{O}(1)\) Unzip" <+> int n <+> text "vectors."
             ,name <+> text "::"
                   <+> vtuple [text "Unbox" <+> v | v <- vars]
                   <+> text "=>"

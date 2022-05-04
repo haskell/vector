@@ -92,7 +92,7 @@ import Unsafe.Coerce
 
 type role MVector nominal nominal
 
--- | \(O(1)\) Unsafely coerce a mutable vector from one element type to another,
+-- | \(\mathcal{O}(1)\) Unsafely coerce a mutable vector from one element type to another,
 -- representationally equal type. The operation just changes the type of the
 -- underlying pointer and does not modify the elements.
 --
@@ -208,7 +208,7 @@ drop :: Prim a => Int -> MVector s a -> MVector s a
 {-# INLINE drop #-}
 drop = G.drop
 
--- | \(O(1)\) Split the mutable vector into the first @n@ elements
+-- | \(\mathcal{O}(1)\) Split the mutable vector into the first @n@ elements
 -- and the remainder, without copying.
 --
 -- Note that @'splitAt' n v@ is equivalent to @('take' n v, 'drop' n v)@,
@@ -298,7 +298,7 @@ replicateM :: (PrimMonad m, Prim a) => Int -> m a -> m (MVector (PrimState m) a)
 {-# INLINE replicateM #-}
 replicateM = G.replicateM
 
--- | \(O(n)\) Create a mutable vector of the given length (0 if the length is negative)
+-- | \(\mathcal{O}(n)\) Create a mutable vector of the given length (0 if the length is negative)
 -- and fill it with the results of applying the function to each index.
 -- Iteration starts at index 0.
 --
@@ -307,7 +307,7 @@ generate :: (PrimMonad m, Prim a) => Int -> (Int -> a) -> m (MVector (PrimState 
 {-# INLINE generate #-}
 generate = G.generate
 
--- | \(O(n)\) Create a mutable vector of the given length (0 if the length is
+-- | \(\mathcal{O}(n)\) Create a mutable vector of the given length (0 if the length is
 -- negative) and fill it with the results of applying the monadic function to each
 -- index. Iteration starts at index 0.
 --
@@ -543,21 +543,21 @@ nextPermutation = G.nextPermutation
 -- Folds
 -- -----
 
--- | \(O(n)\) Apply the monadic action to every element of the vector, discarding the results.
+-- | \(\mathcal{O}(n)\) Apply the monadic action to every element of the vector, discarding the results.
 --
 -- @since 0.12.3.0
 mapM_ :: (PrimMonad m, Prim a) => (a -> m b) -> MVector (PrimState m) a -> m ()
 {-# INLINE mapM_ #-}
 mapM_ = G.mapM_
 
--- | \(O(n)\) Apply the monadic action to every element of the vector and its index, discarding the results.
+-- | \(\mathcal{O}(n)\) Apply the monadic action to every element of the vector and its index, discarding the results.
 --
 -- @since 0.12.3.0
 imapM_ :: (PrimMonad m, Prim a) => (Int -> a -> m b) -> MVector (PrimState m) a -> m ()
 {-# INLINE imapM_ #-}
 imapM_ = G.imapM_
 
--- | \(O(n)\) Apply the monadic action to every element of the vector,
+-- | \(\mathcal{O}(n)\) Apply the monadic action to every element of the vector,
 -- discarding the results. It's the same as @flip mapM_@.
 --
 -- @since 0.12.3.0
@@ -565,7 +565,7 @@ forM_ :: (PrimMonad m, Prim a) => MVector (PrimState m) a -> (a -> m b) -> m ()
 {-# INLINE forM_ #-}
 forM_ = G.forM_
 
--- | \(O(n)\) Apply the monadic action to every element of the vector
+-- | \(\mathcal{O}(n)\) Apply the monadic action to every element of the vector
 -- and its index, discarding the results. It's the same as @flip imapM_@.
 --
 -- @since 0.12.3.0
@@ -573,56 +573,56 @@ iforM_ :: (PrimMonad m, Prim a) => MVector (PrimState m) a -> (Int -> a -> m b) 
 {-# INLINE iforM_ #-}
 iforM_ = G.iforM_
 
--- | \(O(n)\) Pure left fold.
+-- | \(\mathcal{O}(n)\) Pure left fold.
 --
 -- @since 0.12.3.0
 foldl :: (PrimMonad m, Prim a) => (b -> a -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldl #-}
 foldl = G.foldl
 
--- | \(O(n)\) Pure left fold with strict accumulator.
+-- | \(\mathcal{O}(n)\) Pure left fold with strict accumulator.
 --
 -- @since 0.12.3.0
 foldl' :: (PrimMonad m, Prim a) => (b -> a -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldl' #-}
 foldl' = G.foldl'
 
--- | \(O(n)\) Pure left fold using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Pure left fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldl :: (PrimMonad m, Prim a) => (b -> Int -> a -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldl #-}
 ifoldl = G.ifoldl
 
--- | \(O(n)\) Pure left fold with strict accumulator using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Pure left fold with strict accumulator using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldl' :: (PrimMonad m, Prim a) => (b -> Int -> a -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldl' #-}
 ifoldl' = G.ifoldl'
 
--- | \(O(n)\) Pure right fold.
+-- | \(\mathcal{O}(n)\) Pure right fold.
 --
 -- @since 0.12.3.0
 foldr :: (PrimMonad m, Prim a) => (a -> b -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldr #-}
 foldr = G.foldr
 
--- | \(O(n)\) Pure right fold with strict accumulator.
+-- | \(\mathcal{O}(n)\) Pure right fold with strict accumulator.
 --
 -- @since 0.12.3.0
 foldr' :: (PrimMonad m, Prim a) => (a -> b -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldr' #-}
 foldr' = G.foldr'
 
--- | \(O(n)\) Pure right fold using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Pure right fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldr :: (PrimMonad m, Prim a) => (Int -> a -> b -> b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldr #-}
 ifoldr = G.ifoldr
 
--- | \(O(n)\) Pure right fold with strict accumulator using a function applied
+-- | \(\mathcal{O}(n)\) Pure right fold with strict accumulator using a function applied
 -- to each element and its index.
 --
 -- @since 0.12.3.0
@@ -630,56 +630,56 @@ ifoldr' :: (PrimMonad m, Prim a) => (Int -> a -> b -> b) -> b -> MVector (PrimSt
 {-# INLINE ifoldr' #-}
 ifoldr' = G.ifoldr'
 
--- | \(O(n)\) Monadic fold.
+-- | \(\mathcal{O}(n)\) Monadic fold.
 --
 -- @since 0.12.3.0
 foldM :: (PrimMonad m, Prim a) => (b -> a -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldM #-}
 foldM = G.foldM
 
--- | \(O(n)\) Monadic fold with strict accumulator.
+-- | \(\mathcal{O}(n)\) Monadic fold with strict accumulator.
 --
 -- @since 0.12.3.0
 foldM' :: (PrimMonad m, Prim a) => (b -> a -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldM' #-}
 foldM' = G.foldM'
 
--- | \(O(n)\) Monadic fold using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Monadic fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldM :: (PrimMonad m, Prim a) => (b -> Int -> a -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldM #-}
 ifoldM = G.ifoldM
 
--- | \(O(n)\) Monadic fold with strict accumulator using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Monadic fold with strict accumulator using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldM' :: (PrimMonad m, Prim a) => (b -> Int -> a -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldM' #-}
 ifoldM' = G.ifoldM'
 
--- | \(O(n)\) Monadic right fold.
+-- | \(\mathcal{O}(n)\) Monadic right fold.
 --
 -- @since 0.12.3.0
 foldrM :: (PrimMonad m, Prim a) => (a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldrM #-}
 foldrM = G.foldrM
 
--- | \(O(n)\) Monadic right fold with strict accumulator.
+-- | \(\mathcal{O}(n)\) Monadic right fold with strict accumulator.
 --
 -- @since 0.12.3.0
 foldrM' :: (PrimMonad m, Prim a) => (a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE foldrM' #-}
 foldrM' = G.foldrM'
 
--- | \(O(n)\) Monadic right fold using a function applied to each element and its index.
+-- | \(\mathcal{O}(n)\) Monadic right fold using a function applied to each element and its index.
 --
 -- @since 0.12.3.0
 ifoldrM :: (PrimMonad m, Prim a) => (Int -> a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldrM #-}
 ifoldrM = G.ifoldrM
 
--- | \(O(n)\) Monadic right fold with strict accumulator using a function applied
+-- | \(\mathcal{O}(n)\) Monadic right fold with strict accumulator using a function applied
 -- to each element and its index.
 --
 -- @since 0.12.3.0
@@ -690,7 +690,7 @@ ifoldrM' = G.ifoldrM'
 -- Unsafe conversions
 -- ------------------
 
--- | \(O(1)\) Unsafely cast a vector from one element type to another.
+-- | \(\mathcal{O}(1)\) Unsafely cast a vector from one element type to another.
 -- This operation just changes the type of the vector and does not
 -- modify the elements.
 --

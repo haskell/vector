@@ -51,25 +51,25 @@ type family Mutable (v :: Type -> Type) = (mv :: Type -> Type -> Type) | mv -> v
 --   * 'basicUnsafeIndexM'
 --
 class MVector (Mutable v) a => Vector v a where
-  -- | /Assumed complexity:/ \(O(1)\)
+  -- | /Assumed complexity:/ \(\mathcal{O}(1)\)
   --
   -- Unsafely convert a mutable vector to its immutable version
   -- without copying. The mutable vector may not be used after
   -- this operation.
   basicUnsafeFreeze :: Mutable v s a -> ST s (v a)
 
-  -- | /Assumed complexity:/ \(O(1)\)
+  -- | /Assumed complexity:/ \(\mathcal{O}(1)\)
   --
   -- Unsafely convert an immutable vector to its mutable version without
   -- copying. The immutable vector may not be used after this operation.
   basicUnsafeThaw :: v a -> ST s (Mutable v s a)
 
-  -- | /Assumed complexity:/ \(O(1)\)
+  -- | /Assumed complexity:/ \(\mathcal{O}(1)\)
   --
   -- Yield the length of the vector.
   basicLength      :: v a -> Int
 
-  -- | /Assumed complexity:/ \(O(1)\)
+  -- | /Assumed complexity:/ \(\mathcal{O}(1)\)
   --
   -- Yield a slice of the vector without copying it. No range checks are
   -- performed.
@@ -77,7 +77,7 @@ class MVector (Mutable v) a => Vector v a where
                     -> Int -- ^ length
                     -> v a -> v a
 
-  -- | /Assumed complexity:/ \(O(1)\)
+  -- | /Assumed complexity:/ \(\mathcal{O}(1)\)
   --
   -- Yield the element at the given position in a monad. No range checks are
   -- performed.
@@ -103,7 +103,7 @@ class MVector (Mutable v) a => Vector v a where
   -- element!) is evaluated immediately.
   basicUnsafeIndexM  :: v a -> Int -> Box a
 
-  -- |  /Assumed complexity:/ \(O(n)\)
+  -- |  /Assumed complexity:/ \(\mathcal{O}(n)\)
   --
   -- Copy an immutable vector into a mutable one. The two vectors must have
   -- the same length, but this is not checked.

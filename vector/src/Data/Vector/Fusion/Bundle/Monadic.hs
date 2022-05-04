@@ -680,14 +680,14 @@ unfoldrExactNM :: Monad m => Int -> (s -> m (a, s)) -> s -> Bundle m u a
 {-# INLINE_FUSED unfoldrExactNM #-}
 unfoldrExactNM n f s = fromStream (S.unfoldrExactNM n f s) (Max (delay_inline max n 0))
 
--- | \(O(n)\) Apply monadic function \(\max(n - 1, 0)\) times to an initial value, producing
+-- | \(\mathcal{O}(n)\) Apply monadic function \(\max(n - 1, 0)\) times to an initial value, producing
 -- a monadic bundle of exact length \(\max(n, 0)\). Zeroth element will contain the initial
 -- value.
 iterateNM :: Monad m => Int -> (a -> m a) -> a -> Bundle m u a
 {-# INLINE_FUSED iterateNM #-}
 iterateNM n f x0 = fromStream (S.iterateNM n f x0) (Exact (delay_inline max n 0))
 
--- | \(O(n)\) Apply function \(\max(n - 1, 0)\) times to an initial value, producing a
+-- | \(\mathcal{O}(n)\) Apply function \(\max(n - 1, 0)\) times to an initial value, producing a
 -- monadic bundle of exact length \(\max(n, 0)\). Zeroth element will contain the initial
 -- value.
 iterateN :: Monad m => Int -> (a -> a) -> a -> Bundle m u a
