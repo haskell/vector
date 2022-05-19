@@ -39,7 +39,7 @@ Library
   Hs-Source-Dirs:
         src
 
-  Build-Depends: base >= 4.9 && < 4.17
+  Build-Depends: base >= 4.9 && < 4.18
                , ghc-prim >= 0.2 && < 0.9
 
 source-repository head
