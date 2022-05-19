@@ -2,7 +2,14 @@ packages:
   vector
   vector-stream
 
+tests: True
+
 source-repository-package
     type: git
     location: https://github.com/parsonsmatt/primitive
     tag: 99ebd4b81ab320b71dcffd0c20082c5b2ccbcfee
+
+source-repository-package
+    type: git
+    location: https://github.com/parsonsmatt/inspection-testing
+    tag: 46321298c681e91fb8037cc3cedfaaaae8c9cb42
