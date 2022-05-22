@@ -47,6 +47,8 @@
 * Add `groupBy` and `group` for `Data.Vector.Generic` and the specialized
   version in `Data.Vector`, `Data.Vector.Unboxed`, `Data.Vector.Storable` and
   `Data.Vector.Primitive`.
+* Add `toArraySlice` and `unsafeFromArraySlice` functions for conversion to and
+  from the underlying boxed `Array`.
 
 # Changes in version 0.12.3.1
 
