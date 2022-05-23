@@ -91,6 +91,8 @@ tests =
   , testGroup "Data.Vector"
     [ testCase "MonadFix" checkMonadFix
     , testCase "toFromArray" toFromArray
+    , testCase "toFromArraySlice" toFromArraySlice
+    , testCase "toFromArraySliceUnsafe" toFromArraySliceUnsafe
     , testCase "toFromMutableArray" toFromMutableArray
     ]
   ]
@@ -201,6 +203,22 @@ toFromArray :: Assertion
 toFromArray =
   mkArrayRoundtrip $ \name v ->
     assertEqual name v $ Boxed.fromArray (Boxed.toArray v)
+
+toFromArraySlice :: Assertion
+toFromArraySlice =
+  mkArrayRoundtrip $ \name v ->
+    case Boxed.toArraySlice v of
+      (arr, off, n) ->
+        assertEqual name v $
+        Boxed.take n (Boxed.drop off (Boxed.fromArray arr))
+
+toFromArraySliceUnsafe :: Assertion
+toFromArraySliceUnsafe =
+  mkArrayRoundtrip $ \name v ->
+    case Boxed.toArraySlice v of
+      (arr, off, n) ->
+        assertEqual name v $
+        Boxed.unsafeFromArraySlice arr off n
 
 toFromMutableArray :: Assertion
 toFromMutableArray = mkArrayRoundtrip assetRoundtrip

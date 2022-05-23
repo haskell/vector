@@ -163,7 +163,7 @@ module Data.Vector (
   toList, Data.Vector.fromList, Data.Vector.fromListN,
 
   -- ** Arrays
-  fromArray, toArray,
+  toArray, fromArray, toArraySlice, unsafeFromArraySlice,
 
   -- ** Other vector types
   G.convert,
@@ -2136,16 +2136,43 @@ fromListN = G.fromListN
 -- @since 0.12.2.0
 fromArray :: Array a -> Vector a
 {-# INLINE fromArray #-}
-fromArray x = Vector 0 (sizeofArray x) x
+fromArray arr = Vector 0 (sizeofArray arr) arr
 
 -- | /O(n)/ Convert a vector to an array.
 --
 -- @since 0.12.2.0
 toArray :: Vector a -> Array a
 {-# INLINE toArray #-}
-toArray (Vector offset size arr)
-  | offset == 0 && size == sizeofArray arr = arr
-  | otherwise = cloneArray arr offset size
+toArray (Vector offset len arr)
+  | offset == 0 && len == sizeofArray arr = arr
+  | otherwise = cloneArray arr offset len
+
+-- | /O(1)/ Extract the underlying `Array`, offset where vector starts and the
+-- total number of elements in the vector. Below property always holds:
+--
+-- > let (array, offset, len) = toArraySlice v
+-- > v === unsafeFromArraySlice len offset array
+--
+-- @since 0.13.0.0
+toArraySlice :: Vector a -> (Array a, Int, Int)
+{-# INLINE toArraySlice #-}
+toArraySlice (Vector offset len arr) = (arr, offset, len)
+
+
+-- | /O(1)/ Convert an array slice to a vector. This function is very unsafe,
+-- because constructing an invalid vector can yield almost all other safe
+-- functions in this module unsafe. These are equivalent:
+--
+-- > unsafeFromArraySlice len offset === unsafeTake len . unsafeDrop offset . fromArray
+--
+-- @since 0.13.0.0
+unsafeFromArraySlice ::
+     Array a -- ^ Immutable boxed array.
+  -> Int -- ^ Offset
+  -> Int -- ^ Length
+  -> Vector a
+{-# INLINE unsafeFromArraySlice #-}
+unsafeFromArraySlice arr offset len = Vector offset len arr
 
 -- Conversions - Mutable vectors
 -- -----------------------------
