@@ -1832,7 +1832,11 @@ fromList :: Storable a => [a] -> Vector a
 {-# INLINE fromList #-}
 fromList = G.fromList
 
--- | /O(n)/ Convert the first @n@ elements of a list to a vector.
+-- | /O(n)/ Convert the first @n@ elements of a list to a vector. It's
+-- expected that the supplied list will be exactly @n@ elements long. As
+-- an optimization, this function allocates a buffer for @n@ elements, which
+-- could be used for DoS-attacks by exhausting the memory if an attacker controls
+-- that parameter.
 --
 -- @
 -- fromListN n xs = 'fromList' ('take' n xs)
