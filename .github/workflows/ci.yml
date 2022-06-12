@@ -25,7 +25,7 @@ jobs:
           - { cabal: "3.6", os: ubuntu-latest,  ghc: "8.8.4"  }
           - { cabal: "3.6", os: ubuntu-latest,  ghc: "8.10.7" }
           - { cabal: "3.6", os: ubuntu-latest,  ghc: "9.0.1"  }
-          - { cabal: "3.6", os: ubuntu-latest,  ghc: "9.2.1"  }
+          - { cabal: "3.6", os: ubuntu-latest,  ghc: "9.2.3"  }
           # Win
           - { cabal: "3.6", os: windows-latest, ghc: "8.4.4"  }
           # OOM when building tests
