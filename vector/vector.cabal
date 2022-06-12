@@ -262,8 +262,10 @@ test-suite vector-doctest
   if impl(ghc >= 9.0) && impl(ghc < 9.1)
     buildable: False
   -- And GHC 9.2 too
-  if impl(ghc >= 9.2) && impl(ghc < 9.3)
+  if impl(ghc >= 9.2) && impl(ghc < 9.2.3)
     buildable: False
+  if impl(ghc >= 9.2.3) && impl(ghc < 9.3)
+    buildable: True
   build-depends:
         base      -any
       , doctest   >=0.15 && <0.21
