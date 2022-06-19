@@ -5,9 +5,12 @@
 -- |
 -- Module      : Data.Vector.Generic.Mutable.Base
 -- Copyright   : (c) Roman Leshchinskiy 2008-2011
+--                   Alexey Kuleshevich 2020-2022
+--                   Aleksey Khudyakov 2020-2022
+--                   Andrew Lelechenko 2020-2022
 -- License     : BSD-style
 --
--- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
+-- Maintainer  : Haskell Libraries Team <libraries@haskell.org>
 -- Stability   : experimental
 -- Portability : non-portable
 --
