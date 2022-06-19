@@ -46,3 +46,4 @@ Library
 source-repository head
   type:     git
   location: https://github.com/haskell/vector.git
+  subdir:   vector-stream
