@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MagicHash #-}
+{-# OPTIONS_HADDOCK hide #-}
 
 -- |
 -- Module      : Data.Vector.Internal.Check
