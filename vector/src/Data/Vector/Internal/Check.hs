@@ -22,8 +22,7 @@ module Data.Vector.Internal.Check (
   inRange
 ) where
 
-import GHC.Base( Int(..) )
-import GHC.Prim( Int# )
+import GHC.Exts (Int(..), Int#)
 import Prelude hiding( error, (&&), (||), not )
 import qualified Prelude as P
 import GHC.Stack (HasCallStack)
