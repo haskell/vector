@@ -1473,6 +1473,8 @@ maximumBy = G.maximumBy
 -- | /O(n)/ Yield the maximum element of the vector by comparing the results
 -- of a key function on each element. In case of a tie, the first occurrence
 -- wins. The vector may not be empty.
+--
+-- @since 0.13.0.0
 maximumOn :: (Ord b, Storable a) => (a -> b) -> Vector a -> a
 {-# INLINE maximumOn #-}
 maximumOn = G.maximumOn
@@ -1499,6 +1501,8 @@ minimumBy = G.minimumBy
 -- | /O(n)/ Yield the minimum element of the vector by comparing the results
 -- of a key function on each element. In case of a tie, the first occurrence
 -- wins. The vector may not be empty.
+--
+-- @since 0.13.0.0
 minimumOn :: (Ord b, Storable a) => (a -> b) -> Vector a -> a
 {-# INLINE minimumOn #-}
 minimumOn = G.minimumOn

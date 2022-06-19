@@ -214,6 +214,8 @@ instance G.Vector Vector () where
 -- >>> deriving via (U.UnboxViaPrim Int) instance M.MVector MVector Foo
 -- >>> deriving via (U.UnboxViaPrim Int) instance G.Vector  Vector  Foo
 -- >>> instance Unbox Foo
+--
+-- @since 0.13.0.0
 newtype UnboxViaPrim a = UnboxViaPrim a
 
 newtype instance MVector s (UnboxViaPrim a) = MV_UnboxViaPrim (P.MVector s a)
@@ -278,6 +280,7 @@ instance P.Prim a => G.Vector Vector (UnboxViaPrim a) where
 -- instance VU.IsoUnbox (Foo a) (Sum Int, Product a)
 -- :}
 --
+-- @since 0.13.0.0
 class IsoUnbox a b where
   -- | Convert value into it representation in unboxed vector.
   toURepr   :: a -> b
@@ -338,6 +341,7 @@ idU = id
 -- instance VU.Unbox a => VU.Unbox (Bar a)
 -- :}
 --
+-- @since 0.13.0.0
 newtype As (a :: Type) (b :: Type) = As a
 
 newtype instance MVector s (As a b) = MV_UnboxAs (MVector s b)

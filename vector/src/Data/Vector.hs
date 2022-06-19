@@ -1716,6 +1716,8 @@ maximumBy = G.maximumBy
 -- (2,'a')
 -- >>> V.maximumOn fst $ V.fromList [(1,'a'), (1,'b')]
 -- (1,'a')
+--
+-- @since 0.13.0.0
 maximumOn :: Ord b => (a -> b) -> Vector a -> a
 {-# INLINE maximumOn #-}
 maximumOn = G.maximumOn
@@ -1764,6 +1766,8 @@ minimumBy = G.minimumBy
 -- (1,'b')
 -- >>> V.minimumOn fst $ V.fromList [(1,'a'), (1,'b')]
 -- (1,'a')
+--
+-- @since 0.13.0.0
 minimumOn :: Ord b => (a -> b) -> Vector a -> a
 {-# INLINE minimumOn #-}
 minimumOn = G.minimumOn
