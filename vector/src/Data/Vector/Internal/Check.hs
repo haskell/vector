@@ -1,13 +1,17 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MagicHash #-}
+{-# OPTIONS_HADDOCK hide #-}
 
 -- |
 -- Module      : Data.Vector.Internal.Check
 -- Copyright   : (c) Roman Leshchinskiy 2009
+--                   Alexey Kuleshevich 2020-2022
+--                   Aleksey Khudyakov 2020-2022
+--                   Andrew Lelechenko 2020-2022
 -- License     : BSD-style
 --
--- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
+-- Maintainer  : Haskell Libraries Team <libraries@haskell.org>
 -- Stability   : experimental
 -- Portability : non-portable
 --
@@ -22,8 +26,7 @@ module Data.Vector.Internal.Check (
   inRange
 ) where
 
-import GHC.Base( Int(..) )
-import GHC.Prim( Int# )
+import GHC.Exts (Int(..), Int#)
 import Prelude hiding( error, (&&), (||), not )
 import qualified Prelude as P
 import GHC.Stack (HasCallStack)

@@ -4,9 +4,12 @@
 -- |
 -- Module      : Data.Vector.Unboxed
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010
+--                   Alexey Kuleshevich 2020-2022
+--                   Aleksey Khudyakov 2020-2022
+--                   Andrew Lelechenko 2020-2022
 -- License     : BSD-style
 --
--- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
+-- Maintainer  : Haskell Libraries Team <libraries@haskell.org>
 -- Stability   : experimental
 -- Portability : non-portable
 --
@@ -1482,6 +1485,8 @@ maximumBy = G.maximumBy
 -- (2,'a')
 -- >>> VU.maximumOn fst $ VU.fromList [(1,'a'), (1 :: Int,'b')]
 -- (1,'a')
+--
+-- @since 0.13.0.0
 maximumOn :: (Ord b, Unbox a) => (a -> b) -> Vector a -> a
 {-# INLINE maximumOn #-}
 maximumOn = G.maximumOn
@@ -1532,6 +1537,8 @@ minimumBy = G.minimumBy
 -- (1,'b')
 -- >>> VU.minimumOn fst $ VU.fromList [(1,'a'), (1 :: Int,'b')]
 -- (1,'a')
+--
+-- @since 0.13.0.0
 minimumOn :: (Ord b, Unbox a) => (a -> b) -> Vector a -> a
 {-# INLINE minimumOn #-}
 minimumOn = G.minimumOn

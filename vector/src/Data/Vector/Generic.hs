@@ -8,9 +8,12 @@
 -- |
 -- Module      : Data.Vector.Generic
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
+--                   Alexey Kuleshevich 2020-2022
+--                   Aleksey Khudyakov 2020-2022
+--                   Andrew Lelechenko 2020-2022
 -- License     : BSD-style
 --
--- Maintainer  : Roman Leshchinskiy <rl@cse.unsw.edu.au>
+-- Maintainer  : Haskell Libraries Team <libraries@haskell.org>
 -- Stability   : experimental
 -- Portability : non-portable
 --
@@ -1873,6 +1876,8 @@ maximumBy cmpr = Bundle.foldl1' maxBy . stream
 -- (2,'a')
 -- >>> V.maximumOn fst $ V.fromList [(1,'a'), (1,'b')]
 -- (1,'a')
+--
+-- @since 0.13.0.0
 maximumOn :: (Ord b, Vector v a) => (a -> b) -> v a -> a
 {-# INLINE maximumOn #-}
 maximumOn f = fst . Bundle.foldl1' maxBy . Bundle.map (\a -> (a, f a)) . stream
@@ -1931,6 +1936,8 @@ minimumBy cmpr = Bundle.foldl1' minBy . stream
 -- (1,'b')
 -- >>> V.minimumOn fst $ V.fromList [(1,'a'), (1,'b')]
 -- (1,'a')
+--
+-- @since 0.13.0.0
 minimumOn :: (Ord b, Vector v a) => (a -> b) -> v a -> a
 {-# INLINE minimumOn #-}
 minimumOn f = fst . Bundle.foldl1' minBy . Bundle.map (\a -> (a, f a)) . stream

@@ -1,11 +1,15 @@
 Name:           vector
-Version:        0.13.0.1
+Version:        0.13.0.0
 -- don't forget to update the changelog file!
 License:        BSD3
 License-File:   LICENSE
 Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
 Maintainer:     Haskell Libraries Team <libraries@haskell.org>
-Copyright:      (c) Roman Leshchinskiy 2008-2012
+Copyright:      (c) Roman Leshchinskiy 2008-2012,
+                    Alexey Kuleshevich 2020-2022,
+                    Aleksey Khudyakov 2020-2022,
+                    Andrew Lelechenko 2020-2022
+
 Homepage:       https://github.com/haskell/vector
 Bug-Reports:    https://github.com/haskell/vector/issues
 Category:       Data, Data Structures
@@ -41,7 +45,8 @@ Tested-With:
   GHC == 8.6.5,
   GHC == 8.8.4,
   GHC == 8.10.7,
-  GHC == 9.0.1
+  GHC == 9.0.1,
+  GHC == 9.2.3
 
 Cabal-Version:  >= 1.10
 Build-Type:     Simple
@@ -136,7 +141,6 @@ Library
 
   Build-Depends: base >= 4.9 && < 4.17
                , primitive >= 0.6.4.0 && < 0.8
-               , ghc-prim >= 0.2 && < 0.9
                , deepseq >= 1.1 && < 1.5
                , vector-stream >= 0.1 && < 0.2
 
@@ -160,7 +164,7 @@ Library
 source-repository head
   type:     git
   location: https://github.com/haskell/vector.git
-
+  subdir:   vector
 
 
 test-suite vector-tests-O0
@@ -275,8 +279,6 @@ test-suite vector-doctest
 test-suite vector-inspection
   type:             exitcode-stdio-1.0
   hs-source-dirs:   tests-inspect
-  -- -O1 is used here on purpose. We expect that fusion works for -O1
-  -- as well
   Ghc-Options:      -Wall
   main-is:          main.hs
   default-language: Haskell2010

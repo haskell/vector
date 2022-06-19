@@ -6,6 +6,9 @@ License-File:   LICENSE
 Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
 Maintainer:     Haskell Libraries Team <libraries@haskell.org>
 Copyright:      (c) Roman Leshchinskiy 2008-2012
+                    Alexey Kuleshevich 2020-2022,
+                    Aleksey Khudyakov 2020-2022,
+                    Andrew Lelechenko 2020-2022
 Homepage:       https://github.com/haskell/vector
 Bug-Reports:    https://github.com/haskell/vector/issues
 Category:       Data, Data Structures
@@ -20,8 +23,9 @@ Tested-With:
   GHC == 8.4.4,
   GHC == 8.6.5,
   GHC == 8.8.4,
-  GHC == 8.10.4
-  GHC == 9.0.1
+  GHC == 8.10.4,
+  GHC == 9.0.1,
+  GHC == 9.2.3
 
 Cabal-Version:  >=1.10
 Build-Type:     Simple
@@ -45,3 +49,4 @@ Library
 source-repository head
   type:     git
   location: https://github.com/haskell/vector.git
+  subdir:   vector-stream
