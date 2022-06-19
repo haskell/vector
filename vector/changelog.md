@@ -1,40 +1,45 @@
 # Changes in version 0.13.0.0
 
- * Methods of type classes `Data.Vector.Generic.Mutable.MVector` and
-   `Data.Vector.Generic.Vector` use concrete monads (ST,etc) being
-   polymorphic. This allows use of GND and deriving via to define
-   instances. Rest of API is unchanged and most existing instances should
-   compiler fine with new definitions.
  * `mkType` from `Data.Vector.Generic` is deprecated in favor of
    `Data.Data.mkNoRepType`
  * The role signatures on several `Vector` types were too permissive, so they
    have been tightened up:
    * The role signature for `Data.Vector.Mutable.MVector` is now
      `type role MVector nominal representational` (previously, both arguments
-     were `phantom`).
+     were `phantom`). [#224](https://github.com/haskell/vector/pull/224)
    * The role signature for `Data.Vector.Primitive.Vector` is now
      `type role Vector nominal` (previously, it was `phantom`).
      The role signature for `Data.Vector.Primitive.Mutable.MVector` is now
      `type role MVector nominal nominal` (previously, both arguments were
-     `phantom`).
+     `phantom`). [#316](https://github.com/haskell/vector/pull/316)
    * The role signature for `Data.Vector.Storable.Vector` is now
      `type role Vector nominal` (previous, it was `phantom`), and the signature
      for `Data.Vector.Storable.Mutable.MVector` is now
      `type role MVector nominal nominal` (previous, both arguments were
-     `phantom`).
+     `phantom`). [#235](https://github.com/haskell/vector/pull/235)
 
      We pick `nominal` for the role of the last argument instead of
-     `representational` since the internal structure of a `Storable` vector
-     is determined by the `Storable` instance of the element type, and it is
-     not guaranteed that the `Storable` instances between two
-     representationally equal types will preserve this internal structure.
-     One consequence of this choice is that it is no longer possible to
-     `coerce` between `Storable.Vector a` and `Storable.Vector b` if `a` and
-     `b` are nominally distinct but representationally equal types. We now
-     provide `unsafeCoerce{M}Vector` functions in
-     `Data.Vector.Storable{.Mutable}` to allow this (the onus is on the user
-     to ensure that no `Storable` invariants are broken when using these
-     functions).
+     `representational` since the internal structure of a `Storable` vector is
+     determined by the `Storable` instance of the element type, and it is not
+     guaranteed that the `Storable` instances between two representationally
+     equal types will preserve this internal structure.  One consequence of this
+     choice is that it is no longer possible to `coerce` between
+     `Storable.Vector a` and `Storable.Vector b` if `a` and `b` are nominally
+     distinct but representationally equal types. We now provide
+     `unsafeCoerce{M}Vector` and `unsafeCast` functions to allow this (the onus
+     is on the user to ensure that no `Storable` invariants are broken when
+     using these functions).
+ * Methods of type classes `Data.Vector.Generic.Mutable.MVector` and
+   `Data.Vector.Generic.Vector` use concrete monads (`ST`, etc) istead of being
+   polymorphic (`PrimMonad`, etc). [#335](https://github.com/haskell/vector/pull/335).
+   This makes it possible to derive `Unbox` with:
+   * `GeneralizedNewtypeDeriving`
+   * via `UnboxViaPrim` and `Prim` instance
+   * via `As` and `IsoUnbox` instance: [#378](https://github.com/haskell/vector/pull/378)
+ * Add `MonadFix` instance for boxed vectors: [#312](https://github.com/haskell/vector/pull/312)
+ * Re-export `PrimMonad` and `RealWorld` from mutable vectors:
+   [#320](https://github.com/haskell/vector/pull/320)
+ * Add `maximumOn` and `minimumOn`: [#356](https://github.com/haskell/vector/pull/356)
  * The functions `scanl1`, `scanl1'`, `scanr1`, and `scanr1'` for immutable
    vectors are now defined when given empty vectors as arguments,
    in which case they return empty vectors. This new behavior is consistent
@@ -42,21 +47,27 @@
    Prior to this change, applying an empty vector to any of those functions
    resulted in an error. This change was introduced in:
    [#382](https://github.com/haskell/vector/pull/382)
-* Remove redundant `Storable` constraints on to/from `ForeignPtr` conversions
-* Add `unsafeCast` to `Primitive` vectors
-* Add `groupBy` and `group` for `Data.Vector.Generic` and the specialized
-  version in `Data.Vector`, `Data.Vector.Unboxed`, `Data.Vector.Storable` and
-  `Data.Vector.Primitive`.
-* Add `toArraySlice` and `unsafeFromArraySlice` functions for conversion to and
-  from the underlying boxed `Array`.
+ * Change allocation strategy for `unfoldrN`: [#387](https://github.com/haskell/vector/pull/387)
+ * Remove `CPP` driven error reporting in favor of `HasCallStack`:
+   [#397](https://github.com/haskell/vector/pull/397)
+ * Remove redundant `Storable` constraints on to/from `ForeignPtr` conversions:
+   [#394](https://github.com/haskell/vector/pull/394)
+ * Add `unsafeCast` to `Primitive` vectors: [#401](https://github.com/haskell/vector/pull/401)
+ * Make `(!?)` operator strict: [#402](https://github.com/haskell/vector/pull/402)
+ * Add `readMaybe`: [#425](https://github.com/haskell/vector/pull/425)
+ * Add `groupBy` and `group` for `Data.Vector.Generic` and the specialized
+   version in `Data.Vector`, `Data.Vector.Unboxed`, `Data.Vector.Storable` and
+   `Data.Vector.Primitive`. [#427](https://github.com/haskell/vector/pull/427)
+ * Add `toArraySlice` and `unsafeFromArraySlice` functions for conversion to and
+   from the underlying boxed `Array`: [#434](https://github.com/haskell/vector/pull/434)
 
 # Changes in version 0.12.3.1
 
-* Bugfix for ghcjs and `Double` memset for `Storable` vector:
-  [#410](https://github.com/haskell/vector/issues/410)
-* Avoid haddock bug: [#383](https://github.com/haskell/vector/issues/383)
-* Improve haddock and doctests
-* Disable problematic tests with -boundschecks [#407](https://github.com/haskell/vector/pull/407)
+ * Bugfix for ghcjs and `Double` memset for `Storable` vector:
+   [#410](https://github.com/haskell/vector/issues/410)
+ * Avoid haddock bug: [#383](https://github.com/haskell/vector/issues/383)
+ * Improve haddock and doctests
+ * Disable problematic tests with -boundschecks [#407](https://github.com/haskell/vector/pull/407)
 
 # Changes in version 0.12.3.0
 
