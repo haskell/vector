@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP #-}
-
+{-# OPTIONS_HADDOCK hide #-}
 -- |
 -- Module      : Data.Vector.Storable.Internal
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010
