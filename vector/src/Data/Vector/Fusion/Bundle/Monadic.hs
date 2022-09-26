@@ -1118,10 +1118,10 @@ fromVectors us = Bundle (Stream pstep (Left us))
     n = List.foldl' (\k v -> k + basicLength v) 0 us
 
     pstep (Left []) = return Done
-    pstep (Left (v:vs)) = basicLength v `seq` return (Skip (Right (v,0,vs)))
+    pstep (Left (v:vs)) = basicLength v `seq` pstep (Right (v,0,vs))
 
     pstep (Right (v,i,vs))
-      | i >= basicLength v = return $ Skip (Left vs)
+      | i >= basicLength v = pstep (Left vs)
       | otherwise          = case basicUnsafeIndexM v i of
                                Box x -> return $ Yield x (Right (v,i+1,vs))
 
@@ -1147,12 +1147,11 @@ concatVectors Bundle{sElems = Stream step t}
     pstep (Left s) = do
       r <- step s
       case r of
-        Yield v s' -> basicLength v `seq` return (Skip (Right (v,0,s')))
-        Skip    s' -> return (Skip (Left s'))
+        Yield v s' -> basicLength v `seq` pstep (Right (v,0,s'))
         Done       -> return Done
 
     pstep (Right (v,i,s))
-      | i >= basicLength v = return (Skip (Left s))
+      | i >= basicLength v = pstep (Left s)
       | otherwise          = case basicUnsafeIndexM v i of
                                Box x -> return (Yield x (Right (v,i+1,s)))
 
@@ -1166,7 +1165,6 @@ concatVectors Bundle{sElems = Stream step t}
                                                    "length mismatch"
                                                    (M.basicLength mv == basicLength v)
                                                    $ stToPrim $ basicUnsafeCopy mv v)) s')
-        Skip    s' -> return (Skip s')
         Done       -> return Done
 
 reVector :: Monad m => Bundle m u a -> Bundle m v a
