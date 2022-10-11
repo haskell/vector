@@ -54,9 +54,9 @@
 -- >>>
 -- >>> newtype instance U.MVector s Foo = MV_Int (U.MVector s Int)
 -- >>> newtype instance U.Vector    Foo = V_Int  (U.Vector    Int)
--- >>> deriving instance M.MVector MVector Foo
--- >>> deriving instance G.Vector  Vector  Foo
--- >>> instance Unbox Foo
+-- >>> deriving instance M.MVector U.MVector Foo
+-- >>> deriving instance G.Vector  U.Vector  Foo
+-- >>> instance U.Unbox Foo
 
 module Data.Vector.Unboxed (
   -- * Unboxed vectors

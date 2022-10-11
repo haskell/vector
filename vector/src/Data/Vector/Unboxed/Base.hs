@@ -193,9 +193,9 @@ instance G.Vector Vector () where
 -- >>>
 -- >>> newtype instance U.MVector s Foo = MV_Int (P.MVector s Foo)
 -- >>> newtype instance U.Vector    Foo = V_Int  (P.Vector    Foo)
--- >>> deriving via (U.UnboxViaPrim Foo) instance M.MVector MVector Foo
--- >>> deriving via (U.UnboxViaPrim Foo) instance G.Vector  Vector  Foo
--- >>> instance Unbox Foo
+-- >>> deriving via (U.UnboxViaPrim Foo) instance M.MVector U.MVector Foo
+-- >>> deriving via (U.UnboxViaPrim Foo) instance G.Vector  U.Vector  Foo
+-- >>> instance U.Unbox Foo
 --
 -- Second example is essentially same but with a twist. Instead of
 -- using @Prim@ instance of data type, we use underlying instance of @Int@:
@@ -211,9 +211,9 @@ instance G.Vector Vector () where
 -- >>>
 -- >>> newtype instance U.MVector s Foo = MV_Int (P.MVector s Int)
 -- >>> newtype instance U.Vector    Foo = V_Int  (P.Vector    Int)
--- >>> deriving via (U.UnboxViaPrim Int) instance M.MVector MVector Foo
--- >>> deriving via (U.UnboxViaPrim Int) instance G.Vector  Vector  Foo
--- >>> instance Unbox Foo
+-- >>> deriving via (U.UnboxViaPrim Int) instance M.MVector U.MVector Foo
+-- >>> deriving via (U.UnboxViaPrim Int) instance G.Vector  U.Vector  Foo
+-- >>> instance U.Unbox Foo
 --
 -- @since 0.13.0.0
 newtype UnboxViaPrim a = UnboxViaPrim a
