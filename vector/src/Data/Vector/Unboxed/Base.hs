@@ -184,36 +184,36 @@ instance G.Vector Vector () where
 -- >>> -- Needed to derive Prim
 -- >>> :set -XGeneralizedNewtypeDeriving -XDataKinds -XUnboxedTuples -XPolyKinds
 -- >>>
--- >>> import qualified Data.Vector.Unboxed         as U
--- >>> import qualified Data.Vector.Primitive       as P
--- >>> import qualified Data.Vector.Generic         as G
--- >>> import qualified Data.Vector.Generic.Mutable as M
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> import qualified Data.Vector.Primitive       as VP
+-- >>> import qualified Data.Vector.Unboxed         as VU
 -- >>>
--- >>> newtype Foo = Foo Int deriving P.Prim
+-- >>> newtype Foo = Foo Int deriving VP.Prim
 -- >>>
--- >>> newtype instance U.MVector s Foo = MV_Int (P.MVector s Foo)
--- >>> newtype instance U.Vector    Foo = V_Int  (P.Vector    Foo)
--- >>> deriving via (U.UnboxViaPrim Foo) instance M.MVector MVector Foo
--- >>> deriving via (U.UnboxViaPrim Foo) instance G.Vector  Vector  Foo
--- >>> instance Unbox Foo
+-- >>> newtype instance VU.MVector s Foo = MV_Int (VP.MVector s Foo)
+-- >>> newtype instance VU.Vector    Foo = V_Int  (VP.Vector    Foo)
+-- >>> deriving via (VU.UnboxViaPrim Foo) instance VGM.MVector VU.MVector Foo
+-- >>> deriving via (VU.UnboxViaPrim Foo) instance VG.Vector   VU.Vector  Foo
+-- >>> instance VU.Unbox Foo
 --
 -- Second example is essentially same but with a twist. Instead of
 -- using @Prim@ instance of data type, we use underlying instance of @Int@:
 --
 -- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia -XMultiParamTypeClasses
 -- >>>
--- >>> import qualified Data.Vector.Unboxed         as U
--- >>> import qualified Data.Vector.Primitive       as P
--- >>> import qualified Data.Vector.Generic         as G
--- >>> import qualified Data.Vector.Generic.Mutable as M
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> import qualified Data.Vector.Primitive       as VP
+-- >>> import qualified Data.Vector.Unboxed         as VU
 -- >>>
 -- >>> newtype Foo = Foo Int
 -- >>>
--- >>> newtype instance U.MVector s Foo = MV_Int (P.MVector s Int)
--- >>> newtype instance U.Vector    Foo = V_Int  (P.Vector    Int)
--- >>> deriving via (U.UnboxViaPrim Int) instance M.MVector MVector Foo
--- >>> deriving via (U.UnboxViaPrim Int) instance G.Vector  Vector  Foo
--- >>> instance Unbox Foo
+-- >>> newtype instance VU.MVector s Foo = MV_Int (VP.MVector s Int)
+-- >>> newtype instance VU.Vector    Foo = V_Int  (VP.Vector    Int)
+-- >>> deriving via (VU.UnboxViaPrim Int) instance VGM.MVector VU.MVector Foo
+-- >>> deriving via (VU.UnboxViaPrim Int) instance VG.Vector   VU.Vector  Foo
+-- >>> instance VU.Unbox Foo
 --
 -- @since 0.13.0.0
 newtype UnboxViaPrim a = UnboxViaPrim a

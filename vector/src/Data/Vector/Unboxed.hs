@@ -46,21 +46,21 @@
 --
 -- >>> :set -XTypeFamilies -XStandaloneDeriving -XMultiParamTypeClasses -XGeneralizedNewtypeDeriving
 -- >>>
--- >>> import qualified Data.Vector.Unboxed         as U
--- >>> import qualified Data.Vector.Generic         as G
--- >>> import qualified Data.Vector.Generic.Mutable as M
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> import qualified Data.Vector.Unboxed         as VU
 -- >>>
 -- >>> newtype Foo = Foo Int
 -- >>>
--- >>> newtype instance U.MVector s Foo = MV_Int (U.MVector s Int)
--- >>> newtype instance U.Vector    Foo = V_Int  (U.Vector    Int)
--- >>> deriving instance M.MVector MVector Foo
--- >>> deriving instance G.Vector  Vector  Foo
--- >>> instance Unbox Foo
+-- >>> newtype instance VU.MVector s Foo = MV_Int (VU.MVector s Int)
+-- >>> newtype instance VU.Vector    Foo = V_Int  (VU.Vector    Int)
+-- >>> deriving instance VGM.MVector VU.MVector Foo
+-- >>> deriving instance VG.Vector   VU.Vector  Foo
+-- >>> instance VU.Unbox Foo
 
 module Data.Vector.Unboxed (
   -- * Unboxed vectors
-  Vector(V_UnboxAs), MVector(..), Unbox,
+  Vector(V_UnboxAs, V_UnboxViaPrim), MVector(..), Unbox,
 
   -- * Accessors
 
