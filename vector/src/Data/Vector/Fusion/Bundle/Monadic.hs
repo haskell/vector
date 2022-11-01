@@ -143,6 +143,7 @@ fromStream :: Monad m => Stream m a -> Size -> Bundle m v a
 {-# INLINE fromStream #-}
 fromStream (Stream step t) sz = Bundle (Stream step t) (Stream step' t) Nothing sz
   where
+    {-# INLINE_INNER step' #-}
     step' s = do r <- step s
                  return $ fmap (\x -> Chunk 1 (\v -> stToPrim $ M.basicUnsafeWrite v 0 x)) r
 

@@ -241,16 +241,20 @@ infixr 5 ++
 Stream stepa ta ++ Stream stepb tb = Stream step (Left ta)
   where
     {-# INLINE_INNER step #-}
-    step (Left  sa) = do
-                        r <- stepa sa
-                        case r of
-                          Yield x sa' -> return $ Yield x (Left  sa')
-                          Done        -> step (Right tb)
-    step (Right sb) = do
-                        r <- stepb sb
-                        case r of
-                          Yield x sb' -> return $ Yield x (Right sb')
-                          Done        -> return $ Done
+    step s0 =
+      let
+        -- go is a join point
+        go (Left  sa) = do
+                          r <- stepa sa
+                          case r of
+                            Yield x sa' -> return $ Yield x (Left  sa')
+                            Done        -> go (Right tb)
+        go (Right sb) = do
+                          r <- stepb sb
+                          case r of
+                            Yield x sb' -> return $ Yield x (Right sb')
+                            Done        -> return $ Done
+      in go s0
 
 -- Accessing elements
 -- ------------------
@@ -336,17 +340,21 @@ init :: (HasCallStack, Monad m) => Stream m a -> Stream m a
 init (Stream step t) = Stream step' (Nothing, t)
   where
     {-# INLINE_INNER step' #-}
-    step' (Nothing, s) = do
-                           r <- step s
-                           case r of
-                             Yield x s' -> step' (Just x,  s')
-                             Done       -> return (error emptyStream)
+    step' s0 =
+      let 
+        -- go is a join point
+        go (Nothing, s) = do
+                            r <- step s
+                            case r of
+                              Yield x s' -> go (Just x,  s')
+                              Done       -> return (error emptyStream)
 
-    step' (Just x,  s) = liftM (\r ->
-                           case r of
-                             Yield y s' -> Yield x (Just y, s')
-                             Done       -> Done
-                         ) (step s)
+        go (Just x,  s) = liftM (\r ->
+                            case r of
+                              Yield y s' -> Yield x (Just y, s')
+                              Done       -> Done
+                          ) (step s)
+      in go s0
 
 -- | All but the first element
 tail :: (HasCallStack, Monad m) => Stream m a -> Stream m a
@@ -354,17 +362,21 @@ tail :: (HasCallStack, Monad m) => Stream m a -> Stream m a
 tail (Stream step t) = Stream step' (Left t)
   where
     {-# INLINE_INNER step' #-}
-    step' (Left  s) = do
-                        r <- step s
-                        case r of
-                          Yield _ s' -> step' (Right s')
-                          Done       -> return (error emptyStream)
+    step' s0 =
+      let
+        -- go is a join point
+        go (Left  s) = do
+                         r <- step s
+                         case r of
+                           Yield _ s' -> go (Right s')
+                           Done       -> return (error emptyStream)
 
-    step' (Right s) = liftM (\r ->
-                        case r of
-                          Yield x s' -> Yield x (Right s')
-                          Done       -> Done
-                      ) (step s)
+        go (Right s) = liftM (\r ->
+                         case r of
+                           Yield x s' -> Yield x (Right s')
+                           Done       -> Done
+                       ) (step s)
+      in go s0
 
 -- | The first @n@ elements
 take :: Monad m => Int -> Stream m a -> Stream m a
@@ -385,18 +397,22 @@ drop :: Monad m => Int -> Stream m a -> Stream m a
 drop n (Stream step t) = Stream step' (t, Just n)
   where
     {-# INLINE_INNER step' #-}
-    step' (s, Just i) | i > 0 = do
-                                  r <- step s
-                                  case r of
-                                     Yield _ s' -> step' (s', Just (i-1))
-                                     Done       -> return Done
-                      | otherwise = step' (s, Nothing)
+    step' s0 =
+      let
+        -- go is a join point
+        go (s, Just i) | i > 0 = do
+                                   r <- step s
+                                   case r of
+                                      Yield _ s' -> go (s', Just (i-1))
+                                      Done       -> return Done
+                       | otherwise = go (s, Nothing)
 
-    step' (s, Nothing) = liftM (\r ->
-                           case r of
-                             Yield x s' -> Yield x (s', Nothing)
-                             Done       -> Done
-                           ) (step s)
+        go (s, Nothing) = liftM (\r ->
+                            case r of
+                              Yield x s' -> Yield x (s', Nothing)
+                              Done       -> Done
+                            ) (step s)
+      in go s0
 
 -- Mapping
 -- -------
@@ -494,20 +510,24 @@ zipWithM :: Monad m => (a -> b -> m c) -> Stream m a -> Stream m b -> Stream m c
 zipWithM f (Stream stepa ta) (Stream stepb tb) = Stream step (ta, tb, Nothing)
   where
     {-# INLINE_INNER step #-}
-    step (sa, sb, Nothing) = do 
-                               r <- stepa sa
-                               case r of
-                                 Yield x sa' -> step (sa', sb, Just x)
-                                 Done        -> return Done
+    step s0 =
+      let
+        -- go is a join point
+        go (sa, sb, Nothing) = do 
+                                 r <- stepa sa
+                                 case r of
+                                   Yield x sa' -> go (sa', sb, Just x)
+                                   Done        -> return Done
 
-    step (sa, sb, Just x)  = do
-                               r <- stepb sb
-                               case r of
-                                 Yield y sb' ->
-                                   do
-                                     z <- f x y
-                                     return $ Yield z (sa, sb', Nothing)
-                                 Done        -> return Done
+        go (sa, sb, Just x)  = do
+                                 r <- stepb sb
+                                 case r of
+                                   Yield y sb' ->
+                                     do
+                                       z <- f x y
+                                       return $ Yield z (sa, sb', Nothing)
+                                   Done        -> return Done
+      in go s0
 
 zipWithM_ :: Monad m => (a -> b -> m c) -> Stream m a -> Stream m b -> m ()
 {-# INLINE zipWithM_ #-}
@@ -520,23 +540,27 @@ zipWith3M f (Stream stepa ta)
             (Stream stepc tc) = Stream step (ta, tb, tc, Nothing)
   where
     {-# INLINE_INNER step #-}
-    step (sa, sb, sc, Nothing) = do
-        r <- stepa sa
-        case r of
-            Yield x sa' -> step (sa', sb, sc, Just (x, Nothing))
-            Done        -> return Done
+    step s0 =
+      let
+        -- go is a join point
+        go (sa, sb, sc, Nothing) = do
+            r <- stepa sa
+            case r of
+                Yield x sa' -> go (sa', sb, sc, Just (x, Nothing))
+                Done        -> return Done
 
-    step (sa, sb, sc, Just (x, Nothing)) = do
-        r <- stepb sb
-        case r of
-            Yield y sb' -> step (sa, sb', sc, Just (x, Just y))
-            Done        -> return Done
+        go (sa, sb, sc, Just (x, Nothing)) = do
+            r <- stepb sb
+            case r of
+                Yield y sb' -> go (sa, sb', sc, Just (x, Just y))
+                Done        -> return Done
 
-    step (sa, sb, sc, Just (x, Just y)) = do
-        r <- stepc sc
-        case r of
-            Yield z sc' -> f x y z >>= (\res -> return $ Yield res (sa, sb, sc', Nothing))
-            Done        -> return $ Done
+        go (sa, sb, sc, Just (x, Just y)) = do
+            r <- stepc sc
+            case r of
+                Yield z sc' -> f x y z >>= (\res -> return $ Yield res (sa, sb, sc', Nothing))
+                Done        -> return $ Done
+      in go s0
 
 zipWith4M :: Monad m => (a -> b -> c -> d -> m e)
                      -> Stream m a -> Stream m b -> Stream m c -> Stream m d
@@ -676,14 +700,18 @@ mapMaybe :: Monad m => (a -> Maybe b) -> Stream m a -> Stream m b
 mapMaybe f (Stream step t) = Stream step' t
   where
     {-# INLINE_INNER step' #-}
-    step' s = do
-                r <- step s
-                case r of
-                  Yield x s' -> do
-                                  case f x of
-                                    Nothing -> step' s'
-                                    Just b' -> return $ Yield b' s'
-                  Done       -> return $ Done
+    step' s0 =
+      let
+        -- go is a join point
+        go s = do
+                 r <- step s
+                 case r of
+                   Yield x s' -> do
+                                   case f x of
+                                     Nothing -> go s'
+                                     Just b' -> return $ Yield b' s'
+                   Done       -> return $ Done
+      in go s0
 
 catMaybes :: Monad m => Stream m (Maybe a) -> Stream m a
 catMaybes = mapMaybe id
@@ -694,14 +722,18 @@ filterM :: Monad m => (a -> m Bool) -> Stream m a -> Stream m a
 filterM f (Stream step t) = Stream step' t
   where
     {-# INLINE_INNER step' #-}
-    step' s = do
-                r <- step s
-                case r of
-                  Yield x s' -> do
-                                  b <- f x
-                                  if b then return $ Yield x s'
-                                       else step'   s'
-                  Done       -> return $ Done
+    step' s0 =
+      let
+        -- go is a join point
+        go s = do
+                 r <- step s
+                 case r of
+                   Yield x s' -> do
+                                   b <- f x
+                                   if b then return $ Yield x s'
+                                        else go s'
+                   Done       -> return $ Done
+      in go s0
 
 -- | Apply monadic function to each element and drop all Nothings
 --
@@ -711,15 +743,19 @@ mapMaybeM :: Monad m => (a -> m (Maybe b)) -> Stream m a -> Stream m b
 mapMaybeM f (Stream step t) = Stream step' t
   where
     {-# INLINE_INNER step' #-}
-    step' s = do
-                r <- step s
-                case r of
-                  Yield x s' -> do
-                                  fx <- f x
-                                  case fx of
-                                    Nothing -> step' s'
-                                    Just b  -> return $ Yield b s'
-                  Done       -> return $ Done
+    step' s0 =
+      let
+        -- go is a join point
+        go s = do
+                 r <- step s
+                 case r of
+                   Yield x s' -> do
+                                   fx <- f x
+                                   case fx of
+                                     Nothing -> go s'
+                                     Just b  -> return $ Yield b s'
+                   Done       -> return $ Done
+      in go s0
 
 -- | Drop repeated adjacent elements.
 uniq :: (Eq a, Monad m) => Stream m a -> Stream m a
@@ -727,15 +763,19 @@ uniq :: (Eq a, Monad m) => Stream m a -> Stream m a
 uniq (Stream step st) = Stream step' (Nothing,st)
   where
     {-# INLINE_INNER step' #-}
-    step' (Nothing, s) = do r <- step s
-                            case r of
-                              Yield x s' -> return $ Yield x (Just x , s')
-                              Done       -> return   Done
-    step' (Just x0, s) = do r <- step s
-                            case r of
-                              Yield x s' | x == x0   -> step' (Just x0, s')
-                                         | otherwise -> return $ Yield x (Just x , s')
-                              Done       -> return   Done
+    step' s0 =
+      let
+        -- go is a join point
+        go (Nothing, s) = do r <- step s
+                             case r of
+                               Yield x s' -> return $ Yield x (Just x , s')
+                               Done       -> return   Done
+        go (Just x0, s) = do r <- step s
+                             case r of
+                               Yield x s' | x == x0   -> go (Just x0, s')
+                                          | otherwise -> return $ Yield x (Just x , s')
+                               Done       -> return   Done
+      in go s0
 
 -- | Longest prefix of elements that satisfy the predicate
 takeWhile :: Monad m => (a -> Bool) -> Stream m a -> Stream m a
@@ -772,24 +812,28 @@ dropWhileM f (Stream step t) = Stream step' (DropWhile_Drop t)
     -- declarations would be nice!
 
     {-# INLINE_INNER step' #-}
-    step' (DropWhile_Drop s)
-      = do
-          r <- step s
-          case r of
-            Yield x s' -> do
-                            b <- f x
-                            if b then step' (DropWhile_Drop    s')
-                                 else step' (DropWhile_Yield x s')
-            Done       -> return $ Done
+    step' s0 =
+      let
+        -- go is a join point
+        go (DropWhile_Drop s)
+          = do
+              r <- step s
+              case r of
+                Yield x s' -> do
+                                b <- f x
+                                if b then go (DropWhile_Drop    s')
+                                     else go (DropWhile_Yield x s')
+                Done       -> return $ Done
 
-    step' (DropWhile_Yield x s) = return $ Yield x (DropWhile_Next s)
+        go (DropWhile_Yield x s) = return $ Yield x (DropWhile_Next s)
 
-    step' (DropWhile_Next s)
-      = do
-          r <- step s
-          case r of
-            Yield x s' -> step' (DropWhile_Yield x s')
-            Done       -> return Done
+        go (DropWhile_Next s)
+          = do
+              r <- step s
+              case r of
+                Yield x s' -> go (DropWhile_Yield x s')
+                Done       -> return Done
+      in go s0
 
 -- Searching
 -- ---------
@@ -1025,20 +1069,25 @@ concatMap f = concatMapM (return . f)
 
 concatMapM :: Monad m => (a -> m (Stream m b)) -> Stream m a -> Stream m b
 {-# INLINE_FUSED concatMapM #-}
-concatMapM f (Stream step t) = Stream concatMap_go (Left t)
+concatMapM f (Stream step t) = Stream step' (Left t)
   where
-    concatMap_go (Left s) = do
-        r <- step s
-        case r of
-            Yield a s' -> do
-                b_stream <- f a
-                concatMap_go (Right (b_stream, s'))
-            Done       -> return Done
-    concatMap_go (Right (Stream inner_step inner_s, s)) = do
-        r <- inner_step inner_s
-        case r of
-            Yield b inner_s' -> return $ Yield b (Right (Stream inner_step inner_s', s))
-            Done             -> concatMap_go (Left s)
+    {-# INLINE_INNER step' #-}
+    step' s0 =
+      let
+        -- go is a join point
+        go (Left s) = do
+          r <- step s
+          case r of
+              Yield a s' -> do
+                  b_stream <- f a
+                  go (Right (b_stream, s'))
+              Done       -> return Done
+        go (Right (Stream inner_step inner_s, s)) = do
+          r <- inner_step inner_s
+          case r of
+              Yield b inner_s' -> return $ Yield b (Right (Stream inner_step inner_s', s))
+              Done             -> go (Left s)
+      in go s0
 
 -- | Create a 'Stream' of values from a 'Stream' of streamable things
 flatten :: Monad m => (a -> m s) -> (s -> m (Step s b)) -> Stream m a -> Stream m b
@@ -1046,20 +1095,24 @@ flatten :: Monad m => (a -> m s) -> (s -> m (Step s b)) -> Stream m a -> Stream 
 flatten mk istep (Stream ostep u) = Stream step (Left u)
   where
     {-# INLINE_INNER step #-}
-    step (Left t) = do
-                      r <- ostep t
-                      case r of
-                        Yield a t' -> do
-                                        s <- mk a
-                                        s `seq` step (Right (s,t'))
-                        Done       -> return $ Done
+    step s0 =
+      let
+        -- go is a join point
+        go (Left t) = do
+                        r <- ostep t
+                        case r of
+                          Yield a t' -> do
+                                          s <- mk a
+                                          s `seq` go (Right (s,t'))
+                          Done       -> return $ Done
 
 
-    step (Right (s,t)) = do
-                           r <- istep s
-                           case r of
-                             Yield x s' -> return $ Yield x (Right (s',t))
-                             Done       -> step (Left t)
+        go (Right (s,t)) = do
+                             r <- istep s
+                             case r of
+                               Yield x s' -> return $ Yield x (Right (s',t))
+                               Done       -> go (Left t)
+      in go s0
 
 -- Unfolding
 -- ---------
