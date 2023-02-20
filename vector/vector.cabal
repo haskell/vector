@@ -140,7 +140,7 @@ Library
         vector.h
 
   Build-Depends: base >= 4.9 && < 4.19
-               , primitive >= 0.6.4.0 && < 0.8
+               , primitive >= 0.6.4.0 && < 0.9
                , deepseq >= 1.1 && < 1.5
                , vector-stream >= 0.1 && < 0.2
 
