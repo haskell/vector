@@ -20,9 +20,9 @@ module Data.Vector.Fusion.Bundle.Size (
 import Data.Vector.Fusion.Util ( delay_inline )
 
 -- | Size hint
-data Size = Exact !Int         -- ^ Exact size
-          | Max   !Int         -- ^ Upper bound on the size
-          | Unknown            -- ^ Unknown size
+data Size = Exact {-# UNPACK #-} !Int -- ^ Exact size
+          | Max   {-# UNPACK #-} !Int -- ^ Upper bound on the size
+          | Unknown                   -- ^ Unknown size
         deriving( Eq, Show )
 
 instance Num Size where
