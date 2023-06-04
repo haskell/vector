@@ -76,8 +76,8 @@ import           Data.Vector.Internal.Check
 import           Data.Primitive.Array
 import           Control.Monad.Primitive
 
-import Prelude hiding ( length, null, replicate, reverse, read,
-                        take, drop, splitAt, init, tail, foldr, foldl, mapM_ )
+import Prelude hiding ( Foldable(..), replicate, reverse, read,
+                        take, drop, splitAt, init, tail, mapM_ )
 
 import Data.Typeable ( Typeable )
 

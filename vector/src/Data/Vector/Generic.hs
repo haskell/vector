@@ -196,16 +196,15 @@ import           Data.Vector.Internal.Check
 
 import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
-import Prelude hiding ( length, null,
+import Prelude hiding ( Foldable(..),
                         replicate, (++), concat,
                         head, last,
                         init, tail, take, drop, splitAt, reverse,
                         map, concat, concatMap,
                         zipWith, zipWith3, zip, zip3, unzip, unzip3,
                         filter, takeWhile, dropWhile, span, break,
-                        elem, notElem,
-                        foldl, foldl1, foldr, foldr1, foldMap,
-                        all, any, and, or, sum, product, maximum, minimum,
+                        notElem,
+                        all, any, and, or,
                         scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_, sequence, sequence_,

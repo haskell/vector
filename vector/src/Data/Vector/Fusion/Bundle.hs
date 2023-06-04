@@ -89,15 +89,14 @@ import Data.Vector.Fusion.Bundle.Monadic ( Chunk(..), lift )
 import qualified Data.Vector.Fusion.Bundle.Monadic as M
 import qualified Data.Vector.Fusion.Stream.Monadic as S
 
-import Prelude hiding ( length, null,
+import Prelude hiding ( Foldable(..),
                         replicate, (++),
                         head, last, (!!),
                         init, tail, take, drop,
                         map, concatMap,
                         zipWith, zipWith3, zip, zip3,
                         filter, takeWhile, dropWhile,
-                        elem, notElem,
-                        foldl, foldl1, foldr, foldr1,
+                        notElem,
                         and, or,
                         scanl, scanl1,
                         enumFromTo, enumFromThenTo,

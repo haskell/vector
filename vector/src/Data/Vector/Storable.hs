@@ -183,16 +183,15 @@ import Control.DeepSeq ( NFData(rnf)
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
 
-import Prelude hiding ( length, null,
+import Prelude hiding ( Foldable(..),
                         replicate, (++), concat,
                         head, last,
                         init, tail, take, drop, splitAt, reverse,
                         map, concatMap,
                         zipWith, zipWith3, zip, zip3, unzip, unzip3,
                         filter, takeWhile, dropWhile, span, break,
-                        elem, notElem,
-                        foldl, foldl1, foldr, foldr1, foldMap,
-                        all, any, and, or, sum, product, minimum, maximum,
+                        notElem,
+                        all, any, and, or,
                         scanl, scanl1, scanr, scanr1,
                         enumFromTo, enumFromThenTo,
                         mapM, mapM_ )

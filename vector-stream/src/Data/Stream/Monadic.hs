@@ -89,15 +89,14 @@ import Data.Char      ( ord )
 import GHC.Base       ( unsafeChr )
 import Control.Monad  ( liftM )
 import qualified Prelude
-import Prelude hiding ( length, null,
+import Prelude hiding ( Foldable(..),
                         replicate, (++),
                         head, last, (!!),
                         init, tail, take, drop,
                         map, mapM, mapM_, concatMap,
                         zipWith, zipWith3, zip, zip3,
                         filter, takeWhile, dropWhile,
-                        elem, notElem,
-                        foldl, foldl1, foldr, foldr1,
+                        notElem,
                         and, or,
                         scanl, scanl1,
                         enumFromTo, enumFromThenTo )

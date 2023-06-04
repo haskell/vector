@@ -90,8 +90,8 @@ import           Data.Vector.Internal.Check
 
 import Control.Monad.Primitive ( PrimMonad(..), RealWorld, stToPrim )
 
-import Prelude hiding ( length, null, replicate, reverse, map, read,
-                        take, drop, splitAt, init, tail, mapM_, foldr, foldl )
+import Prelude hiding ( Foldable(..), replicate, reverse, map, read,
+                        take, drop, splitAt, init, tail, mapM_ )
 
 #include "vector.h"
 

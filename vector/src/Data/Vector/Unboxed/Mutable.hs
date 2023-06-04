@@ -70,9 +70,9 @@ import qualified Data.Vector.Generic.Mutable as G
 import Data.Vector.Fusion.Util ( delayed_min )
 import Control.Monad.Primitive
 
-import Prelude hiding ( length, null, replicate, reverse, map, read,
+import Prelude hiding ( Foldable(..), replicate, reverse, map, read,
                         take, drop, splitAt, init, tail,
-                        zip, zip3, unzip, unzip3, foldr, foldl, mapM_ )
+                        zip, zip3, unzip, unzip3, mapM_ )
 
 -- don't import an unused Data.Vector.Internal.Check
 #define NOT_VECTOR_MODULE
