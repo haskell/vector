@@ -209,18 +209,10 @@ import Data.Vector.Fusion.Util ( delayed_min )
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
 
-import Prelude hiding ( Foldable(..),
-                        replicate, (++), concat,
-                        head, last,
-                        init, tail, take, drop, splitAt, reverse,
-                        map, concatMap,
-                        zipWith, zipWith3, zip, zip3, unzip, unzip3,
-                        filter, takeWhile, dropWhile, span, break,
-                        notElem,
-                        all, any, and, or,
-                        scanl, scanl1, scanr, scanr1,
-                        enumFromTo, enumFromThenTo,
-                        mapM, mapM_ )
+import Prelude
+  ( Eq, Ord, Num, Enum, Monoid, Traversable, Monad, Read, Show, Bool, Ordering(..), Int, Maybe, Either
+  , compare, mempty, mappend, mconcat, showsPrec
+  , (<), (<=), (>), (>=), (==), (/=) )
 
 import Text.Read      ( Read(..), readListPrecDefault )
 import Data.Semigroup ( Semigroup(..) )
@@ -1969,3 +1961,6 @@ copy = G.copy
 
 #define DEFINE_IMMUTABLE
 #include "unbox-tuple-instances"
+
+-- $setup
+-- >>> import Prelude (Bool(True, False), ($), (+), min, max, even, fst, pred, succ, undefined)

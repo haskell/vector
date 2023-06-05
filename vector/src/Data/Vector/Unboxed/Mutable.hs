@@ -70,9 +70,7 @@ import qualified Data.Vector.Generic.Mutable as G
 import Data.Vector.Fusion.Util ( delayed_min )
 import Control.Monad.Primitive
 
-import Prelude hiding ( Foldable(..), replicate, reverse, map, read,
-                        take, drop, splitAt, init, tail,
-                        zip, zip3, unzip, unzip3, mapM_ )
+import Prelude ( Ord, Bool, Int, Maybe )
 
 -- don't import an unused Data.Vector.Internal.Check
 #define NOT_VECTOR_MODULE
@@ -601,3 +599,6 @@ ifoldrM' = G.ifoldrM'
 
 #define DEFINE_MUTABLE
 #include "unbox-tuple-instances"
+
+-- $setup
+-- >>> import Prelude (Char, (*), ($))

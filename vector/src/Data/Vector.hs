@@ -187,6 +187,9 @@ import Control.DeepSeq ( NFData(rnf)
                        )
 
 import Control.Monad ( MonadPlus(..), liftM, ap )
+#if !MIN_VERSION_base(4,13,0)
+import Control.Monad (fail)
+#endif
 import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
 import qualified Control.Monad.Fail as Fail
@@ -194,18 +197,10 @@ import Control.Monad.Fix ( MonadFix (mfix) )
 import Control.Monad.Zip
 import Data.Function ( fix )
 
-import Prelude hiding ( Foldable(..),
-                        replicate, (++), concat,
-                        head, last,
-                        init, tail, take, drop, splitAt, reverse,
-                        map, concatMap,
-                        zipWith, zipWith3, zip, zip3, unzip, unzip3,
-                        filter, takeWhile, dropWhile, span, break,
-                        notElem,
-                        all, any, and, or,
-                        scanl, scanl1, scanr, scanr1,
-                        enumFromTo, enumFromThenTo,
-                        mapM, mapM_, sequence, sequence_ )
+import Prelude
+  ( Eq, Ord, Num, Enum, Monoid, Functor, Monad, Show, Bool, Ordering(..), Int, Maybe, Either
+  , compare, mempty, mappend, mconcat, return, showsPrec, fmap, otherwise, id, flip, const
+  , (>>=), (+), (-), (<), (<=), (>), (>=), (==), (/=), (&&), (.), ($) )
 
 import Data.Functor.Classes (Eq1 (..), Ord1 (..), Read1 (..), Show1 (..))
 import Data.Typeable  ( Typeable )
@@ -2246,3 +2241,4 @@ copy = G.copy
 
 -- $setup
 -- >>> :set -Wno-type-defaults
+-- >>> import Prelude (Char, String, Bool(True, False), min, max, fst, even, undefined)

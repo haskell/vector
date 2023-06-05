@@ -196,19 +196,10 @@ import           Data.Vector.Internal.Check
 
 import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
-import Prelude hiding ( Foldable(..),
-                        replicate, (++), concat,
-                        head, last,
-                        init, tail, take, drop, splitAt, reverse,
-                        map, concat, concatMap,
-                        zipWith, zipWith3, zip, zip3, unzip, unzip3,
-                        filter, takeWhile, dropWhile, span, break,
-                        notElem,
-                        all, any, and, or,
-                        scanl, scanl1, scanr, scanr1,
-                        enumFromTo, enumFromThenTo,
-                        mapM, mapM_, sequence, sequence_,
-                        showsPrec )
+import Prelude
+  ( Eq, Ord, Num, Enum, Monoid, Monad, Read, Show, Bool, Ordering(..), Int, Maybe(..), Either, IO, ShowS, ReadS, String
+  , compare, mempty, mappend, return, fmap, otherwise, id, flip, seq, error, undefined, uncurry, shows, fst, snd, min, max, not
+  , (>>=), (+), (-), (*), (<), (==), (.), ($), (=<<), (>>), (<$>) )
 
 import qualified Text.Read as Read
 import qualified Data.List.NonEmpty as NonEmpty
@@ -2663,3 +2654,4 @@ dataCast f = gcast1 f
 -- $setup
 -- >>> :set -XFlexibleContexts
 -- >>> :set -Wno-type-defaults
+-- >>> import Prelude (Bool(True, False), even)

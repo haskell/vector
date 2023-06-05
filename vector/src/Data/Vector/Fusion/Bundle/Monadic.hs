@@ -100,17 +100,10 @@ import qualified Data.List as List
 import Data.Char      ( ord )
 import GHC.Base       ( unsafeChr )
 import Control.Monad  ( liftM )
-import Prelude hiding ( Foldable(..),
-                        replicate, (++),
-                        head, last, (!!),
-                        init, tail, take, drop,
-                        map, mapM, mapM_, concatMap,
-                        zipWith, zipWith3, zip, zip3,
-                        filter, takeWhile, dropWhile,
-                        notElem,
-                        and, or,
-                        scanl, scanl1,
-                        enumFromTo, enumFromThenTo )
+import Prelude
+  ( Eq, Ord, Num, Enum, Functor, Monad, Bool(..), Ordering, Char, Int, Word, Integer, Float, Double, Maybe(..), Either(..), Integral, RealFrac
+  , return, fmap, otherwise, id, const, seq, max, maxBound, fromIntegral, truncate
+  , (+), (-), (<), (<=), (>), (>=), (==), (/=), (&&), (.), ($), (<$), (/) )
 
 import Data.Int  ( Int8, Int16, Int32 )
 import Data.Word ( Word8, Word16, Word32, Word64 )

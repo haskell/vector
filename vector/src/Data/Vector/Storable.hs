@@ -183,18 +183,10 @@ import Control.DeepSeq ( NFData(rnf)
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
 
-import Prelude hiding ( Foldable(..),
-                        replicate, (++), concat,
-                        head, last,
-                        init, tail, take, drop, splitAt, reverse,
-                        map, concatMap,
-                        zipWith, zipWith3, zip, zip3, unzip, unzip3,
-                        filter, takeWhile, dropWhile, span, break,
-                        notElem,
-                        all, any, and, or,
-                        scanl, scanl1, scanr, scanr1,
-                        enumFromTo, enumFromThenTo,
-                        mapM, mapM_ )
+import Prelude
+  ( Eq, Ord, Num, Enum, Monoid, Traversable, Monad, Read, Show, Bool, Ordering(..), Int, Maybe, Either, IO
+  , compare, mempty, mappend, mconcat, showsPrec, return, seq, undefined, div
+  , (*), (<), (<=), (>), (>=), (==), (/=), (&&), (.), ($) )
 
 import Data.Typeable  ( Typeable )
 import Data.Data      ( Data(..) )
@@ -1992,3 +1984,6 @@ unsafeToForeignPtr0 (Vector n fp) = (fp, n)
 unsafeWith :: Storable a => Vector a -> (Ptr a -> IO b) -> IO b
 {-# INLINE unsafeWith #-}
 unsafeWith (Vector _ fp) = withForeignPtr fp
+
+-- $setup
+-- >>> import Prelude (Bool(..), Double, ($), (+), (/), succ, even, min, max)

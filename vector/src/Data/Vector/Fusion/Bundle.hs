@@ -89,18 +89,10 @@ import Data.Vector.Fusion.Bundle.Monadic ( Chunk(..), lift )
 import qualified Data.Vector.Fusion.Bundle.Monadic as M
 import qualified Data.Vector.Fusion.Stream.Monadic as S
 
-import Prelude hiding ( Foldable(..),
-                        replicate, (++),
-                        head, last, (!!),
-                        init, tail, take, drop,
-                        map, concatMap,
-                        zipWith, zipWith3, zip, zip3,
-                        filter, takeWhile, dropWhile,
-                        notElem,
-                        and, or,
-                        scanl, scanl1,
-                        enumFromTo, enumFromThenTo,
-                        mapM, mapM_ )
+import Prelude
+  ( Eq, Ord, Num, Enum, Monad, Bool, Ordering, Int, Maybe
+  , compare, return, seq
+  , (==), (.) )
 
 import Data.Functor.Classes (Eq1 (..), Ord1 (..))
 import GHC.Base ( build )
