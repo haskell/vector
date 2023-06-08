@@ -121,9 +121,23 @@ instance TestData ty where { \
 id_TestData(())
 id_TestData(Bool)
 id_TestData(Int)
-id_TestData(Float)
-id_TestData(Double)
 id_TestData(Ordering)
+
+instance TestData Float where
+  type Model Float = Float
+  model = id
+  unmodel = id
+
+  type EqTest Float = Property
+  equal x y = property (x == y || (isNaN x && isNaN y))
+
+instance TestData Double where
+  type Model Double = Double
+  model = id
+  unmodel = id
+
+  type EqTest Double = Property
+  equal x y = property (x == y || (isNaN x && isNaN y))
 
 bimapEither :: (a -> b) -> (c -> d) -> Either a c -> Either b d
 bimapEither f _ (Left a) = Left (f a)
