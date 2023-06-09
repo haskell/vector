@@ -90,8 +90,10 @@ import           Data.Vector.Internal.Check
 
 import Control.Monad.Primitive ( PrimMonad(..), RealWorld, stToPrim )
 
-import Prelude hiding ( length, null, replicate, reverse, map, read,
-                        take, drop, splitAt, init, tail, mapM_, foldr, foldl )
+import Prelude
+  ( Ord, Monad, Bool(..), Int, Maybe(..), Either(..)
+  , return, otherwise, flip, const, seq, min, max, not, pure
+  , (>>=), (+), (-), (<), (<=), (>=), (==), (/=), (.), ($), (=<<), (>>), (<$>) )
 
 #include "vector.h"
 
@@ -1248,3 +1250,6 @@ nextPermutation v
                       l' = if kval' < cur then i else l
                   loop kval' k' l' cur (i+1)
           dim = length v
+
+-- $setup
+-- >>> import Prelude ((*))

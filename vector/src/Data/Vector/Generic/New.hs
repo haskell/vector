@@ -36,7 +36,10 @@ import           Data.Vector.Fusion.Bundle.Size
 import Control.Monad.Primitive
 import Control.Monad.ST ( ST )
 import Control.Monad  ( liftM )
-import Prelude hiding ( init, tail, take, drop, reverse, map, filter )
+import Prelude
+  ( Monad, Int
+  , return, seq
+  , (.), (=<<) )
 
 -- Data.Vector.Internal.Check is unused
 #define NOT_VECTOR_MODULE

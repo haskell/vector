@@ -175,19 +175,10 @@ import Control.Monad ( liftM )
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
 
-import Prelude hiding ( length, null,
-                        replicate, (++), concat,
-                        head, last,
-                        init, tail, take, drop, splitAt, reverse,
-                        map, concatMap,
-                        zipWith, zipWith3, zip, zip3, unzip, unzip3,
-                        filter, takeWhile, dropWhile, span, break,
-                        elem, notElem,
-                        foldl, foldl1, foldr, foldr1, foldMap,
-                        all, any, sum, product, minimum, maximum,
-                        scanl, scanl1, scanr, scanr1,
-                        enumFromTo, enumFromThenTo,
-                        mapM, mapM_ )
+import Prelude
+  ( Eq, Ord, Num, Enum, Monoid, Traversable, Monad, Read, Show, Bool, Ordering(..), Int, Maybe, Either
+  , compare, mempty, mappend, mconcat, showsPrec, return, otherwise, seq, error, undefined
+  , (+), (*), (<), (<=), (>), (>=), (==), (/=), ($!) )
 
 import Data.Typeable  ( Typeable )
 import Data.Data      ( Data(..) )
@@ -1890,3 +1881,6 @@ unsafeCopy = G.unsafeCopy
 copy :: (Prim a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE copy #-}
 copy = G.copy
+
+-- $setup
+-- >>> import Prelude (($), min, even, max, succ)

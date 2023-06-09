@@ -82,8 +82,10 @@ import Control.DeepSeq ( NFData(rnf)
 #endif
                        )
 
-import Prelude hiding ( length, null, replicate, reverse, map, read,
-                        take, drop, splitAt, init, tail, foldr, foldl, mapM_ )
+import Prelude
+  ( Ord, Bool, Int, Maybe
+  , otherwise, error, undefined, div, show, maxBound
+  , (+), (*), (<), (>), (>=), (==), (&&), (||), ($), (++) )
 
 import Data.Typeable ( Typeable )
 import Data.Coerce

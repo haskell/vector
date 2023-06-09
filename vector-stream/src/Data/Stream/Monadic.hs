@@ -89,18 +89,11 @@ import Data.Char      ( ord )
 import GHC.Base       ( unsafeChr )
 import Control.Monad  ( liftM )
 import qualified Prelude
-import Prelude hiding ( length, null,
-                        replicate, (++),
-                        head, last, (!!),
-                        init, tail, take, drop,
-                        map, mapM, mapM_, concatMap,
-                        zipWith, zipWith3, zip, zip3,
-                        filter, takeWhile, dropWhile,
-                        elem, notElem,
-                        foldl, foldl1, foldr, foldr1,
-                        and, or,
-                        scanl, scanl1,
-                        enumFromTo, enumFromThenTo )
+import Prelude
+  ( Functor, Applicative, Monad, Char, String, Int, Word, Integer, Float, Double
+  , Bool(..), Ordering(..), Maybe(..), Either(..), Eq, Ord, Enum, Num, Integral
+  , RealFrac, return, pure, otherwise, seq, error, not, id, show, const, fmap
+  , (==), (<), (<=), (>), (+), (-), (/), ($), (.), (=<<), (>>=) )
 
 import Data.Int  ( Int8, Int16, Int32 )
 import Data.Word ( Word8, Word16, Word32, Word64 )

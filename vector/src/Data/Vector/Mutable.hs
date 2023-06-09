@@ -76,8 +76,10 @@ import           Data.Vector.Internal.Check
 import           Data.Primitive.Array
 import           Control.Monad.Primitive
 
-import Prelude hiding ( length, null, replicate, reverse, read,
-                        take, drop, splitAt, init, tail, foldr, foldl, mapM_ )
+import Prelude
+  ( Ord, Monad, Bool, Ordering(..), Int, Maybe
+  , compare, return, otherwise, error
+  , (>>=), (+), (-), (*), (<), (>), (>=), (&&), (||), ($), (>>) )
 
 import Data.Typeable ( Typeable )
 
@@ -742,3 +744,6 @@ fromMutableArray marr =
 toMutableArray :: PrimMonad m => MVector (PrimState m) a -> m (MutableArray (PrimState m) a)
 {-# INLINE toMutableArray #-}
 toMutableArray (MVector offset size marr) = cloneMutableArray marr offset size
+
+-- $setup
+-- >>> import Prelude (Integer)

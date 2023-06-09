@@ -100,8 +100,10 @@ import qualified Data.Primitive.Types as DPT
 import GHC.Word (Word8, Word16, Word32, Word64)
 import GHC.Ptr (Ptr(..))
 
-import Prelude hiding ( length, null, replicate, reverse, map, read,
-                        take, drop, splitAt, init, tail, foldr, foldl, mapM_ )
+import Prelude
+  ( Ord, Bool, Maybe, IO
+  , return, otherwise, error, undefined, max, div, quot, maxBound, show
+  , (-), (*), (<), (>), (>=), (==), (&&), (||), (.), ($), (++) )
 
 import Data.Typeable ( Typeable )
 
