@@ -6,6 +6,7 @@ module Utilities where
 import Test.QuickCheck
 
 import Data.Foldable
+import Data.Bifunctor
 import qualified Data.Vector as DV
 import qualified Data.Vector.Generic as DVG
 import qualified Data.Vector.Primitive as DVP
@@ -123,10 +124,6 @@ instance TestData Double where
 
   equal x y = property (x == y || (isNaN x && isNaN y))
 
-bimapEither :: (a -> b) -> (c -> d) -> Either a c -> Either b d
-bimapEither f _ (Left a) = Left (f a)
-bimapEither _ g (Right c) = Right (g c)
-
 -- Functorish models
 -- All of these need UndecidableInstances although they are actually well founded. Oh well.
 instance (Eq a, TestData a) => TestData (Maybe a) where
@@ -136,8 +133,8 @@ instance (Eq a, TestData a) => TestData (Maybe a) where
 
 instance (Eq a, TestData a, Eq b, TestData b) => TestData (Either a b) where
   type Model (Either a b) = Either (Model a) (Model b)
-  model = bimapEither model model
-  unmodel = bimapEither unmodel unmodel
+  model = bimap model model
+  unmodel = bimap unmodel unmodel
 
 instance (Eq a, TestData a) => TestData [a] where
   type Model [a] = [Model a]
