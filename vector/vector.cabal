@@ -139,7 +139,7 @@ Library
   Install-Includes:
         vector.h
 
-  Build-Depends: base >= 4.9 && < 4.19
+  Build-Depends: base >= 4.9 && < 4.20
                , primitive >= 0.6.4.0 && < 0.9
                , deepseq >= 1.1 && < 1.6
                , vector-stream >= 0.1 && < 0.2
@@ -272,7 +272,7 @@ test-suite vector-doctest
     buildable: True
   build-depends:
         base      -any
-      , doctest   >=0.15 && <0.22
+      , doctest   >=0.15 && <0.23
       , primitive >= 0.6.4.0 && < 0.9
       , vector    -any
 
