@@ -1,3 +1,4 @@
+{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 module Utilities where
@@ -14,7 +15,6 @@ import qualified Data.Vector.Fusion.Bundle as S
 
 import Control.Monad (foldM, foldM_, zipWithM, zipWithM_)
 import Control.Monad.Trans.Writer
-import Data.Function (on)
 import Data.Functor.Identity
 import Data.List ( sortBy )
 import Data.Maybe (catMaybes)
@@ -67,56 +67,42 @@ class (Testable (EqTest a), Conclusion (EqTest a)) => TestData a where
   unmodel :: Model a -> a
 
   type EqTest a
+  type instance EqTest a = Property
   equal :: a -> a -> EqTest a
+  default equal :: (Eq a, EqTest a ~ Property) => a -> a -> EqTest a
+  equal x y = property (x == y)
+
 
 instance (Eq a, TestData a) => TestData (S.Bundle v a) where
   type Model (S.Bundle v a) = [Model a]
   model   = map model  . S.toList
   unmodel = S.fromList . map unmodel
 
-  type EqTest (S.Bundle v a) = Property
-  equal x y = property (x == y)
-
 instance (Eq a, TestData a) => TestData (DV.Vector a) where
   type Model (DV.Vector a) = [Model a]
   model   = map model    . DV.toList
   unmodel = DV.fromList . map unmodel
-
-  type EqTest (DV.Vector a) = Property
-  equal x y = property (x == y)
 
 instance (Eq a, DVP.Prim a, TestData a) => TestData (DVP.Vector a) where
   type Model (DVP.Vector a) = [Model a]
   model   = map model    . DVP.toList
   unmodel = DVP.fromList . map unmodel
 
-  type EqTest (DVP.Vector a) = Property
-  equal x y = property (x == y)
-
 instance (Eq a, DVS.Storable a, TestData a) => TestData (DVS.Vector a) where
   type Model (DVS.Vector a) = [Model a]
   model   = map model    . DVS.toList
   unmodel = DVS.fromList . map unmodel
-
-  type EqTest (DVS.Vector a) = Property
-  equal x y = property (x == y)
 
 instance (Eq a, DVU.Unbox a, TestData a) => TestData (DVU.Vector a) where
   type Model (DVU.Vector a) = [Model a]
   model   = map model    . DVU.toList
   unmodel = DVU.fromList . map unmodel
 
-  type EqTest (DVU.Vector a) = Property
-  equal x y = property (x == y)
-
 #define id_TestData(ty) \
 instance TestData ty where { \
   type Model ty = ty;        \
   model = id;                \
-  unmodel = id;              \
-                             \
-  type EqTest ty = Property; \
-  equal x y = property (x == y) }
+  unmodel = id }             \
 
 id_TestData(())
 id_TestData(Bool)
@@ -128,7 +114,6 @@ instance TestData Float where
   model = id
   unmodel = id
 
-  type EqTest Float = Property
   equal x y = property (x == y || (isNaN x && isNaN y))
 
 instance TestData Double where
@@ -136,7 +121,6 @@ instance TestData Double where
   model = id
   unmodel = id
 
-  type EqTest Double = Property
   equal x y = property (x == y || (isNaN x && isNaN y))
 
 bimapEither :: (a -> b) -> (c -> d) -> Either a c -> Either b d
@@ -150,56 +134,35 @@ instance (Eq a, TestData a) => TestData (Maybe a) where
   model = fmap model
   unmodel = fmap unmodel
 
-  type EqTest (Maybe a) = Property
-  equal x y = property (x == y)
-
 instance (Eq a, TestData a, Eq b, TestData b) => TestData (Either a b) where
   type Model (Either a b) = Either (Model a) (Model b)
   model = bimapEither model model
   unmodel = bimapEither unmodel unmodel
-
-  type EqTest (Either a b) = Property
-  equal x y = property (x == y)
 
 instance (Eq a, TestData a) => TestData [a] where
   type Model [a] = [Model a]
   model = fmap model
   unmodel = fmap unmodel
 
-  type EqTest [a] = Property
-  equal x y = property (x == y)
-
 instance (Eq a, TestData a) => TestData (Identity a) where
   type Model (Identity a) = Identity (Model a)
   model = fmap model
   unmodel = fmap unmodel
-
-  type EqTest (Identity a) = Property
-  equal = (property .) . on (==) runIdentity
 
 instance (Eq a, TestData a, Eq b, TestData b, Monoid a) => TestData (Writer a b) where
   type Model (Writer a b) = Writer (Model a) (Model b)
   model = mapWriter model
   unmodel = mapWriter unmodel
 
-  type EqTest (Writer a b) = Property
-  equal = (property .) . on (==) runWriter
-
 instance (Eq a, Eq b, TestData a, TestData b) => TestData (a,b) where
   type Model (a,b) = (Model a, Model b)
   model (a,b) = (model a, model b)
   unmodel (a,b) = (unmodel a, unmodel b)
 
-  type EqTest (a,b) = Property
-  equal x y = property (x == y)
-
 instance (Eq a, Eq b, Eq c, TestData a, TestData b, TestData c) => TestData (a,b,c) where
   type Model (a,b,c) = (Model a, Model b, Model c)
   model (a,b,c) = (model a, model b, model c)
   unmodel (a,b,c) = (unmodel a, unmodel b, unmodel c)
-
-  type EqTest (a,b,c) = Property
-  equal x y = property (x == y)
 
 instance (Arbitrary a, Show a, TestData a, TestData b) => TestData (a -> b) where
   type Model (a -> b) = Model a -> Model b
