@@ -304,6 +304,7 @@ idU = id
 -- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia
 -- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
 -- >>> import qualified Data.Vector.Unboxed         as VU
+-- >>> import qualified Data.Vector.Unboxed.Mutable as MVU
 -- >>> import qualified Data.Vector.Generic         as VG
 -- >>> import qualified Data.Vector.Generic.Mutable as VGM
 -- >>> :{
@@ -316,8 +317,8 @@ idU = id
 --   {-# INLINE fromURepr #-}
 -- newtype instance VU.MVector s (Foo a) = MV_Foo (VU.MVector s (Int, a))
 -- newtype instance VU.Vector    (Foo a) = V_Foo  (VU.Vector    (Int, a))
--- deriving via (Foo a `VU.As` (Int, a)) instance VU.Unbox a => VGM.MVector MVector (Foo a)
--- deriving via (Foo a `VU.As` (Int, a)) instance VU.Unbox a => VG.Vector  Vector  (Foo a)
+-- deriving via (Foo a `VU.As` (Int, a)) instance VU.Unbox a => VGM.MVector MVU.MVector (Foo a)
+-- deriving via (Foo a `VU.As` (Int, a)) instance VU.Unbox a => VG.Vector   VU.Vector   (Foo a)
 -- instance VU.Unbox a => VU.Unbox (Foo a)
 -- :}
 --
@@ -325,8 +326,8 @@ idU = id
 -- It's also possible to use generic-based instance for 'IsoUnbox'
 -- which should work for all product types.
 --
--- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia -XDeriveGeneric
--- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
+-- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances -XDeriveGeneric
+-- >>> :set -XDerivingVia
 -- >>> import qualified Data.Vector.Unboxed         as VU
 -- >>> import qualified Data.Vector.Generic         as VG
 -- >>> import qualified Data.Vector.Generic.Mutable as VGM
