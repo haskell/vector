@@ -1015,13 +1015,16 @@ unsafeBackpermute v is = seq v
 -- Safe destructive updates
 -- ------------------------
 
--- | Apply a destructive operation to a vector. The operation will be
+-- | Apply a destructive operation to a vector. The operation may be
 -- performed in place if it is safe to do so and will modify a copy of the
--- vector otherwise.
+-- vector otherwise (See 'Data.Vector.Generic.New.New' for details).
 --
--- @
--- modify (\\v -> 'M.write' v 0 \'x\') ('replicate' 3 \'a\') = \<\'x\',\'a\',\'a\'\>
--- @
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Mutable as MV
+-- >>> modify (\v -> MV.write v 0 'x') $ V.replicate 4 'a'
+-- "xaaa"
 modify :: Vector v a => (forall s. Mutable v s a -> ST s ()) -> v a -> v a
 {-# INLINE modify #-}
 modify p = new . New.modify p . clone
