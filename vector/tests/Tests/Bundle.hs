@@ -1,4 +1,5 @@
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE TypeOperators #-}
 module Tests.Bundle ( tests ) where
 
 import Boilerplater
