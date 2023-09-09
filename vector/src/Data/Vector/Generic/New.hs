@@ -195,7 +195,7 @@ unsafeTail m = apply MVector.unsafeTail m
 
 -- $references
 --
--- * Leshchinskiy, Roman. "Recycle your arrays!." Practical Aspects of
+-- * Leshchinskiy, Roman. "Recycle your arrays!". Practical Aspects of
 --   Declarative Languages: 11th International Symposium, PADL 2009,
 --   Savannah, GA, USA, January 19-20, 2009. Proceedings 11. Springer
 --   Berlin Heidelberg, 2009.
