@@ -507,14 +507,7 @@ generate n f = stToPrim $ generateM n (return . f)
 -- @since 0.12.3.0
 generateM :: (PrimMonad m, MVector v a) => Int -> (Int -> m a) -> m (v (PrimState m) a)
 {-# INLINE generateM #-}
-generateM n f
-  | n <= 0    = new 0
-  | otherwise = do
-      vec <- new n
-      let loop i | i >= n    = return vec
-                 | otherwise = do unsafeWrite vec i =<< f i
-                                  loop (i + 1)
-      loop 0
+generateM n f = munstream (MBundle.generateM n f)
 
 -- | Create a copy of a mutable vector.
 clone :: (PrimMonad m, MVector v a) => v (PrimState m) a -> m (v (PrimState m) a)

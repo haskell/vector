@@ -18,16 +18,18 @@ jobs:
       matrix:
         include:
           # Linux
-          - { cabal: "3.6", os: ubuntu-latest,  ghc: "8.0.2"  }
-          - { cabal: "3.6", os: ubuntu-latest,  ghc: "8.2.2"  }
-          - { cabal: "3.6", os: ubuntu-latest,  ghc: "8.4.4"  }
-          - { cabal: "3.6", os: ubuntu-latest,  ghc: "8.6.5"  }
-          - { cabal: "3.6", os: ubuntu-latest,  ghc: "8.8.4"  }
-          - { cabal: "3.6", os: ubuntu-latest,  ghc: "8.10.7" }
-          - { cabal: "3.6", os: ubuntu-latest,  ghc: "9.0.1"  }
-          - { cabal: "3.6", os: ubuntu-latest,  ghc: "9.2.3"  }
+          - { cabal: "3.10", os: ubuntu-latest,  ghc: "8.0.2"  }
+          - { cabal: "3.10", os: ubuntu-latest,  ghc: "8.2.2"  }
+          - { cabal: "3.10", os: ubuntu-latest,  ghc: "8.4.4"  }
+          - { cabal: "3.10", os: ubuntu-latest,  ghc: "8.6.5"  }
+          - { cabal: "3.10", os: ubuntu-latest,  ghc: "8.8.4"  }
+          - { cabal: "3.10", os: ubuntu-latest,  ghc: "8.10.7" }
+          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.0.2"  }
+          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.2.8"  }
+          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.4.6"  }
+          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.6.2"  }
           # Win
-          - { cabal: "3.6", os: windows-latest, ghc: "8.4.4"  }
+          - { cabal: "3.10", os: windows-latest, ghc: "8.4.4"  }
           # OOM when building tests
           # - { cabal: "3.6", os: windows-latest, ghc: "8.6.5"  }
           # - { cabal: "3.6", os: windows-latest, ghc: "8.8.4"  }
@@ -35,11 +37,14 @@ jobs:
           # Too flaky:
           # - { cabal: "3.6", os: windows-latest,  ghc: "9.0.1"  }
           # MacOS
-          - { cabal: "3.6", os: macOS-latest,   ghc: "8.4.4"  }
-          - { cabal: "3.6", os: macOS-latest,   ghc: "8.6.5"  }
-          - { cabal: "3.6", os: macOS-latest,   ghc: "8.8.4"  }
-          - { cabal: "3.6", os: macOS-latest,   ghc: "8.10.7" }
-          - { cabal: "3.6", os: macOS-latest,   ghc: "9.0.1"  }
+          - { cabal: "3.10", os: macOS-latest,   ghc: "8.4.4"  }
+          - { cabal: "3.10", os: macOS-latest,   ghc: "8.6.5"  }
+          - { cabal: "3.10", os: macOS-latest,   ghc: "8.8.4"  }
+          - { cabal: "3.10", os: macOS-latest,   ghc: "8.10.7" }
+          - { cabal: "3.10", os: macOS-latest,   ghc: "9.0.2"  }
+          - { cabal: "3.10", os: macOS-latest,   ghc: "9.2.8"  }
+          - { cabal: "3.10", os: macOS-latest,   ghc: "9.4.6"  }
+          - { cabal: "3.10", os: macOS-latest,   ghc: "9.6.2"  }
       fail-fast: false
 
     steps:

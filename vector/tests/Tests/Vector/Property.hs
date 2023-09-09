@@ -1,4 +1,5 @@
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE TypeOperators #-}
 module Tests.Vector.Property
   ( CommonContext
   , VanillaContext

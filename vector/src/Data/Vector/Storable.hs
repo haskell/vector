@@ -1029,7 +1029,8 @@ izipWith6 = G.izipWith6
 -- | Checks whether two values are the same vector: they have same length
 -- and share the same buffer.
 --
--- >>> let xs = fromList [0/0::Double] in isSameVector xs xs
+-- >>> import qualified Data.Vector.Storable as VS
+-- >>> let xs = VS.fromList [0/0::Double] in VS.isSameVector xs xs
 -- True
 isSameVector :: (Storable a) => Vector a -> Vector a -> Bool
 {-# INLINE isSameVector #-}
