@@ -18,10 +18,13 @@
 --
 
 module Data.Vector.Generic.New (
+  -- * Array recycling primitives
   New(..), create, run, runPrim, apply, modify, modifyWithBundle,
   unstream, transform, unstreamR, transformR,
   slice, init, tail, take, drop,
   unsafeSlice, unsafeInit, unsafeTail
+  -- * References
+  -- $references
 ) where
 
 import qualified Data.Vector.Generic.Mutable as MVector
@@ -45,6 +48,13 @@ import Prelude
 #define NOT_VECTOR_MODULE
 #include "vector.h"
 
+-- | This data type is a wrapper around a monadic action which produces
+-- a mutable vector. It's used by a number of rewrite rules in order to
+-- facilitate the reuse of buffers allocated for vectors. See "Recycle
+-- your arrays!" for a detailed explanation.
+--
+-- Note that this data type must be declared as @data@ and not @newtype@
+-- since it's used for rewrite rules and rules won't fire with @newtype@.
 data New v a = New (forall s. ST s (Mutable v s a))
 
 create :: (forall s. ST s (Mutable v s a)) -> New v a
@@ -183,3 +193,9 @@ unsafeTail m = apply MVector.unsafeTail m
   unsafeTail (unstream s) = unstream (Bundle.tail s)   #-}
 
 
+-- $references
+--
+-- * Leshchinskiy, Roman. "Recycle your arrays!". Practical Aspects of
+--   Declarative Languages: 11th International Symposium, PADL 2009,
+--   Savannah, GA, USA, January 19-20, 2009. Proceedings 11. Springer
+--   Berlin Heidelberg, 2009.

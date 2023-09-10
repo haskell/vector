@@ -287,9 +287,6 @@ izipWith3 = withIndexFirst zipWith3
 ifilter :: (Int -> a -> Bool) -> [a] -> [a]
 ifilter f = map snd . withIndexFirst filter f
 
-mapMaybe :: (a -> Maybe b) -> [a] -> [b]
-mapMaybe f = catMaybes . map f
-
 imapMaybe :: (Int -> a -> Maybe b) -> [a] -> [b]
 imapMaybe f = catMaybes . withIndexFirst map f
 

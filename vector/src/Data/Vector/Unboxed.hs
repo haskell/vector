@@ -871,13 +871,16 @@ unsafeBackpermute = G.unsafeBackpermute
 -- Safe destructive updates
 -- ------------------------
 
--- | Apply a destructive operation to a vector. The operation will be
+-- | Apply a destructive operation to a vector. The operation may be
 -- performed in place if it is safe to do so and will modify a copy of the
--- vector otherwise.
+-- vector otherwise (see 'Data.Vector.Generic.New.New' for details).
 --
--- @
--- modify (\\v -> write v 0 \'x\') ('replicate' 3 \'a\') = \<\'x\',\'a\',\'a\'\>
--- @
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> import qualified Data.Vector.Unboxed.Mutable as MVU
+-- >>> VU.modify (\v -> MVU.write v 0 'x') $ VU.replicate 4 'a'
+-- "xaaa"
 modify :: Unbox a => (forall s. MVector s a -> ST s ()) -> Vector a -> Vector a
 {-# INLINE modify #-}
 modify p = G.modify p
