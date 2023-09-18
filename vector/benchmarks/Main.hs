@@ -77,9 +77,15 @@ main = do
     , bench "spectral"   $ whnf spectral sp
     , bench "tridiag"    $ whnf tridiag (as,bs,cs,ds)
     , bench "mutableSet" $ nfIO $ mutableSet vi
-    , bench "findIndexR" $ whnf findIndexR ((<indexFindThreshold), as)
-    , bench "findIndexR_naïve" $ whnf findIndexR_naive ((<indexFindThreshold), as)
-    , bench "findIndexR_manual" $ whnf findIndexR_manual ((<indexFindThreshold), as)
+    , bench "findIndexR" $ nf findIndexR ((<indexFindThreshold), as)
+    , bench "findIndexR_naïve" $ nf findIndexR_naive ((<indexFindThreshold), as)
+    , bench "findIndexR_manual" $ nf findIndexR_manual ((<indexFindThreshold), as)
+    , env (pure (U.filter (>indexFindThreshold) as)) $ \asNone ->
+        bench "findIndexR (none)" $ nf findIndexR ((<indexFindThreshold), asNone)
+    , env (pure (U.filter (>indexFindThreshold) as)) $ \asNone ->
+        bench "findIndexR_naïve (none)" $ nf findIndexR_naive ((<indexFindThreshold), asNone)
+    , env (pure (U.filter (>indexFindThreshold) as)) $ \asNone ->
+        bench "findIndexR_manual (none)" $ nf findIndexR_manual ((<indexFindThreshold), asNone)
     , bench "minimumOn"  $ whnf (U.minimumOn (\x -> x*x*x)) as
     , bench "maximumOn"  $ whnf (U.maximumOn (\x -> x*x*x)) as
     ]

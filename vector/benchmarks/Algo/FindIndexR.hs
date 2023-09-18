@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Algo.FindIndexR (findIndexR, findIndexR_naive, findIndexR_manual)
 where
 
@@ -18,7 +20,9 @@ findIndexR_naive (pred, v) = fmap (V.length v - 1 -)
 findIndexR_manual :: (Double -> Bool, Vector Double) -> Maybe Int
 {-# NOINLINE findIndexR_manual #-}
 findIndexR_manual (pred, v) = go $ V.length v - 1
- where go i | i < 0                     = Nothing
-            | pred (V.unsafeIndex v i)  = Just i
-            | otherwise                 = go $ i-1
+ where go i | i < 0           = Nothing
+            | x `seq` pred x  = Just i
+            | otherwise       = go $ i-1
+         where
+           x = V.unsafeIndex v i
 
