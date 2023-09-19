@@ -125,7 +125,7 @@ module Data.Vector (
   partition, unstablePartition, partitionWith, span, break, groupBy, group,
 
   -- ** Searching
-  elem, notElem, find, findIndex, findIndices, elemIndex, elemIndices,
+  elem, notElem, find, findIndex, findIndexR, findIndices, elemIndex, elemIndices,
 
   -- * Folding
   foldl, foldl1, foldl', foldl1', foldr, foldr1, foldr', foldr1',
@@ -1476,6 +1476,14 @@ find = G.find
 findIndex :: (a -> Bool) -> Vector a -> Maybe Int
 {-# INLINE findIndex #-}
 findIndex = G.findIndex
+
+-- | /O(n)/ Yield 'Just' the index of the /last/ element matching the predicate
+-- or 'Nothing' if no such element exists.
+--
+-- Does not fuse.
+findIndexR :: (a -> Bool) -> Vector a -> Maybe Int
+{-# INLINE findIndexR #-}
+findIndexR = G.findIndexR
 
 -- | /O(n)/ Yield the indices of elements satisfying the predicate in ascending
 -- order.
