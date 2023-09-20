@@ -1,6 +1,6 @@
 # Changes in version 0.13.1.0
 
- * Specialized variants of `elemIndexR` are reexported for all vector
+ * Specialized variants of `findIndexR` are reexported for all vector
    types. [#469](https://github.com/haskell/vector/pull/469)
  * `UnboxViaPrim` could be used for deriving `Unbox` instances (`V_UnboxViaPrim`
    constructor is exported) [#450](https://github.com/haskell/vector/pull/450)
