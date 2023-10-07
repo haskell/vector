@@ -1,5 +1,5 @@
 Name:           vector
-Version:        0.13.0.0
+Version:        0.13.1.0
 -- don't forget to update the changelog file!
 License:        BSD3
 License-File:   LICENSE
@@ -146,7 +146,7 @@ Library
         vector.h
 
   Build-Depends: base >= 4.9 && < 4.20
-               , primitive >= 0.6.4.0 && < 0.9
+               , primitive >= 0.6.4.0 && < 0.10
                , deepseq >= 1.1 && < 1.6
                , vector-stream >= 0.1 && < 0.2
 
@@ -279,7 +279,7 @@ test-suite vector-doctest
   build-depends:
         base      -any
       , doctest   >=0.15 && <0.23
-      , primitive >= 0.6.4.0 && < 0.9
+      , primitive >= 0.6.4.0 && < 0.10
       , vector    -any
 
 test-suite vector-inspection
@@ -294,7 +294,7 @@ test-suite vector-inspection
                     Inspect.DerivingVia.OtherFoo
   build-depends:
         base                     -any
-      , primitive                >= 0.6.4.0 && < 0.9
+      , primitive                >= 0.6.4.0 && < 0.10
       , vector                   -any
       , tasty
       , tasty-inspection-testing >= 0.1

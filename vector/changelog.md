@@ -1,3 +1,20 @@
+# Changes in version 0.13.1.0
+
+ * Specialized variants of `findIndexR` are reexported for all vector
+   types. [#469](https://github.com/haskell/vector/pull/469)
+ * `UnboxViaPrim` could be used for deriving `Unbox` instances (`V_UnboxViaPrim`
+   constructor is exported) [#450](https://github.com/haskell/vector/pull/450)
+ * Fields of `Data.Vector.Fusion.Bundle.Size` are now strict
+   [#456](https://github.com/haskell/vector/pull/456)
+ * Compatibility with future GHC 9.10 release
+   [#462](https://github.com/haskell/vector/pull/462)
+ * Test suite no longer fails when built with QuickCheck-2.14
+   [#461](https://github.com/haskell/vector/pull/461)
+ * Doctests now work with current versions of GHC
+   [#465](https://github.com/haskell/vector/pull/466)
+ * Various documentation improvements
+
+
 # Changes in version 0.13.0.0
 
  * `mkType` from `Data.Vector.Generic` is deprecated in favor of
