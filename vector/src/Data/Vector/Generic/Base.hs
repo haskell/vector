@@ -28,6 +28,9 @@ module Data.Vector.Generic.Base (
 import           Data.Vector.Generic.Mutable.Base ( MVector )
 import qualified Data.Vector.Generic.Mutable.Base as M
 import           Data.Vector.Fusion.Util (Box(..), liftBox)
+import qualified Data.Primitive.Array as Prim
+import qualified Data.Primitive.SmallArray as Prim
+import qualified Data.Primitive.PrimArray as Prim
 
 import Control.Monad.ST
 import Data.Kind (Type)
@@ -35,6 +38,11 @@ import Data.Kind (Type)
 -- | @Mutable v s a@ is the mutable version of the immutable vector type @v a@ with
 -- the state token @s@. It is injective on GHC 8 and newer.
 type family Mutable (v :: Type -> Type) = (mv :: Type -> Type -> Type) | mv -> v
+
+type instance Mutable Prim.Array      = Prim.MutableArray
+type instance Mutable Prim.SmallArray = Prim.SmallMutableArray
+type instance Mutable Prim.PrimArray  = Prim.MutablePrimArray
+
 
 -- | Class of immutable vectors. Every immutable vector is associated with its
 -- mutable version through the 'Mutable' type family. Methods of this class
