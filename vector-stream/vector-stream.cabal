@@ -31,6 +31,7 @@ Tested-With:
   GHC == 9.2.8,
   GHC == 9.4.6,
   GHC == 9.6.2
+  GHC == 9.8.1
 
 Cabal-Version:  >=1.10
 Build-Type:     Simple
