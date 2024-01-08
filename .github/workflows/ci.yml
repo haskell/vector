@@ -69,6 +69,12 @@ jobs:
         path: ${{ steps.setup-haskell-cabal.outputs.cabal-store }}
         key: ${{ runner.os }}-${{ matrix.ghc }}--${{ github.Shah }}-CACHE_V3
     # ----------------
+    - name: "Install PAPI"
+      run: |
+        sudo apt-get install -y libpapi-dev
+        echo FLAG_PAPI=-fBenchPAPI >> "$GITHUB_ENV"
+      if: matrix.os == 'ubuntu-latest'
+    # ----------------
     - name: Versions
       run: |
         cabal -V
@@ -91,8 +97,8 @@ jobs:
     # ----------------
     - name: Build
       run: |
-        set -x
-        cabal configure ${{ matrix.flags }} --haddock-all --enable-tests --enable-benchmarks --benchmark-option=-l
+        echo FLAG_PAPI=$FLAG_PAPI
+        cabal configure ${{ matrix.flags }} $FLAG_PAPI --haddock-all --enable-tests --enable-benchmarks --benchmark-option=-l
         cabal build all --write-ghc-environment-files=always
     # ----------------
     - name: Test
