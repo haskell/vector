@@ -26,7 +26,7 @@ jobs:
           - { cabal: "3.10", os: ubuntu-latest,  ghc: "8.10.7" }
           - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.0.2"  }
           - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.2.8"  }
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.4.6"  }
+          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.4.8"  }
           - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.6.3"  }
           - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.8.1"  }
           # Win
@@ -44,7 +44,7 @@ jobs:
           - { cabal: "3.10", os: macOS-latest,   ghc: "8.10.7" }
           - { cabal: "3.10", os: macOS-latest,   ghc: "9.0.2"  }
           - { cabal: "3.10", os: macOS-latest,   ghc: "9.2.8"  }
-          - { cabal: "3.10", os: macOS-latest,   ghc: "9.4.6"  }
+          - { cabal: "3.10", os: macOS-latest,   ghc: "9.4.8"  }
           - { cabal: "3.10", os: macOS-latest,   ghc: "9.6.3"  }
           - { cabal: "3.10", os: macOS-latest,   ghc: "9.8.1"  }
       fail-fast: false
