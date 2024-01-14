@@ -1156,12 +1156,28 @@ unstablePartition = G.unstablePartition
 
 -- | /O(n)/ Split the vector into the longest prefix of elements that satisfy
 -- the predicate and the rest without copying.
+--
+-- Does not fuse.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> VP.span (<4) $ VP.generate 10 id
+-- ([0,1,2,3],[4,5,6,7,8,9])
 span :: Prim a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE span #-}
 span = G.span
 
 -- | /O(n)/ Split the vector into the longest prefix of elements that do not
 -- satisfy the predicate and the rest without copying.
+--
+-- Does not fuse.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Primitive as VP
+-- >>> VP.break (>4) $ VP.generate 10 id
+-- ([0,1,2,3,4],[5,6,7,8,9])
 break :: Prim a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE break #-}
 break = G.break
@@ -1894,4 +1910,4 @@ copy :: (Prim a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 copy = G.copy
 
 -- $setup
--- >>> import Prelude (($), min, even, max, succ)
+-- >>> import Prelude (($), min, even, max, succ, id, Ord(..))

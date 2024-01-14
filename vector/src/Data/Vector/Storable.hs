@@ -1178,12 +1178,28 @@ unstablePartition = G.unstablePartition
 
 -- | /O(n)/ Split the vector into the longest prefix of elements that satisfy
 -- the predicate and the rest without copying.
+--
+-- Does not fuse.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Storable as VS
+-- >>> VS.span (<4) $ VS.generate 10 id
+-- ([0,1,2,3],[4,5,6,7,8,9])
 span :: Storable a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE span #-}
 span = G.span
 
 -- | /O(n)/ Split the vector into the longest prefix of elements that do not
 -- satisfy the predicate and the rest without copying.
+--
+-- Does not fuse.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Storable as VS
+-- >>> VS.break (>4) $ VS.generate 10 id
+-- ([0,1,2,3,4],[5,6,7,8,9])
 break :: Storable a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE break #-}
 break = G.break
@@ -1998,4 +2014,4 @@ unsafeWith :: Storable a => Vector a -> (Ptr a -> IO b) -> IO b
 unsafeWith (Vector _ fp) = withForeignPtr fp
 
 -- $setup
--- >>> import Prelude (Bool(..), Double, ($), (+), (/), succ, even, min, max)
+-- >>> import Prelude (Bool(..), Double, ($), (+), (/), succ, even, min, max, id, Ord(..))

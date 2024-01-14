@@ -1536,12 +1536,28 @@ unstablePartition_new f (New.New p) = runST (
 
 -- | /O(n)/ Split the vector into the longest prefix of elements that satisfy
 -- the predicate and the rest without copying.
+--
+-- Does not fuse.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.span (<4) $ V.generate 10 id
+-- ([0,1,2,3],[4,5,6,7,8,9])
 span :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 {-# INLINE span #-}
 span f = break (not . f)
 
 -- | /O(n)/ Split the vector into the longest prefix of elements that do not
 -- satisfy the predicate and the rest without copying.
+--
+-- Does not fuse.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.break (>4) $ V.generate 10 id
+-- ([0,1,2,3,4],[5,6,7,8,9])
 break :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 {-# INLINE break #-}
 break f xs = case findIndex f xs of
@@ -2659,4 +2675,4 @@ dataCast f = gcast1 f
 -- $setup
 -- >>> :set -XFlexibleContexts
 -- >>> :set -Wno-type-defaults
--- >>> import Prelude (Bool(True, False), even)
+-- >>> import Prelude (Bool(True, False), even, Ord(..))

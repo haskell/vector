@@ -1169,12 +1169,28 @@ unstablePartition = G.unstablePartition
 
 -- | /O(n)/ Split the vector into the longest prefix of elements that satisfy
 -- the predicate and the rest without copying.
+--
+-- Does not fuse.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.span (<4) $ VU.generate 10 id
+-- ([0,1,2,3],[4,5,6,7,8,9])
 span :: Unbox a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE span #-}
 span = G.span
 
 -- | /O(n)/ Split the vector into the longest prefix of elements that do not
 -- satisfy the predicate and the rest without copying.
+--
+-- Does not fuse.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Unboxed as VU
+-- >>> VU.break (>4) $ VU.generate 10 id
+-- ([0,1,2,3,4],[5,6,7,8,9])
 break :: Unbox a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE break #-}
 break = G.break
@@ -1974,4 +1990,4 @@ copy = G.copy
 #include "unbox-tuple-instances"
 
 -- $setup
--- >>> import Prelude (Bool(True, False), ($), (+), min, max, even, fst, pred, succ, undefined)
+-- >>> import Prelude (Bool(True, False), ($), (+), min, max, even, fst, pred, id, succ, undefined, Ord(..))
