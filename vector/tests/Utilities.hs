@@ -6,6 +6,7 @@ module Utilities where
 
 import Test.QuickCheck
 
+import Control.Arrow ((***))
 import Data.Foldable
 import Data.Bifunctor
 import qualified Data.Vector as DV
@@ -291,6 +292,12 @@ imapMaybe :: (Int -> a -> Maybe b) -> [a] -> [b]
 imapMaybe f = catMaybes . withIndexFirst map f
 
 indexedLeftFold fld f z = fld (uncurry . f) z . zip [0..]
+
+spanR :: (a -> Bool) -> [a] -> ([a], [a])
+spanR f = (reverse *** reverse) . span f . reverse
+
+breakR :: (a -> Bool) -> [a] -> ([a], [a])
+breakR f = (reverse *** reverse) . break f . reverse
 
 ifoldl :: (a -> Int -> a -> a) -> a -> [a] -> a
 ifoldl = indexedLeftFold foldl

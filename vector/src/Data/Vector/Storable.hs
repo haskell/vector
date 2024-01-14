@@ -104,7 +104,7 @@ module Data.Vector.Storable (
   takeWhile, dropWhile,
 
   -- ** Partitioning
-  partition, unstablePartition, partitionWith, span, break, groupBy, group,
+  partition, unstablePartition, partitionWith, span, break, spanR, breakR, groupBy, group,
 
   -- ** Searching
   elem, notElem, find, findIndex, findIndexR, findIndices, elemIndex, elemIndices,
@@ -1203,6 +1203,36 @@ span = G.span
 break :: Storable a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE break #-}
 break = G.break
+
+-- | /O(n)/ Split the vector into the longest prefix of elements that satisfy
+-- the predicate and the rest without copying.
+--
+-- Does not fuse.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Storable as VS
+-- >>> VS.spanR (>4) $ VS.generate 10 id
+-- ([5,6,7,8,9],[0,1,2,3,4])
+spanR :: Storable a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
+{-# INLINE spanR #-}
+spanR = G.spanR
+
+-- | /O(n)/ Split the vector into the longest prefix of elements that do not
+-- satisfy the predicate and the rest without copying.
+--
+-- Does not fuse.
+--
+-- @since NEXT_VERSION
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector.Storable as VS
+-- >>> VS.breakR (<5) $ VS.generate 10 id
+-- ([5,6,7,8,9],[0,1,2,3,4])
+breakR :: Storable a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
+{-# INLINE breakR #-}
+breakR = G.breakR
 
 -- | /O(n)/ Split a vector into a list of slices, using a predicate function.
 --
