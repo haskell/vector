@@ -28,6 +28,8 @@ jobs:
           - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.2.8"  }
           - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.4.8"  }
           - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.6.3"  }
+          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.6.3",
+              flags: "-fUnsafeChecks -fInternalChecks" }
           - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.8.1"  }
           # Win
           - { cabal: "3.10", os: windows-latest, ghc: "8.4.4"  }
@@ -89,7 +91,8 @@ jobs:
     # ----------------
     - name: Build
       run: |
-        cabal configure --haddock-all --enable-tests --enable-benchmarks --benchmark-option=-l
+        set -x
+        cabal configure ${{ matrix.flags }} --haddock-all --enable-tests --enable-benchmarks --benchmark-option=-l
         cabal build all --write-ghc-environment-files=always
     # ----------------
     - name: Test

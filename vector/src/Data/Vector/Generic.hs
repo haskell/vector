@@ -110,7 +110,7 @@ module Data.Vector.Generic (
   takeWhile, dropWhile,
 
   -- ** Partitioning
-  partition, partitionWith, unstablePartition, span, break, groupBy, group,
+  partition, partitionWith, unstablePartition, span, break, spanR, breakR, groupBy, group,
 
   -- ** Searching
   elem, notElem, find, findIndex, findIndexR, findIndices, elemIndex, elemIndices,
@@ -1536,17 +1536,69 @@ unstablePartition_new f (New.New p) = runST (
 
 -- | /O(n)/ Split the vector into the longest prefix of elements that satisfy
 -- the predicate and the rest without copying.
+--
+-- Does not fuse.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.span (<4) $ V.generate 10 id
+-- ([0,1,2,3],[4,5,6,7,8,9])
 span :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 {-# INLINE span #-}
 span f = break (not . f)
 
 -- | /O(n)/ Split the vector into the longest prefix of elements that do not
 -- satisfy the predicate and the rest without copying.
+--
+-- Does not fuse.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.break (>4) $ V.generate 10 id
+-- ([0,1,2,3,4],[5,6,7,8,9])
 break :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 {-# INLINE break #-}
 break f xs = case findIndex f xs of
                Just i  -> (unsafeSlice 0 i xs, unsafeSlice i (length xs - i) xs)
                Nothing -> (xs, empty)
+
+-- | /O(n)/ Split the vector into the longest prefix of elements that satisfy
+-- the predicate and the rest without copying.
+--
+-- Does not fuse.
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.spanR (>4) $ V.generate 10 id
+-- ([5,6,7,8,9],[0,1,2,3,4])
+spanR :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
+{-# INLINE spanR #-}
+spanR f = breakR (not . f)
+
+-- | /O(n)/ Split the vector into the longest prefix of elements that do not
+-- satisfy the predicate and the rest without copying.
+--
+-- Does not fuse.
+--
+-- @since NEXT_VERSION
+--
+-- ==== __Examples__
+--
+-- >>> import qualified Data.Vector as V
+-- >>> V.breakR (<5) $ V.generate 10 id
+-- ([5,6,7,8,9],[0,1,2,3,4])
+breakR :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
+{-# INLINE breakR #-}
+breakR f xs = case findIndexR f xs of
+  Just i  -> ( unsafeSlice (i+1) (length xs - i - 1) xs
+             , unsafeSlice 0     (i+1)               xs)
+  Nothing -> (xs, empty)
+
+
+
 
 -- | /O(n)/ Split a vector into a list of slices.
 --
@@ -2659,4 +2711,4 @@ dataCast f = gcast1 f
 -- $setup
 -- >>> :set -XFlexibleContexts
 -- >>> :set -Wno-type-defaults
--- >>> import Prelude (Bool(True, False), even)
+-- >>> import Prelude (Bool(True, False), even, Ord(..))
