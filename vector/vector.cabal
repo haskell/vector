@@ -1,7 +1,9 @@
+Cabal-Version:  3.0
+Build-Type:     Simple
 Name:           vector
 Version:        0.13.1.0
 -- don't forget to update the changelog file!
-License:        BSD3
+License:        BSD-3-Clause
 License-File:   LICENSE
 Author:         Roman Leshchinskiy <rl@cse.unsw.edu.au>
 Maintainer:     Haskell Libraries Team <libraries@haskell.org>
@@ -42,26 +44,24 @@ Description:
         * <http://haskell.org/haskellwiki/Numeric_Haskell:_A_Vector_Tutorial>
 
 Tested-With:
-  GHC == 8.0.2,
-  GHC == 8.2.2,
-  GHC == 8.4.4,
-  GHC == 8.6.5,
-  GHC == 8.8.4,
-  GHC == 8.10.7,
-  GHC == 9.0.2,
-  GHC == 9.2.8,
-  GHC == 9.4.6,
+  GHC == 8.0.2
+  GHC == 8.2.2
+  GHC == 8.4.4
+  GHC == 8.6.5
+  GHC == 8.8.4
+  GHC == 8.10.7
+  GHC == 9.0.2
+  GHC == 9.2.8
+  GHC == 9.4.6
   GHC == 9.6.2
   GHC == 9.8.1
   
 
-Cabal-Version:  >= 1.10
-Build-Type:     Simple
-
-Extra-Source-Files:
+Extra-doc-files:
       changelog.md
       README.md
       tests/LICENSE
+Extra-Source-Files:
       tests/Setup.hs
       tests/Main.hs
       internal/GenUnboxTuple.hs
