@@ -263,20 +263,13 @@ test-suite vector-doctest
   main-is:          doctests.hs
   hs-source-dirs:   tests
   default-language: Haskell2010
-  -- Older GHC don't support DerivingVia
+  -- Older GHC don't support DerivingVia and doctests use them
   if impl(ghc < 8.6)
     buildable: False
-  -- GHC 8.10 fails to run doctests for some reason
-  if impl(ghc >= 8.10) && impl(ghc < 8.11)
+  -- Attempts to run doctests on macos on GHC8.10 and 9.0 cause linker errors:
+  -- > ld: warning: -undefined dynamic_lookup may not work with chained fixups
+  if os(darwin) && impl(ghc >= 8.10) && impl(ghc < 9.2)
     buildable: False
-  -- GHC 9.0 fails to run doctests for some reason too
-  if impl(ghc >= 9.0) && impl(ghc < 9.1)
-    buildable: False
-  -- And GHC 9.2 too
-  if impl(ghc >= 9.2) && impl(ghc < 9.2.3)
-    buildable: False
-  if impl(ghc >= 9.2.3) && impl(ghc < 9.3)
-    buildable: True
   build-depends:
         base      -any
       , doctest   >=0.15 && <0.23
