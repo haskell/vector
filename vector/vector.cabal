@@ -67,6 +67,11 @@ Extra-Source-Files:
       internal/GenUnboxTuple.hs
       internal/unbox-tuple-instances
 
+source-repository head
+  type:     git
+  location: https://github.com/haskell/vector.git
+  subdir:   vector
+
 Flag BoundsChecks
   Description: Enable bounds checking
   Default: True
@@ -171,10 +176,6 @@ Library
   if flag(InternalChecks)
     cpp-options: -DVECTOR_INTERNAL_CHECKS
 
-source-repository head
-  type:     git
-  location: https://github.com/haskell/vector.git
-  subdir:   vector
 
 
 test-suite vector-tests-O0
