@@ -89,8 +89,17 @@ Flag Wall
   Default: False
   Manual: True
 
+-- This common sets warning flags passed to GHC as controlled by Wall cabal flag
+common flag-Wall
+  Ghc-Options: -Wall
+  if !flag(Wall)
+    Ghc-Options: -fno-warn-orphans
+    if impl(ghc >= 8.0) && impl(ghc < 8.1)
+      Ghc-Options:   -Wno-redundant-constraints
+
 
 Library
+  import:           flag-Wall
   Default-Language: Haskell2010
   Other-Extensions:
         BangPatterns
@@ -151,13 +160,7 @@ Library
                , deepseq >= 1.1 && < 1.6
                , vector-stream >= 0.1 && < 0.2
 
-  Ghc-Options: -O2 -Wall
-
-  if !flag(Wall)
-    Ghc-Options: -fno-warn-orphans
-
-    if impl(ghc >= 8.0) && impl(ghc < 8.1)
-      Ghc-Options:   -Wno-redundant-constraints
+  Ghc-Options: -O2
 
   if flag(BoundsChecks)
     cpp-options: -DVECTOR_BOUNDS_CHECKS
@@ -175,6 +178,7 @@ source-repository head
 
 
 test-suite vector-tests-O0
+  import:           flag-Wall
   Default-Language: Haskell2010
   type: exitcode-stdio-1.0
   Main-Is:  Main.hs
@@ -209,15 +213,10 @@ test-suite vector-tests-O0
               TemplateHaskell
 
   Ghc-Options: -O0 -threaded
-  Ghc-Options: -Wall
-
-  if !flag(Wall)
-    Ghc-Options: -fno-warn-orphans -fno-warn-missing-signatures
-    if impl(ghc >= 8.0) && impl(ghc < 8.1)
-      Ghc-Options: -Wno-redundant-constraints
-
+  Ghc-Options: -fno-warn-missing-signatures
 
 test-suite vector-tests-O2
+  import:           flag-Wall
   Default-Language: Haskell2010
   type: exitcode-stdio-1.0
   Main-Is:  Main.hs
@@ -251,12 +250,8 @@ test-suite vector-tests-O2
               TypeFamilies,
               TemplateHaskell
 
-  Ghc-Options: -Wall
-  Ghc-Options:  -O2 -threaded
-  if !flag(Wall)
-    Ghc-Options: -fno-warn-orphans -fno-warn-missing-signatures
-    if impl(ghc >= 8.0) && impl(ghc < 8.1)
-      Ghc-Options: -Wno-redundant-constraints
+  Ghc-Options: -O2 -threaded
+  Ghc-Options: -fno-warn-missing-signatures
 
 test-suite vector-doctest
   type:             exitcode-stdio-1.0
@@ -277,9 +272,9 @@ test-suite vector-doctest
       , vector    -any
 
 test-suite vector-inspection
+  import:           flag-Wall
   type:             exitcode-stdio-1.0
   hs-source-dirs:   tests-inspect
-  Ghc-Options:      -Wall
   main-is:          main.hs
   default-language: Haskell2010
   Other-modules:    Inspect
