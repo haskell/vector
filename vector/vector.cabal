@@ -55,7 +55,7 @@ Tested-With:
   GHC == 9.4.6
   GHC == 9.6.2
   GHC == 9.8.1
-  
+
 
 Extra-doc-files:
       changelog.md
@@ -63,7 +63,6 @@ Extra-doc-files:
       tests/LICENSE
 Extra-Source-Files:
       tests/Setup.hs
-      tests/Main.hs
       internal/GenUnboxTuple.hs
       internal/unbox-tuple-instances
 
@@ -177,82 +176,58 @@ Library
     cpp-options: -DVECTOR_INTERNAL_CHECKS
 
 
+-- We want to build test suite in two variants. One built with -O0
+-- and another with -O2 in order to catch bugs caused by invalid
+-- rewrite rules
+common tests-common
+  Default-Language: Haskell2010
+  Ghc-Options:      -fno-warn-missing-signatures
+  hs-source-dirs:   tests
+  Build-Depends: base >= 4.5 && < 5
+               , template-haskell
+               , base-orphans >= 0.6
+               , vector
+               , primitive
+               , random
+               , QuickCheck >= 2.9 && < 2.15
+               , tasty
+               , tasty-hunit
+               , tasty-quickcheck
+               , transformers >= 0.2.0.0
+  Other-Modules:
+    Boilerplater
+    Tests.Bundle
+    Tests.Move
+    Tests.Vector
+    Tests.Vector.Property
+    Tests.Vector.Boxed
+    Tests.Vector.Storable
+    Tests.Vector.Primitive
+    Tests.Vector.Unboxed
+    Tests.Vector.UnitTests
+    Utilities
+
+  default-extensions: CPP,
+              ScopedTypeVariables,
+              PatternGuards,
+              MultiParamTypeClasses,
+              FlexibleContexts,
+              RankNTypes,
+              TypeSynonymInstances,
+              TypeFamilies,
+              TemplateHaskell
 
 test-suite vector-tests-O0
-  import:           flag-Wall
-  Default-Language: Haskell2010
-  type: exitcode-stdio-1.0
-  Main-Is:  Main.hs
-
-  other-modules: Boilerplater
-                 Tests.Bundle
-                 Tests.Move
-                 Tests.Vector
-                 Tests.Vector.Property
-                 Tests.Vector.Boxed
-                 Tests.Vector.Storable
-                 Tests.Vector.Primitive
-                 Tests.Vector.Unboxed
-                 Tests.Vector.UnitTests
-                 Utilities
-
-  hs-source-dirs: tests
-  Build-Depends: base >= 4.5 && < 5, template-haskell, base-orphans >= 0.6, vector,
-                 primitive, random,
-                 QuickCheck >= 2.9 && < 2.15, HUnit, tasty,
-                 tasty-hunit, tasty-quickcheck,
-                 transformers >= 0.2.0.0
-
-  default-extensions: CPP,
-              ScopedTypeVariables,
-              PatternGuards,
-              MultiParamTypeClasses,
-              FlexibleContexts,
-              RankNTypes,
-              TypeSynonymInstances,
-              TypeFamilies,
-              TemplateHaskell
-
-  Ghc-Options: -O0 -threaded
-  Ghc-Options: -fno-warn-missing-signatures
+  import:           flag-Wall, tests-common
+  type:             exitcode-stdio-1.0
+  Main-Is:          Main.hs
+  Ghc-Options:      -O0 -threaded
 
 test-suite vector-tests-O2
-  import:           flag-Wall
-  Default-Language: Haskell2010
-  type: exitcode-stdio-1.0
-  Main-Is:  Main.hs
-
-  other-modules: Boilerplater
-                 Tests.Bundle
-                 Tests.Move
-                 Tests.Vector
-                 Tests.Vector.Property
-                 Tests.Vector.Boxed
-                 Tests.Vector.Storable
-                 Tests.Vector.Primitive
-                 Tests.Vector.Unboxed
-                 Tests.Vector.UnitTests
-                 Utilities
-
-  hs-source-dirs: tests
-  Build-Depends: base >= 4.5 && < 5, template-haskell, base-orphans >= 0.6, vector,
-                 primitive, random,
-                 QuickCheck >= 2.9 && < 2.15, HUnit, tasty,
-                 tasty-hunit, tasty-quickcheck,
-                 transformers >= 0.2.0.0
-
-  default-extensions: CPP,
-              ScopedTypeVariables,
-              PatternGuards,
-              MultiParamTypeClasses,
-              FlexibleContexts,
-              RankNTypes,
-              TypeSynonymInstances,
-              TypeFamilies,
-              TemplateHaskell
-
-  Ghc-Options: -O2 -threaded
-  Ghc-Options: -fno-warn-missing-signatures
+  import:           flag-Wall, tests-common
+  type:             exitcode-stdio-1.0
+  Main-Is:          Main.hs
+  Ghc-Options:      -O2 -threaded
 
 test-suite vector-doctest
   type:             exitcode-stdio-1.0
