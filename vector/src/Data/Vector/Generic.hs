@@ -29,7 +29,7 @@ module Data.Vector.Generic (
   length, null,
 
   -- ** Indexing
-  (!), (!?), head, last,
+  (!), (!?), head, vectorToMaybe, last,
   unsafeIndex, unsafeHead, unsafeLast,
 
   -- ** Monadic indexing

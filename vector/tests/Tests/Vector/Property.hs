@@ -98,7 +98,7 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_length, 'prop_null,
 
         -- Indexing
-        'prop_index, 'prop_safeIndex, 'prop_head, 'prop_last,
+        'prop_index, 'prop_safeIndex, 'prop_head, 'prop_vectorToMaybe, 'prop_last,
         'prop_unsafeIndex, 'prop_unsafeHead, 'prop_unsafeLast,
 
         -- Monadic indexing (FIXME)
@@ -241,6 +241,7 @@ testPolymorphicFunctions _ = $(testProperties [
     prop_createT = (\v -> V.createT (T.mapM V.thaw v)) `eq` id
 
     prop_head      :: P (v a -> a) = not . V.null ===> V.head `eq` head
+    prop_vectorToMaybe :: P (v a -> Maybe a) = not . V.null ===> V.vectorToMaybe `eq` (Just . head)
     prop_last      :: P (v a -> a) = not . V.null ===> V.last `eq` last
     prop_index        = \xs ->
                         not (V.null xs) ==>
