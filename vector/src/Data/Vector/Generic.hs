@@ -244,9 +244,20 @@ v !? i | i `inRange` length v = case basicUnsafeIndexM v i of Box a -> Just a
 
 
 -- | /O(1)/ First element.
+--
+-- Partial.
+-- Undefined at @fromList [ ]@.
+-- Completion is 'vectorToMaybe'
 head :: Vector v a => v a -> a
 {-# INLINE_FUSED head #-}
 head v = v ! 0
+
+-- | /O(1)/ Just the first element — or nothing when there are none.
+--
+-- Completes 'head'.
+vectorToMaybe :: Vector v a => v a -> Maybe a
+{-# INLINE_FUSED vectorToMaybe #-}
+vectorToMaybe v = v !? 0
 
 -- | /O(1)/ Last element.
 last :: Vector v a => v a -> a
