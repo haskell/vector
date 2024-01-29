@@ -1,4 +1,4 @@
-module Algo.HybCC (hybcc) where
+module Bench.Vector.Algo.HybCC (hybcc) where
 
 import Data.Vector.Unboxed as V
 

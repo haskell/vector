@@ -1,18 +1,18 @@
 module Main where
 
-import Algo.MutableSet (mutableSet)
-import Algo.ListRank   (listRank)
-import Algo.Rootfix    (rootfix)
-import Algo.Leaffix    (leaffix)
-import Algo.AwShCC     (awshcc)
-import Algo.HybCC      (hybcc)
-import Algo.Quickhull  (quickhull)
-import Algo.Spectral   (spectral)
-import Algo.Tridiag    (tridiag)
-import Algo.FindIndexR (findIndexR, findIndexR_naive, findIndexR_manual)
+import Bench.Vector.Algo.MutableSet (mutableSet)
+import Bench.Vector.Algo.ListRank   (listRank)
+import Bench.Vector.Algo.Rootfix    (rootfix)
+import Bench.Vector.Algo.Leaffix    (leaffix)
+import Bench.Vector.Algo.AwShCC     (awshcc)
+import Bench.Vector.Algo.HybCC      (hybcc)
+import Bench.Vector.Algo.Quickhull  (quickhull)
+import Bench.Vector.Algo.Spectral   (spectral)
+import Bench.Vector.Algo.Tridiag    (tridiag)
+import Bench.Vector.Algo.FindIndexR (findIndexR, findIndexR_naive, findIndexR_manual)
 
-import TestData.ParenTree (parenTree)
-import TestData.Graph     (randomGraph)
+import Bench.Vector.TestData.ParenTree (parenTree)
+import Bench.Vector.TestData.Graph     (randomGraph)
 
 import Data.Proxy
 import qualified Data.Vector.Mutable as MV

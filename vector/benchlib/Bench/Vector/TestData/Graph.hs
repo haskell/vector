@@ -1,4 +1,4 @@
-module TestData.Graph
+module Bench.Vector.TestData.Graph
   ( randomGraph
   ) where
 

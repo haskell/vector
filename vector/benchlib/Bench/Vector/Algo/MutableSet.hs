@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 
-module Algo.MutableSet
+module Bench.Vector.Algo.MutableSet
 where
 
 import Prelude hiding(length, read)

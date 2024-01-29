@@ -1,4 +1,4 @@
-module Algo.ListRank
+module Bench.Vector.Algo.ListRank
 where
 
 import Data.Vector.Unboxed as V

@@ -1,4 +1,4 @@
-module Algo.Spectral ( spectral ) where
+module Bench.Vector.Algo.Spectral ( spectral ) where
 
 import Data.Vector.Unboxed as V
 

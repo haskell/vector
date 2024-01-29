@@ -267,30 +267,30 @@ test-suite vector-inspection
 library benchmarks-O2
   visibility:       public
   ghc-options:      -O2
-  hs-source-dirs:   benchmarks
+  hs-source-dirs:   benchlib
   Default-Language: Haskell2010
   build-depends:
         base
       , random >= 1.2
       , vector
   exposed-modules:
-        Algo.MutableSet
-        Algo.ListRank
-        Algo.Rootfix
-        Algo.Leaffix
-        Algo.AwShCC
-        Algo.HybCC
-        Algo.Quickhull
-        Algo.Spectral
-        Algo.Tridiag
-        Algo.FindIndexR
-        TestData.ParenTree
-        TestData.Graph
+        Bench.Vector.Algo.MutableSet
+        Bench.Vector.Algo.ListRank
+        Bench.Vector.Algo.Rootfix
+        Bench.Vector.Algo.Leaffix
+        Bench.Vector.Algo.AwShCC
+        Bench.Vector.Algo.HybCC
+        Bench.Vector.Algo.Quickhull
+        Bench.Vector.Algo.Spectral
+        Bench.Vector.Algo.Tridiag
+        Bench.Vector.Algo.FindIndexR
+        Bench.Vector.TestData.ParenTree
+        Bench.Vector.TestData.Graph
 
 benchmark algorithms
   type:             exitcode-stdio-1.0
   main-is:          Main.hs
-  hs-source-dirs:   benchmarks-exe
+  hs-source-dirs:   benchmarks
   default-language: Haskell2010
 
   build-depends:

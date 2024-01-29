@@ -1,4 +1,4 @@
-module TestData.ParenTree where
+module Bench.Vector.TestData.ParenTree where
 
 import qualified Data.Vector.Unboxed as V
 
