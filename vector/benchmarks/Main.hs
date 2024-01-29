@@ -13,6 +13,7 @@ import Bench.Vector.Algo.FindIndexR (findIndexR, findIndexR_naive, findIndexR_ma
 
 import Bench.Vector.TestData.ParenTree (parenTree)
 import Bench.Vector.TestData.Graph     (randomGraph)
+import Bench.Vector.Tasty
 
 import Data.Proxy
 import qualified Data.Vector.Mutable as MV
@@ -24,21 +25,6 @@ import Test.Tasty.Bench
 import Test.Tasty.Options
 import Test.Tasty.Runners
 
-newtype VectorSize = VectorSize Int
-
-instance IsOption VectorSize where
-  defaultValue = VectorSize 2000000
-  parseValue = fmap VectorSize . safeRead
-  optionName = pure "size"
-  optionHelp = pure "Size of vectors used in benchmarks"
-
-newtype RandomSeed = RandomSeed Int
-
-instance IsOption RandomSeed where
-  defaultValue = RandomSeed 42
-  parseValue = fmap RandomSeed . safeRead
-  optionName = pure "seed"
-  optionHelp = pure "Random seed used in benchmarks"
 
 indexFindThreshold :: Double
 indexFindThreshold = 2e-5
