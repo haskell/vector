@@ -1,4 +1,4 @@
-module Algo.Leaffix where
+module Bench.Vector.Algo.Leaffix where
 
 import Data.Vector.Unboxed as V
 

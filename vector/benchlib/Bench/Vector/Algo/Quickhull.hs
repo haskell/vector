@@ -1,4 +1,4 @@
-module Algo.Quickhull (quickhull) where
+module Bench.Vector.Algo.Quickhull (quickhull) where
 
 import Data.Vector.Unboxed as V
 

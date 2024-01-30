@@ -1,5 +1,5 @@
 {-# OPTIONS -fno-spec-constr-count #-}
-module Algo.AwShCC (awshcc) where
+module Bench.Vector.Algo.AwShCC (awshcc) where
 
 import Data.Vector.Unboxed as V
 

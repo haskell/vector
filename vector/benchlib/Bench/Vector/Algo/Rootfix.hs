@@ -1,4 +1,4 @@
-module Algo.Rootfix where
+module Bench.Vector.Algo.Rootfix where
 
 import Data.Vector.Unboxed as V
 

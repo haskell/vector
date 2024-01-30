@@ -1,4 +1,4 @@
-module Algo.FindIndexR (findIndexR, findIndexR_naive, findIndexR_manual)
+module Bench.Vector.Algo.FindIndexR (findIndexR, findIndexR_naive, findIndexR_manual)
 where
 
 import Data.Vector.Unboxed (Vector)

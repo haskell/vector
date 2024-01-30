@@ -1,4 +1,4 @@
-module Algo.Tridiag ( tridiag ) where
+module Bench.Vector.Algo.Tridiag ( tridiag ) where
 
 import Data.Vector.Unboxed as V
 

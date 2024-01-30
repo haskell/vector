@@ -1,18 +1,20 @@
+{-# LANGUAGE BangPatterns #-}
 module Main where
 
-import Algo.MutableSet (mutableSet)
-import Algo.ListRank   (listRank)
-import Algo.Rootfix    (rootfix)
-import Algo.Leaffix    (leaffix)
-import Algo.AwShCC     (awshcc)
-import Algo.HybCC      (hybcc)
-import Algo.Quickhull  (quickhull)
-import Algo.Spectral   (spectral)
-import Algo.Tridiag    (tridiag)
-import Algo.FindIndexR (findIndexR, findIndexR_naive, findIndexR_manual)
+import Bench.Vector.Algo.MutableSet (mutableSet)
+import Bench.Vector.Algo.ListRank   (listRank)
+import Bench.Vector.Algo.Rootfix    (rootfix)
+import Bench.Vector.Algo.Leaffix    (leaffix)
+import Bench.Vector.Algo.AwShCC     (awshcc)
+import Bench.Vector.Algo.HybCC      (hybcc)
+import Bench.Vector.Algo.Quickhull  (quickhull)
+import Bench.Vector.Algo.Spectral   (spectral)
+import Bench.Vector.Algo.Tridiag    (tridiag)
+import Bench.Vector.Algo.FindIndexR (findIndexR, findIndexR_naive, findIndexR_manual)
 
-import TestData.ParenTree (parenTree)
-import TestData.Graph     (randomGraph)
+import Bench.Vector.TestData.ParenTree (parenTree)
+import Bench.Vector.TestData.Graph     (randomGraph)
+import Bench.Vector.Tasty
 
 import Data.Proxy
 import qualified Data.Vector.Mutable as MV
@@ -24,21 +26,6 @@ import Test.Tasty.Bench
 import Test.Tasty.Options
 import Test.Tasty.Runners
 
-newtype VectorSize = VectorSize Int
-
-instance IsOption VectorSize where
-  defaultValue = VectorSize 2000000
-  parseValue = fmap VectorSize . safeRead
-  optionName = pure "size"
-  optionHelp = pure "Size of vectors used in benchmarks"
-
-newtype RandomSeed = RandomSeed Int
-
-instance IsOption RandomSeed where
-  defaultValue = RandomSeed 42
-  parseValue = fmap RandomSeed . safeRead
-  optionName = pure "seed"
-  optionHelp = pure "Random seed used in benchmarks"
 
 indexFindThreshold :: Double
 indexFindThreshold = 2e-5
@@ -53,18 +40,15 @@ main = do
 
   gen <- newIOGenM (mkStdGen useSeed)
 
-  let (lparens, rparens) = parenTree useSize
-  (nodes, edges1, edges2) <- randomGraph gen useSize
-  lparens `seq` rparens `seq` nodes `seq` edges1 `seq` edges2 `seq` return ()
+  let (!lparens, !rparens) = parenTree useSize
+  (!nodes, !edges1, !edges2) <- randomGraph gen useSize
 
   let randomVector l = U.replicateM l (uniformDoublePositive01M gen)
-  as <- randomVector useSize
-  bs <- randomVector useSize
-  cs <- randomVector useSize
-  ds <- randomVector useSize
-  sp <- randomVector (floor $ sqrt $ fromIntegral useSize)
-  as `seq` bs `seq` cs `seq` ds `seq` sp `seq` return ()
-
+  !as <- randomVector useSize
+  !bs <- randomVector useSize
+  !cs <- randomVector useSize
+  !ds <- randomVector useSize
+  !sp <- randomVector (floor $ sqrt $ fromIntegral useSize)
   vi <- MV.new useSize
 
   defaultMainWithIngredients ingredients $ bgroup "All"
