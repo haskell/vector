@@ -92,8 +92,8 @@ jobs:
     # ----------------
     - name: cabal check
       run: |
-        cd vector
-        cabal -vnormal check
+        (cd vector-stream && cabal -vnormal check)
+        (cd vector        && cabal -vnormal check)
     # ----------------
     - name: Build
       run: |
