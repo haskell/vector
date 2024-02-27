@@ -1,3 +1,4 @@
 packages:
   vector
   vector-stream
+  vector-bench-papi
