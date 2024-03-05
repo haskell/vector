@@ -61,7 +61,6 @@ Extra-doc-files:
       README.md
       tests/LICENSE
 Extra-Source-Files:
-      tests/Setup.hs
       internal/GenUnboxTuple.hs
       internal/unbox-tuple-instances
 
