@@ -232,15 +232,20 @@ infixl 9 !
 -- | O(1) Indexing.
 (!) :: (HasCallStack, Vector v a) => v a -> Int -> a
 {-# INLINE_FUSED (!) #-}
-(!) v i = checkIndex Bounds i (length v) $ unBox (basicUnsafeIndexM v i)
+(!) v !i = checkIndex Bounds i (length v) $ unBox (basicUnsafeIndexM v i)
+-- Why do we need ! before i?
+-- The reason is that 'basicUnsafeIndexM' is a class member and, unless (!) was
+-- already specialised to a specific v, GHC has no clue that i is most certainly
+-- to be used eagerly. Bang before i hints this vital for optimizer information.
 
 infixl 9 !?
 -- | O(1) Safe indexing.
 (!?) :: Vector v a => v a -> Int -> Maybe a
 {-# INLINE_FUSED (!?) #-}
 -- Use basicUnsafeIndexM @Box to perform the indexing eagerly.
-v !? i | i `inRange` length v = case basicUnsafeIndexM v i of Box a -> Just a
-       | otherwise            = Nothing
+v !? (!i)
+  | i `inRange` length v = case basicUnsafeIndexM v i of Box a -> Just a
+  | otherwise            = Nothing
 
 
 -- | /O(1)/ First element.
@@ -256,7 +261,7 @@ last v = v ! (length v - 1)
 -- | /O(1)/ Unsafe indexing without bounds checking.
 unsafeIndex :: Vector v a => v a -> Int -> a
 {-# INLINE_FUSED unsafeIndex #-}
-unsafeIndex v i = checkIndex Unsafe i (length v) $ unBox (basicUnsafeIndexM v i)
+unsafeIndex v !i = checkIndex Unsafe i (length v) $ unBox (basicUnsafeIndexM v i)
 
 -- | /O(1)/ First element, without checking if the vector is empty.
 unsafeHead :: Vector v a => v a -> a
@@ -316,7 +321,7 @@ unsafeLast v = unsafeIndex v (length v - 1)
 -- element) is evaluated eagerly.
 indexM :: (HasCallStack, Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_FUSED indexM #-}
-indexM v i = checkIndex Bounds i (length v) $ liftBox $ basicUnsafeIndexM v i
+indexM v !i = checkIndex Bounds i (length v) $ liftBox $ basicUnsafeIndexM v i
 
 -- | /O(1)/ First element of a vector in a monad. See 'indexM' for an
 -- explanation of why this is useful.
@@ -334,7 +339,7 @@ lastM v = indexM v (length v - 1)
 -- explanation of why this is useful.
 unsafeIndexM :: (Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_FUSED unsafeIndexM #-}
-unsafeIndexM v i = checkIndex Unsafe i (length v)
+unsafeIndexM v !i = checkIndex Unsafe i (length v)
                  $ liftBox
                  $ basicUnsafeIndexM v i
 
@@ -993,7 +998,7 @@ backpermute v is = seq v
     -- NOTE: we do it this way to avoid triggering LiberateCase on n in
     -- polymorphic code
     index :: HasCallStack => Int -> Box a
-    index i = checkIndex Bounds i n $ basicUnsafeIndexM v i
+    index !i = checkIndex Bounds i n $ basicUnsafeIndexM v i
 
 -- | Same as 'backpermute', but without bounds checking.
 unsafeBackpermute :: (Vector v a, Vector v Int) => v a -> v Int -> v a
@@ -1010,7 +1015,7 @@ unsafeBackpermute v is = seq v
     {-# INLINE index #-}
     -- NOTE: we do it this way to avoid triggering LiberateCase on n in
     -- polymorphic code
-    index i = checkIndex Unsafe i n $ basicUnsafeIndexM v i
+    index !i = checkIndex Unsafe i n $ basicUnsafeIndexM v i
 
 -- Safe destructive updates
 -- ------------------------
@@ -2534,7 +2539,7 @@ streamR v = v `seq` n `seq` (Bundle.unfoldr get n `Bundle.sized` Exact n)
 
     {-# INLINE get #-}
     get 0 = Nothing
-    get i = let i' = i-1
+    get i = let !i' = i-1
             in
             case basicUnsafeIndexM v i' of Box x -> Just (x, i')
 
