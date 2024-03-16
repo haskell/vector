@@ -27,10 +27,10 @@ jobs:
           - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.0.2"  }
           - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.2.8"  }
           - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.4.8"  }
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.6.3"  }
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.6.3",
+          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.6.4"  }
+          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.6.4",
               flags: "-fUnsafeChecks -fInternalChecks" }
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.8.1"  }
+          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.8.2"  }
           # Win
           - { cabal: "3.10", os: windows-latest, ghc: "8.4.4"  }
           # OOM when building tests
@@ -47,8 +47,8 @@ jobs:
           - { cabal: "3.10", os: macOS-latest,   ghc: "9.0.2"  }
           - { cabal: "3.10", os: macOS-latest,   ghc: "9.2.8"  }
           - { cabal: "3.10", os: macOS-latest,   ghc: "9.4.8"  }
-          - { cabal: "3.10", os: macOS-latest,   ghc: "9.6.3"  }
-          - { cabal: "3.10", os: macOS-latest,   ghc: "9.8.1"  }
+          - { cabal: "3.10", os: macOS-latest,   ghc: "9.6.4"  }
+          - { cabal: "3.10", os: macOS-latest,   ghc: "9.8.2"  }
       fail-fast: false
 
     steps:
