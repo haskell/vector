@@ -196,7 +196,6 @@ common tests-common
     Boilerplater
     Tests.Bundle
     Tests.Move
-    Tests.Vector
     Tests.Vector.Property
     Tests.Vector.Boxed
     Tests.Vector.Storable
