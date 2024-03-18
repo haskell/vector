@@ -425,8 +425,8 @@ unsafeSlice :: MVector v a => Int  -- ^ starting index
                            -> v s a
                            -> v s a
 {-# INLINE unsafeSlice #-}
-unsafeSlice i n v = checkSlice Unsafe i n (length v)
-                  $ basicUnsafeSlice i n v
+unsafeSlice !i !n v = checkSlice Unsafe i n (length v)
+                    $ basicUnsafeSlice i n v
 
 -- | Same as 'init', but doesn't do range checks.
 unsafeInit :: MVector v a => v s a -> v s a

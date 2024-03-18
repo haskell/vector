@@ -457,7 +457,7 @@ unsafeSlice :: Vector v a => Int   -- ^ @i@ starting index
                           -> v a
                           -> v a
 {-# INLINE_FUSED unsafeSlice #-}
-unsafeSlice i n v = checkSlice Unsafe i n (length v) $ basicUnsafeSlice i n v
+unsafeSlice !i !n v = checkSlice Unsafe i n (length v) $ basicUnsafeSlice i n v
 
 -- | /O(1)/ Yield all but the last element without copying. The vector may not
 -- be empty, but this is not checked.
