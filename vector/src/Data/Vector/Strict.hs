@@ -7,7 +7,7 @@
 {-# LANGUAGE TypeFamilies #-}
 
 -- |
--- Module      : Data.Vector
+-- Module      : Data.Vector.Strict
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
 --                   Alexey Kuleshevich 2020-2022
 --                   Aleksey Khudyakov 2020-2022
@@ -166,7 +166,7 @@ module Data.Vector.Strict (
   toList, Data.Vector.Strict.fromList, Data.Vector.Strict.fromListN,
 
   -- ** Arrays
-  toArray, fromArray, toArraySlice, unsafeFromArraySlice,
+  toArray, fromArray, lazyFromArray, toArraySlice, unsafeFromArraySlice, unsafeLazyFromArraySlice,
 
   -- ** Other vector types
   G.convert,
@@ -2196,12 +2196,23 @@ fromListN = G.fromListN
 -- Conversions - Arrays
 -- -----------------------------
 
--- | /O(1)/ Convert an array to a vector.
+-- | /O(n)/ Convert an array to a vector and reduce each element to WHNF.
 --
--- @since 0.12.2.0
+-- @since NEXT
 fromArray :: Array a -> Vector a
 {-# INLINE fromArray #-}
-fromArray arr = Vector 0 (sizeofArray arr) arr
+fromArray arr = liftRnfV (`seq` ()) vec `seq` vec
+  where
+    vec = lazyFromArray arr
+
+-- | /O(1)/ Convert an array to a vector. This function does not touch
+-- content of array so resulting vector may contain bottoms.
+--
+-- @since NEXT
+lazyFromArray :: Array a -> Vector a
+{-# INLINE lazyFromArray #-}
+lazyFromArray arr = Vector 0 (sizeofArray arr) arr
+
 
 -- | /O(n)/ Convert a vector to an array.
 --
@@ -2224,9 +2235,11 @@ toArraySlice :: Vector a -> (Array a, Int, Int)
 toArraySlice (Vector offset len arr) = (arr, offset, len)
 
 
--- | /O(1)/ Convert an array slice to a vector. This function is very unsafe,
--- because constructing an invalid vector can yield almost all other safe
--- functions in this module unsafe. These are equivalent:
+-- | /O(n)/ Convert an array slice to a vector and reduce each element to WHNF.
+--
+-- This function is very unsafe, because constructing an invalid
+-- vector can yield almost all other safe functions in this module
+-- unsafe. These are equivalent:
 --
 -- > unsafeFromArraySlice len offset === unsafeTake len . unsafeDrop offset . fromArray
 --
@@ -2237,7 +2250,27 @@ unsafeFromArraySlice ::
   -> Int -- ^ Length
   -> Vector a
 {-# INLINE unsafeFromArraySlice #-}
-unsafeFromArraySlice arr offset len = Vector offset len arr
+unsafeFromArraySlice arr offset len = liftRnfV (`seq` ()) vec `seq` vec
+  where vec = unsafeLazyFromArraySlice arr offset len
+
+-- | /O(1)/ Convert an array slice to a vector. This function does not touch
+-- content of array so resulting vector may contain bottoms.
+--
+-- This function is very unsafe, because constructing an invalid
+-- vector can yield almost all other safe functions in this module
+-- unsafe. These are equivalent:
+--
+-- > unsafeFromArraySlice len offset === unsafeTake len . unsafeDrop offset . fromArray
+--
+-- @since 0.13.0.0
+unsafeLazyFromArraySlice ::
+     Array a -- ^ Immutable boxed array.
+  -> Int -- ^ Offset
+  -> Int -- ^ Length
+  -> Vector a
+{-# INLINE unsafeLazyFromArraySlice #-}
+unsafeLazyFromArraySlice arr offset len = Vector offset len arr
+
 
 -- Conversions - Mutable vectors
 -- -----------------------------
