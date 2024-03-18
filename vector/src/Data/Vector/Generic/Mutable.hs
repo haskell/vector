@@ -701,8 +701,8 @@ exchange v i x = checkIndex Bounds i (length v) $ unsafeExchange v i x
 unsafeRead :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
 {-# INLINE unsafeRead #-}
 unsafeRead v !i = checkIndex Unsafe i (length v)
-               $ stToPrim
-               $ basicUnsafeRead v i
+                $ stToPrim
+                $ basicUnsafeRead v i
 -- Why do we need ! before i?
 -- The reason is that 'basicUnsafeRead' is a class member and, unless 'unsafeRead' was
 -- already specialised to a specific v, GHC has no clue that i is most certainly
@@ -712,16 +712,16 @@ unsafeRead v !i = checkIndex Unsafe i (length v)
 unsafeWrite :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m ()
 {-# INLINE unsafeWrite #-}
 unsafeWrite v !i x = checkIndex Unsafe i (length v)
-                  $ stToPrim
-                  $ basicUnsafeWrite v i x
+                   $ stToPrim
+                   $ basicUnsafeWrite v i x
 
 -- | Modify the element at the given position. No bounds checks are performed.
 unsafeModify :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> a) -> Int -> m ()
 {-# INLINE unsafeModify #-}
 unsafeModify v f !i = checkIndex Unsafe i (length v)
-                   $ stToPrim
-                   $ basicUnsafeRead v i >>= \x ->
-                     basicUnsafeWrite v i (f x)
+                    $ stToPrim
+                    $ basicUnsafeRead v i >>= \x ->
+                      basicUnsafeWrite v i (f x)
 
 -- | Modify the element at the given position using a monadic
 -- function. No bounds checks are performed.
@@ -730,7 +730,7 @@ unsafeModify v f !i = checkIndex Unsafe i (length v)
 unsafeModifyM :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m a) -> Int -> m ()
 {-# INLINE unsafeModifyM #-}
 unsafeModifyM v f !i = checkIndex Unsafe i (length v)
-                    $ stToPrim . basicUnsafeWrite v i =<< f =<< stToPrim (basicUnsafeRead v i)
+                     $ stToPrim . basicUnsafeWrite v i =<< f =<< stToPrim (basicUnsafeRead v i)
 
 -- | Swap the elements at the given positions. No bounds checks are performed.
 unsafeSwap :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> Int -> m ()
