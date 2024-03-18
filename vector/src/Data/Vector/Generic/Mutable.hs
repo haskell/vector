@@ -425,6 +425,7 @@ unsafeSlice :: MVector v a => Int  -- ^ starting index
                            -> v s a
                            -> v s a
 {-# INLINE unsafeSlice #-}
+-- See NOTE: [Strict indexing] in D.V.Generic
 unsafeSlice !i !n v = checkSlice Unsafe i n (length v)
                     $ basicUnsafeSlice i n v
 
@@ -700,17 +701,15 @@ exchange v i x = checkIndex Bounds i (length v) $ unsafeExchange v i x
 -- | Yield the element at the given position. No bounds checks are performed.
 unsafeRead :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
 {-# INLINE unsafeRead #-}
+-- See NOTE: [Strict indexing] in D.V.Generic
 unsafeRead v !i = checkIndex Unsafe i (length v)
                 $ stToPrim
                 $ basicUnsafeRead v i
--- Why do we need ! before i?
--- The reason is that 'basicUnsafeRead' is a class member and, unless 'unsafeRead' was
--- already specialised to a specific v, GHC has no clue that i is most certainly
--- to be used eagerly. Bang before i hints this vital for optimizer information.
 
 -- | Replace the element at the given position. No bounds checks are performed.
 unsafeWrite :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m ()
 {-# INLINE unsafeWrite #-}
+-- See NOTE: [Strict indexing] in D.V.Generic
 unsafeWrite v !i x = checkIndex Unsafe i (length v)
                    $ stToPrim
                    $ basicUnsafeWrite v i x
@@ -718,6 +717,7 @@ unsafeWrite v !i x = checkIndex Unsafe i (length v)
 -- | Modify the element at the given position. No bounds checks are performed.
 unsafeModify :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> a) -> Int -> m ()
 {-# INLINE unsafeModify #-}
+-- See NOTE: [Strict indexing] in D.V.Generic
 unsafeModify v f !i = checkIndex Unsafe i (length v)
                     $ stToPrim
                     $ basicUnsafeRead v i >>= \x ->
@@ -729,6 +729,7 @@ unsafeModify v f !i = checkIndex Unsafe i (length v)
 -- @since 0.12.3.0
 unsafeModifyM :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m a) -> Int -> m ()
 {-# INLINE unsafeModifyM #-}
+-- See NOTE: [Strict indexing] in D.V.Generic
 unsafeModifyM v f !i = checkIndex Unsafe i (length v)
                      $ stToPrim . basicUnsafeWrite v i =<< f =<< stToPrim (basicUnsafeRead v i)
 

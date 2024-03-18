@@ -228,20 +228,31 @@ null = Bundle.null . stream
 -- Indexing
 -- --------
 
+-- NOTE: [Strict indexing]
+-- ~~~~~~~~~~~~~~~~~~~~~~~
+--
+-- Why index parameters are strict in indexing ((!), (!?)) functions
+-- and functions for accessing elements in mutable arrays ('unsafeRead',
+-- 'unsafeWrite', 'unsafeModify'), and slice functions?
+--
+-- These function call class methods ('basicUnsafeIndexM',
+-- 'basicUnsafeRead', etc) and, unless (!) was already specialised to
+-- a specific v, GHC has no clue that i is most certainly to be used
+-- eagerly. Bang before i hints this vital for optimizer information.
+
+
 infixl 9 !
 -- | O(1) Indexing.
 (!) :: (HasCallStack, Vector v a) => v a -> Int -> a
 {-# INLINE_FUSED (!) #-}
+-- See NOTE: [Strict indexing]
 (!) v !i = checkIndex Bounds i (length v) $ unBox (basicUnsafeIndexM v i)
--- Why do we need ! before i?
--- The reason is that 'basicUnsafeIndexM' is a class member and, unless (!) was
--- already specialised to a specific v, GHC has no clue that i is most certainly
--- to be used eagerly. Bang before i hints this vital for optimizer information.
 
 infixl 9 !?
 -- | O(1) Safe indexing.
 (!?) :: Vector v a => v a -> Int -> Maybe a
 {-# INLINE_FUSED (!?) #-}
+-- See NOTE: [Strict indexing]
 -- Use basicUnsafeIndexM @Box to perform the indexing eagerly.
 v !? (!i)
   | i `inRange` length v = case basicUnsafeIndexM v i of Box a -> Just a
@@ -261,6 +272,7 @@ last v = v ! (length v - 1)
 -- | /O(1)/ Unsafe indexing without bounds checking.
 unsafeIndex :: Vector v a => v a -> Int -> a
 {-# INLINE_FUSED unsafeIndex #-}
+-- See NOTE: [Strict indexing]
 unsafeIndex v !i = checkIndex Unsafe i (length v) $ unBox (basicUnsafeIndexM v i)
 
 -- | /O(1)/ First element, without checking if the vector is empty.
@@ -457,6 +469,7 @@ unsafeSlice :: Vector v a => Int   -- ^ @i@ starting index
                           -> v a
                           -> v a
 {-# INLINE_FUSED unsafeSlice #-}
+-- See NOTE: [Strict indexing]
 unsafeSlice !i !n v = checkSlice Unsafe i n (length v) $ basicUnsafeSlice i n v
 
 -- | /O(1)/ Yield all but the last element without copying. The vector may not
