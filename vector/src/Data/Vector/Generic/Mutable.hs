@@ -425,8 +425,9 @@ unsafeSlice :: MVector v a => Int  -- ^ starting index
                            -> v s a
                            -> v s a
 {-# INLINE unsafeSlice #-}
-unsafeSlice i n v = checkSlice Unsafe i n (length v)
-                  $ basicUnsafeSlice i n v
+-- See NOTE: [Strict indexing] in D.V.Generic
+unsafeSlice !i !n v = checkSlice Unsafe i n (length v)
+                    $ basicUnsafeSlice i n v
 
 -- | Same as 'init', but doesn't do range checks.
 unsafeInit :: MVector v a => v s a -> v s a
@@ -700,24 +701,27 @@ exchange v i x = checkIndex Bounds i (length v) $ unsafeExchange v i x
 -- | Yield the element at the given position. No bounds checks are performed.
 unsafeRead :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> m a
 {-# INLINE unsafeRead #-}
-unsafeRead v i = checkIndex Unsafe i (length v)
-               $ stToPrim
-               $ basicUnsafeRead v i
+-- See NOTE: [Strict indexing] in D.V.Generic
+unsafeRead v !i = checkIndex Unsafe i (length v)
+                $ stToPrim
+                $ basicUnsafeRead v i
 
 -- | Replace the element at the given position. No bounds checks are performed.
 unsafeWrite :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> a -> m ()
 {-# INLINE unsafeWrite #-}
-unsafeWrite v i x = checkIndex Unsafe i (length v)
-                  $ stToPrim
-                  $ basicUnsafeWrite v i x
+-- See NOTE: [Strict indexing] in D.V.Generic
+unsafeWrite v !i x = checkIndex Unsafe i (length v)
+                   $ stToPrim
+                   $ basicUnsafeWrite v i x
 
 -- | Modify the element at the given position. No bounds checks are performed.
 unsafeModify :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> a) -> Int -> m ()
 {-# INLINE unsafeModify #-}
-unsafeModify v f i = checkIndex Unsafe i (length v)
-                   $ stToPrim
-                   $ basicUnsafeRead v i >>= \x ->
-                     basicUnsafeWrite v i (f x)
+-- See NOTE: [Strict indexing] in D.V.Generic
+unsafeModify v f !i = checkIndex Unsafe i (length v)
+                    $ stToPrim
+                    $ basicUnsafeRead v i >>= \x ->
+                      basicUnsafeWrite v i (f x)
 
 -- | Modify the element at the given position using a monadic
 -- function. No bounds checks are performed.
@@ -725,8 +729,9 @@ unsafeModify v f i = checkIndex Unsafe i (length v)
 -- @since 0.12.3.0
 unsafeModifyM :: (PrimMonad m, MVector v a) => v (PrimState m) a -> (a -> m a) -> Int -> m ()
 {-# INLINE unsafeModifyM #-}
-unsafeModifyM v f i = checkIndex Unsafe i (length v)
-                    $ stToPrim . basicUnsafeWrite v i =<< f =<< stToPrim (basicUnsafeRead v i)
+-- See NOTE: [Strict indexing] in D.V.Generic
+unsafeModifyM v f !i = checkIndex Unsafe i (length v)
+                     $ stToPrim . basicUnsafeWrite v i =<< f =<< stToPrim (basicUnsafeRead v i)
 
 -- | Swap the elements at the given positions. No bounds checks are performed.
 unsafeSwap :: (PrimMonad m, MVector v a) => v (PrimState m) a -> Int -> Int -> m ()
