@@ -72,16 +72,16 @@ module Data.Vector.Strict.Mutable (
   PrimMonad, PrimState, RealWorld
 ) where
 
-import           Control.Monad (when, liftM)
+import           Control.Monad (when)
 import qualified Data.Vector.Generic.Mutable as G
 import           Data.Vector.Internal.Check
 import           Data.Primitive.Array
 import           Control.Monad.Primitive
 
 import Prelude
-  ( Ord, Monad, Bool, Ordering(..), Int, Maybe
+  ( Ord, Monad(..), Bool, Ordering(..), Int, Maybe
   , compare, return, otherwise, error
-  , (>>=), (+), (-), (*), (<), (>), (>=), (&&), (||), ($), (>>) )
+  , (+), (-), (*), (<), (>), (>=), (&&), (||), ($), (>>), (<$>) )
 
 import Data.Typeable ( Typeable )
 
@@ -804,14 +804,18 @@ ifoldrM' = G.ifoldrM'
 -- Conversions - Arrays
 -- -----------------------------
 
--- | /O(n)/ Make a copy of a mutable array to a new mutable vector.
+-- | /O(n)/ Make a copy of a mutable array to a new mutable
+-- vector. All elements of a vector are evaluated to WHNF
 --
 -- @since 0.13.2.0
 fromMutableArray :: PrimMonad m => MutableArray (PrimState m) a -> m (MVector (PrimState m) a)
 {-# INLINE fromMutableArray #-}
-fromMutableArray marr =
-  let size = sizeofMutableArray marr
-  in MVector 0 size `liftM` cloneMutableArray marr 0 size
+fromMutableArray marr = stToPrim $ do
+  mvec <- MVector 0 size <$> cloneMutableArray marr 0 size
+  foldM' (\_ !_ -> return ()) () mvec
+  return mvec
+  where
+    size = sizeofMutableArray marr
 
 -- | /O(n)/ Make a copy of a mutable vector into a new mutable array.
 --
