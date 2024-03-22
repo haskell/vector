@@ -18,15 +18,11 @@
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- A library for boxed vectors (that is, polymorphic arrays capable of
--- holding any Haskell value). The vectors come in two flavours:
---
---  * mutable
---
---  * immutable
---
--- They support a rich interface of both list-like operations and bulk
--- array operations.
+-- Immutable strict boxed vectors (that is, polymorphic arrays capable
+-- of holding any Haskell value). It is possible to create vector
+-- which contain bottom elements, either by using mutable interfaces
+-- (see "Data.Vector.Strict.Mutable") or functions that don't preserve
+-- strictness ('lazyFromArray').
 --
 -- For unboxed arrays, use "Data.Vector.Unboxed".
 
