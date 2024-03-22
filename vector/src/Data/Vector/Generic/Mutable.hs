@@ -639,7 +639,7 @@ clear = stToPrim . basicClear
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector.Mutable as MV
+-- >>> import qualified Data.Vector.Strict.Mutable as MV
 -- >>> v <- MV.generate 10 (\x -> x*x)
 -- >>> MV.read v 3
 -- 9
@@ -655,7 +655,7 @@ read v i = checkIndex Bounds i (length v)
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector.Mutable as MV
+-- >>> import qualified Data.Vector.Strict.Mutable as MV
 -- >>> v <- MV.generate 10 (\x -> x*x)
 -- >>> MV.readMaybe v 3
 -- Just 9

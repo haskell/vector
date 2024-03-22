@@ -898,7 +898,7 @@ unsafeUpdate_stream = modifyWithBundle M.unsafeUpdate
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.accum (+) (V.fromList [1000,2000,3000]) [(2,4),(1,6),(0,3),(1,10)]
 -- [1003,2016,3004]
 accum :: Vector v a
@@ -914,7 +914,7 @@ accum f v us = accum_stream f v (Bundle.fromList us)
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.accumulate (+) (V.fromList [1000,2000,3000]) (V.fromList [(2,4),(1,6),(0,3),(1,10)])
 -- [1003,2016,3004]
 accumulate :: (Vector v a, Vector v (Int, b))
@@ -1039,8 +1039,8 @@ unsafeBackpermute v is = seq v
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
--- >>> import qualified Data.Vector.Mutable as MV
+-- >>> import qualified Data.Vector.Strict as V
+-- >>> import qualified Data.Vector.Strict.Mutable as MV
 -- >>> V.modify (\v -> MV.write v 0 'x') $ V.replicate 4 'a'
 -- "xaaa"
 modify :: Vector v a => (forall s. Mutable v s a -> ST s ()) -> v a -> v a
@@ -1399,7 +1399,7 @@ ifilter f = unstream
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.uniq $ V.fromList [1,3,3,200,3]
 -- [1,3,200,3]
 -- >>> import Data.Semigroup
@@ -1559,7 +1559,7 @@ unstablePartition_new f (New.New p) = runST (
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.span (<4) $ V.generate 10 id
 -- ([0,1,2,3],[4,5,6,7,8,9])
 span :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
@@ -1573,7 +1573,7 @@ span f = break (not . f)
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.break (>4) $ V.generate 10 id
 -- ([0,1,2,3,4],[5,6,7,8,9])
 break :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
@@ -1589,7 +1589,7 @@ break f xs = case findIndex f xs of
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.spanR (>4) $ V.generate 10 id
 -- ([5,6,7,8,9],[0,1,2,3,4])
 spanR :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
@@ -1605,7 +1605,7 @@ spanR f = breakR (not . f)
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.breakR (<5) $ V.generate 10 id
 -- ([5,6,7,8,9],[0,1,2,3,4])
 breakR :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
@@ -1624,7 +1624,7 @@ breakR f xs = case findIndexR f xs of
 -- and each slice contains only equal elements, as determined by the equality
 -- predicate function.
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> import           Data.Char (isUpper)
 -- >>> V.groupBy (\a b -> isUpper a == isUpper b) (V.fromList "Mississippi River")
 -- ["M","ississippi ","R","iver"]
@@ -1649,7 +1649,7 @@ groupBy f v =
 --
 -- This is the equivalent of 'groupBy (==)'.
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.group (V.fromList "Mississippi")
 -- ["M","i","ss","i","ss","i","pp","i"]
 --
@@ -1813,7 +1813,7 @@ foldMap' f = foldl' (\acc a -> acc `mappend` f a) mempty
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.all even $ V.fromList [2, 4, 12]
 -- True
 -- >>> V.all even $ V.fromList [2, 4, 13]
@@ -1828,7 +1828,7 @@ all f = Bundle.and . Bundle.map f . stream
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.any even $ V.fromList [1, 3, 7]
 -- False
 -- >>> V.any even $ V.fromList [3, 2, 13]
@@ -1843,7 +1843,7 @@ any f = Bundle.or . Bundle.map f . stream
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.and $ V.fromList [True, False]
 -- False
 -- >>> V.and V.empty
@@ -1856,7 +1856,7 @@ and = Bundle.and . stream
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.or $ V.fromList [True, False]
 -- True
 -- >>> V.or V.empty
@@ -1869,7 +1869,7 @@ or = Bundle.or . stream
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.sum $ V.fromList [300,20,1]
 -- 321
 -- >>> V.sum (V.empty :: V.Vector Int)
@@ -1882,7 +1882,7 @@ sum = Bundle.foldl' (+) 0 . stream
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.product $ V.fromList [1,2,3,4]
 -- 24
 -- >>> V.product (V.empty :: V.Vector Int)
@@ -1896,7 +1896,7 @@ product = Bundle.foldl' (*) 1 . stream
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.maximum $ V.fromList [2, 1]
 -- 2
 -- >>> import Data.Semigroup
@@ -1916,7 +1916,7 @@ maximum = Bundle.foldl1' max . stream
 -- ==== __Examples__
 --
 -- >>> import Data.Ord
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.maximumBy (comparing fst) $ V.fromList [(2,'a'), (1,'b')]
 -- (2,'a')
 -- >>> V.maximumBy (comparing fst) $ V.fromList [(1,'a'), (1,'b')]
@@ -1936,7 +1936,7 @@ maximumBy cmpr = Bundle.foldl1' maxBy . stream
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.maximumOn fst $ V.fromList [(2,'a'), (1,'b')]
 -- (2,'a')
 -- >>> V.maximumOn fst $ V.fromList [(1,'a'), (1,'b')]
@@ -1957,7 +1957,7 @@ maximumOn f = fst . Bundle.foldl1' maxBy . Bundle.map (\a -> (a, f a)) . stream
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.minimum $ V.fromList [2, 1]
 -- 1
 -- >>> import Data.Semigroup
@@ -1976,7 +1976,7 @@ minimum = Bundle.foldl1' min . stream
 -- ==== __Examples__
 --
 -- >>> import Data.Ord
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.minimumBy (comparing fst) $ V.fromList [(2,'a'), (1,'b')]
 -- (1,'b')
 -- >>> V.minimumBy (comparing fst) $ V.fromList [(1,'a'), (1,'b')]
@@ -1996,7 +1996,7 @@ minimumBy cmpr = Bundle.foldl1' minBy . stream
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.minimumOn fst $ V.fromList [(2,'a'), (1,'b')]
 -- (1,'b')
 -- >>> V.minimumOn fst $ V.fromList [(1,'a'), (1,'b')]
@@ -2025,7 +2025,7 @@ maxIndex = maxIndexBy compare
 -- ==== __Examples__
 --
 -- >>> import Data.Ord
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.maxIndexBy (comparing fst) $ V.fromList [(2,'a'), (1,'b')]
 -- 0
 -- >>> V.maxIndexBy (comparing fst) $ V.fromList [(1,'a'), (1,'b')]
@@ -2051,7 +2051,7 @@ minIndex = minIndexBy compare
 -- ==== __Examples__
 --
 -- >>> import Data.Ord
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.minIndexBy (comparing fst) $ V.fromList [(2,'a'), (1,'b')]
 -- 1
 -- >>> V.minIndexBy (comparing fst) $ V.fromList [(1,'a'), (1,'b')]
@@ -2160,7 +2160,7 @@ sequence_ = mapM_ id
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.prescanl (+) 0 (V.fromList [1,2,3,4])
 -- [0,1,3,6]
 prescanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
@@ -2180,7 +2180,7 @@ prescanl' f z = unstream . inplace (S.prescanl' f z) id . stream
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.postscanl (+) 0 (V.fromList [1,2,3,4])
 -- [1,3,6,10]
 postscanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
@@ -2200,7 +2200,7 @@ postscanl' f z = unstream . inplace (S.postscanl' f z) id . stream
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.scanl (+) 0 (V.fromList [1,2,3,4])
 -- [0,1,3,6,10]
 scanl :: (Vector v a, Vector v b) => (a -> b -> a) -> a -> v b -> v a
@@ -2239,7 +2239,7 @@ iscanl' f z =
 -- results in an error; instead it produces an empty vector.
 --
 -- ==== __Examples__
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.scanl1 min $ V.fromListN 5 [4,2,4,1,3]
 -- [4,2,2,1,1]
 -- >>> V.scanl1 max $ V.fromListN 5 [1,3,2,5,4]
@@ -2256,7 +2256,7 @@ scanl1 f = unstream . inplace (S.scanl1 f) id . stream
 -- results in an error; instead it produces an empty vector.
 --
 -- ==== __Examples__
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.scanl1' min $ V.fromListN 5 [4,2,4,1,3]
 -- [4,2,2,1,1]
 -- >>> V.scanl1' max $ V.fromListN 5 [1,3,2,5,4]
@@ -2327,7 +2327,7 @@ iscanr' f z v =
 -- results in an error; instead it produces an empty vector.
 --
 -- ==== __Examples__
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.scanr1 min $ V.fromListN 5 [3,1,4,2,4]
 -- [1,1,2,2,4]
 -- >>> V.scanr1 max $ V.fromListN 5 [4,5,2,3,1]
@@ -2345,7 +2345,7 @@ scanr1 f = unstreamR . inplace (S.scanl1 (flip f)) id . streamR
 -- results in an error; instead it produces an empty vector.
 --
 -- ==== __Examples__
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.scanr1' min $ V.fromListN 5 [3,1,4,2,4]
 -- [1,1,2,2,4]
 -- >>> V.scanr1' max $ V.fromListN 5 [4,5,2,3,1]
@@ -2381,7 +2381,7 @@ fromList = unstream . Bundle.fromList
 --
 -- ==== __Examples__
 --
--- >>> import qualified Data.Vector as V
+-- >>> import qualified Data.Vector.Strict as V
 -- >>> V.fromListN 3 [1,2,3,4,5]
 -- [1,2,3]
 -- >>> V.fromListN 3 [1]
