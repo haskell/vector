@@ -6,7 +6,7 @@
 {-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE TypeFamilies #-}
 -- |
--- Module      : Data.Vector.Mutable
+-- Module      : Data.Vector.Strict.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
 --                   Alexey Kuleshevich 2020-2022
 --                   Aleksey Khudyakov 2020-2022
