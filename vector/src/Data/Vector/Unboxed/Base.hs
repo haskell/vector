@@ -4,6 +4,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MagicHash #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -161,6 +162,9 @@ instance G.Vector Vector () where
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (V_Unit _) _ = return ()
 
+  {-# INLINE basicUnsafeIndexM# #-}
+  basicUnsafeIndexM# (V_Unit _) _ = return ()
+
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MV_Unit _) (V_Unit _) = return ()
 
@@ -253,13 +257,13 @@ instance P.Prim a => G.Vector Vector (UnboxViaPrim a) where
   {-# INLINE basicUnsafeThaw #-}
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
-  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE basicUnsafeIndexM# #-}
   {-# INLINE elemseq #-}
   basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @P.Vector @a
   basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @P.Vector @a
   basicLength       = coerce $ G.basicLength       @P.Vector @a
   basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @P.Vector @a
-  basicUnsafeIndexM = coerce $ G.basicUnsafeIndexM @P.Vector @a
+  basicUnsafeIndexM# = coerce $ G.basicUnsafeIndexM# @P.Vector @a
   basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @P.Vector @a
   elemseq _ = seq
 
@@ -393,8 +397,8 @@ instance (IsoUnbox a b, Unbox b) => G.Vector Vector (As a b) where
   basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @Vector @b
   elemseq _         = seq
   -- Conversion to/from underlying representation
-  {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM (V_UnboxAs v) i = As . fromURepr <$> G.basicUnsafeIndexM v i
+  {-# INLINE basicUnsafeIndexM# #-}
+  basicUnsafeIndexM# (V_UnboxAs v) i = As . fromURepr <$> G.basicUnsafeIndexM# v i
 
 
 #define primMVector(ty,con)                                             \
@@ -431,13 +435,13 @@ instance G.Vector Vector ty where {                                     \
 ; {-# INLINE basicUnsafeThaw #-}                                        \
 ; {-# INLINE basicLength #-}                                            \
 ; {-# INLINE basicUnsafeSlice #-}                                       \
-; {-# INLINE basicUnsafeIndexM #-}                                      \
+; {-# INLINE basicUnsafeIndexM# #-}                                     \
 ; {-# INLINE elemseq #-}                                                \
 ; basicUnsafeFreeze (mcon v) = con `liftM` G.basicUnsafeFreeze v        \
 ; basicUnsafeThaw (con v) = mcon `liftM` G.basicUnsafeThaw v            \
 ; basicLength (con v) = G.basicLength v                                 \
 ; basicUnsafeSlice i n (con v) = con $ G.basicUnsafeSlice i n v         \
-; basicUnsafeIndexM (con v) i = G.basicUnsafeIndexM v i                 \
+; basicUnsafeIndexM# (con v) i = G.basicUnsafeIndexM# v i               \
 ; basicUnsafeCopy (mcon mv) (con v) = G.basicUnsafeCopy mv v            \
 ; elemseq _ = seq }
 
@@ -573,13 +577,13 @@ instance G.Vector Vector Bool where
   {-# INLINE basicUnsafeThaw #-}
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
-  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE basicUnsafeIndexM# #-}
   {-# INLINE elemseq #-}
   basicUnsafeFreeze (MV_Bool v) = V_Bool `liftM` G.basicUnsafeFreeze v
   basicUnsafeThaw (V_Bool v) = MV_Bool `liftM` G.basicUnsafeThaw v
   basicLength (V_Bool v) = G.basicLength v
   basicUnsafeSlice i n (V_Bool v) = V_Bool $ G.basicUnsafeSlice i n v
-  basicUnsafeIndexM (V_Bool v) i = toBool `liftM` G.basicUnsafeIndexM v i
+  basicUnsafeIndexM# (V_Bool v) i = toBool `liftM` G.basicUnsafeIndexM# v i
   basicUnsafeCopy (MV_Bool mv) (V_Bool v) = G.basicUnsafeCopy mv v
   elemseq _ = seq
 
@@ -631,10 +635,10 @@ instance (Unbox a) => G.Vector Vector (Complex a) where
   basicLength       = coerce $ G.basicLength       @Vector @(a,a)
   basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @Vector @(a,a)
   basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @Vector @(a,a)
-  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE basicUnsafeIndexM# #-}
   {-# INLINE elemseq #-}
-  basicUnsafeIndexM (V_Complex v) i
-                = uncurry (:+) <$> G.basicUnsafeIndexM v i
+  basicUnsafeIndexM# (V_Complex v) i
+                = uncurry (:+) <$> G.basicUnsafeIndexM# v i
   elemseq _ (x :+ y) z = G.elemseq (undefined :: Vector a) x
                        $ G.elemseq (undefined :: Vector a) y z
 
@@ -675,13 +679,13 @@ instance inst_ctxt => G.Vector Vector (inst_head) where { \
 ; {-# INLINE basicUnsafeThaw    #-}                                       \
 ; {-# INLINE basicLength        #-}                                       \
 ; {-# INLINE basicUnsafeSlice   #-}                                       \
-; {-# INLINE basicUnsafeIndexM  #-}                                       \
+; {-# INLINE basicUnsafeIndexM#  #-}                                       \
 ; {-# INLINE elemseq            #-}                                       \
 ; basicUnsafeFreeze (mcon v)        = con `liftM` G.basicUnsafeFreeze v   \
 ; basicUnsafeThaw (con v)           = mcon `liftM` G.basicUnsafeThaw v    \
 ; basicLength (con v)               = G.basicLength v                     \
 ; basicUnsafeSlice i n (con v)      = con $ G.basicUnsafeSlice i n v      \
-; basicUnsafeIndexM (con v) i       = tyC `liftM` G.basicUnsafeIndexM v i \
+; basicUnsafeIndexM# (con v) i      = tyC `liftM` G.basicUnsafeIndexM# v i \
 ; basicUnsafeCopy (mcon mv) (con v) = G.basicUnsafeCopy mv v              \
 ; elemseq _ (tyC a)                 = G.elemseq (undefined :: Vector x) a \
 }
@@ -758,9 +762,9 @@ instance (Unbox a, Unbox b) => G.Vector Vector (Arg a b) where
   basicLength       = coerce $ G.basicLength       @Vector @(a,b)
   basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @Vector @(a,b)
   basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @Vector @(a,b)
-  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE basicUnsafeIndexM# #-}
   {-# INLINE elemseq #-}
-  basicUnsafeIndexM (V_Arg v) i  = uncurry Arg `liftM` G.basicUnsafeIndexM v i
+  basicUnsafeIndexM# (V_Arg v) i = uncurry Arg `liftM` G.basicUnsafeIndexM# v i
   elemseq _ (Arg x y) z          = G.elemseq (undefined :: Vector a) x
                                  $ G.elemseq (undefined :: Vector b) y z
 
