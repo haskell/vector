@@ -7,6 +7,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 -- |
 -- Module      : Data.Vector.Strict
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -185,7 +186,7 @@ import Control.DeepSeq ( NFData(rnf)
 #endif
                        )
 
-import Control.Monad ( MonadPlus(..), liftM, ap )
+import Control.Monad ( MonadPlus(..), ap )
 #if !MIN_VERSION_base(4,13,0)
 import Control.Monad (fail)
 #endif
@@ -197,9 +198,9 @@ import Control.Monad.Zip
 import Data.Function ( fix )
 
 import Prelude
-  ( Eq, Ord, Num, Enum, Monoid, Functor, Monad, Show, Bool, Ordering(..), Int, Maybe, Either
-  , compare, mempty, mappend, mconcat, return, showsPrec, fmap, otherwise, id, flip, const
-  , (>>=), (+), (-), (<), (<=), (>), (>=), (==), (/=), (&&), (.), ($), seq ,undefined)
+  ( Eq(..), Ord(..), Num, Enum, Monoid, Functor, Monad, Show, Bool, Ordering(..), Int, Maybe, Either
+  , return, showsPrec, fmap, otherwise, id, flip, const
+  , (>>=), (+), (-), (.), ($), seq)
 
 import Data.Functor.Classes (Eq1 (..), Ord1 (..), Read1 (..), Show1 (..))
 import Data.Typeable  ( Typeable )
@@ -216,7 +217,19 @@ import qualified GHC.Exts as Exts (IsList(..))
 
 -- | Strict boxed vectors, supporting efficient slicing.
 newtype Vector a = Vector (V.Vector a)
-        deriving ( Typeable )
+  deriving (Typeable, Foldable.Foldable, Semigroup, Monoid)
+
+-- NOTE: [GND for strict vector]
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--
+-- Strict boxed vectors (both mutable an immutable) are newtypes over
+-- lazy ones. This makes it possible to use GND to derive instances.
+-- However one must take care to preserve strictness since Vector
+-- instance for lazy vectors would be used.
+--
+-- In general it's OK to derive instances where vectors are passed as
+-- parameters (e.g. Eq, Ord) and not OK to derive ones where new
+-- vector is created (e.g. Read, Functor)
 
 liftRnfV :: (a -> ()) -> Vector a -> ()
 liftRnfV elemRnf = foldl' (\_ -> elemRnf) ()
@@ -240,10 +253,10 @@ instance Read a => Read (Vector a) where
   readListPrec = readListPrecDefault
 
 instance Show1 Vector where
-    liftShowsPrec = G.liftShowsPrec
+  liftShowsPrec = G.liftShowsPrec
 
 instance Read1 Vector where
-    liftReadsPrec = G.liftReadsPrec
+  liftReadsPrec = G.liftReadsPrec
 
 instance Exts.IsList (Vector a) where
   type Item (Vector a) = a
@@ -276,50 +289,32 @@ instance G.Vector Vector a where
   {-# INLINE elemseq #-}
   elemseq _ = seq
 
--- See http://trac.haskell.org/vector/ticket/12
+-- See NOTE: [GND for strict vector]
+--
+-- Deriving strategies are only available since 8.2. So we can't use
+-- deriving newtype until we drop support for 8.0
 instance Eq a => Eq (Vector a) where
   {-# INLINE (==) #-}
-  xs == ys = Bundle.eq (G.stream xs) (G.stream ys)
+  (==) = coerce ((==) @(V.Vector a))
 
--- See http://trac.haskell.org/vector/ticket/12
+-- See NOTE: [GND for strict vector]
 instance Ord a => Ord (Vector a) where
   {-# INLINE compare #-}
-  compare xs ys = Bundle.cmp (G.stream xs) (G.stream ys)
-
+  compare = coerce (compare @(V.Vector a))
   {-# INLINE (<) #-}
-  xs < ys = Bundle.cmp (G.stream xs) (G.stream ys) == LT
-
+  (<)  = coerce ((<)  @(V.Vector a))
   {-# INLINE (<=) #-}
-  xs <= ys = Bundle.cmp (G.stream xs) (G.stream ys) /= GT
-
+  (<=) = coerce ((<=) @(V.Vector a))
   {-# INLINE (>) #-}
-  xs > ys = Bundle.cmp (G.stream xs) (G.stream ys) == GT
-
+  (>)  = coerce ((>)  @(V.Vector a))
   {-# INLINE (>=) #-}
-  xs >= ys = Bundle.cmp (G.stream xs) (G.stream ys) /= LT
+  (>=) = coerce ((>=) @(V.Vector a))
 
 instance Eq1 Vector where
   liftEq eq xs ys = Bundle.eqBy eq (G.stream xs) (G.stream ys)
 
 instance Ord1 Vector where
   liftCompare cmp xs ys = Bundle.cmpBy cmp (G.stream xs) (G.stream ys)
-
-instance Semigroup (Vector a) where
-  {-# INLINE (<>) #-}
-  (<>) = (++)
-
-  {-# INLINE sconcat #-}
-  sconcat = G.concatNE
-
-instance Monoid (Vector a) where
-  {-# INLINE mempty #-}
-  mempty = empty
-
-  {-# INLINE mappend #-}
-  mappend = (<>)
-
-  {-# INLINE mconcat #-}
-  mconcat = concat
 
 instance Functor Vector where
   {-# INLINE fmap #-}
@@ -399,49 +394,6 @@ instance Applicative.Alternative Vector where
 
   {-# INLINE (<|>) #-}
   (<|>) = (++)
-
-instance Foldable.Foldable Vector where
-  {-# INLINE foldr #-}
-  foldr = foldr
-
-  {-# INLINE foldl #-}
-  foldl = foldl
-
-  {-# INLINE foldr1 #-}
-  foldr1 = foldr1
-
-  {-# INLINE foldl1 #-}
-  foldl1 = foldl1
-
-  {-# INLINE foldr' #-}
-  foldr' = foldr'
-
-  {-# INLINE foldl' #-}
-  foldl' = foldl'
-
-  {-# INLINE toList #-}
-  toList = toList
-
-  {-# INLINE length #-}
-  length = length
-
-  {-# INLINE null #-}
-  null = null
-
-  {-# INLINE elem #-}
-  elem = elem
-
-  {-# INLINE maximum #-}
-  maximum = maximum
-
-  {-# INLINE minimum #-}
-  minimum = minimum
-
-  {-# INLINE sum #-}
-  sum = sum
-
-  {-# INLINE product #-}
-  product = product
 
 instance Traversable.Traversable Vector where
   {-# INLINE traverse #-}
