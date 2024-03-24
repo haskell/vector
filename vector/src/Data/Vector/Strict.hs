@@ -2474,7 +2474,7 @@ toLazy (Vector v) = v
 -- | /O(n)/ Convert lazy array to strict array. This function reduces
 -- each element of vector to WHNF.
 fromLazy :: V.Vector a -> Vector a
-fromLazy vec = liftRnf (`seq` ()) v `seq` v where v = Vector vec
+fromLazy vec = liftRnfV (`seq` ()) v `seq` v where v = Vector vec
 
 -- | /O(1)/ Convert lazy array to strict array. This function does not
 -- evaluate vector elements.
@@ -2490,7 +2490,7 @@ lazyFromLazy = Vector
 -- @since 0.13.2.0
 fromArray :: Array a -> Vector a
 {-# INLINE fromArray #-}
-fromArray arr = liftRnf (`seq` ()) vec `seq` vec
+fromArray arr = liftRnfV (`seq` ()) vec `seq` vec
   where
     vec = lazyFromArray arr
 
