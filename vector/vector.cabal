@@ -61,7 +61,6 @@ Extra-doc-files:
       README.md
       tests/LICENSE
 Extra-Source-Files:
-      tests/Setup.hs
       internal/GenUnboxTuple.hs
       internal/unbox-tuple-instances
 
@@ -146,6 +145,9 @@ Library
         Data.Vector.Unboxed.Mutable
         Data.Vector.Unboxed
 
+        Data.Vector.Strict.Mutable
+        Data.Vector.Strict
+
         Data.Vector.Mutable
         Data.Vector
 
@@ -197,9 +199,9 @@ common tests-common
     Boilerplater
     Tests.Bundle
     Tests.Move
-    Tests.Vector
     Tests.Vector.Property
     Tests.Vector.Boxed
+    Tests.Vector.Strict
     Tests.Vector.Storable
     Tests.Vector.Primitive
     Tests.Vector.Unboxed

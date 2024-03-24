@@ -13,6 +13,7 @@ import qualified Data.Vector as DV
 import qualified Data.Vector.Generic as DVG
 import qualified Data.Vector.Primitive as DVP
 import qualified Data.Vector.Storable as DVS
+import qualified Data.Vector.Strict  as DVV
 import qualified Data.Vector.Unboxed as DVU
 import qualified Data.Vector.Fusion.Bundle as S
 
@@ -43,6 +44,12 @@ instance (Arbitrary a, DVS.Storable a) => Arbitrary (DVS.Vector a) where
 
 instance (CoArbitrary a, DVS.Storable a) => CoArbitrary (DVS.Vector a) where
     coarbitrary = coarbitrary . DVS.toList
+
+instance (Arbitrary a) => Arbitrary (DVV.Vector a) where
+    arbitrary = fmap DVV.fromList arbitrary
+
+instance (CoArbitrary a) => CoArbitrary (DVV.Vector a) where
+    coarbitrary = coarbitrary . DVV.toList
 
 instance (Arbitrary a, DVU.Unbox a) => Arbitrary (DVU.Vector a) where
     arbitrary = fmap DVU.fromList arbitrary
@@ -95,6 +102,11 @@ instance (Eq a, DVS.Storable a, TestData a) => TestData (DVS.Vector a) where
   type Model (DVS.Vector a) = [Model a]
   model   = map model    . DVS.toList
   unmodel = DVS.fromList . map unmodel
+
+instance (Eq a, TestData a) => TestData (DVV.Vector a) where
+  type Model (DVV.Vector a) = [Model a]
+  model   = map model    . DVV.toList
+  unmodel = DVV.fromList . map unmodel
 
 instance (Eq a, DVU.Unbox a, TestData a) => TestData (DVU.Vector a) where
   type Model (DVU.Vector a) = [Model a]
