@@ -252,9 +252,9 @@ instance Exts.IsList (Vector a) where
 
 instance Data a => Data (Vector a) where
   gfoldl       = G.gfoldl
-  toConstr _   = G.mkVecConstr "Data.Vector.Vector"
+  toConstr _   = G.mkVecConstr "Data.Vector.Strict.Vector"
   gunfold      = G.gunfold
-  dataTypeOf _ = G.mkVecType "Data.Vector.Vector"
+  dataTypeOf _ = G.mkVecType "Data.Vector.Strict.Vector"
   dataCast1    = G.dataCast
 
 type instance G.Mutable Vector = MVector
