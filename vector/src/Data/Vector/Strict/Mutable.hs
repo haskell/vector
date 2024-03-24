@@ -66,7 +66,8 @@ module Data.Vector.Strict.Mutable (
 
   -- ** Filling and copying
   set, copy, move, unsafeCopy, unsafeMove,
-
+  -- ** Lazy arrays
+  toLazy, fromLazy, lazyFromLazy,
   -- ** Arrays
   fromMutableArray, toMutableArray,
 
@@ -706,6 +707,31 @@ ifoldrM = G.ifoldrM
 ifoldrM' :: (PrimMonad m) => (Int -> a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldrM' #-}
 ifoldrM' = G.ifoldrM'
+
+-- Conversions - Lazy vectors
+-- -----------------------------
+
+-- | /O(1)/ Convert strict mutable vector to lazy mutable
+-- vector. Vectors will share mutable buffer
+toLazy :: MVector s a -> MV.MVector s a
+{-# INLINE toLazy #-}
+toLazy (MVector vec) = vec
+
+-- | /O(1)/ Convert lazy mutable vector to strict mutable
+-- vector. Vectors will share mutable buffer. This function does not
+-- evaluate vector elements to WHNF.
+lazyFromLazy :: MV.MVector s a -> MVector s a
+{-# INLINE lazyFromLazy #-}
+lazyFromLazy = MVector
+
+-- | /O(1)/ Convert lazy mutable vector to strict mutable
+-- vector. Vectors will share mutable buffer. This function evaluates
+-- vector elements to WHNF.
+fromLazy :: PrimMonad m => MV.MVector (PrimState m) a -> m (MVector (PrimState m) a)
+fromLazy mvec = stToPrim $ do
+  G.foldM' (\_ !_ -> return ()) () mvec
+  return $ MVector mvec
+
 
 -- Conversions - Arrays
 -- -----------------------------

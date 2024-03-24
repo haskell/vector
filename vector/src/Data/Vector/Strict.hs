@@ -162,7 +162,8 @@ module Data.Vector.Strict (
 
   -- ** Lists
   toList, Data.Vector.Strict.fromList, Data.Vector.Strict.fromListN,
-
+  -- ** Lazy vectors
+  toLazy, fromLazy, lazyFromLazy,
   -- ** Arrays
   toArray, fromArray, lazyFromArray, toArraySlice, unsafeFromArraySlice, unsafeLazyFromArraySlice,
 
@@ -2462,6 +2463,24 @@ fromList = G.fromList
 fromListN :: Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
 fromListN = G.fromListN
+
+-- Conversions - Lazy vectors
+-- -----------------------------
+
+-- | /O(1)/ Convert strict array to lazy array
+toLazy :: Vector a -> V.Vector a
+toLazy (Vector v) = v
+
+-- | /O(n)/ Convert lazy array to strict array. This function reduces
+-- each element of vector to WHNF.
+fromLazy :: V.Vector a -> Vector a
+fromLazy vec = liftRnf (`seq` ()) v `seq` v where v = Vector vec
+
+-- | /O(1)/ Convert lazy array to strict array. This function does not
+-- evaluate vector elements.
+lazyFromLazy :: V.Vector a -> Vector a
+lazyFromLazy = Vector
+
 
 -- Conversions - Arrays
 -- -----------------------------
