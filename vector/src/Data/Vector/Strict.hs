@@ -5,7 +5,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
-
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 -- |
 -- Module      : Data.Vector.Strict
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -171,10 +172,12 @@ module Data.Vector.Strict (
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy
 ) where
 
+import Data.Coerce
 import Data.Vector.Strict.Mutable  ( MVector(..) )
 import Data.Primitive.Array
 import qualified Data.Vector.Fusion.Bundle as Bundle
 import qualified Data.Vector.Generic as G
+import qualified Data.Vector as V
 
 import Control.DeepSeq ( NFData(rnf)
 #if MIN_VERSION_deepseq(1,4,3)
@@ -196,7 +199,7 @@ import Data.Function ( fix )
 import Prelude
   ( Eq, Ord, Num, Enum, Monoid, Functor, Monad, Show, Bool, Ordering(..), Int, Maybe, Either
   , compare, mempty, mappend, mconcat, return, showsPrec, fmap, otherwise, id, flip, const
-  , (>>=), (+), (-), (<), (<=), (>), (>=), (==), (/=), (&&), (.), ($), seq )
+  , (>>=), (+), (-), (<), (<=), (>), (>=), (==), (/=), (&&), (.), ($), seq ,undefined)
 
 import Data.Functor.Classes (Eq1 (..), Ord1 (..), Read1 (..), Show1 (..))
 import Data.Typeable  ( Typeable )
@@ -211,10 +214,8 @@ import qualified Data.Traversable as Traversable
 import qualified GHC.Exts as Exts (IsList(..))
 
 
--- | Boxed vectors, supporting efficient slicing.
-data Vector a = Vector {-# UNPACK #-} !Int
-                       {-# UNPACK #-} !Int
-                       {-# UNPACK #-} !(Array a)
+-- | Strict boxed vectors, supporting efficient slicing.
+newtype Vector a = Vector (V.Vector a)
         deriving ( Typeable )
 
 liftRnfV :: (a -> ()) -> Vector a -> ()
@@ -261,26 +262,17 @@ type instance G.Mutable Vector = MVector
 
 instance G.Vector Vector a where
   {-# INLINE basicUnsafeFreeze #-}
-  basicUnsafeFreeze (MVector i n marr)
-    = Vector i n `liftM` unsafeFreezeArray marr
-
+  basicUnsafeFreeze = coerce (G.basicUnsafeFreeze @V.Vector @a)
   {-# INLINE basicUnsafeThaw #-}
-  basicUnsafeThaw (Vector i n arr)
-    = MVector i n `liftM` unsafeThawArray arr
-
+  basicUnsafeThaw = coerce (G.basicUnsafeThaw @V.Vector @a)
   {-# INLINE basicLength #-}
-  basicLength (Vector _ n _) = n
-
+  basicLength = coerce (G.basicLength @V.Vector @a)
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice j n (Vector i _ arr) = Vector (i+j) n arr
-
+  basicUnsafeSlice = coerce (G.basicUnsafeSlice @V.Vector @a)
   {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM (Vector i _ arr) j = indexArrayM arr (i+j)
-
+  basicUnsafeIndexM = coerce (G.basicUnsafeIndexM @V.Vector @a)
   {-# INLINE basicUnsafeCopy #-}
-  basicUnsafeCopy (MVector i n dst) (Vector j _ src)
-    = copyArray dst i src j n
-
+  basicUnsafeCopy = coerce (G.basicUnsafeCopy @V.Vector @a)
   {-# INLINE elemseq #-}
   elemseq _ = seq
 
@@ -2527,7 +2519,7 @@ fromListN = G.fromListN
 -- @since 0.13.2.0
 fromArray :: Array a -> Vector a
 {-# INLINE fromArray #-}
-fromArray arr = liftRnfV (`seq` ()) vec `seq` vec
+fromArray arr = liftRnf (`seq` ()) vec `seq` vec
   where
     vec = lazyFromArray arr
 
@@ -2537,17 +2529,14 @@ fromArray arr = liftRnfV (`seq` ()) vec `seq` vec
 -- @since NEXT
 lazyFromArray :: Array a -> Vector a
 {-# INLINE lazyFromArray #-}
-lazyFromArray arr = Vector 0 (sizeofArray arr) arr
-
+lazyFromArray = Vector . V.fromArray
 
 -- | /O(n)/ Convert a vector to an array.
 --
 -- @since 0.13.2.0
 toArray :: Vector a -> Array a
 {-# INLINE toArray #-}
-toArray (Vector offset len arr)
-  | offset == 0 && len == sizeofArray arr = arr
-  | otherwise = cloneArray arr offset len
+toArray (Vector v) = V.toArray v
 
 -- | /O(1)/ Extract the underlying `Array`, offset where vector starts and the
 -- total number of elements in the vector. Below property always holds:
@@ -2558,7 +2547,7 @@ toArray (Vector offset len arr)
 -- @since 0.13.2.0
 toArraySlice :: Vector a -> (Array a, Int, Int)
 {-# INLINE toArraySlice #-}
-toArraySlice (Vector offset len arr) = (arr, offset, len)
+toArraySlice (Vector v) = V.toArraySlice v
 
 
 -- | /O(n)/ Convert an array slice to a vector and reduce each element to WHNF.
@@ -2595,7 +2584,7 @@ unsafeLazyFromArraySlice ::
   -> Int -- ^ Length
   -> Vector a
 {-# INLINE unsafeLazyFromArraySlice #-}
-unsafeLazyFromArraySlice arr offset len = Vector offset len arr
+unsafeLazyFromArraySlice arr o l = Vector (V.unsafeFromArraySlice arr o l)
 
 
 -- Conversions - Mutable vectors
