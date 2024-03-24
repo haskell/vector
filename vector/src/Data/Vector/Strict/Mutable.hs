@@ -755,4 +755,4 @@ toMutableArray :: PrimMonad m => MVector (PrimState m) a -> m (MutableArray (Pri
 toMutableArray (MVector v) = MV.toMutableArray v
 
 -- $setup
--- >>> import Prelude (Integer)
+-- >>> import Prelude (Integer,Num(..))
