@@ -23,11 +23,9 @@
 -- Immutable strict boxed vectors (that is, polymorphic arrays capable
 -- of holding any Haskell value). It is possible to create vector
 -- which contain bottom elements, either by using mutable interfaces
--- (see "Data.Vector.Strict.Mutable") or functions that don't preserve
--- strictness ('lazyFromArray').
+-- (see "Data.Vector.Strict.Mutable")
 --
 -- For unboxed arrays, use "Data.Vector.Unboxed".
-
 module Data.Vector.Strict (
   -- * Boxed vectors
   Vector, MVector,
@@ -163,9 +161,9 @@ module Data.Vector.Strict (
   -- ** Lists
   toList, Data.Vector.Strict.fromList, Data.Vector.Strict.fromListN,
   -- ** Lazy vectors
-  toLazy, fromLazy, lazyFromLazy,
+  toLazy, fromLazy,
   -- ** Arrays
-  toArray, fromArray, lazyFromArray, toArraySlice, unsafeFromArraySlice, unsafeLazyFromArraySlice,
+  toArray, fromArray, toArraySlice, unsafeFromArraySlice,
 
   -- ** Other vector types
   G.convert,
@@ -2476,11 +2474,6 @@ toLazy (Vector v) = v
 fromLazy :: V.Vector a -> Vector a
 fromLazy vec = liftRnfV (`seq` ()) v `seq` v where v = Vector vec
 
--- | /O(1)/ Convert lazy array to strict array. This function does not
--- evaluate vector elements.
-lazyFromLazy :: V.Vector a -> Vector a
-lazyFromLazy = Vector
-
 
 -- Conversions - Arrays
 -- -----------------------------
@@ -2492,15 +2485,7 @@ fromArray :: Array a -> Vector a
 {-# INLINE fromArray #-}
 fromArray arr = liftRnfV (`seq` ()) vec `seq` vec
   where
-    vec = lazyFromArray arr
-
--- | /O(1)/ Convert an array to a vector. This function does not touch
--- content of array so resulting vector may contain bottoms.
---
--- @since NEXT
-lazyFromArray :: Array a -> Vector a
-{-# INLINE lazyFromArray #-}
-lazyFromArray = Vector . V.fromArray
+    vec = Vector $ V.fromArray arr
 
 -- | /O(n)/ Convert a vector to an array.
 --
@@ -2537,25 +2522,8 @@ unsafeFromArraySlice ::
   -> Vector a
 {-# INLINE unsafeFromArraySlice #-}
 unsafeFromArraySlice arr offset len = liftRnfV (`seq` ()) vec `seq` vec
-  where vec = unsafeLazyFromArraySlice arr offset len
+  where vec = Vector (V.unsafeFromArraySlice arr offset len)
 
--- | /O(1)/ Convert an array slice to a vector. This function does not touch
--- content of array so resulting vector may contain bottoms.
---
--- This function is very unsafe, because constructing an invalid
--- vector can yield almost all other safe functions in this module
--- unsafe. These are equivalent:
---
--- > unsafeFromArraySlice len offset === unsafeTake len . unsafeDrop offset . fromArray
---
--- @since 0.13.0.0
-unsafeLazyFromArraySlice ::
-     Array a -- ^ Immutable boxed array.
-  -> Int -- ^ Offset
-  -> Int -- ^ Length
-  -> Vector a
-{-# INLINE unsafeLazyFromArraySlice #-}
-unsafeLazyFromArraySlice arr o l = Vector (V.unsafeFromArraySlice arr o l)
 
 
 -- Conversions - Mutable vectors

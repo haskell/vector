@@ -67,7 +67,7 @@ module Data.Vector.Strict.Mutable (
   -- ** Filling and copying
   set, copy, move, unsafeCopy, unsafeMove,
   -- ** Lazy arrays
-  toLazy, fromLazy, lazyFromLazy,
+  toLazy, fromLazy,
   -- ** Arrays
   fromMutableArray, toMutableArray,
 
@@ -717,14 +717,7 @@ toLazy :: MVector s a -> MV.MVector s a
 {-# INLINE toLazy #-}
 toLazy (MVector vec) = vec
 
--- | /O(1)/ Convert lazy mutable vector to strict mutable
--- vector. Vectors will share mutable buffer. This function does not
--- evaluate vector elements to WHNF.
-lazyFromLazy :: MV.MVector s a -> MVector s a
-{-# INLINE lazyFromLazy #-}
-lazyFromLazy = MVector
-
--- | /O(1)/ Convert lazy mutable vector to strict mutable
+-- | /O(n)/ Convert lazy mutable vector to strict mutable
 -- vector. Vectors will share mutable buffer. This function evaluates
 -- vector elements to WHNF.
 fromLazy :: PrimMonad m => MV.MVector (PrimState m) a -> m (MVector (PrimState m) a)
