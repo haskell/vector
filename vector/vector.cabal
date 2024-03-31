@@ -52,10 +52,9 @@ Tested-With:
   GHC == 8.10.7
   GHC == 9.0.2
   GHC == 9.2.8
-  GHC == 9.4.6
-  GHC == 9.6.2
-  GHC == 9.8.1
-
+  GHC == 9.4.8
+  GHC == 9.6.4
+  GHC == 9.8.2
 
 Extra-doc-files:
       changelog.md
@@ -159,7 +158,7 @@ Library
   Install-Includes:
         vector.h
 
-  Build-Depends: base >= 4.9 && < 4.20
+  Build-Depends: base >= 4.9 && < 4.21
                , primitive >= 0.6.4.0 && < 0.10
                , deepseq >= 1.1 && < 1.6
                , vector-stream >= 0.1 && < 0.2
