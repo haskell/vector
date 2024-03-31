@@ -20,4 +20,9 @@ varianceInline xs
 -- | This function is prevented from being inlined
 varianceNoInline :: (VG.Vector v Double) => v Double -> Double
 {-# NOINLINE varianceNoInline #-}
-varianceNoInline = varianceInline
+varianceNoInline xs
+  = VG.sum (VG.map (\x -> (x - s)^(2::Int)) xs) / n
+  where
+    n = fromIntegral $ VG.length xs
+    s = VG.sum xs / n
+
