@@ -21,9 +21,11 @@
 -- Portability : non-portable
 --
 -- Immutable strict boxed vectors (that is, polymorphic arrays capable
--- of holding any Haskell value). It is possible to create vector
--- which contain bottom elements, either by using mutable interfaces
--- (see "Data.Vector.Strict.Mutable")
+-- of holding any Haskell value). Vectors created using API for
+-- immutable vector will have all elements evaluated to WHNF. Note
+-- it's possible to create vector containing bottoms using mutable API
+-- ('Data.Vector.Strict.Mutable.new' initialize vector with ⊥) fill
+-- but all subsequent writes will be evauated to WHNF.
 --
 -- For unboxed arrays, use "Data.Vector.Unboxed".
 module Data.Vector.Strict (
