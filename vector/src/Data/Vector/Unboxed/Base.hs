@@ -415,19 +415,19 @@ instance M.MVector MVector ty where {                                   \
 ; {-# INLINE basicSet #-}                                               \
 ; {-# INLINE basicUnsafeCopy #-}                                        \
 ; {-# INLINE basicUnsafeGrow #-}                                        \
-; basicLength (con v) = M.basicLength v                                 \
-; basicUnsafeSlice i n (con v) = con $ M.basicUnsafeSlice i n v         \
-; basicOverlaps (con v1) (con v2) = M.basicOverlaps v1 v2               \
-; basicUnsafeNew n = con `liftM` M.basicUnsafeNew n                     \
-; basicInitialize (con v) = M.basicInitialize v                         \
-; basicUnsafeReplicate n x = con `liftM` M.basicUnsafeReplicate n x     \
-; basicUnsafeRead (con v) i = M.basicUnsafeRead v i                     \
-; basicUnsafeWrite (con v) i x = M.basicUnsafeWrite v i x               \
-; basicClear (con v) = M.basicClear v                                   \
-; basicSet (con v) x = M.basicSet v x                                   \
-; basicUnsafeCopy (con v1) (con v2) = M.basicUnsafeCopy v1 v2           \
-; basicUnsafeMove (con v1) (con v2) = M.basicUnsafeMove v1 v2           \
-; basicUnsafeGrow (con v) n = con `liftM` M.basicUnsafeGrow v n }
+; basicLength          = coerce (M.basicLength          @P.MVector)     \
+; basicUnsafeSlice     = coerce (M.basicUnsafeSlice     @P.MVector)     \
+; basicOverlaps        = coerce (M.basicOverlaps        @P.MVector)     \
+; basicUnsafeNew       = coerce (M.basicUnsafeNew       @P.MVector)     \
+; basicInitialize      = coerce (M.basicInitialize      @P.MVector)     \
+; basicUnsafeReplicate = coerce (M.basicUnsafeReplicate @P.MVector)     \
+; basicUnsafeRead      = coerce (M.basicUnsafeRead      @P.MVector)     \
+; basicUnsafeWrite     = coerce (M.basicUnsafeWrite     @P.MVector)     \
+; basicClear           = coerce (M.basicClear           @P.MVector)     \
+; basicSet             = coerce (M.basicSet             @P.MVector)     \
+; basicUnsafeCopy      = coerce (M.basicUnsafeCopy      @P.MVector)     \
+; basicUnsafeMove      = coerce (M.basicUnsafeMove      @P.MVector)     \
+; basicUnsafeGrow      = coerce (M.basicUnsafeGrow      @P.MVector)}
 
 #define primVector(ty,con,mcon)                                         \
 instance G.Vector Vector ty where {                                     \
@@ -435,14 +435,16 @@ instance G.Vector Vector ty where {                                     \
 ; {-# INLINE basicUnsafeThaw #-}                                        \
 ; {-# INLINE basicLength #-}                                            \
 ; {-# INLINE basicUnsafeSlice #-}                                       \
+; {-# INLINE basicUnsafeIndexM  #-}                                     \
 ; {-# INLINE basicUnsafeIndexM# #-}                                     \
 ; {-# INLINE elemseq #-}                                                \
-; basicUnsafeFreeze (mcon v) = con `liftM` G.basicUnsafeFreeze v        \
-; basicUnsafeThaw (con v) = mcon `liftM` G.basicUnsafeThaw v            \
-; basicLength (con v) = G.basicLength v                                 \
-; basicUnsafeSlice i n (con v) = con $ G.basicUnsafeSlice i n v         \
-; basicUnsafeIndexM# (con v) i = G.basicUnsafeIndexM# v i               \
-; basicUnsafeCopy (mcon mv) (con v) = G.basicUnsafeCopy mv v            \
+; basicUnsafeFreeze  = coerce (G.basicUnsafeFreeze  @P.Vector)          \
+; basicUnsafeThaw    = coerce (G.basicUnsafeThaw    @P.Vector)          \
+; basicLength        = coerce (G.basicLength        @P.Vector)          \
+; basicUnsafeSlice   = coerce (G.basicUnsafeSlice   @P.Vector)          \
+; basicUnsafeIndexM  = coerce (G.basicUnsafeIndexM  @P.Vector)          \
+; basicUnsafeIndexM# = coerce (G.basicUnsafeIndexM# @P.Vector)          \
+; basicUnsafeCopy    = coerce (G.basicUnsafeCopy    @P.Vector)          \
 ; elemseq _ = seq }
 
 newtype instance MVector s Int = MV_Int (P.MVector s Int)
