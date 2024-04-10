@@ -145,6 +145,9 @@ module Data.Vector.Generic (
   scanr, scanr', scanr1, scanr1',
   iscanr, iscanr',
 
+  -- * Applicative API
+  replicateA, generateA, traverse, itraverse,
+
   -- * Conversions
 
   -- ** Lists
@@ -197,7 +200,8 @@ import           Data.Vector.Internal.Check
 import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
 import Prelude
-  ( Eq, Ord, Num, Enum, Monoid, Monad, Read, Show, Bool, Ordering(..), Int, Maybe(..), Either, IO, ShowS, ReadS, String
+  ( Eq, Ord, Num, Enum, Monoid, Applicative, Monad, Read, Show, Bool, Ordering(..)
+  , Int, Maybe(..), Either, IO, ShowS, ReadS, String
   , compare, mempty, mappend, return, fmap, otherwise, id, flip, seq, error, undefined, uncurry, shows, fst, snd, min, max, not
   , (>>=), (+), (-), (*), (<), (==), (.), ($), (=<<), (>>), (<$>) )
 
@@ -210,7 +214,7 @@ import Data.Typeable ( Typeable, gcast1 )
 
 import Data.Data ( Data, DataType, Constr, Fixity(Prefix),
                    mkDataType, mkConstr, constrIndex, mkNoRepType )
-import qualified Data.Traversable as T (Traversable(mapM))
+import qualified Data.Traversable as T (Traversable(mapM,traverse))
 
 -- Length information
 -- ------------------
@@ -2652,6 +2656,36 @@ clone v = v `seq` New.create (
     mv <- M.new (basicLength v)
     unsafeCopy mv v
     return mv)
+
+-- Applicatives
+-- ------------
+
+-- | Execute the applicative action the given number of times and store the
+-- results in a vector.
+replicateA :: (Vector v a, Applicative f) => Int -> f a -> f (v a)
+{-# INLINE replicateA #-}
+replicateA n f = generateA n (\_ -> f)
+
+
+-- | Construct a vector of the given length by applying the monadic
+-- action to each index.
+generateA :: (Vector v a, Applicative f) => Int -> (Int -> f a) -> f (v a)
+{-# INLINE generateA #-}
+generateA n f = fromListN n <$> T.traverse f [0 .. n-1]
+
+-- | Apply the applicative action to all elements of the vector, yielding a
+-- vector of results.
+traverse :: (Vector v a, Vector v b, Applicative f)
+         => (a -> f b) -> v a -> f (v b)
+{-# INLINE traverse #-}
+traverse f v = generateA (length v) $ \i -> f (unsafeIndex v i)
+
+-- | Apply the applicative action to every element of a vector and its
+-- index, yielding a vector of results.
+itraverse :: (Vector v a, Vector v b, Applicative f)
+          => (Int -> a -> f b) -> v a -> f (v b)
+{-# INLINE itraverse #-}
+itraverse f v = generateA (length v) $ \i -> f i (unsafeIndex v i)
 
 -- Comparisons
 -- -----------
