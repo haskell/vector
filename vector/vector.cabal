@@ -285,6 +285,7 @@ library benchmarks-O2
         Bench.Vector.Algo.Quickhull
         Bench.Vector.Algo.Spectral
         Bench.Vector.Algo.Tridiag
+        Bench.Vector.Algo.Applicative
         Bench.Vector.Algo.FindIndexR
         Bench.Vector.TestData.ParenTree
         Bench.Vector.TestData.Graph
