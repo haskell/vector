@@ -1052,7 +1052,7 @@ accumulate :: (a -> b -> a)  -- ^ accumulating function @f@
 accumulate = G.accumulate
 
 -- | /O(m+min(n1,n2))/ For each index @i@ from the index vector and the
--- corresponding value @b@ from the the value vector,
+-- corresponding value @b@ from the value vector,
 -- replace the element of the initial vector at
 -- position @i@ by @f a b@.
 --
