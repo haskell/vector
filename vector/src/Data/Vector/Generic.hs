@@ -200,11 +200,10 @@ import           Data.Vector.Internal.Check
 import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
 import Prelude
-  ( Eq, Ord, Num, Enum, Monoid, Applicative, Monad, Read, Show, Bool, Ordering(..)
+  ( Eq(..), Ord(..), Num, Enum, Monoid, Applicative(..), Monad, Read, Show, Bool, Ordering(..)
   , Int, Maybe(..), Either, IO, ShowS, ReadS, String
   , compare, mempty, mappend, return, fmap, otherwise, id, flip, seq, error, undefined, uncurry, shows, fst, snd, min, max, not
-  , (>>=), (+), (-), (*), (<), (==), (.), ($), (=<<), (>>), (<$>) )
-
+  , (>>=), (+), (-), (*), (.), ($), (=<<), (>>), (<$>))
 import qualified Text.Read as Read
 import qualified Data.List.NonEmpty as NonEmpty
 
@@ -2660,6 +2659,19 @@ clone v = v `seq` New.create (
 -- Applicatives
 -- ------------
 
+
+
+newtype STA v a = STA {
+  _runSTA :: forall s. Mutable v s a -> ST s (v a)
+}
+
+runSTA :: Vector v a => Int -> STA v a -> v a
+runSTA !sz = \(STA fun) -> runST $ fun =<< M.unsafeNew sz
+{-# INLINE runSTA #-}
+
+
+
+
 -- | Execute the applicative action the given number of times and store the
 -- results in a vector.
 replicateA :: (Vector v a, Applicative f) => Int -> f a -> f (v a)
@@ -2671,7 +2683,13 @@ replicateA n f = generateA n (\_ -> f)
 -- action to each index.
 generateA :: (Vector v a, Applicative f) => Int -> (Int -> f a) -> f (v a)
 {-# INLINE generateA #-}
-generateA n f = fromListN n <$> T.traverse f [0 .. n-1]
+generateA 0 _ = pure empty
+generateA n f = runSTA n <$> go 0
+  where
+    go !i | i >= n    = pure $ STA unsafeFreeze
+          | otherwise =  (\a (STA m) -> STA $ \mv -> M.unsafeWrite mv i a >> m mv)
+                     <$> f i
+                     <*> go (i + 1)
 
 -- | Apply the applicative action to all elements of the vector, yielding a
 -- vector of results.
