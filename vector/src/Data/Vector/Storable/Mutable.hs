@@ -248,7 +248,7 @@ storableSetAsPrim n fp x _y = unsafeWithForeignPtr fp $ \ ptr  -> do
 
 {-
 AFTER primitive 0.7 is pretty old, move to using setPtr. which is really
-a confusing misnomer for whats often called memset (intialize)
+a confusing misnomer for what's often called memset (initialize)
 -}
 -- Fill a memory block with the given value. The length is in
 -- elements of type @a@ rather than in bytes.
