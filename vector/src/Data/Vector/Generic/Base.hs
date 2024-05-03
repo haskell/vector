@@ -145,7 +145,7 @@ class MVector (Mutable v) a => Vector v a where
   --
   -- > elemseq v x y = (singleton x `asTypeOf` v) `seq` y
   --
-  -- Default defintion: @a@ is not evaluated at all.
+  -- Default definition: @a@ is not evaluated at all.
   elemseq :: v a -> a -> b -> b
 
   {-# INLINE elemseq #-}
