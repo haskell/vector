@@ -1231,7 +1231,7 @@ a given permutation. It changes the given permutation in-place.
 nextPermutation :: (PrimMonad m,Ord e,MVector v e) => v (PrimState m) e -> m Bool
 nextPermutation v
     | dim < 2 = return False
-    | otherwise = do
+    | otherwise = stToPrim $ do
         val <- unsafeRead v 0
         (k,l) <- loop val (-1) 0 val 1
         if k < 0
@@ -1243,8 +1243,7 @@ nextPermutation v
               | i == dim = return (k,l)
               | otherwise  = do
                   cur <- unsafeRead v i
-                  -- TODO: make tuple unboxed
-                  let (kval',k') = if prev < cur then (prev,i-1) else (kval,k)
+                  let (!kval',!k') = if prev < cur then (prev,i-1) else (kval,k)
                       l' = if kval' < cur then i else l
                   loop kval' k' l' cur (i+1)
           dim = length v
