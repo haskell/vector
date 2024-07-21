@@ -1227,7 +1227,9 @@ a given permutation. It changes the given permutation in-place.
 -}
 
 -- | Compute the (lexicographically) next permutation of the given vector in-place.
--- Returns False when the input is the last permutation.
+-- Returns False when the input is the last permutation; in this case the vector
+-- will not get updated, as opposed to the behavior of the C++ function 
+-- @std::next_permutation@.
 nextPermutation :: (PrimMonad m,Ord e,MVector v e) => v (PrimState m) e -> m Bool
 nextPermutation v
     | dim < 2 = return False

@@ -574,7 +574,9 @@ unsafeMove = G.unsafeMove
 -- -----------------
 
 -- | Compute the (lexicographically) next permutation of the given vector in-place.
--- Returns False when the input is the last permutation.
+-- Returns False when the input is the last permutation; in this case the vector
+-- will not get updated, as opposed to the behavior of the C++ function 
+-- @std::next_permutation@.
 nextPermutation :: (PrimMonad m, Ord e) => MVector (PrimState m) e -> m Bool
 {-# INLINE nextPermutation #-}
 nextPermutation = G.nextPermutation
