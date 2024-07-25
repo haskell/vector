@@ -2442,7 +2442,13 @@ toList :: Vector a -> [a]
 {-# INLINE toList #-}
 toList = G.toList
 
--- | /O(n)/ Convert a list to a vector.
+-- | /O(n)/ Convert a list to a vector. During the operation, the 
+-- vector’s capacity will be doubling until the list's contents are 
+-- in the vector. Depending on the list’s size, up to half of the vector’s 
+-- capacity might be empty. If you’d rather avoid this, you can use 
+-- 'fromListN', which will provide the exact space the list requires but will 
+-- prevent list fusion, or @'force' . 'fromList'@, which will create the 
+-- vector and then copy it without the superfluous space.
 --
 -- @since 0.13.2.0
 fromList :: [a] -> Vector a
