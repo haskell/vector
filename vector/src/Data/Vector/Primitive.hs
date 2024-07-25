@@ -1843,6 +1843,8 @@ toList = G.toList
 -- 'fromListN', which will provide the exact space the list requires but will 
 -- prevent list fusion, or @'force' . 'fromList'@, which will create the 
 -- vector and then copy it without the superfluous space.
+--
+-- @since 0.4
 fromList :: Prim a => [a] -> Vector a
 {-# INLINE fromList #-}
 fromList = G.fromList
