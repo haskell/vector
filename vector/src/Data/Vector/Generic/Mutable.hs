@@ -58,7 +58,8 @@ module Data.Vector.Generic.Mutable (
   ifoldr, ifoldr', ifoldrM, ifoldrM',
 
   -- * Modifying vectors
-  nextPermutation,
+  nextPermutation, nextPermutationBy,
+  prevPermutation, prevPermutationBy,
 
   -- ** Filling and copying
   set, copy, move, unsafeCopy, unsafeMove,
@@ -91,9 +92,9 @@ import           Data.Vector.Internal.Check
 import Control.Monad.Primitive ( PrimMonad(..), RealWorld, stToPrim )
 
 import Prelude
-  ( Ord, Monad, Bool(..), Int, Maybe(..), Either(..)
+  ( Ord, Monad, Bool(..), Int, Maybe(..), Either(..), Ordering(..)
   , return, otherwise, flip, const, seq, min, max, not, pure
-  , (>>=), (+), (-), (<), (<=), (>=), (==), (/=), (.), ($), (=<<), (>>), (<$>) )
+  , (>>=), (+), (-), (<), (<=), (>), (>=), (==), (/=), (.), ($), (=<<), (>>), (<$>) )
 import Data.Bits ( Bits(shiftR) )
 
 #include "vector.h"
@@ -1223,6 +1224,31 @@ nextPermutation :: (PrimMonad m, Ord e, MVector v e) => v (PrimState m) e -> m B
 {-# INLINE nextPermutation #-}
 nextPermutation = nextPermutationByLt (<)
 
+-- | Compute the (lexicographically) next permutation of the given vector in-place,
+-- using the provided comparison function.
+-- Returns False when the input is the last permutation; in this case the vector
+-- will not get updated, as opposed to the behavior of the C++ function 
+-- @std::next_permutation@.
+nextPermutationBy :: (PrimMonad m, MVector v e) => (e -> e -> Ordering) -> v (PrimState m) e -> m Bool
+{-# INLINE nextPermutationBy #-}
+nextPermutationBy cmp = nextPermutationByLt (\x y -> cmp x y == LT)
+
+-- | Compute the (lexicographically) previous permutation of the given vector in-place.
+-- Returns False when the input is the last permutation; in this case the vector
+-- will not get updated, as opposed to the behavior of the C++ function 
+-- @std::next_permutation@.
+prevPermutation :: (PrimMonad m, Ord e, MVector v e) => v (PrimState m) e -> m Bool
+{-# INLINE prevPermutation #-}
+prevPermutation = nextPermutationByLt (>)
+
+-- | Compute the (lexicographically) previous permutation of the given vector in-place,
+-- using the provided comparison function.
+-- Returns False when the input is the last permutation; in this case the vector
+-- will not get updated, as opposed to the behavior of the C++ function 
+-- @std::next_permutation@.
+prevPermutationBy :: (PrimMonad m, MVector v e) => (e -> e -> Ordering) -> v (PrimState m) e -> m Bool
+{-# INLINE prevPermutationBy #-}
+prevPermutationBy cmp = nextPermutationByLt (\x y -> cmp x y == GT)
 
 {-
 http://en.wikipedia.org/wiki/Permutation#Algorithms_to_generate_permutations

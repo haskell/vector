@@ -57,7 +57,8 @@ module Data.Vector.Primitive.Mutable (
   ifoldr, ifoldr', ifoldrM, ifoldrM',
 
   -- * Modifying vectors
-  nextPermutation,
+  nextPermutation, nextPermutationBy,
+  prevPermutation, prevPermutationBy,
 
   -- ** Filling and copying
   set, copy, move, unsafeCopy, unsafeMove,
@@ -83,7 +84,7 @@ import Control.DeepSeq ( NFData(rnf)
                        )
 
 import Prelude
-  ( Ord, Bool, Int, Maybe
+  ( Ord, Bool, Int, Maybe, Ordering(..)
   , otherwise, error, undefined, div, show, maxBound
   , (+), (*), (<), (>), (>=), (==), (&&), (||), ($), (++) )
 
@@ -546,6 +547,32 @@ unsafeMove = G.unsafeMove
 nextPermutation :: (PrimMonad m,Ord e,Prim e) => MVector (PrimState m) e -> m Bool
 {-# INLINE nextPermutation #-}
 nextPermutation = G.nextPermutation
+
+-- | Compute the (lexicographically) next permutation of the given vector in-place,
+-- using the provided comparison function.
+-- Returns False when the input is the last permutation; in this case the vector
+-- will not get updated, as opposed to the behavior of the C++ function 
+-- @std::next_permutation@.
+nextPermutationBy :: (PrimMonad m,Prim e) => (e -> e -> Ordering) -> MVector (PrimState m) e -> m Bool
+{-# INLINE nextPermutationBy #-}
+nextPermutationBy = G.nextPermutationBy
+
+-- | Compute the (lexicographically) previous permutation of the given vector in-place.
+-- Returns False when the input is the last permutation; in this case the vector
+-- will not get updated, as opposed to the behavior of the C++ function 
+-- @std::next_permutation@.
+prevPermutation :: (PrimMonad m,Ord e,Prim e) => MVector (PrimState m) e -> m Bool
+{-# INLINE prevPermutation #-}
+prevPermutation = G.prevPermutation
+
+-- | Compute the (lexicographically) previous permutation of the given vector in-place,
+-- using the provided comparison function.
+-- Returns False when the input is the last permutation; in this case the vector
+-- will not get updated, as opposed to the behavior of the C++ function 
+-- @std::next_permutation@.
+prevPermutationBy :: (PrimMonad m,Prim e) => (e -> e -> Ordering) -> MVector (PrimState m) e -> m Bool
+{-# INLINE prevPermutationBy #-}
+prevPermutationBy = G.prevPermutationBy
 
 -- Folds
 -- -----
