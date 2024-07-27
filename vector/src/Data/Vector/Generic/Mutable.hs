@@ -1275,6 +1275,7 @@ time complexity of O(n) on the best case.
 -- will not get updated, as opposed to the behavior of the C++ function 
 -- @std::next_permutation@.
 nextPermutationByLt :: (PrimMonad m, MVector v e) => (e -> e -> Bool) -> v (PrimState m) e -> m Bool
+{-# INLINE nextPermutationByLt #-}
 nextPermutationByLt lt v
   | dim < 2 = return False
   | otherwise = stToPrim $ do
