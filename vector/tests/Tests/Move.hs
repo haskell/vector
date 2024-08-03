@@ -7,8 +7,8 @@ import Test.QuickCheck.Property (Property(..))
 import Utilities ()
 
 import Control.Monad (replicateM)
-import Control.Monad.ST (runST)
-import Data.List (sort,permutations)
+import Control.Monad.ST (ST, runST)
+import Data.List (sort,sortBy,permutations)
 
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Generic.Mutable as M
@@ -41,9 +41,39 @@ checkPermutations n = runST $ do
 testPermutations :: Bool
 testPermutations = all checkPermutations [1..7]
 
+checkRevPermutations :: Int -> Bool
+checkRevPermutations n = runST $ do
+    vec <- U.thaw (U.fromList [n,n-1..1])
+    res <- replicateM (product [1..n]) $ M.prevPermutation vec >> U.freeze vec >>= return . U.toList
+    return $! ([n,n-1..1] : res) == sortBy (flip compare) (permutations [n,n-1..1]) ++ [[1..n]]
+
+testRevPermutations :: Bool
+testRevPermutations = all checkRevPermutations [1..7]
+
+nextPermutationBijective :: (M.MVector v a, Ord a) => v s a -> ST s ()
+nextPermutationBijective v = do
+  res <- M.nextPermutation v
+  if res then return () else M.reverse v
+
+prevPermutationBijective :: (M.MVector v a, Ord a) => v s a -> ST s ()
+prevPermutationBijective v = do
+  res <- M.prevPermutation v
+  if res then return () else M.reverse v
+
+testNPPermutationIsId :: (G.Vector v a, Ord a, Show (v a), Eq (v a)) => v a -> Property 
+testNPPermutationIsId v = v === G.modify (\mv -> nextPermutationBijective mv >> prevPermutationBijective mv) v
+
+testPNPermutationIsId :: (G.Vector v a, Ord a, Show (v a), Eq (v a)) => v a -> Property
+testPNPermutationIsId v = v === G.modify (\mv -> prevPermutationBijective mv >> nextPermutationBijective mv) v
+
 tests =
     [testProperty "Data.Vector.Mutable (Move)" (testMove :: V.Vector Int -> Property),
      testProperty "Data.Vector.Primitive.Mutable (Move)" (testMove :: P.Vector Int -> Property),
      testProperty "Data.Vector.Unboxed.Mutable (Move)" (testMove :: U.Vector Int -> Property),
      testProperty "Data.Vector.Storable.Mutable (Move)" (testMove :: S.Vector Int -> Property),
-     testProperty "Data.Vector.Generic.Mutable (nextPermutation)" testPermutations]
+     testProperty "Data.Vector.Generic.Mutable (nextPermutation)" testPermutations,
+     testProperty "Data.Vector.Generic.Mutable (prevPermutation)" testRevPermutations,
+     testProperty "Data.Vector.Generic.Mutable (nextPermutation then prevPermutation = id)" 
+     (testNPPermutationIsId :: U.Vector Int -> Property),
+     testProperty "Data.Vector.Generic.Mutable (prevPermutation then nextPermutation = id)"
+     (testPNPermutationIsId :: U.Vector Int -> Property)]
