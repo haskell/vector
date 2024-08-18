@@ -1,16 +1,17 @@
 {-# LANGUAGE BangPatterns #-}
 module Main where
 
-import Bench.Vector.Algo.MutableSet (mutableSet)
-import Bench.Vector.Algo.ListRank   (listRank)
-import Bench.Vector.Algo.Rootfix    (rootfix)
-import Bench.Vector.Algo.Leaffix    (leaffix)
-import Bench.Vector.Algo.AwShCC     (awshcc)
-import Bench.Vector.Algo.HybCC      (hybcc)
-import Bench.Vector.Algo.Quickhull  (quickhull)
-import Bench.Vector.Algo.Spectral   (spectral)
-import Bench.Vector.Algo.Tridiag    (tridiag)
-import Bench.Vector.Algo.FindIndexR (findIndexR, findIndexR_naive, findIndexR_manual)
+import Bench.Vector.Algo.MutableSet      (mutableSet)
+import Bench.Vector.Algo.ListRank        (listRank)
+import Bench.Vector.Algo.Rootfix         (rootfix)
+import Bench.Vector.Algo.Leaffix         (leaffix)
+import Bench.Vector.Algo.AwShCC          (awshcc)
+import Bench.Vector.Algo.HybCC           (hybcc)
+import Bench.Vector.Algo.Quickhull       (quickhull)
+import Bench.Vector.Algo.Spectral        (spectral)
+import Bench.Vector.Algo.Tridiag         (tridiag)
+import Bench.Vector.Algo.FindIndexR      (findIndexR, findIndexR_naive, findIndexR_manual)
+import Bench.Vector.Algo.NextPermutation (generatePermTests)
 
 import Bench.Vector.TestData.ParenTree (parenTree)
 import Bench.Vector.TestData.Graph     (randomGraph)
@@ -50,6 +51,7 @@ main = do
   !ds <- randomVector useSize
   !sp <- randomVector (floor $ sqrt $ fromIntegral useSize)
   vi <- MV.new useSize
+  permTests <- generatePermTests gen useSize
 
   defaultMainWithIngredients ingredients $ bgroup "All"
     [ bench "listRank"   $ whnf listRank useSize
@@ -66,4 +68,5 @@ main = do
     , bench "findIndexR_manual" $ whnf findIndexR_manual ((<indexFindThreshold), as)
     , bench "minimumOn"  $ whnf (U.minimumOn (\x -> x*x*x)) as
     , bench "maximumOn"  $ whnf (U.maximumOn (\x -> x*x*x)) as
+    , bgroup "(next|prev)Permutation" $ map (\(name, act) -> bench name $ whnfIO act) permTests
     ]

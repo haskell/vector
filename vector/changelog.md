@@ -7,6 +7,7 @@
      The implementation has also been algorithmically updated: in the previous implementation
      the full enumeration of all the permutations of `[1..n]` took Omega(n*n!), but it now takes O(n!).
    * Add tests for `{next,prev}Permutation`
+   * Add benchmarks for `{next,prev}Permutation`
 
 # Changes in version 0.13.1.0
 
