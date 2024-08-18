@@ -1217,35 +1217,41 @@ partitionWithUnknown f s
 
 
 -- | Compute the (lexicographically) next permutation of the given vector in-place.
--- Returns False when the input is the last permutation; in this case the vector
--- will not get updated, as opposed to the behavior of the C++ function 
--- @std::next_permutation@.
+-- Returns False when the input is the last item in the enumeration, i.e., if it is in
+-- weakly descending order. In this case the vector will not get updated,
+-- as opposed to the behavior of the C++ function @std::next_permutation@.
 nextPermutation :: (PrimMonad m, Ord e, MVector v e) => v (PrimState m) e -> m Bool
 {-# INLINE nextPermutation #-}
 nextPermutation = nextPermutationByLt (<)
 
 -- | Compute the (lexicographically) next permutation of the given vector in-place,
 -- using the provided comparison function.
--- Returns False when the input is the last permutation; in this case the vector
--- will not get updated, as opposed to the behavior of the C++ function 
--- @std::next_permutation@.
+-- Returns False when the input is the last item in the enumeration, i.e., if it is in
+-- weakly descending order. In this case the vector will not get updated,
+-- as opposed to the behavior of the C++ function @std::next_permutation@.
+--
+-- @since 0.13.2.0
 nextPermutationBy :: (PrimMonad m, MVector v e) => (e -> e -> Ordering) -> v (PrimState m) e -> m Bool
 {-# INLINE nextPermutationBy #-}
 nextPermutationBy cmp = nextPermutationByLt (\x y -> cmp x y == LT)
 
 -- | Compute the (lexicographically) previous permutation of the given vector in-place.
--- Returns False when the input is the last permutation; in this case the vector
--- will not get updated, as opposed to the behavior of the C++ function 
--- @std::next_permutation@.
+-- Returns False when the input is the last item in the enumeration, i.e., if it is in
+-- weakly ascending order. In this case the vector will not get updated,
+-- as opposed to the behavior of the C++ function @std::prev_permutation@.
+--
+-- @since 0.13.2.0
 prevPermutation :: (PrimMonad m, Ord e, MVector v e) => v (PrimState m) e -> m Bool
 {-# INLINE prevPermutation #-}
 prevPermutation = nextPermutationByLt (>)
 
 -- | Compute the (lexicographically) previous permutation of the given vector in-place,
 -- using the provided comparison function.
--- Returns False when the input is the last permutation; in this case the vector
--- will not get updated, as opposed to the behavior of the C++ function 
--- @std::next_permutation@.
+-- Returns False when the input is the last item in the enumeration, i.e., if it is in
+-- weakly ascending order. In this case the vector will not get updated,
+-- as opposed to the behavior of the C++ function @std::prev_permutation@.
+--
+-- @since 0.13.2.0
 prevPermutationBy :: (PrimMonad m, MVector v e) => (e -> e -> Ordering) -> v (PrimState m) e -> m Bool
 {-# INLINE prevPermutationBy #-}
 prevPermutationBy cmp = nextPermutationByLt (\x y -> cmp x y == GT)
