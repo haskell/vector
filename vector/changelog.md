@@ -1,3 +1,14 @@
+# Changes in version 0.13.2.0
+
+ * We had some improvements on `*.Mutable.{next,prev}Permutation{,By}`
+   [#498](https://github.com/haskell/vector/pull/498):
+   * Add `*.Mutable.prevPermutation{,By}` and `*.Mutable.nextPermutationBy`
+   * Improve time performance. We may now expect good specialization supported by inlining.
+     The implementation has also been algorithmically updated: in the previous implementation
+     the full enumeration of all the permutations of `[1..n]` took Omega(n*n!), but it now takes O(n!).
+   * Add tests for `{next,prev}Permutation`
+   * Add benchmarks for `{next,prev}Permutation`
+
 # Changes in version 0.13.1.0
 
  * Specialized variants of `findIndexR` are reexported for all vector
