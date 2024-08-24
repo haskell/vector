@@ -14,28 +14,10 @@ vectors](#vectors-available-in-the-package) as well as their generic interface.
 ## Table of Contents
 
 <!-- no toc -->
-- [Installation](#installation)
 - [Tutorial](#tutorial)
 - [Vector vs Array](#vector-vs-array)
 - [Vectors Available in the Package](#vectors-available-in-the-package)
-- [Fusion](#fusion)
-
-## Installation
-
-If you use **cabal**, modify `package.cabal` so that its `build-depends` 
-section includes vector package:
-```
-build-depends: base ^>=4.17.2.1
-             , vector ==0.13.1.0
-```
-If you use **stack**, modify `package.yaml` so that its `depends` 
-section includes vector package:
-```
-dependencies:
-- base >= 4.7 && < 5
-- vector == 0.13.1.0
-```
-
+- [Stream Fusion](#stream-fusion)
 
 ## Tutorial
 
@@ -61,29 +43,30 @@ well-advised to use vectors when looking for a similar functionality.
 
 ## Vectors Available in the Package
 
-**Boxed vectors** store each of its elements as a pointer to its value. 
-Because we cannot directly access the contents of a boxed vector, they 
+**Lazy boxed vectors** (`Data.Vector`) store each of their elements as a 
+pointer to a heap-allocated value. Because of indirection, lazy boxed vectors
 are slower in comparison to unboxed vectors.
 
+**Strict boxed vectors** (`Data.Vector.Strict`) contain elements that are 
+[strictly evaluated](https://tech.fpcomplete.com/haskell/tutorial/all-about-strictness/).
 
-**Unboxed vectors** store solely their elements’ values instead of pointers. 
-To be unboxed, the elements need to be constant in size. Since we can directly 
-access the contents of the unboxed vector, working with them is quite efficient.
+**Unboxed vectors** (`Data.Vector.Unboxed`) determine an array's representation
+from its elements' type. For example, vector of primitive types (e.g. `Int`) will be 
+backed by primitive array while vector of product types by structure of arrays.
+They are quite efficient due to the unboxed representation they use.
 
+**Storable vectors** (`Data.Vector.Storable`) are backed by pinned memory, i.e., 
+they cannot be moved by the garbage collector. Their primary use case is C FFI.  
 
-**Storable vectors** are pinned, convertible to and from pointers, and 
-usable in C functions.
+**Primitive vectors** (`Data.Vector.Primitive`) are backed by simple byte array and 
+can store only data types that are represented in memory as a sequence of bytes without
+a pointer, i.e., they belong to the `Prim` type class, e.g., `Int`, `Double`, etc.
+It's advised to use unboxed vectors if you're looking for the performance of primitive vectors,
+but more versality. 
+ 
+## Stream Fusion
 
-
-**Primitive vectors** contain elements of primitive type. 
-Primitive types can be recognised by the hash sign attached at 
-the end of value and/or type’s name, e.g. `3#` or `Int#`. You can read 
-more about them [here](https://downloads.haskell.org/~ghc/5.00/docs/set/primitives.html).
-
-## Fusion
-
-An optimisation framework provided in this package, fusion 
-is a technique that merges several functions into one and forces 
-it to produce only one outcome. Without fusion, your program might 
-generate intermediate results for each function separately and 
-stall its performance.
+An optimisation framework used by vectors, stream fusion  is a technique that merges 
+several functions into one and prevents creation of intermediate data structures. For example, 
+the expression `sum . filter g . map f` won't allocate temporary vectors if 
+compiled with optimisations.
