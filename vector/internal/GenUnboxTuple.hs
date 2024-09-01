@@ -1,7 +1,12 @@
+#!/usr/bin/env cabal
+{- cabal:
+build-depends: base, pretty
+-}
 {-# LANGUAGE ParallelListComp #-}
 
 module Main where
 
+import Prelude hiding ((<>))
 import Text.PrettyPrint
 
 import System.Environment ( getArgs )
@@ -235,6 +240,6 @@ generate n =
                       ,("basicUnsafeThaw",        gen_unsafeThaw)
                       ,("basicLength",            gen_length "V")
                       ,("basicUnsafeSlice",       gen_unsafeSlice "G" "V")
-                      ,("basicUnsafeIndexM",      gen_basicUnsafeIndexM)
+                      ,("basicUnsafeIndexM#",     gen_basicUnsafeIndexM)
                       ,("basicUnsafeCopy",        gen_unsafeCopy "V" qG)
                       ,("elemseq",                gen_elemseq)]
