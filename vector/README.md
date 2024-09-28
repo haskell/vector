@@ -1,15 +1,12 @@
 The `vector` package [![Build Status](https://github.com/haskell/vector/workflows/CI/badge.svg)](https://github.com/haskell/vector/actions?query=branch%3Amaster)
 ====================
 
-This package includes various modules that will allow you to 
-work with vectors and use an optimisation framework called [*fusion*](#fusion). 
-In this context, vector is an `Int`-indexed array-like data structure with a simpler 
-API that can contain any Haskell value. Additionally, its equivalence 
-to C-style arrays and optimisation via fusion accelerates vector’s 
-performance and makes it a great alternative to list. By installing this 
-package, you’ll be able to work with [boxed, unboxed, storable, and primitive 
-vectors](#vectors-available-in-the-package) as well as their generic interface.
-
+Vector is a collection of efficient `Int`-indexed array implementations: 
+[boxed, unboxed, storable, and primitive vectors](#vectors-available-in-the-package)
+(all can be mutable or immutable). The advantages of vectors include equivalence to 
+C-style arrays and simple interface. The package also features generic API that is 
+polymorphic in vector type. Additionally, vector implements [*stream fusion*](#stream-fusion), 
+a powerful optimisation framework that can help eliminate intermediate data structures.
 
 ## Table of Contents
 
@@ -66,7 +63,7 @@ but more versality.
  
 ## Stream Fusion
 
-An optimisation framework used by vectors, stream fusion  is a technique that merges 
+An optimisation framework used by vectors, stream fusion is a technique that merges 
 several functions into one and prevents creation of intermediate data structures. For example, 
 the expression `sum . filter g . map f` won't allocate temporary vectors if 
 compiled with optimisations.
