@@ -29,8 +29,9 @@ covers more ground.
 ## Vector vs Array
 
 Arrays are data structures that can store a multitude of elements 
-and allow immediate access to every one of them. Even though Haskell 
-has a built-in [Data.Array module](https://hackage.haskell.org/package/array-0.5.7.0), 
+and allow immediate access to every one of them. However, they are 
+often seen as legacy constructs that are rarely used in modern Haskell.
+Even though Haskell has a built-in [Data.Array module](https://hackage.haskell.org/package/array-0.5.7.0), 
 arrays might be a bit overwhelming to use due to their complex API. 
 Conversely, vectors incorporate the array’s *O(1)* access to elements 
 with a much friendlier API of lists. Since they allow for framework 
