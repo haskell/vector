@@ -3,9 +3,8 @@ The `vector` package [![Build Status](https://github.com/haskell/vector/workflow
 
 Vector is a collection of efficient `Int`-indexed array implementations: 
 [boxed, unboxed, storable, and primitive vectors](#vectors-available-in-the-package)
-(all can be mutable or immutable). The advantages of vectors include equivalence to 
-C-style arrays and simple interface. The package also features generic API that is 
-polymorphic in vector type. Additionally, vector implements [*stream fusion*](#stream-fusion), 
+(all can be mutable or immutable). The package features a generic API,
+polymorphic in vector type, and implements [*stream fusion*](#stream-fusion), 
 a powerful optimisation framework that can help eliminate intermediate data structures.
 
 ## Table of Contents
