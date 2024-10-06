@@ -42,6 +42,7 @@ module Data.Vector.Unboxed.Mutable (
   clear,
 
   -- * Zipping and unzipping
+  -- $zip
   zip, zip3, zip4, zip5, zip6,
   unzip, unzip3, unzip4, unzip5, unzip6,
 
@@ -631,6 +632,13 @@ ifoldrM' :: (PrimMonad m, Unbox a) => (Int -> a -> b -> m b) -> b -> MVector (Pr
 {-# INLINE ifoldrM' #-}
 ifoldrM' = G.ifoldrM'
 
+
+-- $zip
+--
+-- Following functions provide access to the representation of vector
+-- of tuples. Internally it's product of vectors for each element of
+-- tuple. Conversions are performed in /O(1)/ and produced vector will
+-- share underlying buffers with parameter vectors.
 
 #define DEFINE_MUTABLE
 #include "unbox-tuple-instances"
