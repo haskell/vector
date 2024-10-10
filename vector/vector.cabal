@@ -208,7 +208,7 @@ common tests-common
     Tests.Vector.UnitTests
     Utilities
 
-  default-extensions: CPP,
+  default-extensions:
               ScopedTypeVariables,
               PatternGuards,
               MultiParamTypeClasses,
