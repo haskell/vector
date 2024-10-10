@@ -132,12 +132,15 @@ module Data.Vector.Unboxed (
   -- ** Zipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
   izipWith, izipWith3, izipWith4, izipWith5, izipWith6,
+  -- *** Zipping tuples
+  -- $zip
   zip, zip3, zip4, zip5, zip6,
 
   -- ** Monadic zipping
   zipWithM, izipWithM, zipWithM_, izipWithM_,
 
   -- ** Unzipping
+  -- $unzip
   unzip, unzip3, unzip4, unzip5, unzip6,
 
   -- * Working with predicates
@@ -969,6 +972,26 @@ iforM_ = G.iforM_
 
 -- Zipping
 -- -------
+
+-- $zip
+--
+-- Following functions could be used to construct vector of tuples
+-- from tuple of vectors. This operation is done in /O(1)/ time and
+-- will share underlying buffers.
+--
+-- Note that variants from "Data.Vector.Generic" doesn't have this
+-- property.
+
+-- $unzip
+--
+-- Following functions could be used to access underlying
+-- representation of array of tuples. They convert array to tuple of
+-- arrays. This operation is done in /O(1)/ time and will share
+-- underlying buffers.
+--
+-- Note that variants from "Data.Vector.Generic" doesn't have this
+-- property.
+
 
 -- | /O(min(m,n))/ Zip two vectors with the given function.
 zipWith :: (Unbox a, Unbox b, Unbox c)
