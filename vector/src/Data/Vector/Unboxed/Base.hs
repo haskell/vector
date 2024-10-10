@@ -27,11 +27,14 @@
 
 module Data.Vector.Unboxed.Base (
   MVector(..), IOVector, STVector, Vector(..), Unbox,
-  UnboxViaPrim(..), As(..), IsoUnbox(..)
+  UnboxViaPrim(..), As(..), IsoUnbox(..),
+  DoNotUnboxLazy(..), DoNotUnboxNormalForm(..), DoNotUnboxStrict(..)
 ) where
 
 import qualified Data.Vector.Generic         as G
 import qualified Data.Vector.Generic.Mutable as M
+import qualified Data.Vector                 as B
+import qualified Data.Vector.Strict          as S
 
 import qualified Data.Vector.Primitive as P
 
@@ -41,6 +44,7 @@ import Control.DeepSeq ( NFData(rnf)
 #if MIN_VERSION_deepseq(1,4,3)
                        , NFData1(liftRnf)
 #endif
+                       , force
                        )
 
 import Control.Monad.Primitive
@@ -763,6 +767,269 @@ instance (Unbox a, Unbox b) => G.Vector Vector (Arg a b) where
   basicUnsafeIndexM (V_Arg v) i  = uncurry Arg `liftM` G.basicUnsafeIndexM v i
   elemseq _ (Arg x y) z          = G.elemseq (undefined :: Vector a) x
                                  $ G.elemseq (undefined :: Vector b) y z
+
+-- -------
+-- Unboxing the boxed values
+-- -------
+
+-- | Newtype which allows to derive unbox instances for type @a@ which
+-- is normally a "boxed" type. The newtype does not alter the strictness
+-- semantics of the underlying type and inherits the laizness of said type.
+-- For a strict newtype wrapper, see 'DoNotUnboxStrict'.
+--
+-- 'DoNotUnboxLazy' is intended to be unsed in conjunction with the newtype 'As'
+-- and the type class 'IsoUnbox'. Here's an example which uses the following
+-- explicit 'IsoUnbox' instance:
+--
+--
+-- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia
+-- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
+-- >>> import qualified Data.Vector.Unboxed         as VU
+-- >>> import qualified Data.Vector.Unboxed.Mutable as VUM
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> :{
+-- >>> data Foo a = Foo Int a
+-- >>>   deriving (Eq, Ord, Show)
+-- >>> instance VU.IsoUnbox (Foo a) (Int, VU.DoNotUnboxLazy a) where
+-- >>>   toURepr (Foo i a) = (i, VU.DoNotUnboxLazy a)
+-- >>>   fromURepr (i, VU.DoNotUnboxLazy a) = Foo i a
+-- >>>   {-# INLINE toURepr #-}
+-- >>>   {-# INLINE fromURepr #-}
+-- >>> newtype instance VU.MVector s (Foo a) = MV_Foo (VU.MVector s (Int, VU.DoNotUnboxLazy a))
+-- >>> newtype instance VU.Vector    (Foo a) = V_Foo  (VU.Vector    (Int, VU.DoNotUnboxLazy a))
+-- >>> deriving via (Foo a `VU.As` (Int, VU.DoNotUnboxLazy a)) instance VGM.MVector VUM.MVector (Foo a)
+-- >>> deriving via (Foo a `VU.As` (Int, VU.DoNotUnboxLazy a)) instance VG.Vector   VU.Vector   (Foo a)
+-- >>> instance VU.Unbox (Foo a)
+-- >>> :}
+--
+-- >>> VU.fromListN 3 [ Foo 4 "Haskell's", Foo 8 "strong", Foo 16 "types" ]
+-- [Foo 4 "Haskell's",Foo 8 "strong",Foo 16 "types"]
+--
+-- @since 0.13.2.0
+newtype DoNotUnboxLazy a = DoNotUnboxLazy a
+
+newtype instance MVector s (DoNotUnboxLazy a) = MV_DoNotUnboxLazy (B.MVector s a)
+newtype instance Vector    (DoNotUnboxLazy a) = V_DoNotUnboxLazy  (B.Vector    a)
+
+instance M.MVector MVector (DoNotUnboxLazy a) where
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicOverlaps #-}
+  {-# INLINE basicUnsafeNew #-}
+  {-# INLINE basicInitialize #-}
+  {-# INLINE basicUnsafeReplicate #-}
+  {-# INLINE basicUnsafeRead #-}
+  {-# INLINE basicUnsafeWrite #-}
+  {-# INLINE basicClear #-}
+  {-# INLINE basicSet #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeGrow #-}
+  basicLength          = coerce $ M.basicLength          @B.MVector @a
+  basicUnsafeSlice     = coerce $ M.basicUnsafeSlice     @B.MVector @a
+  basicOverlaps        = coerce $ M.basicOverlaps        @B.MVector @a
+  basicUnsafeNew       = coerce $ M.basicUnsafeNew       @B.MVector @a
+  basicInitialize      = coerce $ M.basicInitialize      @B.MVector @a
+  basicUnsafeReplicate = coerce $ M.basicUnsafeReplicate @B.MVector @a
+  basicUnsafeRead      = coerce $ M.basicUnsafeRead      @B.MVector @a
+  basicUnsafeWrite     = coerce $ M.basicUnsafeWrite     @B.MVector @a
+  basicClear           = coerce $ M.basicClear           @B.MVector @a
+  basicSet             = coerce $ M.basicSet             @B.MVector @a
+  basicUnsafeCopy      = coerce $ M.basicUnsafeCopy      @B.MVector @a
+  basicUnsafeMove      = coerce $ M.basicUnsafeMove      @B.MVector @a
+  basicUnsafeGrow      = coerce $ M.basicUnsafeGrow      @B.MVector @a
+
+instance G.Vector Vector (DoNotUnboxLazy a) where
+  {-# INLINE basicUnsafeFreeze #-}
+  {-# INLINE basicUnsafeThaw #-}
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE elemseq #-}
+  basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @B.Vector @a
+  basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @B.Vector @a
+  basicLength       = coerce $ G.basicLength       @B.Vector @a
+  basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @B.Vector @a
+  basicUnsafeIndexM = coerce $ G.basicUnsafeIndexM @B.Vector @a
+  basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @B.Vector @a
+  elemseq _ = seq
+
+instance Unbox (DoNotUnboxLazy a)
+
+-- | Newtype which allows to derive unbox instances for type @a@ which
+-- is normally a "boxed" type. The newtype stictly evaluates the wrapped values
+-- ensuring that the unboxed vector contains no (direct) thunks.
+-- For a less strict newtype wrapper, see 'DoNotUnboxLazy'.
+-- For a more strict newtype wrapper, see 'DoNotUnboxNormalForm'.
+--
+-- 'DoNotUnboxStrict' is intended to be unsed in conjunction with the newtype 'As'
+-- and the type class 'IsoUnbox'. Here's an example which uses the following
+-- explicit 'IsoUnbox' instance:
+--
+--
+-- >>> :set -XBangPatterns -XTypeFamilies -XStandaloneDeriving -XDerivingVia
+-- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
+-- >>> import qualified Data.Vector.Unboxed         as VU
+-- >>> import qualified Data.Vector.Unboxed.Mutable as VUM
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> :{
+-- >>> data Bar a = Bar Int a
+-- >>>   deriving Show
+-- >>> instance VU.IsoUnbox (Bar a) (Int, VU.DoNotUnboxStrict a) where
+-- >>>   toURepr (Bar i !a) = (i, VU.DoNotUnboxStrict a)
+-- >>>   fromURepr (i, VU.DoNotUnboxStrict a) = Bar i a
+-- >>>   {-# INLINE toURepr #-}
+-- >>>   {-# INLINE fromURepr #-}
+-- >>> newtype instance VU.MVector s (Bar a) = MV_Bar (VU.MVector s (Int, VU.DoNotUnboxStrict a))
+-- >>> newtype instance VU.Vector    (Bar a) = V_Bar  (VU.Vector    (Int, VU.DoNotUnboxStrict a))
+-- >>> deriving via (Bar a `VU.As` (Int, VU.DoNotUnboxStrict a)) instance VGM.MVector VUM.MVector (Bar a)
+-- >>> deriving via (Bar a `VU.As` (Int, VU.DoNotUnboxStrict a)) instance VG.Vector   VU.Vector   (Bar a)
+-- >>> instance VU.Unbox (Bar a)
+-- >>> :}
+--
+-- >>> VU.fromListN 3 [ Bar 3 "Bye", Bar 2 "for", Bar 1 "now" ]
+-- [Bar 3 "Bye",Bar 2 "for",Bar 1 "now"]
+--
+-- @since 0.13.2.0
+newtype DoNotUnboxStrict a = DoNotUnboxStrict a
+
+newtype instance MVector s (DoNotUnboxStrict a) = MV_DoNotUnboxStrict (S.MVector s a)
+newtype instance Vector    (DoNotUnboxStrict a) = V_DoNotUnboxStrict  (S.Vector a)
+
+instance M.MVector MVector (DoNotUnboxStrict a) where
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicOverlaps #-}
+  {-# INLINE basicUnsafeNew #-}
+  {-# INLINE basicInitialize #-}
+  {-# INLINE basicUnsafeReplicate #-}
+  {-# INLINE basicUnsafeRead #-}
+  {-# INLINE basicUnsafeWrite #-}
+  {-# INLINE basicClear #-}
+  {-# INLINE basicSet #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeGrow #-}
+  basicLength          = coerce $ M.basicLength          @S.MVector @a
+  basicUnsafeSlice     = coerce $ M.basicUnsafeSlice     @S.MVector @a
+  basicOverlaps        = coerce $ M.basicOverlaps        @S.MVector @a
+  basicUnsafeNew       = coerce $ M.basicUnsafeNew       @S.MVector @a
+  basicInitialize      = coerce $ M.basicInitialize      @S.MVector @a
+  basicUnsafeReplicate = coerce $ M.basicUnsafeReplicate @S.MVector @a
+  basicUnsafeRead      = coerce $ M.basicUnsafeRead      @S.MVector @a
+  basicUnsafeWrite     = coerce $ M.basicUnsafeWrite     @S.MVector @a
+  basicClear           = coerce $ M.basicClear           @S.MVector @a
+  basicSet             = coerce $ M.basicSet             @S.MVector @a
+  basicUnsafeCopy      = coerce $ M.basicUnsafeCopy      @S.MVector @a
+  basicUnsafeMove      = coerce $ M.basicUnsafeMove      @S.MVector @a
+  basicUnsafeGrow      = coerce $ M.basicUnsafeGrow      @S.MVector @a
+
+instance G.Vector Vector (DoNotUnboxStrict a) where
+  {-# INLINE basicUnsafeFreeze #-}
+  {-# INLINE basicUnsafeThaw #-}
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE elemseq #-}
+  basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @S.Vector @a
+  basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @S.Vector @a
+  basicLength       = coerce $ G.basicLength       @S.Vector @a
+  basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @S.Vector @a
+  basicUnsafeIndexM = coerce $ G.basicUnsafeIndexM @S.Vector @a
+  basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @S.Vector @a
+  elemseq _ = seq
+
+instance Unbox (DoNotUnboxStrict a)
+
+-- | Newtype which allows to derive unbox instances for type @a@ which
+-- is normally a "boxed" type. The newtype stictly evaluates the wrapped values
+-- via thier requisite 'NFData' instance, ensuring that the unboxed vector
+-- contains only values reduced to normal form.
+-- For a less strict newtype wrappers, see 'DoNotUnboxLazy' and 'DoNotUnboxStrict'.
+--
+-- 'DoNotUnboxNormalForm' is intended to be unsed in conjunction with the newtype 'As'
+-- and the type class 'IsoUnbox'. Here's an example which uses the following
+-- explicit 'IsoUnbox' instance:
+--
+--
+-- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia
+-- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
+-- >>> import qualified Data.Vector.Unboxed         as VU
+-- >>> import qualified Data.Vector.Unboxed.Mutable as VUM
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> import qualified Control.DeepSeq             as NF
+-- >>> :{
+-- >>> data Baz a = Baz Int a
+-- >>>   deriving Show
+-- >>> instance NF.NFData a => VU.IsoUnbox (Baz a) (Int, VU.DoNotUnboxNormalForm a) where
+-- >>>   toURepr (Baz i a) = (i, VU.DoNotUnboxNormalForm $ NF.force a)
+-- >>>   fromURepr (i, VU.DoNotUnboxNormalForm a) = Baz i a
+-- >>>   {-# INLINE toURepr #-}
+-- >>>   {-# INLINE fromURepr #-}
+-- >>> newtype instance VU.MVector s (Baz a) = MV_Baz (VU.MVector s (Int, VU.DoNotUnboxNormalForm a))
+-- >>> newtype instance VU.Vector    (Baz a) = V_Baz  (VU.Vector    (Int, VU.DoNotUnboxNormalForm a))
+-- >>> deriving via (Baz a `VU.As` (Int, VU.DoNotUnboxNormalForm a)) instance NF.NFData a => VGM.MVector VUM.MVector (Baz a)
+-- >>> deriving via (Baz a `VU.As` (Int, VU.DoNotUnboxNormalForm a)) instance NF.NFData a => VG.Vector   VU.Vector   (Baz a)
+-- >>> instance NF.NFData a => VU.Unbox (Baz a)
+-- >>> :}
+--
+-- >>> VU.fromListN 3 [ Baz 3 "Fully", Baz 9 "evaluated", Baz 27 "data" ]
+-- [Baz 3 "Fully",Baz 9 "evaluated",Baz 27 "data"]
+--
+-- @since 0.13.2.0
+newtype DoNotUnboxNormalForm a = DoNotUnboxNormalForm a
+
+newtype instance MVector s (DoNotUnboxNormalForm a) = MV_DoNotUnboxNormalForm (S.MVector s a)
+newtype instance Vector    (DoNotUnboxNormalForm a) = V_DoNotUnboxNormalForm  (S.Vector a)
+
+instance NFData a => M.MVector MVector (DoNotUnboxNormalForm a) where
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicOverlaps #-}
+  {-# INLINE basicUnsafeNew #-}
+  {-# INLINE basicInitialize #-}
+  {-# INLINE basicUnsafeReplicate #-}
+  {-# INLINE basicUnsafeRead #-}
+  {-# INLINE basicUnsafeWrite #-}
+  {-# INLINE basicClear #-}
+  {-# INLINE basicSet #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeGrow #-}
+  basicLength          = coerce $ M.basicLength          @S.MVector @a
+  basicUnsafeSlice     = coerce $ M.basicUnsafeSlice     @S.MVector @a
+  basicOverlaps        = coerce $ M.basicOverlaps        @S.MVector @a
+  basicUnsafeNew       = coerce $ M.basicUnsafeNew       @S.MVector @a
+  basicInitialize      = coerce $ M.basicInitialize      @S.MVector @a
+  basicUnsafeReplicate = coerce (\i x -> M.basicUnsafeReplicate @S.MVector @a i (force x))
+  basicUnsafeRead      = coerce $ M.basicUnsafeRead      @S.MVector @a
+  basicUnsafeWrite     = coerce (\v i x -> M.basicUnsafeWrite @S.MVector @a v i (force x))
+  basicClear           = coerce $ M.basicClear           @S.MVector @a
+  basicSet             = coerce (\v x -> M.basicSet @S.MVector @a v (force x))
+  basicUnsafeCopy      = coerce $ M.basicUnsafeCopy      @S.MVector @a
+  basicUnsafeMove      = coerce $ M.basicUnsafeMove      @S.MVector @a
+  basicUnsafeGrow      = coerce $ M.basicUnsafeGrow      @S.MVector @a
+
+instance NFData a => G.Vector Vector (DoNotUnboxNormalForm a) where
+  {-# INLINE basicUnsafeFreeze #-}
+  {-# INLINE basicUnsafeThaw #-}
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE elemseq #-}
+  basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @S.Vector @a
+  basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @S.Vector @a
+  basicLength       = coerce $ G.basicLength       @S.Vector @a
+  basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @S.Vector @a
+  basicUnsafeIndexM = coerce $ G.basicUnsafeIndexM @S.Vector @a
+  basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @S.Vector @a
+  elemseq _ x y = rnf (coerce x :: a) `seq` y
+
+instance NFData a => Unbox (DoNotUnboxNormalForm a)
+
+instance NFData a => NFData (DoNotUnboxNormalForm a) where
+  {-# INLINE rnf #-}
+  rnf = rnf . coerce @(DoNotUnboxNormalForm a) @a
 
 deriveNewtypeInstances((), Any, Bool, Any, V_Any, MV_Any)
 deriveNewtypeInstances((), All, Bool, All, V_All, MV_All)
