@@ -18,19 +18,19 @@ jobs:
       matrix:
         include:
           # Linux
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "8.0.2"  }
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "8.2.2"  }
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "8.4.4"  }
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "8.6.5"  }
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "8.8.4"  }
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "8.10.7" }
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.0.2"  }
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.2.8"  }
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.4.8"  }
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.6.5"  }
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.6.5",
+          - { cabal: "3.10", os: ubuntu-22.04,  ghc: "8.0.2"  }
+          - { cabal: "3.10", os: ubuntu-22.04,  ghc: "8.2.2"  }
+          - { cabal: "3.10", os: ubuntu-22.04,  ghc: "8.4.4"  }
+          - { cabal: "3.10", os: ubuntu-22.04,  ghc: "8.6.5"  }
+          - { cabal: "3.10", os: ubuntu-22.04,  ghc: "8.8.4"  }
+          - { cabal: "3.10", os: ubuntu-22.04,  ghc: "8.10.7" }
+          - { cabal: "3.10", os: ubuntu-22.04,  ghc: "9.0.2"  }
+          - { cabal: "3.10", os: ubuntu-22.04,  ghc: "9.2.8"  }
+          - { cabal: "3.10", os: ubuntu-22.04,  ghc: "9.4.8"  }
+          - { cabal: "3.10", os: ubuntu-22.04,  ghc: "9.6.5"  }
+          - { cabal: "3.10", os: ubuntu-22.04,  ghc: "9.6.5",
               flags: "-fUnsafeChecks -fInternalChecks" }
-          - { cabal: "3.10", os: ubuntu-latest,  ghc: "9.8.2"  }
+          - { cabal: "3.10", os: ubuntu-22.04,  ghc: "9.8.2"  }
           # Win
           - { cabal: "3.10", os: windows-latest, ghc: "8.4.4"  }
           # OOM when building tests
@@ -73,7 +73,7 @@ jobs:
       run: |
         sudo apt-get install -y libpapi-dev
         echo FLAG_PAPI=-fBenchPAPI >> "$GITHUB_ENV"
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-22.04'
     # ----------------
     - name: Versions
       run: |
