@@ -786,7 +786,7 @@ instance (Unbox a, Unbox b) => G.Vector Vector (Arg a b) where
 -- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia
 -- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
 -- >>> import qualified Data.Vector.Unboxed         as VU
--- >>> import qualified Data.Vector.Unboxed.Mutable as MVU
+-- >>> import qualified Data.Vector.Unboxed.Mutable as VUM
 -- >>> import qualified Data.Vector.Generic         as VG
 -- >>> import qualified Data.Vector.Generic.Mutable as VGM
 -- >>> :{
@@ -857,7 +857,7 @@ instance NFData a => Unbox (AsBoxedStrictly a)
 -- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia
 -- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
 -- >>> import qualified Data.Vector.Unboxed         as VU
--- >>> import qualified Data.Vector.Unboxed.Mutable as MVU
+-- >>> import qualified Data.Vector.Unboxed.Mutable as VUM
 -- >>> import qualified Data.Vector.Generic         as VG
 -- >>> import qualified Data.Vector.Generic.Mutable as VGM
 -- >>> :{
