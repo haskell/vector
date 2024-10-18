@@ -27,11 +27,14 @@
 
 module Data.Vector.Unboxed.Base (
   MVector(..), IOVector, STVector, Vector(..), Unbox,
-  UnboxViaPrim(..), As(..), IsoUnbox(..)
+  UnboxViaPrim(..), As(..), IsoUnbox(..), AsBoxedStrictly(),
+  makeBoxedStrictly, grabBoxedStrictly, AsBoxedLazily(..)
 ) where
 
 import qualified Data.Vector.Generic         as G
 import qualified Data.Vector.Generic.Mutable as M
+import qualified Data.Vector                 as B
+import qualified Data.Vector.Mutable         as BM
 
 import qualified Data.Vector.Primitive as P
 
@@ -41,6 +44,7 @@ import Control.DeepSeq ( NFData(rnf)
 #if MIN_VERSION_deepseq(1,4,3)
                        , NFData1(liftRnf)
 #endif
+                       , force
                        )
 
 import Control.Monad.Primitive
@@ -763,6 +767,139 @@ instance (Unbox a, Unbox b) => G.Vector Vector (Arg a b) where
   basicUnsafeIndexM (V_Arg v) i  = uncurry Arg `liftM` G.basicUnsafeIndexM v i
   elemseq _ (Arg x y) z          = G.elemseq (undefined :: Vector a) x
                                  $ G.elemseq (undefined :: Vector b) y z
+
+-- -------
+-- Unboxing the boxed values
+-- -------
+
+-- | Newtype which allows to derive unbox instances for type @a@ which
+-- is normally a "boxed" type. The newtype stictly evaluates the wrapped values
+-- via thier requisite 'NFData' instance, ensuring that the unboxed vector
+-- contains only values reduced to normal form.
+-- For a strict newtype wrapper, see 'AsBoxedStrictly'.
+--
+-- 'AsBoxedStrictly' is intended to be unsed in conjunction with the newtype 'As'
+-- and the type class 'IsoUnbox'. Here's an example which uses the following
+-- explicit 'IsoUnbox' instance:
+--
+--
+-- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia
+-- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
+-- >>> import qualified Data.Vector.Unboxed         as VU
+-- >>> import qualified Data.Vector.Unboxed.Mutable as VUM
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> :{
+-- data Foo a = Foo Int a
+--   deriving Show
+-- instance NFData a => VU.IsoUnbox (Foo a) (Int, AsBoxedStrictly a) where
+--   toURepr (Foo i a) = (i, makeBoxedStrictly a)
+--   fromURepr (i, a) = Foo i $ grabBoxedStrictly a
+--   {-# INLINE toURepr #-}
+--   {-# INLINE fromURepr #-}
+-- newtype instance VU.MVector s (Foo a) = MV_Foo (VU.MVector s (Int, AsBoxedStrictly a))
+-- newtype instance VU.Vector    (Foo a) = V_Foo  (VU.Vector    (Int, AsBoxedStrictly a))
+-- deriving via (Foo a `VU.As` (Int, AsBoxedStrictly a)) instance NFData a => M.MVector VUM.MVector (Foo a)
+-- deriving via (Foo a `VU.As` (Int, AsBoxedStrictly a)) instance NFData a => VG.Vector   VU.Vector   (Foo a)
+-- instance NFData a => VU.Unbox (Foo a)
+-- :}
+-- >>> VU.fromListN 3 [ Foo 4 "Haskell's", Foo 8 "strong", Foo 16 "types" ]
+-- [ Foo 4 "Haskell's", Foo 8 "strong", Foo 16 "types" ]
+--
+-- @since 0.13.2.0n
+newtype AsBoxedStrictly a = AsBoxedStrictly a
+
+-- | Smart constructor for creating values of the 'AsBoxedStrictly' newtype.
+-- The wrapped values are evaluated to normal form via thier 'NFData' instance.
+--
+-- @since 0.13.2.0
+makeBoxedStrictly :: NFData a => a -> AsBoxedStrictly a
+makeBoxedStrictly x = coerce $! force x
+
+-- | Getter for 'AsBoxedStrictly' values.
+--
+-- @since 0.13.2.0
+grabBoxedStrictly :: AsBoxedStrictly a -> a
+grabBoxedStrictly = coerce
+
+newtype instance MVector s (AsBoxedStrictly a) = MV_AsBoxedStrictly (B.MVector s a)
+newtype instance Vector    (AsBoxedStrictly a) = V_AsBoxedStrictly  (B.Vector    a)
+
+instance NFData a => M.MVector MVector (AsBoxedStrictly a) where
+    basicLength (MV_AsBoxedStrictly v) = M.basicLength v
+    basicUnsafeSlice i j (MV_AsBoxedStrictly v) = MV_AsBoxedStrictly $! BM.slice i j v
+    basicOverlaps (MV_AsBoxedStrictly v1) (MV_AsBoxedStrictly v2) = M.basicOverlaps v1 v2
+    basicUnsafeNew n = M.basicUnsafeNew n >>= ($!) pure . MV_AsBoxedStrictly
+    basicInitialize (MV_AsBoxedStrictly v) = M.basicInitialize v
+    basicUnsafeRead (MV_AsBoxedStrictly v) i = M.basicUnsafeRead v i >>= ($!) pure . coerce
+    basicUnsafeWrite (MV_AsBoxedStrictly v) i (AsBoxedStrictly x) = M.basicUnsafeWrite v i x
+    basicSet (MV_AsBoxedStrictly v) (AsBoxedStrictly x) = M.basicSet v x
+
+instance NFData a => G.Vector Vector (AsBoxedStrictly a) where
+    basicUnsafeFreeze (MV_AsBoxedStrictly v) = G.basicUnsafeFreeze v >>= ($!) pure . V_AsBoxedStrictly
+    basicUnsafeThaw (V_AsBoxedStrictly v) = G.basicUnsafeThaw v >>= ($!) pure . MV_AsBoxedStrictly
+    basicLength (V_AsBoxedStrictly v) = G.basicLength v
+    basicUnsafeSlice i j (V_AsBoxedStrictly v) = V_AsBoxedStrictly $! B.slice i j v
+    basicUnsafeIndexM (V_AsBoxedStrictly v) i = G.basicUnsafeIndexM v i >>= ($!) pure . AsBoxedStrictly
+
+instance NFData a => Unbox (AsBoxedStrictly a)
+
+-- | Newtype which allows to derive unbox instances for type @a@ which
+-- is normally a "boxed" type. The newtype does not alter the strictness
+-- semantics of the underlying type and inherits the laizness of said type.
+-- For a strict newtype wrapper, see 'AsBoxedLazily'.
+--
+-- 'AsBoxedLazily' is intended to be unsed in conjunction with the newtype 'As'
+-- and the type class 'IsoUnbox'. Here's an example which uses the following
+-- explicit 'IsoUnbox' instance:
+--
+--
+-- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia
+-- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
+-- >>> import qualified Data.Vector.Unboxed         as VU
+-- >>> import qualified Data.Vector.Unboxed.Mutable as VUM
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> :{
+-- data Bar a = Bar Int a
+--   deriving (Eq, Ord, Show)
+-- instance VU.IsoUnbox (Bar a) (Int, AsBoxedLazily a) where
+--   toURepr (Bar i a) = (i, AsBoxedLazily a)
+--   fromURepr (i, AsBoxedLazily a) = Bar i a
+--   {-# INLINE toURepr #-}
+--   {-# INLINE fromURepr #-}
+-- newtype instance VU.MVector s (Bar a) = MV_Bar (VU.MVector s (Int, AsBoxedLazily a))
+-- newtype instance VU.Vector    (Bar a) = V_Bar  (VU.Vector    (Int, AsBoxedLazily a))
+-- deriving via (Bar a `VU.As` (Int, AsBoxedLazily a)) instance VGM.MVector VUM.MVector (Bar a)
+-- deriving via (Bar a `VU.As` (Int, AsBoxedLazily a)) instance VG.Vector   VU.Vector   (Bar a)
+-- instance VU.Unbox (Bar a)
+-- :}
+-- >>> fromListN 3 [ Bar 3 "Bye", Bar 2 "for", Bar 1 "now" ]
+-- [Bar 3 "Bye",Bar 2 "for",Bar 1 "now"]
+--
+-- @since 0.13.2.0
+newtype AsBoxedLazily a = AsBoxedLazily a
+
+newtype instance MVector s (AsBoxedLazily a) = MV_AsBoxedLazily (B.MVector s a)
+newtype instance Vector    (AsBoxedLazily a) = V_AsBoxedLazily  (B.Vector    a)
+
+instance M.MVector MVector (AsBoxedLazily a) where
+    basicLength (MV_AsBoxedLazily v) = M.basicLength v
+    basicUnsafeSlice i j (MV_AsBoxedLazily v) = MV_AsBoxedLazily $! BM.slice i j v
+    basicOverlaps (MV_AsBoxedLazily v1) (MV_AsBoxedLazily v2) = M.basicOverlaps v1 v2
+    basicUnsafeNew n = M.basicUnsafeNew n >>= ($!) pure . MV_AsBoxedLazily
+    basicInitialize (MV_AsBoxedLazily v) = M.basicInitialize v
+    basicUnsafeRead (MV_AsBoxedLazily v) i = M.basicUnsafeRead v i >>= ($!) pure . AsBoxedLazily
+    basicUnsafeWrite (MV_AsBoxedLazily v) i (AsBoxedLazily x) = M.basicUnsafeWrite v i x
+
+instance G.Vector Vector (AsBoxedLazily a) where
+    basicUnsafeFreeze (MV_AsBoxedLazily v) = G.basicUnsafeFreeze v >>= ($!) pure .  V_AsBoxedLazily
+    basicUnsafeThaw (V_AsBoxedLazily v) = G.basicUnsafeThaw v >>= ($!) pure . MV_AsBoxedLazily
+    basicLength (V_AsBoxedLazily v) = G.basicLength v
+    basicUnsafeSlice i j (V_AsBoxedLazily v) = V_AsBoxedLazily $! B.slice i j v
+    basicUnsafeIndexM (V_AsBoxedLazily v) i = G.basicUnsafeIndexM v i >>= ($!) pure . AsBoxedLazily
+
+instance Unbox (AsBoxedLazily a)
 
 deriveNewtypeInstances((), Any, Bool, Any, V_Any, MV_Any)
 deriveNewtypeInstances((), All, Bool, All, V_All, MV_All)
