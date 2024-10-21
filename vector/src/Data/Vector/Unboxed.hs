@@ -132,15 +132,12 @@ module Data.Vector.Unboxed (
   -- ** Zipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
   izipWith, izipWith3, izipWith4, izipWith5, izipWith6,
-  -- *** Zipping tuples
-  -- $zip
   zip, zip3, zip4, zip5, zip6,
 
   -- ** Monadic zipping
   zipWithM, izipWithM, zipWithM_, izipWithM_,
 
   -- ** Unzipping
-  -- $unzip
   unzip, unzip3, unzip4, unzip5, unzip6,
 
   -- * Working with predicates
@@ -201,7 +198,14 @@ module Data.Vector.Unboxed (
   -- ** Deriving via
   UnboxViaPrim(..),
   As(..),
-  IsoUnbox(..)
+  IsoUnbox(..),
+
+  -- *** /Lazy/ boxing
+  DoNotUnboxLazy(..),
+
+  -- *** /Strict/ boxing
+  DoNotUnboxStrict(..),
+  DoNotUnboxNormalForm(..)
 ) where
 
 import Data.Vector.Unboxed.Base
@@ -972,26 +976,6 @@ iforM_ = G.iforM_
 
 -- Zipping
 -- -------
-
--- $zip
---
--- Following functions could be used to construct vector of tuples
--- from tuple of vectors. This operation is done in /O(1)/ time and
--- will share underlying buffers.
---
--- Note that variants from "Data.Vector.Generic" doesn't have this
--- property.
-
--- $unzip
---
--- Following functions could be used to access underlying
--- representation of array of tuples. They convert array to tuple of
--- arrays. This operation is done in /O(1)/ time and will share
--- underlying buffers.
---
--- Note that variants from "Data.Vector.Generic" doesn't have this
--- property.
-
 
 -- | /O(min(m,n))/ Zip two vectors with the given function.
 zipWith :: (Unbox a, Unbox b, Unbox c)
@@ -1951,12 +1935,12 @@ toList :: Unbox a => Vector a -> [a]
 {-# INLINE toList #-}
 toList = G.toList
 
--- | /O(n)/ Convert a list to a vector. During the operation, the 
--- vector’s capacity will be doubling until the list's contents are 
--- in the vector. Depending on the list’s size, up to half of the vector’s 
--- capacity might be empty. If you’d rather avoid this, you can use 
--- 'fromListN', which will provide the exact space the list requires but will 
--- prevent list fusion, or @'force' . 'fromList'@, which will create the 
+-- | /O(n)/ Convert a list to a vector. During the operation, the
+-- vector’s capacity will be doubling until the list's contents are
+-- in the vector. Depending on the list’s size, up to half of the vector’s
+-- capacity might be empty. If you’d rather avoid this, you can use
+-- 'fromListN', which will provide the exact space the list requires but will
+-- prevent list fusion, or @'force' . 'fromList'@, which will create the
 -- vector and then copy it without the superfluous space.
 --
 -- @since 0.3
