@@ -1027,9 +1027,6 @@ instance NFData a => G.Vector Vector (DoNotUnboxNormalForm a) where
 
 instance NFData a => Unbox (DoNotUnboxNormalForm a)
 
-instance NFData a => NFData (DoNotUnboxNormalForm a) where
-  {-# INLINE rnf #-}
-  rnf = rnf . coerce @(DoNotUnboxNormalForm a) @a
 
 deriveNewtypeInstances((), Any, Bool, Any, V_Any, MV_Any)
 deriveNewtypeInstances((), All, Bool, All, V_All, MV_All)
