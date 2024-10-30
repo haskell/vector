@@ -13,14 +13,42 @@
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- Adaptive unboxed vectors. The implementation is based on type families
+-- Adaptive unboxed vectors. The implementation is based on data families
 -- and picks an efficient, specialised representation for every element type.
--- For example, unboxed vectors of pairs are represented as pairs of unboxed
--- vectors.
+-- For example, vector of fixed size primitives are backed by
+-- 'Data.Vector.Primitive.Vector', unboxed vectors of tuples are represented
+-- as tuples of unboxed vectors (see 'zip'\/'unzip'). Note that vector is
+-- only adaptive types could pick boxed representation for data type\/field
+-- of record. However all library instances are backed by unboxed array(s).
 --
--- Implementing unboxed vectors for new data types can be very easy. Here is
--- how the library does this for 'Complex' by simply wrapping vectors of
--- pairs.
+-- Defining new instances of unboxed vectors is somewhat complicated since
+-- it requires defining two data family and two type class instances. Latter
+-- two could be generated using @GeneralizedNewtypeDeriving@ or @DerivingVia@
+--
+-- >>> :set -XTypeFamilies -XStandaloneDeriving -XMultiParamTypeClasses -XGeneralizedNewtypeDeriving
+-- >>>
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> import qualified Data.Vector.Unboxed         as VU
+-- >>>
+-- >>> newtype Foo = Foo Int
+-- >>>
+-- >>> newtype instance VU.MVector s Foo = MV_Int (VU.MVector s Int)
+-- >>> newtype instance VU.Vector    Foo = V_Int  (VU.Vector    Int)
+-- >>> deriving instance VGM.MVector VU.MVector Foo
+-- >>> deriving instance VG.Vector   VU.Vector  Foo
+-- >>> instance VU.Unbox Foo
+--
+-- For other data types we have several newtype wrappers for use with
+-- @DerivingVia@. See documentation of 'As' and 'IsoUnbox' for defining 
+-- unboxed vector of product types. 'UnboxViaPrim' could be used to define
+-- vector of instances of 'Data.Vector.Primitive.Prim'. Similarly
+-- 'DoNotUnboxStrict'/'DoNotUnboxLazy'/'DoNotUnboxNormalForm' could be used
+-- to represent polymorphic fields as boxed vectors.
+--
+-- Or if everything else fails instances could be written by hand.
+-- Here is how the library does this for 'Complex' by simply wrapping
+-- vectors of pairs.
 --
 -- @
 -- newtype instance 'MVector' s ('Complex' a) = MV_Complex ('MVector' s (a,a))
@@ -38,26 +66,6 @@
 --
 -- instance ('RealFloat' a, 'Unbox' a) => 'Unbox' ('Complex' a)
 -- @
---
--- For newtypes, defining instances is easier since one could use
--- @GeneralizedNewtypeDeriving@ in order to derive instances for
--- 'Data.Vector.Generic.Vector' and 'Data.Vector.Generic.Mutable.MVector',
--- since they're very cumbersome to write by hand:
---
--- >>> :set -XTypeFamilies -XStandaloneDeriving -XMultiParamTypeClasses -XGeneralizedNewtypeDeriving
--- >>>
--- >>> import qualified Data.Vector.Generic         as VG
--- >>> import qualified Data.Vector.Generic.Mutable as VGM
--- >>> import qualified Data.Vector.Unboxed         as VU
--- >>>
--- >>> newtype Foo = Foo Int
--- >>>
--- >>> newtype instance VU.MVector s Foo = MV_Int (VU.MVector s Int)
--- >>> newtype instance VU.Vector    Foo = V_Int  (VU.Vector    Int)
--- >>> deriving instance VGM.MVector VU.MVector Foo
--- >>> deriving instance VG.Vector   VU.Vector  Foo
--- >>> instance VU.Unbox Foo
-
 module Data.Vector.Unboxed (
   -- * Unboxed vectors
   Vector(V_UnboxAs, V_UnboxViaPrim), MVector(..), Unbox,
