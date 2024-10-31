@@ -1,5 +1,13 @@
 # Changes in version 0.13.2.0
 
+ * Strict boxed vector `Data.Vector.Strict` and `Data.Vector.Strict.Mutable` is
+   added (#488). it ensures that all values in the vector are evaluated to WHNF.
+ * `DoNotUnboxStrict`, `DoNotUnboxLazy`, and `DoNotUnboxNormalForm` wrapper are
+   added for defining unbox instances for types that contain not unboxable fields.
+   [#503](https://github.com/haskell/vector/issues/506),
+   [#508](https://github.com/haskell/vector/pull/508)
+ * `spanR` and `breakR` were added [#476](https://github.com/haskell/vector/pull/476).
+   They allow parsing vector from the right.
  * We had some improvements on `*.Mutable.{next,prev}Permutation{,By}`
    [#498](https://github.com/haskell/vector/pull/498):
    * Add `*.Mutable.prevPermutation{,By}` and `*.Mutable.nextPermutationBy`
@@ -8,6 +16,10 @@
      the full enumeration of all the permutations of `[1..n]` took Omega(n*n!), but it now takes O(n!).
    * Add tests for `{next,prev}Permutation`
    * Add benchmarks for `{next,prev}Permutation`
+ * Cabal >= 3.0 is now required for building package (#481).
+ * `vector:benchmarks-O2` public sublibrary containing benchmarks is added (#481).
+ * Type family `Mutable` provides instances for arrays from `primitive`.
+ * Various documentation improvements.
 
 # Changes in version 0.13.1.0
 
