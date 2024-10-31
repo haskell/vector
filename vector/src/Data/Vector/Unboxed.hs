@@ -716,7 +716,7 @@ createT p = G.createT p
 -- ------------------------
 
 -- | /O(n)/ Yield the argument, but force it not to retain any extra memory,
--- possibly by copying it.
+-- by copying it.
 --
 -- This is especially useful when dealing with slices. For example:
 --
