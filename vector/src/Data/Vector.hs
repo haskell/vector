@@ -2,6 +2,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MagicHash #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -212,7 +213,7 @@ import qualified Control.Applicative as Applicative
 import qualified Data.Foldable as Foldable
 import qualified Data.Traversable as Traversable
 
-import qualified GHC.Exts as Exts (IsList(..))
+import qualified GHC.Exts as Exts (IsList(..), Int(..))
 
 
 -- | Boxed vectors, supporting efficient slicing.
@@ -278,8 +279,8 @@ instance G.Vector Vector a where
   {-# INLINE basicUnsafeSlice #-}
   basicUnsafeSlice j n (Vector i _ arr) = Vector (i+j) n arr
 
-  {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM (Vector i _ arr) j = indexArrayM arr (i+j)
+  {-# INLINE basicUnsafeIndexM# #-}
+  basicUnsafeIndexM# (Vector i _ arr) j = indexArrayM arr (i + Exts.I# j)
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MVector i n dst) (Vector j _ src)
