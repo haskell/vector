@@ -50,7 +50,7 @@ Library
         src
 
   Build-Depends: base >= 4.9 && < 4.22
-               , ghc-prim >= 0.2 && < 0.12
+               , ghc-prim >= 0.2 && < 0.14
 
 source-repository head
   type:     git
