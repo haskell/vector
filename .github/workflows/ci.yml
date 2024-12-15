@@ -32,6 +32,7 @@ jobs:
               flags: "-fUnsafeChecks -fInternalChecks" }
           - { cabal: "3.12", os: ubuntu-22.04,  ghc: "9.8.2"  }
           - { cabal: "3.12", os: ubuntu-22.04,  ghc: "9.10.1"  }
+          - { cabal: "3.12", os: ubuntu-22.04,  ghc: "9.12"  }
           # Win
           - { cabal: "3.12", os: windows-latest, ghc: "8.4.4"  }
           # OOM when building tests
