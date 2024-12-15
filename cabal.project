@@ -6,6 +6,7 @@ packages:
 -- Always build tests
 tests: True
 
-allow-newer:
-  , doctest:ghc
-  , splitmix:base
+if impl (ghc >= 9.12)
+  allow-newer:
+    , doctest:ghc
+    , splitmix:base
