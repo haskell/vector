@@ -2,3 +2,11 @@ packages:
   vector
   vector-stream
   vector-bench-papi
+
+-- Always build tests
+tests: True
+
+if impl (ghc >= 9.12)
+  allow-newer:
+    , doctest:ghc
+    , splitmix:base
