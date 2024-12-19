@@ -188,14 +188,14 @@ instance G.Vector Vector () where
 -- >>>
 -- >>> newtype Foo = Foo Int deriving VP.Prim
 -- >>>
--- >>> newtype instance VU.MVector s Foo = MV_Int (VP.MVector s Foo)
--- >>> newtype instance VU.Vector    Foo = V_Int  (VP.Vector    Foo)
+-- >>> newtype instance VU.MVector s Foo = MV_Foo (VP.MVector s Foo)
+-- >>> newtype instance VU.Vector    Foo = V_Foo  (VP.Vector    Foo)
 -- >>> deriving via (VU.UnboxViaPrim Foo) instance VGM.MVector VU.MVector Foo
 -- >>> deriving via (VU.UnboxViaPrim Foo) instance VG.Vector   VU.Vector  Foo
 -- >>> instance VU.Unbox Foo
 --
 -- Second example is essentially same but with a twist. Instead of
--- using @Prim@ instance of data type, we use underlying instance of @Int@:
+-- using 'P.Prim' instance of data type, we use underlying instance of 'Int':
 --
 -- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia -XMultiParamTypeClasses
 -- >>>
@@ -206,8 +206,8 @@ instance G.Vector Vector () where
 -- >>>
 -- >>> newtype Foo = Foo Int
 -- >>>
--- >>> newtype instance VU.MVector s Foo = MV_Int (VP.MVector s Int)
--- >>> newtype instance VU.Vector    Foo = V_Int  (VP.Vector    Int)
+-- >>> newtype instance VU.MVector s Foo = MV_Foo (VP.MVector s Int)
+-- >>> newtype instance VU.Vector    Foo = V_Foo  (VP.Vector    Int)
 -- >>> deriving via (VU.UnboxViaPrim Int) instance VGM.MVector VU.MVector Foo
 -- >>> deriving via (VU.UnboxViaPrim Int) instance VG.Vector   VU.Vector  Foo
 -- >>> instance VU.Unbox Foo
