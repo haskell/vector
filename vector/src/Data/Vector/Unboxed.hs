@@ -210,6 +210,7 @@ module Data.Vector.Unboxed (
   UnboxViaPrim(..),
   As(..),
   IsoUnbox(..),
+  UnboxViaStorable(..),
 
   -- *** /Lazy/ boxing
   DoNotUnboxLazy(..),

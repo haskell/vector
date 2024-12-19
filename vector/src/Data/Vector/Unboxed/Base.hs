@@ -26,7 +26,7 @@
 
 module Data.Vector.Unboxed.Base (
   MVector(..), IOVector, STVector, Vector(..), Unbox,
-  UnboxViaPrim(..), As(..), IsoUnbox(..),
+  UnboxViaPrim(..), UnboxViaStorable(..), As(..), IsoUnbox(..),
   DoNotUnboxLazy(..), DoNotUnboxNormalForm(..), DoNotUnboxStrict(..)
 ) where
 
@@ -34,6 +34,7 @@ import qualified Data.Vector.Generic         as G
 import qualified Data.Vector.Generic.Mutable as M
 import qualified Data.Vector                 as B
 import qualified Data.Vector.Strict          as S
+import qualified Data.Vector.Storable        as St
 
 import qualified Data.Vector.Primitive as P
 
@@ -759,6 +760,103 @@ instance (Unbox a, Unbox b) => G.Vector Vector (Arg a b) where
   basicUnsafeIndexM (V_Arg v) i  = uncurry Arg `liftM` G.basicUnsafeIndexM v i
   elemseq _ (Arg x y) z          = G.elemseq (undefined :: Vector a) x
                                  $ G.elemseq (undefined :: Vector b) y z
+
+-- -------
+-- Unboxing the Storable values
+-- -------
+
+-- | Newtype wrapper which allows to derive unboxed vector in term of
+-- storable vectors using @DerivingVia@ mechanism. This is mostly
+-- used as illustration of use of @DerivingVia@ for vector, see examples below.
+--
+-- First is rather straightforward: we define newtype and use GND to
+-- derive 'St.Storable' instance. Newtype instances should be defined
+-- manually. Then we use deriving via to define necessary instances.
+--
+-- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia -XMultiParamTypeClasses
+-- >>> -- Needed to derive Prim
+-- >>> :set -XGeneralizedNewtypeDeriving -XDataKinds -XUnboxedTuples -XPolyKinds
+-- >>>
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> import qualified Data.Vector.Storable        as VS
+-- >>> import qualified Data.Vector.Unboxed         as VU
+-- >>>
+-- >>> newtype Foo = Foo Int deriving VS.Storable
+-- >>>
+-- >>> newtype instance VU.MVector s Foo = MV_Foo (VS.MVector s Foo)
+-- >>> newtype instance VU.Vector    Foo = V_Foo  (VS.Vector    Foo)
+-- >>> deriving via (VU.UnboxViaStorable Foo) instance VGM.MVector VU.MVector Foo
+-- >>> deriving via (VU.UnboxViaStorable Foo) instance VG.Vector   VU.Vector  Foo
+-- >>> instance VU.Unbox Foo
+--
+-- Second example is essentially same but with a twist. Instead of
+-- using 'St.Storable' instance of data type, we use underlying instance of 'Int':
+--
+-- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia -XMultiParamTypeClasses
+-- >>>
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> import qualified Data.Vector.Storable        as VS
+-- >>> import qualified Data.Vector.Unboxed         as VU
+-- >>>
+-- >>> newtype Foo = Foo Int
+-- >>>
+-- >>> newtype instance VU.MVector s Foo = MV_Foo (VS.MVector s Int)
+-- >>> newtype instance VU.Vector    Foo = V_Foo  (VS.Vector    Int)
+-- >>> deriving via (VU.UnboxViaStorable Int) instance VGM.MVector VU.MVector Foo
+-- >>> deriving via (VU.UnboxViaStorable Int) instance VG.Vector   VU.Vector  Foo
+-- >>> instance VU.Unbox Foo
+--
+-- @since 0.13.0.0
+newtype UnboxViaStorable a = UnboxViaStorable a
+
+newtype instance MVector s (UnboxViaStorable a) = MV_UnboxViaStorable (St.MVector s a)
+newtype instance Vector    (UnboxViaStorable a) = V_UnboxViaStorable  (St.Vector    a)
+
+instance St.Storable a => M.MVector MVector (UnboxViaStorable a) where
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicOverlaps #-}
+  {-# INLINE basicUnsafeNew #-}
+  {-# INLINE basicInitialize #-}
+  {-# INLINE basicUnsafeReplicate #-}
+  {-# INLINE basicUnsafeRead #-}
+  {-# INLINE basicUnsafeWrite #-}
+  {-# INLINE basicClear #-}
+  {-# INLINE basicSet #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeGrow #-}
+  basicLength          = coerce $ M.basicLength          @St.MVector @a
+  basicUnsafeSlice     = coerce $ M.basicUnsafeSlice     @St.MVector @a
+  basicOverlaps        = coerce $ M.basicOverlaps        @St.MVector @a
+  basicUnsafeNew       = coerce $ M.basicUnsafeNew       @St.MVector @a
+  basicInitialize      = coerce $ M.basicInitialize      @St.MVector @a
+  basicUnsafeReplicate = coerce $ M.basicUnsafeReplicate @St.MVector @a
+  basicUnsafeRead      = coerce $ M.basicUnsafeRead      @St.MVector @a
+  basicUnsafeWrite     = coerce $ M.basicUnsafeWrite     @St.MVector @a
+  basicClear           = coerce $ M.basicClear           @St.MVector @a
+  basicSet             = coerce $ M.basicSet             @St.MVector @a
+  basicUnsafeCopy      = coerce $ M.basicUnsafeCopy      @St.MVector @a
+  basicUnsafeMove      = coerce $ M.basicUnsafeMove      @St.MVector @a
+  basicUnsafeGrow      = coerce $ M.basicUnsafeGrow      @St.MVector @a
+
+instance St.Storable a => G.Vector Vector (UnboxViaStorable a) where
+  {-# INLINE basicUnsafeFreeze #-}
+  {-# INLINE basicUnsafeThaw #-}
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE elemseq #-}
+  basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @St.Vector @a
+  basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @St.Vector @a
+  basicLength       = coerce $ G.basicLength       @St.Vector @a
+  basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @St.Vector @a
+  basicUnsafeIndexM = coerce $ G.basicUnsafeIndexM @St.Vector @a
+  basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @St.Vector @a
+  elemseq _ = seq
+
+instance St.Storable a => Unbox (UnboxViaStorable a)
 
 -- -------
 -- Unboxing the boxed values
