@@ -1,6 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
@@ -204,7 +203,6 @@ import Prelude
   , (>>=), (+), (-), (.), ($), seq)
 
 import Data.Functor.Classes (Eq1 (..), Ord1 (..), Read1 (..), Show1 (..))
-import Data.Typeable  ( Typeable )
 import Data.Data      ( Data(..) )
 import Text.Read      ( Read(..), readListPrecDefault )
 import Data.Semigroup ( Semigroup(..) )
@@ -218,7 +216,7 @@ import qualified GHC.Exts as Exts (IsList(..))
 
 -- | Strict boxed vectors, supporting efficient slicing.
 newtype Vector a = Vector (V.Vector a)
-  deriving (Typeable, Foldable.Foldable, Semigroup, Monoid)
+  deriving (Foldable.Foldable, Semigroup, Monoid)
 
 -- NOTE: [GND for strict vector]
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

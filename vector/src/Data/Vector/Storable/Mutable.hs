@@ -1,5 +1,4 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MagicHash #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -106,8 +105,6 @@ import Prelude
   , return, otherwise, error, undefined, max, div, quot, maxBound, show
   , (-), (*), (<), (>), (>=), (==), (&&), (||), (.), ($), (++) )
 
-import Data.Typeable ( Typeable )
-
 import Data.Coerce
 import Unsafe.Coerce
 
@@ -131,7 +128,6 @@ unsafeCoerceMVector = unsafeCoerce
 -- | Mutable 'Storable'-based vectors.
 data MVector s a = MVector {-# UNPACK #-} !Int
                            {-# UNPACK #-} !(ForeignPtr a)
-        deriving ( Typeable )
 
 type IOVector = MVector RealWorld
 type STVector s = MVector s

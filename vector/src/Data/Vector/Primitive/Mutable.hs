@@ -1,5 +1,4 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RoleAnnotations #-}
@@ -88,7 +87,6 @@ import Prelude
   , otherwise, error, undefined, div, show, maxBound
   , (+), (*), (<), (>), (>=), (==), (&&), (||), ($), (++) )
 
-import Data.Typeable ( Typeable )
 import Data.Coerce
 import Unsafe.Coerce
 
@@ -112,7 +110,6 @@ unsafeCoerceMVector = unsafeCoerce
 data MVector s a = MVector {-# UNPACK #-} !Int                  -- ^ offset
                            {-# UNPACK #-} !Int                  -- ^ length
                            {-# UNPACK #-} !(MutableByteArray s) -- ^ underlying mutable byte array
-        deriving ( Typeable )
 
 type IOVector = MVector RealWorld
 type STVector s = MVector s

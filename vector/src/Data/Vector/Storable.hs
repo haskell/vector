@@ -1,5 +1,4 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
@@ -188,7 +187,6 @@ import Prelude
   , compare, mempty, mappend, mconcat, showsPrec, return, seq, undefined, div
   , (*), (<), (<=), (>), (>=), (==), (/=), (&&), (.), ($) )
 
-import Data.Typeable  ( Typeable )
 import Data.Data      ( Data(..) )
 import Text.Read      ( Read(..), readListPrecDefault )
 import Data.Semigroup ( Semigroup(..) )
@@ -216,7 +214,6 @@ unsafeCoerceVector = unsafeCoerce
 -- | 'Storable'-based vectors.
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !(ForeignPtr a)
-        deriving ( Typeable )
 
 instance NFData (Vector a) where
   rnf (Vector _ _) = ()
