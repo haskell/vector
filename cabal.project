@@ -6,6 +6,3 @@ packages:
 -- Always build tests
 tests: True
 
-allow-newer:
-  , doctest:ghc
-  , splitmix:base
