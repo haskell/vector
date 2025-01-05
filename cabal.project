@@ -2,3 +2,7 @@ packages:
   vector
   vector-stream
   vector-bench-papi
+
+-- Always build tests
+tests: True
+

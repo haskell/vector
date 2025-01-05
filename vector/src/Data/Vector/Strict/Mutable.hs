@@ -1,6 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RoleAnnotations #-}
@@ -86,15 +85,12 @@ import Prelude
   ( Ord, Monad(..), Bool, Int, Maybe, Ordering(..)
   , return, ($), (<$>) )
 
-import Data.Typeable ( Typeable )
-
 #include "vector.h"
 
 type role MVector nominal representational
 
 -- | Mutable boxed vectors keyed on the monad they live in ('IO' or @'ST' s@).
 newtype MVector s a = MVector (MV.MVector s a)
-        deriving ( Typeable )
 
 type IOVector = MVector RealWorld
 type STVector s = MVector s

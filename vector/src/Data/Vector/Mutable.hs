@@ -1,6 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RoleAnnotations #-}
@@ -82,8 +81,6 @@ import Prelude
   , compare, return, otherwise, error
   , (>>=), (+), (-), (*), (<), (>), (>=), (&&), (||), ($), (>>) )
 
-import Data.Typeable ( Typeable )
-
 #include "vector.h"
 
 type role MVector nominal representational
@@ -96,7 +93,6 @@ data MVector s a = MVector { _offset :: {-# UNPACK #-} !Int
                            , _array  :: {-# UNPACK #-} !(MutableArray s a)
                            -- ^ Underlying array
                            }
-        deriving ( Typeable )
 
 type IOVector = MVector RealWorld
 type STVector s = MVector s

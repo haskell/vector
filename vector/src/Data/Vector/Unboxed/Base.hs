@@ -1,7 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DefaultSignatures #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -58,7 +57,6 @@ import Data.Complex
 import Data.Monoid (Dual(..),Sum(..),Product(..),All(..),Any(..))
 import Data.Monoid (Alt(..))
 import Data.Semigroup (Min(..),Max(..),First(..),Last(..),WrappedMonoid(..),Arg(..))
-import Data.Typeable ( Typeable )
 import Data.Data     ( Data(..) )
 import GHC.Exts      ( Down(..) )
 import GHC.Generics
@@ -90,12 +88,6 @@ instance NFData1 Vector where
 instance NFData1 (MVector s) where
   liftRnf _ !_ = ()
 #endif
-
--- -----------------
--- Data and Typeable
--- -----------------
-deriving instance Typeable Vector
-deriving instance Typeable MVector
 
 instance (Data a, Unbox a) => Data (Vector a) where
   gfoldl       = G.gfoldl
