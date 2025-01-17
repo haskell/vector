@@ -25,6 +25,8 @@ module Tests.Deriving () where
 import Control.DeepSeq
 import qualified Data.Vector.Generic         as VG
 import qualified Data.Vector.Generic.Mutable as VGM
+import qualified Data.Vector                 as V
+import qualified Data.Vector.Strict          as VV
 import qualified Data.Vector.Storable        as VS
 import qualified Data.Vector.Primitive       as VP
 import qualified Data.Vector.Unboxed         as VU
@@ -127,6 +129,39 @@ deriving via (FooNormalForm a `VU.As` (Int, VU.DoNotUnboxNormalForm a))
     instance NFData a => VG.Vector VU.Vector (FooNormalForm a)
 instance NFData a => VU.Unbox (FooNormalForm a)
 
+
+
+data BoxedLazy = BoxedLazy Int
+  deriving (Eq, Ord, Show)
+
+newtype instance VU.MVector s BoxedLazy = MV_BoxedLazy (V.MVector s BoxedLazy)
+newtype instance VU.Vector    BoxedLazy = V_BoxedLazy  (V.Vector    BoxedLazy)
+deriving via (VU.DoNotUnboxLazy BoxedLazy) instance VGM.MVector VU.MVector BoxedLazy
+deriving via (VU.DoNotUnboxLazy BoxedLazy) instance VG.Vector   VU.Vector  BoxedLazy
+instance VU.Unbox BoxedLazy
+
+
+data BoxedStrict = BoxedStrict Int
+  deriving (Eq, Ord, Show)
+
+newtype instance VU.MVector s BoxedStrict = MV_BoxedStrict (VV.MVector s BoxedStrict)
+newtype instance VU.Vector    BoxedStrict = V_BoxedStrict  (VV.Vector    BoxedStrict)
+deriving via (VU.DoNotUnboxStrict BoxedStrict) instance VGM.MVector VU.MVector BoxedStrict
+deriving via (VU.DoNotUnboxStrict BoxedStrict) instance VG.Vector   VU.Vector  BoxedStrict
+instance VU.Unbox BoxedStrict
+
+
+data BoxedNormalForm = BoxedNormalForm Int
+  deriving (Eq, Ord, Show)
+
+instance NFData BoxedNormalForm where
+  rnf (BoxedNormalForm i) = rnf i
+
+newtype instance VU.MVector s BoxedNormalForm = MV_BoxedNormalForm (VV.MVector s BoxedNormalForm)
+newtype instance VU.Vector    BoxedNormalForm = V_BoxedNormalForm  (VV.Vector    BoxedNormalForm)
+deriving via (VU.DoNotUnboxNormalForm BoxedNormalForm) instance VGM.MVector VU.MVector BoxedNormalForm
+deriving via (VU.DoNotUnboxNormalForm BoxedNormalForm) instance VG.Vector   VU.Vector  BoxedNormalForm
+instance VU.Unbox BoxedNormalForm
 
 
 ----------------------------------------------------------------
