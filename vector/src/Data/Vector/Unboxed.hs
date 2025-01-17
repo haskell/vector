@@ -68,7 +68,7 @@
 -- @
 module Data.Vector.Unboxed (
   -- * Unboxed vectors
-  Vector(V_UnboxAs, V_UnboxViaPrim), MVector(..), Unbox,
+  Vector(V_UnboxAs, V_UnboxViaPrim, V_UnboxViaStorable), MVector(..), Unbox,
 
   -- * Accessors
 
