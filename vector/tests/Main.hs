@@ -8,6 +8,7 @@ import qualified Tests.Vector.Strict
 import qualified Tests.Vector.Unboxed
 import qualified Tests.Bundle
 import qualified Tests.Move
+import qualified Tests.Deriving ()
 
 import Test.Tasty (defaultMain,testGroup)
 

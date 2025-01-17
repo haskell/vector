@@ -26,7 +26,7 @@
 
 module Data.Vector.Unboxed.Base (
   MVector(..), IOVector, STVector, Vector(..), Unbox,
-  UnboxViaPrim(..), As(..), IsoUnbox(..),
+  UnboxViaPrim(..), UnboxViaStorable(..), As(..), IsoUnbox(..),
   DoNotUnboxLazy(..), DoNotUnboxNormalForm(..), DoNotUnboxStrict(..)
 ) where
 
@@ -34,6 +34,7 @@ import qualified Data.Vector.Generic         as G
 import qualified Data.Vector.Generic.Mutable as M
 import qualified Data.Vector                 as B
 import qualified Data.Vector.Strict          as S
+import qualified Data.Vector.Storable        as St
 
 import qualified Data.Vector.Primitive as P
 
@@ -187,14 +188,14 @@ instance G.Vector Vector () where
 -- >>>
 -- >>> newtype Foo = Foo Int deriving VP.Prim
 -- >>>
--- >>> newtype instance VU.MVector s Foo = MV_Int (VP.MVector s Foo)
--- >>> newtype instance VU.Vector    Foo = V_Int  (VP.Vector    Foo)
+-- >>> newtype instance VU.MVector s Foo = MV_Foo (VP.MVector s Foo)
+-- >>> newtype instance VU.Vector    Foo = V_Foo  (VP.Vector    Foo)
 -- >>> deriving via (VU.UnboxViaPrim Foo) instance VGM.MVector VU.MVector Foo
 -- >>> deriving via (VU.UnboxViaPrim Foo) instance VG.Vector   VU.Vector  Foo
 -- >>> instance VU.Unbox Foo
 --
 -- Second example is essentially same but with a twist. Instead of
--- using @Prim@ instance of data type, we use underlying instance of @Int@:
+-- using 'P.Prim' instance of data type, we use underlying instance of 'Int':
 --
 -- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia -XMultiParamTypeClasses
 -- >>>
@@ -205,8 +206,8 @@ instance G.Vector Vector () where
 -- >>>
 -- >>> newtype Foo = Foo Int
 -- >>>
--- >>> newtype instance VU.MVector s Foo = MV_Int (VP.MVector s Int)
--- >>> newtype instance VU.Vector    Foo = V_Int  (VP.Vector    Int)
+-- >>> newtype instance VU.MVector s Foo = MV_Foo (VP.MVector s Int)
+-- >>> newtype instance VU.Vector    Foo = V_Foo  (VP.Vector    Int)
 -- >>> deriving via (VU.UnboxViaPrim Int) instance VGM.MVector VU.MVector Foo
 -- >>> deriving via (VU.UnboxViaPrim Int) instance VG.Vector   VU.Vector  Foo
 -- >>> instance VU.Unbox Foo
@@ -761,6 +762,102 @@ instance (Unbox a, Unbox b) => G.Vector Vector (Arg a b) where
                                  $ G.elemseq (undefined :: Vector b) y z
 
 -- -------
+-- Unboxing the Storable values
+-- -------
+
+-- | Newtype wrapper which allows to derive unboxed vector in term of
+-- storable vectors using @DerivingVia@ mechanism. This is mostly
+-- used as illustration of use of @DerivingVia@ for vector, see examples below.
+--
+-- First is rather straightforward: we define newtype and use GND to
+-- derive 'St.Storable' instance. Newtype instances should be defined
+-- manually. Then we use deriving via to define necessary instances.
+--
+-- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia -XMultiParamTypeClasses
+-- >>> :set -XGeneralizedNewtypeDeriving
+-- >>>
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> import qualified Data.Vector.Storable        as VS
+-- >>> import qualified Data.Vector.Unboxed         as VU
+-- >>>
+-- >>> newtype Foo = Foo Int deriving VS.Storable
+-- >>>
+-- >>> newtype instance VU.MVector s Foo = MV_Foo (VS.MVector s Foo)
+-- >>> newtype instance VU.Vector    Foo = V_Foo  (VS.Vector    Foo)
+-- >>> deriving via (VU.UnboxViaStorable Foo) instance VGM.MVector VU.MVector Foo
+-- >>> deriving via (VU.UnboxViaStorable Foo) instance VG.Vector   VU.Vector  Foo
+-- >>> instance VU.Unbox Foo
+--
+-- Second example is essentially same but with a twist. Instead of
+-- using 'St.Storable' instance of data type, we use underlying instance of 'Int':
+--
+-- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia -XMultiParamTypeClasses
+-- >>>
+-- >>> import qualified Data.Vector.Generic         as VG
+-- >>> import qualified Data.Vector.Generic.Mutable as VGM
+-- >>> import qualified Data.Vector.Storable        as VS
+-- >>> import qualified Data.Vector.Unboxed         as VU
+-- >>>
+-- >>> newtype Foo = Foo Int
+-- >>>
+-- >>> newtype instance VU.MVector s Foo = MV_Foo (VS.MVector s Int)
+-- >>> newtype instance VU.Vector    Foo = V_Foo  (VS.Vector    Int)
+-- >>> deriving via (VU.UnboxViaStorable Int) instance VGM.MVector VU.MVector Foo
+-- >>> deriving via (VU.UnboxViaStorable Int) instance VG.Vector   VU.Vector  Foo
+-- >>> instance VU.Unbox Foo
+--
+-- @since 0.13.3.0
+newtype UnboxViaStorable a = UnboxViaStorable a
+
+newtype instance MVector s (UnboxViaStorable a) = MV_UnboxViaStorable (St.MVector s a)
+newtype instance Vector    (UnboxViaStorable a) = V_UnboxViaStorable  (St.Vector    a)
+
+instance St.Storable a => M.MVector MVector (UnboxViaStorable a) where
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicOverlaps #-}
+  {-# INLINE basicUnsafeNew #-}
+  {-# INLINE basicInitialize #-}
+  {-# INLINE basicUnsafeReplicate #-}
+  {-# INLINE basicUnsafeRead #-}
+  {-# INLINE basicUnsafeWrite #-}
+  {-# INLINE basicClear #-}
+  {-# INLINE basicSet #-}
+  {-# INLINE basicUnsafeCopy #-}
+  {-# INLINE basicUnsafeGrow #-}
+  basicLength          = coerce $ M.basicLength          @St.MVector @a
+  basicUnsafeSlice     = coerce $ M.basicUnsafeSlice     @St.MVector @a
+  basicOverlaps        = coerce $ M.basicOverlaps        @St.MVector @a
+  basicUnsafeNew       = coerce $ M.basicUnsafeNew       @St.MVector @a
+  basicInitialize      = coerce $ M.basicInitialize      @St.MVector @a
+  basicUnsafeReplicate = coerce $ M.basicUnsafeReplicate @St.MVector @a
+  basicUnsafeRead      = coerce $ M.basicUnsafeRead      @St.MVector @a
+  basicUnsafeWrite     = coerce $ M.basicUnsafeWrite     @St.MVector @a
+  basicClear           = coerce $ M.basicClear           @St.MVector @a
+  basicSet             = coerce $ M.basicSet             @St.MVector @a
+  basicUnsafeCopy      = coerce $ M.basicUnsafeCopy      @St.MVector @a
+  basicUnsafeMove      = coerce $ M.basicUnsafeMove      @St.MVector @a
+  basicUnsafeGrow      = coerce $ M.basicUnsafeGrow      @St.MVector @a
+
+instance St.Storable a => G.Vector Vector (UnboxViaStorable a) where
+  {-# INLINE basicUnsafeFreeze #-}
+  {-# INLINE basicUnsafeThaw #-}
+  {-# INLINE basicLength #-}
+  {-# INLINE basicUnsafeSlice #-}
+  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE elemseq #-}
+  basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @St.Vector @a
+  basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @St.Vector @a
+  basicLength       = coerce $ G.basicLength       @St.Vector @a
+  basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @St.Vector @a
+  basicUnsafeIndexM = coerce $ G.basicUnsafeIndexM @St.Vector @a
+  basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @St.Vector @a
+  elemseq _ = seq
+
+instance St.Storable a => Unbox (UnboxViaStorable a)
+
+-- -------
 -- Unboxing the boxed values
 -- -------
 
@@ -777,7 +874,6 @@ instance (Unbox a, Unbox b) => G.Vector Vector (Arg a b) where
 -- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia
 -- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
 -- >>> import qualified Data.Vector.Unboxed         as VU
--- >>> import qualified Data.Vector.Unboxed.Mutable as VUM
 -- >>> import qualified Data.Vector.Generic         as VG
 -- >>> import qualified Data.Vector.Generic.Mutable as VGM
 -- >>> :{
@@ -790,7 +886,7 @@ instance (Unbox a, Unbox b) => G.Vector Vector (Arg a b) where
 -- >>>   {-# INLINE fromURepr #-}
 -- >>> newtype instance VU.MVector s (Foo a) = MV_Foo (VU.MVector s (Int, VU.DoNotUnboxLazy a))
 -- >>> newtype instance VU.Vector    (Foo a) = V_Foo  (VU.Vector    (Int, VU.DoNotUnboxLazy a))
--- >>> deriving via (Foo a `VU.As` (Int, VU.DoNotUnboxLazy a)) instance VGM.MVector VUM.MVector (Foo a)
+-- >>> deriving via (Foo a `VU.As` (Int, VU.DoNotUnboxLazy a)) instance VGM.MVector VU.MVector (Foo a)
 -- >>> deriving via (Foo a `VU.As` (Int, VU.DoNotUnboxLazy a)) instance VG.Vector   VU.Vector   (Foo a)
 -- >>> instance VU.Unbox (Foo a)
 -- >>> :}
@@ -862,7 +958,6 @@ instance Unbox (DoNotUnboxLazy a)
 -- >>> :set -XBangPatterns -XTypeFamilies -XStandaloneDeriving -XDerivingVia
 -- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
 -- >>> import qualified Data.Vector.Unboxed         as VU
--- >>> import qualified Data.Vector.Unboxed.Mutable as VUM
 -- >>> import qualified Data.Vector.Generic         as VG
 -- >>> import qualified Data.Vector.Generic.Mutable as VGM
 -- >>> :{
@@ -875,7 +970,7 @@ instance Unbox (DoNotUnboxLazy a)
 -- >>>   {-# INLINE fromURepr #-}
 -- >>> newtype instance VU.MVector s (Bar a) = MV_Bar (VU.MVector s (Int, VU.DoNotUnboxStrict a))
 -- >>> newtype instance VU.Vector    (Bar a) = V_Bar  (VU.Vector    (Int, VU.DoNotUnboxStrict a))
--- >>> deriving via (Bar a `VU.As` (Int, VU.DoNotUnboxStrict a)) instance VGM.MVector VUM.MVector (Bar a)
+-- >>> deriving via (Bar a `VU.As` (Int, VU.DoNotUnboxStrict a)) instance VGM.MVector VU.MVector (Bar a)
 -- >>> deriving via (Bar a `VU.As` (Int, VU.DoNotUnboxStrict a)) instance VG.Vector   VU.Vector   (Bar a)
 -- >>> instance VU.Unbox (Bar a)
 -- >>> :}
@@ -947,7 +1042,6 @@ instance Unbox (DoNotUnboxStrict a)
 -- >>> :set -XTypeFamilies -XStandaloneDeriving -XDerivingVia
 -- >>> :set -XMultiParamTypeClasses -XTypeOperators -XFlexibleInstances
 -- >>> import qualified Data.Vector.Unboxed         as VU
--- >>> import qualified Data.Vector.Unboxed.Mutable as VUM
 -- >>> import qualified Data.Vector.Generic         as VG
 -- >>> import qualified Data.Vector.Generic.Mutable as VGM
 -- >>> import qualified Control.DeepSeq             as NF
@@ -961,7 +1055,7 @@ instance Unbox (DoNotUnboxStrict a)
 -- >>>   {-# INLINE fromURepr #-}
 -- >>> newtype instance VU.MVector s (Baz a) = MV_Baz (VU.MVector s (Int, VU.DoNotUnboxNormalForm a))
 -- >>> newtype instance VU.Vector    (Baz a) = V_Baz  (VU.Vector    (Int, VU.DoNotUnboxNormalForm a))
--- >>> deriving via (Baz a `VU.As` (Int, VU.DoNotUnboxNormalForm a)) instance NF.NFData a => VGM.MVector VUM.MVector (Baz a)
+-- >>> deriving via (Baz a `VU.As` (Int, VU.DoNotUnboxNormalForm a)) instance NF.NFData a => VGM.MVector VU.MVector (Baz a)
 -- >>> deriving via (Baz a `VU.As` (Int, VU.DoNotUnboxNormalForm a)) instance NF.NFData a => VG.Vector   VU.Vector   (Baz a)
 -- >>> instance NF.NFData a => VU.Unbox (Baz a)
 -- >>> :}

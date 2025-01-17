@@ -188,6 +188,7 @@ common tests-common
                , template-haskell
                , base-orphans >= 0.6
                , vector
+               , deepseq
                , primitive
                , random
                , QuickCheck >= 2.9 && < 2.16
@@ -206,6 +207,7 @@ common tests-common
     Tests.Vector.Primitive
     Tests.Vector.Unboxed
     Tests.Vector.UnitTests
+    Tests.Deriving
     Utilities
 
   default-extensions:
