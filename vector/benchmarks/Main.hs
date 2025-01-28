@@ -1,6 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 module Main where
 
+
 import Bench.Vector.Algo.MutableSet      (mutableSet)
 import Bench.Vector.Algo.ListRank        (listRank)
 import Bench.Vector.Algo.Rootfix         (rootfix)
@@ -12,6 +13,8 @@ import Bench.Vector.Algo.Spectral        (spectral)
 import Bench.Vector.Algo.Tridiag         (tridiag)
 import Bench.Vector.Algo.FindIndexR      (findIndexR, findIndexR_naive, findIndexR_manual)
 import Bench.Vector.Algo.NextPermutation (generatePermTests)
+import Bench.Vector.Algo.Applicative ( generateState, generateStateUnfold, generateIO, generateIOPrim
+                                     , lensSum, lensMap, baselineSum, baselineMap)
 
 import Bench.Vector.TestData.ParenTree (parenTree)
 import Bench.Vector.TestData.Graph     (randomGraph)
@@ -69,4 +72,14 @@ main = do
     , bench "minimumOn"  $ whnf (U.minimumOn (\x -> x*x*x)) as
     , bench "maximumOn"  $ whnf (U.maximumOn (\x -> x*x*x)) as
     , bgroup "(next|prev)Permutation" $ map (\(name, act) -> bench name $ whnfIO act) permTests
+    , bgroup "Applicative"
+      [ bench "generateState"       $ whnf generateState useSize
+      , bench "generateStateUnfold" $ whnf generateStateUnfold useSize
+      , bench "generateIO"     $ whnfIO (generateIO useSize)
+      , bench "generateIOPrim" $ whnfIO (generateIOPrim useSize)
+      , bench "sum[lens]"      $ whnf lensSum as
+      , bench "sum[base]"      $ whnf baselineSum as
+      , bench "map[lens]"      $ whnf lensMap as
+      , bench "map[base]"      $ whnf baselineMap as
+      ]
     ]
