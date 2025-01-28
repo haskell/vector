@@ -2679,7 +2679,7 @@ replicateA :: (Vector v a, Applicative f) => Int -> f a -> f (v a)
 replicateA n f = generateA n (\_ -> f)
 
 
--- | Construct a vector of the given length by applying the monadic
+-- | Construct a vector of the given length by applying the applicative
 -- action to each index.
 generateA :: (Vector v a, Applicative f) => Int -> (Int -> f a) -> f (v a)
 {-# INLINE generateA #-}
