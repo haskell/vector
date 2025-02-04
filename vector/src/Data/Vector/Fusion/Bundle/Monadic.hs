@@ -4,6 +4,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE MagicHash #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -98,10 +99,10 @@ import Control.Monad.Primitive
 
 import qualified Data.List as List
 import Data.Char      ( ord )
-import GHC.Base       ( unsafeChr )
+import GHC.Base       ( unsafeChr, Int(..) )
 import Control.Monad  ( liftM )
 import Prelude
-  ( Eq, Ord, Num, Enum, Functor, Monad, Bool(..), Ordering, Char, Int, Word, Integer, Float, Double, Maybe(..), Either(..), Integral, RealFrac
+  ( Eq, Ord, Num, Enum, Functor, Monad, Bool(..), Ordering, Char, Word, Integer, Float, Double, Maybe(..), Either(..), Integral, RealFrac
   , return, fmap, otherwise, id, const, seq, max, maxBound, fromIntegral, truncate
   , (+), (-), (<), (<=), (>), (>=), (==), (/=), (&&), (.), ($), (<$), (/) )
 
@@ -1091,9 +1092,10 @@ fromVector v = v `seq` n `seq` Bundle (Stream step 0)
     n = basicLength v
 
     {-# INLINE step #-}
-    step i | i >= n = return Done
-           | otherwise = case basicUnsafeIndexM v i of
-                           Box x -> return $ Yield x (i+1)
+    step (I# i)
+      | I# i >= n = return Done
+      | otherwise = case basicUnsafeIndexM# v i of
+                           Box x -> return $ Yield x (I# i + 1)
 
 
     {-# INLINE vstep #-}
@@ -1112,10 +1114,10 @@ fromVectors us = Bundle (Stream pstep (Left us))
     pstep (Left []) = return Done
     pstep (Left (v:vs)) = basicLength v `seq` return (Skip (Right (v,0,vs)))
 
-    pstep (Right (v,i,vs))
-      | i >= basicLength v = return $ Skip (Left vs)
-      | otherwise          = case basicUnsafeIndexM v i of
-                               Box x -> return $ Yield x (Right (v,i+1,vs))
+    pstep (Right (v, I# i, vs))
+      | I# i >= basicLength v = return $ Skip (Left vs)
+      | otherwise          = case basicUnsafeIndexM# v i of
+                               Box x -> return $ Yield x (Right (v, I# i + 1, vs))
 
     -- FIXME: work around bug in GHC 7.6.1
     vstep :: HasCallStack => [v a] -> m (Step [v a] (Chunk v a))
@@ -1143,10 +1145,10 @@ concatVectors Bundle{sElems = Stream step t}
         Skip    s' -> return (Skip (Left s'))
         Done       -> return Done
 
-    pstep (Right (v,i,s))
-      | i >= basicLength v = return (Skip (Left s))
-      | otherwise          = case basicUnsafeIndexM v i of
-                               Box x -> return (Yield x (Right (v,i+1,s)))
+    pstep (Right (v, I# i, s))
+      | I# i >= basicLength v = return (Skip (Left s))
+      | otherwise          = case basicUnsafeIndexM# v i of
+                               Box x -> return (Yield x (Right (v, I# i + 1,s)))
 
 
     vstep s = do

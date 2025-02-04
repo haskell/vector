@@ -90,11 +90,11 @@ instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
   basicUnsafeSlice i_ m_ (V_2 _ as bs)
       = V_2 m_ (G.basicUnsafeSlice i_ m_ as)
                (G.basicUnsafeSlice i_ m_ bs)
-  {-# INLINE basicUnsafeIndexM  #-}
-  basicUnsafeIndexM (V_2 _ as bs) i_
+  {-# INLINE basicUnsafeIndexM#  #-}
+  basicUnsafeIndexM# (V_2 _ as bs) i_
       = do
-          a <- G.basicUnsafeIndexM as i_
-          b <- G.basicUnsafeIndexM bs i_
+          a <- G.basicUnsafeIndexM# as i_
+          b <- G.basicUnsafeIndexM# bs i_
           return (a, b)
   {-# INLINE basicUnsafeCopy  #-}
   basicUnsafeCopy (MV_2 _ as1 bs1) (V_2 _ as2 bs2)
@@ -248,12 +248,12 @@ instance (Unbox a,
       = V_3 m_ (G.basicUnsafeSlice i_ m_ as)
                (G.basicUnsafeSlice i_ m_ bs)
                (G.basicUnsafeSlice i_ m_ cs)
-  {-# INLINE basicUnsafeIndexM  #-}
-  basicUnsafeIndexM (V_3 _ as bs cs) i_
+  {-# INLINE basicUnsafeIndexM#  #-}
+  basicUnsafeIndexM# (V_3 _ as bs cs) i_
       = do
-          a <- G.basicUnsafeIndexM as i_
-          b <- G.basicUnsafeIndexM bs i_
-          c <- G.basicUnsafeIndexM cs i_
+          a <- G.basicUnsafeIndexM# as i_
+          b <- G.basicUnsafeIndexM# bs i_
+          c <- G.basicUnsafeIndexM# cs i_
           return (a, b, c)
   {-# INLINE basicUnsafeCopy  #-}
   basicUnsafeCopy (MV_3 _ as1 bs1 cs1) (V_3 _ as2 bs2 cs2)
@@ -448,13 +448,13 @@ instance (Unbox a,
                (G.basicUnsafeSlice i_ m_ bs)
                (G.basicUnsafeSlice i_ m_ cs)
                (G.basicUnsafeSlice i_ m_ ds)
-  {-# INLINE basicUnsafeIndexM  #-}
-  basicUnsafeIndexM (V_4 _ as bs cs ds) i_
+  {-# INLINE basicUnsafeIndexM#  #-}
+  basicUnsafeIndexM# (V_4 _ as bs cs ds) i_
       = do
-          a <- G.basicUnsafeIndexM as i_
-          b <- G.basicUnsafeIndexM bs i_
-          c <- G.basicUnsafeIndexM cs i_
-          d <- G.basicUnsafeIndexM ds i_
+          a <- G.basicUnsafeIndexM# as i_
+          b <- G.basicUnsafeIndexM# bs i_
+          c <- G.basicUnsafeIndexM# cs i_
+          d <- G.basicUnsafeIndexM# ds i_
           return (a, b, c, d)
   {-# INLINE basicUnsafeCopy  #-}
   basicUnsafeCopy (MV_4 _ as1 bs1 cs1 ds1) (V_4 _ as2
@@ -700,14 +700,14 @@ instance (Unbox a,
                (G.basicUnsafeSlice i_ m_ cs)
                (G.basicUnsafeSlice i_ m_ ds)
                (G.basicUnsafeSlice i_ m_ es)
-  {-# INLINE basicUnsafeIndexM  #-}
-  basicUnsafeIndexM (V_5 _ as bs cs ds es) i_
+  {-# INLINE basicUnsafeIndexM#  #-}
+  basicUnsafeIndexM# (V_5 _ as bs cs ds es) i_
       = do
-          a <- G.basicUnsafeIndexM as i_
-          b <- G.basicUnsafeIndexM bs i_
-          c <- G.basicUnsafeIndexM cs i_
-          d <- G.basicUnsafeIndexM ds i_
-          e <- G.basicUnsafeIndexM es i_
+          a <- G.basicUnsafeIndexM# as i_
+          b <- G.basicUnsafeIndexM# bs i_
+          c <- G.basicUnsafeIndexM# cs i_
+          d <- G.basicUnsafeIndexM# ds i_
+          e <- G.basicUnsafeIndexM# es i_
           return (a, b, c, d, e)
   {-# INLINE basicUnsafeCopy  #-}
   basicUnsafeCopy (MV_5 _ as1 bs1 cs1 ds1 es1) (V_5 _ as2
@@ -1002,15 +1002,15 @@ instance (Unbox a,
                (G.basicUnsafeSlice i_ m_ ds)
                (G.basicUnsafeSlice i_ m_ es)
                (G.basicUnsafeSlice i_ m_ fs)
-  {-# INLINE basicUnsafeIndexM  #-}
-  basicUnsafeIndexM (V_6 _ as bs cs ds es fs) i_
+  {-# INLINE basicUnsafeIndexM#  #-}
+  basicUnsafeIndexM# (V_6 _ as bs cs ds es fs) i_
       = do
-          a <- G.basicUnsafeIndexM as i_
-          b <- G.basicUnsafeIndexM bs i_
-          c <- G.basicUnsafeIndexM cs i_
-          d <- G.basicUnsafeIndexM ds i_
-          e <- G.basicUnsafeIndexM es i_
-          f <- G.basicUnsafeIndexM fs i_
+          a <- G.basicUnsafeIndexM# as i_
+          b <- G.basicUnsafeIndexM# bs i_
+          c <- G.basicUnsafeIndexM# cs i_
+          d <- G.basicUnsafeIndexM# ds i_
+          e <- G.basicUnsafeIndexM# es i_
+          f <- G.basicUnsafeIndexM# fs i_
           return (a, b, c, d, e, f)
   {-# INLINE basicUnsafeCopy  #-}
   basicUnsafeCopy (MV_6 _ as1 bs1 cs1 ds1 es1 fs1) (V_6 _ as2

@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MagicHash #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RoleAnnotations #-}
@@ -254,11 +255,11 @@ instance Storable a => G.Vector Vector a where
   {-# INLINE basicUnsafeSlice #-}
   basicUnsafeSlice i n (Vector _ fp) = Vector n (updPtr (`advancePtr` i) fp)
 
-  {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM (Vector _ fp) i = return
+  {-# INLINE basicUnsafeIndexM# #-}
+  basicUnsafeIndexM# (Vector _ fp) i = return
                                     . unsafeInlineIO
                                     $ unsafeWithForeignPtr fp $ \p ->
-                                      peekElemOff p i
+                                      peekElemOff p (Exts.I# i)
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MVector n fp) (Vector _ fq)
