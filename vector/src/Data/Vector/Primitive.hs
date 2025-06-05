@@ -84,11 +84,11 @@ module Data.Vector.Primitive (
   -- * Elementwise operations
 
   -- ** Mapping
-  map, imap, concatMap,
+  map, imap, concatMap, iconcatMap,
 
   -- ** Monadic mapping
   mapM, imapM, mapM_, imapM_, forM, forM_,
-  iforM, iforM_,
+  iforM, iforM_, concatMapM, iconcatMapM,
 
   -- ** Zipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
@@ -882,6 +882,13 @@ concatMap :: (Prim a, Prim b) => (a -> Vector b) -> Vector a -> Vector b
 {-# INLINE concatMap #-}
 concatMap = G.concatMap
 
+-- | Apply a function to every element of a vector and its index, and concatenate the results.
+--
+-- @since 0.13.3.0
+iconcatMap :: (Prim a, Prim b) => (Int -> a -> Vector b) -> Vector a -> Vector b
+{-# INLINE iconcatMap #-}
+iconcatMap = G.iconcatMap
+
 -- Monadic mapping
 -- ---------------
 
@@ -941,6 +948,22 @@ iforM = G.iforM
 iforM_ :: (Monad m, Prim a) => Vector a -> (Int -> a -> m b) -> m ()
 {-# INLINE iforM_ #-}
 iforM_ = G.iforM_
+
+-- | Apply the monadic action to all elements of the vector, yielding a vector of results, and
+-- concatenate the results.
+--
+-- @since 0.13.3.0
+concatMapM :: (Monad m, Prim a, Prim b) => (a -> m (Vector b)) -> Vector a -> m (Vector b)
+{-# INLINE concatMapM #-}
+concatMapM = G.concatMapM
+
+-- | Apply the monadic action to every element of the vector and its index, yielding a vector of
+-- results, and concatenate the results.
+--
+-- @since 0.13.3.0
+iconcatMapM :: (Monad m, Prim a, Prim b) => (Int -> a -> m (Vector b)) -> Vector a -> m (Vector b)
+{-# INLINE iconcatMapM #-}
+iconcatMapM = G.iconcatMapM
 
 -- Zipping
 -- -------

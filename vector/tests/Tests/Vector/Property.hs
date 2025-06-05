@@ -147,11 +147,11 @@ testPolymorphicFunctions _ = $(testProperties [
         {- 'prop_unsafeBackpermute, -}
 
         -- Mapping
-        'prop_map, 'prop_imap, 'prop_concatMap,
+        'prop_map, 'prop_imap, 'prop_concatMap, 'prop_iconcatMap,
 
         -- Monadic mapping
         'prop_mapM, 'prop_mapM_, 'prop_forM, 'prop_forM_,
-        'prop_imapM, 'prop_imapM_,
+        'prop_imapM, 'prop_imapM_, 'prop_concatMapM, 'prop_iconcatMapM,
 
         -- Zipping
         'prop_zipWith, 'prop_zipWith3,
@@ -313,6 +313,17 @@ testPolymorphicFunctions _ = $(testProperties [
             = V.imapM `eq` imapM
     prop_imapM_ :: P ((Int -> a -> Writer [a] ()) -> v a -> Writer [a] ())
             = V.imapM_ `eq` imapM_
+
+    prop_concatMapM    = forAll arbitrary $ \xs ->
+                        forAll (sized (\n -> resize (n `div` V.length xs) arbitrary)) $ \f -> unP prop f xs
+      where
+        prop :: P ((a -> Identity (v a)) -> v a -> Identity (v a)) = V.concatMapM `eq` concatMapM
+
+    prop_iconcatMapM   = forAll arbitrary $ \xs ->
+                        forAll (sized (\n -> resize (n `div` V.length xs) arbitrary)) $ \f -> unP prop f xs
+      where
+        prop :: P ((Int -> a -> Identity (v a)) -> v a -> Identity (v a)) = V.iconcatMapM `eq` iconcatMapM
+
     prop_izipWith :: P ((Int -> a -> a -> a) -> v a -> v a -> v a) = V.izipWith `eq` izipWith
     prop_zipWithM :: P ((a -> a -> Identity a) -> v a -> v a -> Identity (v a))
             = V.zipWithM `eq` zipWithM
@@ -434,6 +445,11 @@ testPolymorphicFunctions _ = $(testProperties [
                         forAll (sized (\n -> resize (n `div` V.length xs) arbitrary)) $ \f -> unP prop f xs
       where
         prop :: P ((a -> v a) -> v a -> v a) = V.concatMap `eq` concatMap
+
+    prop_iconcatMap   = forAll arbitrary $ \xs ->
+                        forAll (sized (\n -> resize (n `div` V.length xs) arbitrary)) $ \f -> unP prop f xs
+      where
+        prop :: P ((Int -> a -> v a) -> v a -> v a) = V.iconcatMap `eq` iconcatMap
 
     prop_uniq :: P (v a -> v a)
       = V.uniq `eq` (map head . group)
