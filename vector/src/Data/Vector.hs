@@ -1162,7 +1162,7 @@ iforM_ = G.iforM_
 -- concatenate the results.
 --
 -- @since 0.13.3.0
-concatMapM :: (Monad m) => (a -> m (Vector b)) -> Vector a -> m (Vector b)
+concatMapM :: Monad m => (a -> m (Vector b)) -> Vector a -> m (Vector b)
 {-# INLINE concatMapM #-}
 concatMapM = G.concatMapM
 
@@ -1170,7 +1170,7 @@ concatMapM = G.concatMapM
 -- results, and concatenate the results.
 --
 -- @since 0.13.3.0
-iconcatMapM :: (Monad m) => (Int -> a -> m (Vector b)) -> Vector a -> m (Vector b)
+iconcatMapM :: Monad m => (Int -> a -> m (Vector b)) -> Vector a -> m (Vector b)
 {-# INLINE iconcatMapM #-}
 iconcatMapM = G.iconcatMapM
 
