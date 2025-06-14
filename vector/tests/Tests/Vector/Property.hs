@@ -151,7 +151,7 @@ testPolymorphicFunctions _ = $(testProperties [
 
         -- Monadic mapping
         'prop_mapM, 'prop_mapM_, 'prop_forM, 'prop_forM_,
-        'prop_imapM, 'prop_imapM_, 'prop_concatMapM, 'prop_iconcatMapM,
+        'prop_imapM, 'prop_imapM_,
 
         -- Zipping
         'prop_zipWith, 'prop_zipWith3,
@@ -313,16 +313,6 @@ testPolymorphicFunctions _ = $(testProperties [
             = V.imapM `eq` imapM
     prop_imapM_ :: P ((Int -> a -> Writer [a] ()) -> v a -> Writer [a] ())
             = V.imapM_ `eq` imapM_
-
-    prop_concatMapM    = forAll arbitrary $ \xs ->
-                        forAll (sized (\n -> resize (n `div` V.length xs) arbitrary)) $ \f -> unP prop f xs
-      where
-        prop :: P ((a -> Identity (v a)) -> v a -> Identity (v a)) = V.concatMapM `eq` concatMapM
-
-    prop_iconcatMapM   = forAll arbitrary $ \xs ->
-                        forAll (sized (\n -> resize (n `div` V.length xs) arbitrary)) $ \f -> unP prop f xs
-      where
-        prop :: P ((Int -> a -> Identity (v a)) -> v a -> Identity (v a)) = V.iconcatMapM `eq` iconcatMapM
 
     prop_izipWith :: P ((Int -> a -> a -> a) -> v a -> v a -> v a) = V.izipWith `eq` izipWith
     prop_zipWithM :: P ((a -> a -> Identity a) -> v a -> v a -> Identity (v a))

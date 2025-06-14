@@ -88,7 +88,7 @@ module Data.Vector.Generic (
 
   -- ** Monadic mapping
   mapM, imapM, mapM_, imapM_, forM, forM_,
-  iforM, iforM_, concatMapM, iconcatMapM,
+  iforM, iforM_,
 
   -- ** Zipping
   zipWith, zipWith3, zipWith4, zipWith5, zipWith6,
@@ -1176,29 +1176,6 @@ iforM as f = imapM f as
 iforM_ :: (Monad m, Vector v a) => v a -> (Int -> a -> m b) -> m ()
 {-# INLINE iforM_ #-}
 iforM_ as f = imapM_ f as
-
--- | Apply the monadic action to all elements of the vector, yielding a vector of results, and
--- concatenate the results.
---
--- @since 0.13.3.0
-concatMapM :: (Monad m, Vector v a, Vector v b) => (a -> m (v b)) -> v a -> m (v b)
-{-# INLINE concatMapM #-}
-concatMapM f = unstreamM
-               . MBundle.concatVectors
-               . MBundle.mapM f
-               . MBundle.fromVector
-
--- | Apply the monadic action to every element of the vector and its index, yielding a vector of
--- results, and concatenate the results.
---
--- @since 0.13.3.0
-iconcatMapM :: (Monad m, Vector v a, Vector v b) => (Int -> a -> m (v b)) -> v a -> m (v b)
-{-# INLINE iconcatMapM #-}
-iconcatMapM f = unstreamM
-                . MBundle.concatVectors
-                . MBundle.mapM (uncurry f)
-                . MBundle.indexed
-                . MBundle.fromVector
 
 -- Zipping
 -- -------
