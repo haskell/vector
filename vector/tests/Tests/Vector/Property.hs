@@ -313,7 +313,6 @@ testPolymorphicFunctions _ = $(testProperties [
             = V.imapM `eq` imapM
     prop_imapM_ :: P ((Int -> a -> Writer [a] ()) -> v a -> Writer [a] ())
             = V.imapM_ `eq` imapM_
-
     prop_izipWith :: P ((Int -> a -> a -> a) -> v a -> v a -> v a) = V.izipWith `eq` izipWith
     prop_zipWithM :: P ((a -> a -> Identity a) -> v a -> v a -> Identity (v a))
             = V.zipWithM `eq` zipWithM
