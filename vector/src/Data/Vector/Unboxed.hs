@@ -132,7 +132,7 @@ module Data.Vector.Unboxed (
   indexed,
 
   -- ** Mapping
-  map, imap, concatMap,
+  map, imap, concatMap, iconcatMap,
 
   -- ** Monadic mapping
   mapM, imapM, mapM_, imapM_, forM, forM_,
@@ -930,6 +930,13 @@ imap = G.imap
 concatMap :: (Unbox a, Unbox b) => (a -> Vector b) -> Vector a -> Vector b
 {-# INLINE concatMap #-}
 concatMap = G.concatMap
+
+-- | Apply a function to every element of a vector and its index, and concatenate the results.
+--
+-- @since 0.13.3.0
+iconcatMap :: (Unbox a, Unbox b) => (Int -> a -> Vector b) -> Vector a -> Vector b
+{-# INLINE iconcatMap #-}
+iconcatMap = G.iconcatMap
 
 -- Monadic mapping
 -- ---------------

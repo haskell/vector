@@ -286,6 +286,9 @@ imapM = withIndexFirst mapM
 imapM_ :: Monad m => (Int -> a -> m b) -> [a] -> m ()
 imapM_ = withIndexFirst mapM_
 
+iconcatMap :: (Int -> a -> [a]) -> [a] -> [a]
+iconcatMap f = concat . withIndexFirst map f
+
 izipWith :: (Int -> a -> a -> a) -> [a] -> [a] -> [a]
 izipWith = withIndexFirst zipWith
 

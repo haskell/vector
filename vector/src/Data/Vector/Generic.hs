@@ -84,7 +84,7 @@ module Data.Vector.Generic (
   indexed,
 
   -- ** Mapping
-  map, imap, concatMap,
+  map, imap, concatMap, iconcatMap,
 
   -- ** Monadic mapping
   mapM, imapM, mapM_, imapM_, forM, forM_,
@@ -1111,6 +1111,16 @@ concatMap f = unstream
             . Bundle.concatVectors
             . Bundle.map f
             . stream
+
+-- | Apply a function to every element of a vector and its index, and concatenate the results.
+--
+-- @since 0.13.3.0
+iconcatMap :: (Vector v a, Vector v b) => (Int -> a -> v b) -> v a -> v b
+{-# INLINE iconcatMap #-}
+iconcatMap f = unstream
+               . Bundle.concatVectors
+               . Bundle.inplace (S.map (uncurry f) . S.indexed) id
+               . stream
 
 -- Monadic mapping
 -- ---------------

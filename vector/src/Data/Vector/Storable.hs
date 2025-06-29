@@ -81,7 +81,7 @@ module Data.Vector.Storable (
   -- * Elementwise operations
 
   -- ** Mapping
-  map, imap, concatMap,
+  map, imap, concatMap, iconcatMap,
 
   -- ** Monadic mapping
   mapM, imapM, mapM_, imapM_, forM, forM_,
@@ -892,6 +892,13 @@ imap = G.imap
 concatMap :: (Storable a, Storable b) => (a -> Vector b) -> Vector a -> Vector b
 {-# INLINE concatMap #-}
 concatMap = G.concatMap
+
+-- | Apply a function to every element of a vector and its index, and concatenate the results.
+--
+-- @since 0.13.3.0
+iconcatMap :: (Storable a, Storable b) => (Int -> a -> Vector b) -> Vector a -> Vector b
+{-# INLINE iconcatMap #-}
+iconcatMap = G.iconcatMap
 
 -- Monadic mapping
 -- ---------------

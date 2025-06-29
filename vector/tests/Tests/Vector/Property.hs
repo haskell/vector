@@ -147,7 +147,7 @@ testPolymorphicFunctions _ = $(testProperties [
         {- 'prop_unsafeBackpermute, -}
 
         -- Mapping
-        'prop_map, 'prop_imap, 'prop_concatMap,
+        'prop_map, 'prop_imap, 'prop_concatMap, 'prop_iconcatMap,
 
         -- Monadic mapping
         'prop_mapM, 'prop_mapM_, 'prop_forM, 'prop_forM_,
@@ -434,6 +434,11 @@ testPolymorphicFunctions _ = $(testProperties [
                         forAll (sized (\n -> resize (n `div` V.length xs) arbitrary)) $ \f -> unP prop f xs
       where
         prop :: P ((a -> v a) -> v a -> v a) = V.concatMap `eq` concatMap
+
+    prop_iconcatMap   = forAll arbitrary $ \xs ->
+                        forAll (sized (\n -> resize (n `div` V.length xs) arbitrary)) $ \f -> unP prop f xs
+      where
+        prop :: P ((Int -> a -> v a) -> v a -> v a) = V.iconcatMap `eq` iconcatMap
 
     prop_uniq :: P (v a -> v a)
       = V.uniq `eq` (map head . group)
