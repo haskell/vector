@@ -1,3 +1,4 @@
+Cabal-Version:  1.18
 Name:           vector-stream
 Version:        0.1.0.1
 -- don't forget to update the changelog file!
@@ -35,10 +36,9 @@ Tested-With:
   GHC == 9.10.2
   GHC == 9.12.2
 
-Cabal-Version:  >=1.10
 Build-Type:     Simple
 
-Extra-Source-Files:
+Extra-Doc-Files:
       changelog.md
       README.md
 
@@ -51,7 +51,7 @@ Library
   Hs-Source-Dirs:
         src
 
-  Build-Depends: base >= 4.9 && < 4.22
+  Build-Depends: base >= 4.9 && < 4.23
                , ghc-prim >= 0.2 && < 0.14
 
 source-repository head
