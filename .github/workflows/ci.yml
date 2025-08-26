@@ -18,21 +18,21 @@ jobs:
       matrix:
         include:
           # Linux
-          - { cabal: "3.12", os: ubuntu-22.04,  ghc: "8.0.2"  }
-          - { cabal: "3.12", os: ubuntu-22.04,  ghc: "8.2.2"  }
-          - { cabal: "3.12", os: ubuntu-22.04,  ghc: "8.4.4"  }
-          - { cabal: "3.12", os: ubuntu-22.04,  ghc: "8.6.5"  }
-          - { cabal: "3.12", os: ubuntu-22.04,  ghc: "8.8.4"  }
-          - { cabal: "3.12", os: ubuntu-22.04,  ghc: "8.10.7" }
-          - { cabal: "3.12", os: ubuntu-22.04,  ghc: "9.0.2"  }
-          - { cabal: "3.12", os: ubuntu-22.04,  ghc: "9.2.8"  }
-          - { cabal: "3.12", os: ubuntu-22.04,  ghc: "9.4.8"  }
-          - { cabal: "3.12", os: ubuntu-22.04,  ghc: "9.6.6"  }
-          - { cabal: "3.12", os: ubuntu-22.04,  ghc: "9.6.6",
+          - { cabal: "3.12", os: ubuntu-24.04,  ghc: "8.0.2"  }
+          - { cabal: "3.12", os: ubuntu-24.04,  ghc: "8.2.2"  }
+          - { cabal: "3.12", os: ubuntu-24.04,  ghc: "8.4.4"  }
+          - { cabal: "3.12", os: ubuntu-24.04,  ghc: "8.6.5"  }
+          - { cabal: "3.12", os: ubuntu-24.04,  ghc: "8.8.4"  }
+          - { cabal: "3.12", os: ubuntu-24.04,  ghc: "8.10.7" }
+          - { cabal: "3.12", os: ubuntu-24.04,  ghc: "9.0.2"  }
+          - { cabal: "3.12", os: ubuntu-24.04,  ghc: "9.2.8"  }
+          - { cabal: "3.12", os: ubuntu-24.04,  ghc: "9.4.8"  }
+          - { cabal: "3.12", os: ubuntu-24.04,  ghc: "9.6.7"  }
+          - { cabal: "3.12", os: ubuntu-24.04,  ghc: "9.6.7",
               flags: "-fUnsafeChecks -fInternalChecks" }
-          - { cabal: "3.12", os: ubuntu-22.04,  ghc: "9.8.4"  }
-          - { cabal: "3.12", os: ubuntu-22.04,  ghc: "9.10.1"  }
-          - { cabal: "3.12", os: ubuntu-22.04,  ghc: "9.12"  }
+          - { cabal: "3.12", os: ubuntu-24.04,  ghc: "9.8"  }
+          - { cabal: "3.12", os: ubuntu-24.04,  ghc: "9.10"  }
+          - { cabal: "3.12", os: ubuntu-24.04,  ghc: "9.12"  }
           # Win
           - { cabal: "3.12", os: windows-latest, ghc: "8.4.4"  }
           # OOM when building tests
@@ -49,15 +49,15 @@ jobs:
           - { cabal: "3.12", os: macOS-13,       ghc: "9.0.2"  }
           - { cabal: "3.12", os: macOS-latest,   ghc: "9.2.8"  }
           - { cabal: "3.12", os: macOS-latest,   ghc: "9.4.8"  }
-          - { cabal: "3.12", os: macOS-latest,   ghc: "9.6.6"  }
-          - { cabal: "3.12", os: macOS-latest,   ghc: "9.8.4"  }
-          - { cabal: "3.12", os: macOS-latest,   ghc: "9.10.1"  }
+          - { cabal: "3.12", os: macOS-latest,   ghc: "9.6.7"  }
+          - { cabal: "3.12", os: macOS-latest,   ghc: "9.8"  }
+          - { cabal: "3.12", os: macOS-latest,   ghc: "9.10"  }
           - { cabal: "3.12", os: macOS-latest,   ghc: "9.12" }
       fail-fast: false
 
     steps:
     # ----------------
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       if: github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.ref == 'refs/heads/master'
     # ----------------
     - uses: haskell-actions/setup@v2
@@ -77,7 +77,7 @@ jobs:
       run: |
         sudo apt-get install -y libpapi-dev
         echo FLAG_PAPI=-fBenchPAPI >> "$GITHUB_ENV"
-      if: matrix.os == 'ubuntu-22.04'
+      if: matrix.os == 'ubuntu-24.04'
     # ----------------
     - name: Versions
       run: |
