@@ -757,6 +757,7 @@ concat vs = unstream (Bundle.flatten mk step (Exact n) (Bundle.fromList vs))
 
 -- | /O(n)/ Concatenate all vectors in the non-empty list.
 concatNE :: Vector v a => NonEmpty.NonEmpty (v a) -> v a
+{-# INLINE concatNE #-}
 concatNE = concat . NonEmpty.toList
 
 -- Monadic initialisation
@@ -1135,6 +1136,7 @@ mapM f = unstreamM . Bundle.mapM f . stream
 -- index, yielding a vector of results.
 imapM :: (Monad m, Vector v a, Vector v b)
       => (Int -> a -> m b) -> v a -> m (v b)
+{-# INLINE imapM #-}
 imapM f = unstreamM . Bundle.mapM (uncurry f) . Bundle.indexed . stream
 
 -- | /O(n)/ Apply the monadic action to all elements of a vector and ignore the
