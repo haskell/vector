@@ -35,10 +35,10 @@ jobs:
           - { cabal: "3.14", os: ubuntu-24.04,  ghc: "9.12.2"  }
           # Win
           - { cabal: "3.14", os: windows-latest, ghc: "8.4.4"  }
-          # OOM when building tests
-          # - { cabal: "3.6", os: windows-latest, ghc: "8.6.5"  }
-          # - { cabal: "3.6", os: windows-latest, ghc: "8.8.4"  }
-          # - { cabal: "3.6", os: windows-latest, ghc: "8.10.4" }
+          - { cabal: "3.14", os: windows-latest, ghc: "9.6.7"  }
+          - { cabal: "3.14", os: windows-latest, ghc: "9.8.4"  }
+          - { cabal: "3.14", os: windows-latest, ghc: "9.10.2"  }
+          - { cabal: "3.14", os: windows-latest, ghc: "9.12.2"  }
           # Too flaky:
           # - { cabal: "3.6", os: windows-latest,  ghc: "9.0.1"  }
           # MacOS
