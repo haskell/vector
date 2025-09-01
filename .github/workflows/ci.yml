@@ -90,28 +90,39 @@ jobs:
     - name: Make sdist
       run: |
         mkdir sdist
-        cabal sdist vector -o sdist
+        cabal sdist vector            -o sdist
+        cabal sdist vector-stream     -o sdist
+        cabal sdist vector-bench-papi -o sdist
     - name: Unpack
       run: |
         mkdir unpacked
-        tar -C unpacked -xzf sdist/vector*tar.gz
-        cd unpacked
+        for NM in sdist/vector*tar.gz; do
+            tar -C unpacked -xzf $NM
+        done
+        echo "packages:"            >> unpacked/cabal.project
+        echo "    vector-*/*.cabal" >> unpacked/cabal.project
     # ----------------
     - name: cabal check
       run: |
-        (cd vector-stream && cabal -vnormal check)
-        (cd vector        && cabal -vnormal check)
-    # ----------------
+        for nm in vector-*; do
+            echo Checking $nm
+            (cd "$nm" && cabal -vnormal check)
+        done
+      working-directory: unpacked/
+   # ----------------
     - name: Build
       run: |
         echo FLAG_PAPI=$FLAG_PAPI
         cabal configure ${{ matrix.flags }} $FLAG_PAPI --haddock-all --enable-tests --enable-benchmarks --benchmark-option=-l
         cabal build all --write-ghc-environment-files=always
+      working-directory: unpacked/
     # ----------------
     - name: Test
       run: |
         cabal test all
+      working-directory: unpacked/
     # ----------------
     - name: Bench
       run: |
         cabal bench all
+      working-directory: unpacked/
