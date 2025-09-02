@@ -5,6 +5,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeApplications #-}
 -- |
 -- Module      : Data.Vector.Generic
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -199,6 +200,7 @@ import           Data.Vector.Internal.Check
 
 import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
+import Data.Functor.Identity (Identity(..))
 import Prelude
   ( Eq(..), Ord(..), Num, Enum, Monoid, Applicative(..), Monad, Read, Show, Bool, Ordering(..)
   , Int, Maybe(..), Either, IO, ShowS, ReadS, String
@@ -2673,18 +2675,10 @@ runSTA !sz = \(STA fun) -> runST $ do
 {-# INLINE runSTA #-}
 
 
-
-
--- | Execute the applicative action the given number of times and store the
--- results in a vector.
-replicateA :: (Vector v a, Applicative f) => Int -> f a -> f (v a)
-{-# INLINE replicateA #-}
-replicateA n f = generateA n (\_ -> f)
-
 -- | Construct a vector of the given length by applying the applicative
 -- action to each index.
-generateA :: (Vector v a, Applicative f) => Int -> (Int -> f a) -> f (v a)
-{-# INLINE generateA #-}
+generateA :: (Applicative f, Vector v a) => Int -> (Int -> f a) -> f (v a)
+{-# INLINE[1] generateA #-}
 generateA 0 _ = pure empty
 generateA n f = runSTA n <$> go 0
   where
@@ -2692,6 +2686,37 @@ generateA n f = runSTA n <$> go 0
           | otherwise =  (\a (STA m) -> STA $ \mv -> M.unsafeWrite mv i a >> m mv)
                      <$> f i
                      <*> go (i + 1)
+
+unsafeGeneratePrim :: (PrimMonad m, Vector v a) => Int -> (Int -> m a) -> m (v a)
+{-# INLINE unsafeGeneratePrim #-}
+unsafeGeneratePrim n f = unsafeFreeze =<< M.generateM n f
+
+generateA_IO :: (Vector v a) => Int -> (Int -> IO a) -> IO (v a)
+{-# INLINE generateA_IO #-}
+generateA_IO = unsafeGeneratePrim
+
+generateA_ST :: (Vector v a) => Int -> (Int -> ST s a) -> ST s (v a)
+{-# INLINE generateA_ST #-}
+generateA_ST = unsafeGeneratePrim
+
+generateA_Identity :: (Vector v a) => Int -> (Int -> Identity a) -> Identity (v a)
+{-# INLINE generateA_Identity #-}
+generateA_Identity n f = Identity (generate n (runIdentity . f))
+
+
+{-# RULES
+
+"generateA[IO]"       generateA = generateA_IO
+"generateA[ST]"       generateA = generateA_ST
+"generateA[Identity]" generateA = generateA_Identity
+  #-}
+
+
+-- | Execute the applicative action the given number of times and store the
+-- results in a vector.
+replicateA :: (Vector v a, Applicative f) => Int -> f a -> f (v a)
+{-# INLINE replicateA #-}
+replicateA n f = generateA n (\_ -> f)
 
 -- | Apply the applicative action to all elements of the vector, yielding a
 -- vector of results.
