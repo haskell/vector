@@ -2662,11 +2662,14 @@ clone v = v `seq` New.create (
 
 
 newtype STA v a = STA {
-  _runSTA :: forall s. Mutable v s a -> ST s (v a)
+  _runSTA :: forall s. Mutable v s a -> ST s ()
 }
 
 runSTA :: Vector v a => Int -> STA v a -> v a
-runSTA !sz = \(STA fun) -> runST $ fun =<< M.unsafeNew sz
+runSTA !sz = \(STA fun) -> runST $ do
+  mv <- M.unsafeNew sz
+  fun mv
+  unsafeFreeze mv
 {-# INLINE runSTA #-}
 
 
@@ -2678,7 +2681,6 @@ replicateA :: (Vector v a, Applicative f) => Int -> f a -> f (v a)
 {-# INLINE replicateA #-}
 replicateA n f = generateA n (\_ -> f)
 
-
 -- | Construct a vector of the given length by applying the applicative
 -- action to each index.
 generateA :: (Vector v a, Applicative f) => Int -> (Int -> f a) -> f (v a)
@@ -2686,7 +2688,7 @@ generateA :: (Vector v a, Applicative f) => Int -> (Int -> f a) -> f (v a)
 generateA 0 _ = pure empty
 generateA n f = runSTA n <$> go 0
   where
-    go !i | i >= n    = pure $ STA unsafeFreeze
+    go !i | i >= n    = pure $ STA $ \_ -> pure ()
           | otherwise =  (\a (STA m) -> STA $ \mv -> M.unsafeWrite mv i a >> m mv)
                      <$> f i
                      <*> go (i + 1)
