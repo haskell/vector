@@ -5,6 +5,7 @@
 {-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE PatternSynonyms #-}
 -- |
 -- Module      : Data.Vector.Primitive
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -24,7 +25,7 @@
 
 module Data.Vector.Primitive (
   -- * Primitive vectors
-  Vector(..), MVector(..),
+  Vector, MVector, pattern MVector, pattern Vector,
 
   -- * Accessors
 
@@ -163,9 +164,12 @@ module Data.Vector.Primitive (
 
 import           Control.Applicative (Applicative)
 import qualified Data.Vector.Generic           as G
-import           Data.Vector.Primitive.Unsafe  (Vector(..),unsafeCoerceVector,unsafeCast)
-import           Data.Vector.Primitive.Mutable.Unsafe (MVector(..))
+import           Data.Vector.Primitive.Unsafe  (Vector,unsafeCoerceVector,unsafeCast)
+import qualified Data.Vector.Primitive.Unsafe  as U
+import           Data.Vector.Primitive.Mutable.Unsafe (MVector)
+import           Data.Vector.Primitive.Mutable (pattern MVector)
 import           Data.Primitive ( Prim )
+import           Data.Primitive.ByteArray
 
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
@@ -174,6 +178,10 @@ import Prelude
   ( Eq, Ord, Num, Enum, Monoid, Traversable, Monad, Bool, Ordering(..), Int, Maybe, Either
   , (==))
 
+pattern Vector :: Int -> Int -> ByteArray -> Vector a
+pattern Vector i j arr = U.Vector i j arr
+{-# COMPLETE Vector #-}
+{-# DEPRECATED Vector "Use constructor exported from Data.Vector.Primitive.Unsafe" #-}
 
 -- Length
 -- ------

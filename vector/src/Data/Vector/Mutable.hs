@@ -4,6 +4,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE PatternSynonyms #-}
 -- |
 -- Module      : Data.Vector.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -20,7 +21,8 @@
 
 module Data.Vector.Mutable (
   -- * Mutable boxed vectors
-  MVector(MVector), IOVector, STVector,
+  MVector, IOVector, STVector,
+  pattern MVector,
 
   -- * Accessors
 
@@ -72,13 +74,19 @@ module Data.Vector.Mutable (
 ) where
 
 import qualified Data.Vector.Generic.Mutable as G
-import           Data.Vector.Mutable.Unsafe
+import           Data.Vector.Mutable.Unsafe (MVector,IOVector,STVector,toMutableArray,fromMutableArray)
+import qualified Data.Vector.Mutable.Unsafe as U
+import           Data.Primitive.Array
 import           Control.Monad.Primitive
 
 import Prelude( Ord, Bool, Ordering(..), Int, Maybe )
 
 #include "vector.h"
 
+pattern MVector :: Int -> Int -> MutableArray s a -> MVector s a
+pattern MVector i j arr = U.MVector i j arr
+{-# COMPLETE MVector #-}
+{-# DEPRECATED MVector "Use constructor exported from Data.Vector.Mutable.Unsafe" #-}
 
 
 -- Length information

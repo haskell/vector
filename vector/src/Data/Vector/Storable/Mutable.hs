@@ -4,6 +4,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE PatternSynonyms #-}
 -- |
 -- Module      : Data.Vector.Storable.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010
@@ -20,7 +21,8 @@
 
 module Data.Vector.Storable.Mutable(
   -- * Mutable vectors of 'Storable' types
-  MVector(..), IOVector, STVector,
+  MVector, IOVector, STVector,
+  pattern MVector,
 
   -- * Accessors
 
@@ -77,16 +79,24 @@ module Data.Vector.Storable.Mutable(
 ) where
 
 import qualified Data.Vector.Generic.Mutable as G
-import Data.Vector.Storable.Mutable.Unsafe
-
+import Data.Vector.Storable.Mutable.Unsafe(
+  MVector,IOVector,STVector,unsafeCast,unsafeWith,unsafeCoerceMVector,
+  unsafeToForeignPtr,unsafeToForeignPtr0,unsafeFromForeignPtr,unsafeFromForeignPtr0)
+import qualified Data.Vector.Storable.Mutable.Unsafe as U
 import Foreign.Storable
 
 import Control.Monad.Primitive
+import Foreign.ForeignPtr (ForeignPtr)
 
 import Prelude (Int, Ord, Bool, Maybe, Ordering(..) )
 
 #include "vector.h"
 
+
+pattern MVector :: Int -> ForeignPtr a -> MVector s a
+pattern MVector i ptr = U.MVector i ptr
+{-# COMPLETE MVector #-}
+{-# DEPRECATED MVector "Use constructor exported from Data.Vector.Strict.Mutable.Unsafe" #-}
 
 
 -- Length information
