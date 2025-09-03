@@ -5,6 +5,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeApplications #-}
 -- |
 -- Module      : Data.Vector.Generic
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -2616,19 +2617,11 @@ unstreamPrimM :: (PrimMonad m, Vector v a) => MBundle m u a -> m (v a)
 {-# INLINE_FUSED unstreamPrimM #-}
 unstreamPrimM s = M.munstream s >>= unsafeFreeze
 
--- FIXME: the next two functions are only necessary for the specialisations
-unstreamPrimM_IO :: Vector v a => MBundle IO u a -> IO (v a)
-{-# INLINE unstreamPrimM_IO #-}
-unstreamPrimM_IO = unstreamPrimM
-
-unstreamPrimM_ST :: Vector v a => MBundle (ST s) u a -> ST s (v a)
-{-# INLINE unstreamPrimM_ST #-}
-unstreamPrimM_ST = unstreamPrimM
-
 {-# RULES
 
-"unstreamM[IO]" unstreamM = unstreamPrimM_IO
-"unstreamM[ST]" unstreamM = unstreamPrimM_ST  #-}
+"unstreamM[IO]"                   unstreamM @IO     = unstreamPrimM
+"unstreamM[ST]" forall s. forall. unstreamM @(ST s) = unstreamPrimM
+  #-}
 
 
 
