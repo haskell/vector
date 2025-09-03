@@ -3,6 +3,3 @@
 
 #define INLINE_FUSED INLINE PHASE_FUSED
 #define INLINE_INNER INLINE PHASE_INNER
-
-#define PHASE_STREAM  Please use "PHASE_FUSED" instead
-#define INLINE_STREAM Please use "INLINE_FUSED" instead
