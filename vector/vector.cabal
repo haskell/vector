@@ -128,8 +128,10 @@ Library
         Data.Vector.Generic.New
         Data.Vector.Generic
 
-        Data.Vector.Primitive.Mutable
         Data.Vector.Primitive
+        Data.Vector.Primitive.Mutable
+        Data.Vector.Primitive.Mutable.Unsafe
+        Data.Vector.Primitive.Unsafe
 
         Data.Vector.Storable.Internal
         Data.Vector.Storable.Mutable
