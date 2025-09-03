@@ -2683,6 +2683,7 @@ cmp xs ys = compare (stream xs) (stream ys)
 --
 -- > cmpBy compare == cmp
 cmpBy :: (Vector v a, Vector v b) => (a -> b -> Ordering) -> v a -> v b -> Ordering
+{-# INLINE cmpBy #-}
 cmpBy c xs ys = Bundle.cmpBy c (stream xs) (stream ys)
 
 -- Show

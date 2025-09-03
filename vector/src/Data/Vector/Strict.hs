@@ -310,9 +310,11 @@ instance Ord a => Ord (Vector a) where
   (>=) = coerce ((>=) @(V.Vector a))
 
 instance Eq1 Vector where
+  {-# INLINE liftEq #-}
   liftEq eq xs ys = Bundle.eqBy eq (G.stream xs) (G.stream ys)
 
 instance Ord1 Vector where
+  {-# INLINE liftCompare #-}
   liftCompare cmp xs ys = Bundle.cmpBy cmp (G.stream xs) (G.stream ys)
 
 instance Functor Vector where
@@ -2435,6 +2437,7 @@ eqBy = G.eqBy
 --
 -- @since 0.13.2.0
 cmpBy :: (a -> b -> Ordering) -> Vector a -> Vector b -> Ordering
+{-# INLINE cmpBy #-}
 cmpBy = G.cmpBy
 
 -- Conversions - Lists

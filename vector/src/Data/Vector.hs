@@ -305,9 +305,11 @@ instance Ord a => Ord (Vector a) where
   xs >= ys = Bundle.cmp (G.stream xs) (G.stream ys) /= LT
 
 instance Eq1 Vector where
+  {-# INLINE liftEq #-}
   liftEq eq xs ys = Bundle.eqBy eq (G.stream xs) (G.stream ys)
 
 instance Ord1 Vector where
+  {-# INLINE liftCompare #-}
   liftCompare cmp xs ys = Bundle.cmpBy cmp (G.stream xs) (G.stream ys)
 
 instance Semigroup (Vector a) where
@@ -2166,6 +2168,7 @@ eqBy = G.eqBy
 --
 -- @since 0.12.2.0
 cmpBy :: (a -> b -> Ordering) -> Vector a -> Vector b -> Ordering
+{-# INLINE cmpBy #-}
 cmpBy = G.cmpBy
 
 -- Conversions - Lists

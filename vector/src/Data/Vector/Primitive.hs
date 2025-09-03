@@ -1830,6 +1830,7 @@ eqBy = G.eqBy
 --
 -- @since 0.12.2.0
 cmpBy :: (Prim a, Prim b) => (a -> b -> Ordering) -> Vector a -> Vector b -> Ordering
+{-# INLINE cmpBy #-}
 cmpBy = G.cmpBy
 
 -- Conversions - Lists
