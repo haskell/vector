@@ -5,6 +5,7 @@
 {-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE PatternSynonyms #-}
 -- |
 -- Module      : Data.Vector.Storable
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010
@@ -21,7 +22,7 @@
 
 module Data.Vector.Storable (
   -- * Storable vectors
-  Vector, MVector(..),
+  Vector, MVector, pattern MVector,
 
   -- * Accessors
 
@@ -169,7 +170,7 @@ module Data.Vector.Storable (
 
 import           Control.Applicative (Applicative)
 import qualified Data.Vector.Generic          as G
-import           Data.Vector.Storable.Mutable ( MVector(..) )
+import           Data.Vector.Storable.Mutable ( MVector, pattern MVector )
 import Data.Vector.Storable.Unsafe
 
 import Control.Monad.ST ( ST )

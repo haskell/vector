@@ -22,7 +22,7 @@ module Data.Vector.Strict.Unsafe
 
 
 import Data.Coerce
-import Data.Vector.Strict.Mutable  ( MVector(..) )
+import Data.Vector.Strict.Mutable.Unsafe  ( MVector(..) )
 import Data.Primitive.Array
 import qualified Data.Vector.Generic as G
 import Data.Vector.Generic ((!))

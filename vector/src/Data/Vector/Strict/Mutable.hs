@@ -6,6 +6,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE PatternSynonyms #-}
 -- |
 -- Module      : Data.Vector.Strict.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -24,7 +25,8 @@
 -- are set to ⊥.
 module Data.Vector.Strict.Mutable (
   -- * Mutable boxed vectors
-  MVector(MVector), IOVector, STVector,
+  MVector, IOVector, STVector,
+  pattern MVector,
 
   -- * Accessors
 
@@ -77,13 +79,20 @@ module Data.Vector.Strict.Mutable (
 ) where
 
 import qualified Data.Vector.Generic.Mutable as G
+import qualified Data.Vector.Mutable         as MV
 import           Data.Vector.Strict.Mutable.Unsafe
+  (MVector,IOVector,STVector,toLazy,fromLazy,toMutableArray,fromMutableArray)
+import qualified Data.Vector.Strict.Mutable.Unsafe as U
 import           Control.Monad.Primitive
 
 import Prelude ( Ord, Bool, Int, Maybe, Ordering(..))
 
 #include "vector.h"
 
+pattern MVector :: MV.MVector s a -> MVector s a
+pattern MVector v = U.MVector v
+{-# COMPLETE MVector #-}
+{-# DEPRECATED MVector "Use constructor exported from Data.Vector.Strict.Unsafe" #-}
 
 
 -- Length information
