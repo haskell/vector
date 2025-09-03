@@ -32,7 +32,9 @@ main = mapM_ run modGroups
         , "src/Data/Vector/Generic/Mutable.hs"
         ]
       , [ "src/Data/Vector/Primitive.hs"
+        , "src/Data/Vector/Primitive/Unsafe.hs"
         , "src/Data/Vector/Primitive/Mutable.hs"
+        , "src/Data/Vector/Primitive/Mutable/Unsafe.hs"
         ]
       , [ "src/Data/Vector/Unboxed.hs"
         , "src/Data/Vector/Unboxed/Mutable.hs"
