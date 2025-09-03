@@ -306,11 +306,11 @@ instance Ord a => Ord (Vector a) where
 
 instance Eq1 Vector where
   {-# INLINE liftEq #-}
-  liftEq eq xs ys = Bundle.eqBy eq (G.stream xs) (G.stream ys)
+  liftEq = eqBy
 
 instance Ord1 Vector where
   {-# INLINE liftCompare #-}
-  liftCompare cmp xs ys = Bundle.cmpBy cmp (G.stream xs) (G.stream ys)
+  liftCompare = cmpBy
 
 instance Semigroup (Vector a) where
   {-# INLINE (<>) #-}

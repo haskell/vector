@@ -176,7 +176,6 @@ module Data.Vector.Strict (
 import Data.Coerce
 import Data.Vector.Strict.Mutable  ( MVector(..) )
 import Data.Primitive.Array
-import qualified Data.Vector.Fusion.Bundle as Bundle
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector as V
 
@@ -311,11 +310,11 @@ instance Ord a => Ord (Vector a) where
 
 instance Eq1 Vector where
   {-# INLINE liftEq #-}
-  liftEq eq xs ys = Bundle.eqBy eq (G.stream xs) (G.stream ys)
+  liftEq = eqBy
 
 instance Ord1 Vector where
   {-# INLINE liftCompare #-}
-  liftCompare cmp xs ys = Bundle.cmpBy cmp (G.stream xs) (G.stream ys)
+  liftCompare = cmpBy
 
 instance Functor Vector where
   {-# INLINE fmap #-}
