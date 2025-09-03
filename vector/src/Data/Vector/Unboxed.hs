@@ -1907,7 +1907,7 @@ iscanr = G.iscanr
 
 -- | /O(n)/ Right-to-left scan over a vector (strictly) with its index.
 --
--- @sinqce 0.12.2.0
+-- @since 0.12.2.0
 iscanr' :: (Unbox a, Unbox b) => (Int -> a -> b -> b) -> b -> Vector a -> Vector b
 {-# INLINE iscanr' #-}
 iscanr' = G.iscanr'
