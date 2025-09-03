@@ -16,7 +16,7 @@ module Data.Vector.Storable.Unsafe
   ) where
 
 import qualified Data.Vector.Generic          as G
-import           Data.Vector.Storable.Mutable ( MVector(..) )
+import           Data.Vector.Storable.Mutable.Unsafe ( MVector(..) )
 import Data.Vector.Storable.Internal
 import qualified Data.Vector.Fusion.Bundle as Bundle
 
