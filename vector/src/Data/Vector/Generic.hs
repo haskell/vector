@@ -2682,8 +2682,9 @@ runSTA !sz = \(STA fun) -> runST $ do
 -- @since NEXT_VERSION
 generateA :: (Applicative f, Vector v a) => Int -> (Int -> f a) -> f (v a)
 {-# INLINE[1] generateA #-}
-generateA 0 _ = pure empty
-generateA n f = runSTA n <$> go 0
+generateA n f
+  | n <= 0    = pure empty
+  | otherwise = runSTA n <$> go 0
   where
     go !i | i >= n    = pure $ STA $ \_ -> pure ()
           | otherwise =  (\a (STA m) -> STA $ \mv -> M.unsafeWrite mv i a >> m mv)
