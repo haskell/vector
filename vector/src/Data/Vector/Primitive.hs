@@ -138,6 +138,10 @@ module Data.Vector.Primitive (
   scanr, scanr', scanr1, scanr1',
   iscanr, iscanr',
 
+  -- * Applicative API
+  replicateA, generateA, traverse, itraverse, forA, iforA,
+  traverse_, itraverse_, forA_, iforA_,
+
   -- ** Comparisons
   eqBy, cmpBy,
 
@@ -157,6 +161,7 @@ module Data.Vector.Primitive (
   Prim
 ) where
 
+import           Control.Applicative (Applicative)
 import qualified Data.Vector.Generic           as G
 import           Data.Vector.Primitive.Mutable ( MVector(..) )
 import           Data.Vector.Internal.Check
@@ -1874,6 +1879,98 @@ fromList = G.fromList
 fromListN :: Prim a => Int -> [a] -> Vector a
 {-# INLINE fromListN #-}
 fromListN = G.fromListN
+
+
+-- Applicative
+-- -----------
+
+-- | Construct a vector of the given length by applying the applicative
+-- action to each index.
+--
+-- @since NEXT_VERSION
+generateA :: (Applicative f, Prim a) => Int -> (Int -> f a) -> f (Vector a)
+generateA = G.generateA
+
+-- | Execute the applicative action the given number of times and store the
+-- results in a vector.
+--
+-- @since NEXT_VERSION
+replicateA :: (Applicative f, Prim a) => Int -> f a -> f (Vector a)
+{-# INLINE replicateA #-}
+replicateA = G.replicateA
+
+-- | Apply the applicative action to all elements of the vector, yielding a
+-- vector of results.
+--
+-- @since NEXT_VERSION
+traverse :: (Applicative f, Prim a, Prim b)
+         => (a -> f b) -> Vector a -> f (Vector b)
+{-# INLINE traverse #-}
+traverse = G.traverse
+
+-- | Apply the applicative action to every element of a vector and its
+-- index, yielding a vector of results.
+--
+-- @since NEXT_VERSION
+itraverse :: (Applicative f, Prim a, Prim b)
+          => (Int -> a -> f b) -> Vector a -> f (Vector b)
+{-# INLINE itraverse #-}
+itraverse = G.itraverse
+
+-- | Apply the applicative action to all elements of the vector, yielding a
+-- vector of results. This is flipped version of 'traverse'.
+--
+-- @since NEXT_VERSION
+forA :: (Applicative f, Prim a, Prim b)
+     => Vector a -> (a -> f b) -> f (Vector b)
+{-# INLINE forA #-}
+forA = G.forA
+
+-- | Apply the applicative action to every element of a vector and its
+--   index, yielding a vector of results. This is flipped version of 'itraverse'.
+--
+-- @since NEXT_VERSION
+iforA :: (Applicative f, Prim a, Prim b)
+      => Vector a -> (Int -> a -> f b) -> f (Vector b)
+{-# INLINE iforA #-}
+iforA = G.iforA
+
+-- | Map each element of a structure to an 'Applicative' action, evaluate these
+--   actions from left to right, and ignore the results.
+--
+-- @since NEXT_VERSION
+traverse_ :: (Applicative f, Prim a)
+          => (a -> f b) -> Vector a -> f ()
+{-# INLINE traverse_ #-}
+traverse_ = G.traverse_
+
+-- | Map each element of a structure to an 'Applicative' action, evaluate these
+--   actions from left to right, and ignore the results.
+--
+-- @since NEXT_VERSION
+itraverse_ :: (Applicative f, Prim a)
+           => (Int -> a -> f b) -> Vector a -> f ()
+{-# INLINE itraverse_ #-}
+itraverse_ = G.itraverse_
+
+-- | Map each element of a structure to an 'Applicative' action, evaluate these
+--   actions from left to right, and ignore the results.
+--
+-- @since NEXT_VERSION
+forA_ :: (Applicative f, Prim a)
+      => Vector a -> (a -> f b) -> f ()
+{-# INLINE forA_ #-}
+forA_ = G.forA_
+
+-- | Map each element of a structure to an 'Applicative' action, evaluate these
+--   actions from left to right, and ignore the results.
+--
+-- @since NEXT_VERSION
+iforA_ :: (Applicative f, Prim a)
+      => Vector a -> (Int -> a -> f b) -> f ()
+{-# INLINE iforA_ #-}
+iforA_ = G.iforA_
+
 
 -- Conversions - Unsafe casts
 -- --------------------------
