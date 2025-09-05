@@ -147,7 +147,8 @@ module Data.Vector.Generic (
   iscanr, iscanr',
 
   -- * Applicative API
-  replicateA, generateA, traverse, itraverse,
+  replicateA, generateA, traverse, itraverse, forA, iforA,
+  traverse_, itraverse_, forA_, iforA_,
 
   -- * Conversions
 
@@ -215,7 +216,7 @@ import Data.Typeable ( Typeable, gcast1 )
 
 import Data.Data ( Data, DataType, Constr, Fixity(Prefix),
                    mkDataType, mkConstr, constrIndex, mkNoRepType )
-import qualified Data.Traversable as T (Traversable(mapM,traverse))
+import qualified Data.Traversable as T (Traversable(mapM))
 
 -- Length information
 -- ------------------
@@ -2731,6 +2732,50 @@ itraverse :: (Vector v a, Vector v b, Applicative f)
           => (Int -> a -> f b) -> v a -> f (v b)
 {-# INLINE itraverse #-}
 itraverse f v = generateA (length v) $ \i -> f i (unsafeIndex v i)
+
+-- | Apply the applicative action to all elements of the vector, yielding a
+-- vector of results. This is flipped version of 'traverse'.
+forA :: (Vector v a, Vector v b, Applicative f)
+     => v a -> (a -> f b) -> f (v b)
+{-# INLINE forA #-}
+forA v f = generateA (length v) $ \i -> f (unsafeIndex v i)
+
+-- | Apply the applicative action to every element of a vector and its
+--   index, yielding a vector of results. This is flipped version of 'itraverse'.
+iforA :: (Vector v a, Vector v b, Applicative f)
+      => v a -> (Int -> a -> f b) -> f (v b)
+{-# INLINE iforA #-}
+iforA v f = generateA (length v) $ \i -> f i (unsafeIndex v i)
+
+-- | Map each element of a structure to an 'Applicative' action, evaluate these
+--   actions from left to right, and ignore the results.
+traverse_ :: (Vector v a, Applicative f)
+          => (a -> f b) -> v a -> f ()
+{-# INLINE traverse_ #-}
+traverse_ f = foldr step (pure ())
+  where step x k = f x *> k
+
+-- | Map each element of a structure to an 'Applicative' action, evaluate these
+--   actions from left to right, and ignore the results.
+itraverse_ :: (Vector v a, Applicative f)
+           => (Int -> a -> f b) -> v a -> f ()
+{-# INLINE itraverse_ #-}
+itraverse_ f = ifoldr step (pure ())
+  where step i x k = f i x *> k
+
+-- | Map each element of a structure to an 'Applicative' action, evaluate these
+--   actions from left to right, and ignore the results.
+forA_ :: (Vector v a, Applicative f)
+      => v a -> (a -> f b) -> f ()
+{-# INLINE forA_ #-}
+forA_ = flip traverse_
+
+-- | Map each element of a structure to an 'Applicative' action, evaluate these
+--   actions from left to right, and ignore the results.
+iforA_ :: (Vector v a, Applicative f)
+      => v a -> (Int -> a -> f b) -> f ()
+{-# INLINE iforA_ #-}
+iforA_ = flip itraverse_
 
 -- Comparisons
 -- -----------
