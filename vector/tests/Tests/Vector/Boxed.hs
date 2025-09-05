@@ -22,6 +22,7 @@ testGeneralBoxedVector dummy = concatMap ($ dummy)
   , testFunctorFunctions
   , testMonadFunctions
   , testApplicativeFunctions
+  , testTraverseFunctions
   , testAlternativeFunctions
   , testSequenceFunctions
   , testDataFunctions

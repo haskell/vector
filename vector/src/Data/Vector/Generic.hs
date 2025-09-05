@@ -5,6 +5,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeApplications #-}
 -- |
 -- Module      : Data.Vector.Generic
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -145,6 +146,10 @@ module Data.Vector.Generic (
   scanr, scanr', scanr1, scanr1',
   iscanr, iscanr',
 
+  -- * Applicative API
+  replicateA, generateA, traverse, itraverse, forA, iforA,
+  traverse_, itraverse_, forA_, iforA_,
+
   -- * Conversions
 
   -- ** Lists
@@ -178,6 +183,7 @@ module Data.Vector.Generic (
   gfoldl, gunfold, dataCast, mkVecType, mkVecConstr, mkType
 ) where
 
+import           Control.Applicative (Applicative(..), liftA2)
 import           Data.Vector.Generic.Base
 
 import qualified Data.Vector.Generic.Mutable as M
@@ -196,11 +202,12 @@ import           Data.Vector.Internal.Check
 
 import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
+import Data.Functor.Identity (Identity(..))
 import Prelude
-  ( Eq, Ord, Num, Enum, Monoid, Monad, Read, Show, Bool, Ordering(..), Int, Maybe(..), Either, IO, ShowS, ReadS, String
+  ( Eq(..), Ord(..), Num, Enum, Monoid, Monad, Read, Show, Bool, Ordering(..)
+  , Int, Maybe(..), Either, IO, ShowS, ReadS, String
   , compare, mempty, mappend, return, fmap, otherwise, id, flip, seq, error, undefined, uncurry, shows, fst, snd, min, max, not
-  , (>>=), (+), (-), (*), (<), (==), (.), ($), (=<<), (>>), (<$>) )
-
+  , (>>=), (+), (-), (*), (.), ($), (=<<), (>>), (<$>))
 import qualified Text.Read as Read
 import qualified Data.List.NonEmpty as NonEmpty
 
@@ -2652,6 +2659,148 @@ clone v = v `seq` New.create (
     mv <- M.new (basicLength v)
     unsafeCopy mv v
     return mv)
+
+-- Applicatives
+-- ------------
+
+
+
+newtype STA v a = STA {
+  _runSTA :: forall s. Mutable v s a -> ST s ()
+}
+
+runSTA :: Vector v a => Int -> STA v a -> v a
+runSTA !sz = \(STA fun) -> runST $ do
+  mv <- M.unsafeNew sz
+  fun mv
+  unsafeFreeze mv
+{-# INLINE runSTA #-}
+
+
+-- | Construct a vector of the given length by applying the applicative
+-- action to each index.
+--
+-- @since NEXT_VERSION
+generateA :: (Applicative f, Vector v a) => Int -> (Int -> f a) -> f (v a)
+{-# INLINE[1] generateA #-}
+generateA n f
+  | n <= 0    = pure empty
+  | otherwise = runSTA n <$> go 0
+  where
+    go !i | i >= n    = pure $ STA $ \_ -> pure ()
+          | otherwise = liftA2
+                        (\a (STA m) -> STA $ \mv -> M.unsafeWrite mv i a >> m mv)
+                        (f i)
+                        (go (i + 1))
+
+unsafeGeneratePrim :: (PrimMonad m, Vector v a) => Int -> (Int -> m a) -> m (v a)
+{-# INLINE unsafeGeneratePrim #-}
+unsafeGeneratePrim n f = unsafeFreeze =<< M.generateM n f
+
+generateA_IO :: (Vector v a) => Int -> (Int -> IO a) -> IO (v a)
+{-# INLINE generateA_IO #-}
+generateA_IO = unsafeGeneratePrim
+
+generateA_ST :: (Vector v a) => Int -> (Int -> ST s a) -> ST s (v a)
+{-# INLINE generateA_ST #-}
+generateA_ST = unsafeGeneratePrim
+
+-- Identity is used in lest for mapping over structures. So it's
+-- relatively important case.
+generateA_Identity :: (Vector v a) => Int -> (Int -> Identity a) -> Identity (v a)
+{-# INLINE generateA_Identity #-}
+generateA_Identity n f = Identity (generate n (runIdentity . f))
+
+
+{-# RULES
+
+"generateA[IO]"       generateA = generateA_IO
+"generateA[ST]"       generateA = generateA_ST
+"generateA[Identity]" generateA = generateA_Identity
+  #-}
+
+
+-- | Execute the applicative action the given number of times and store the
+-- results in a vector.
+--
+-- @since NEXT_VERSION
+replicateA :: (Applicative f, Vector v a) => Int -> f a -> f (v a)
+{-# INLINE replicateA #-}
+replicateA n f = generateA n (\_ -> f)
+
+-- | Apply the applicative action to all elements of the vector, yielding a
+-- vector of results.
+--
+-- @since NEXT_VERSION
+traverse :: (Applicative f, Vector v a, Vector v b)
+         => (a -> f b) -> v a -> f (v b)
+{-# INLINE traverse #-}
+traverse f v = generateA (length v) $ \i -> f (unsafeIndex v i)
+
+-- | Apply the applicative action to every element of a vector and its
+-- index, yielding a vector of results.
+--
+-- @since NEXT_VERSION
+itraverse :: (Applicative f, Vector v a, Vector v b)
+          => (Int -> a -> f b) -> v a -> f (v b)
+{-# INLINE itraverse #-}
+itraverse f v = generateA (length v) $ \i -> f i (unsafeIndex v i)
+
+-- | Apply the applicative action to all elements of the vector, yielding a
+-- vector of results. This is flipped version of 'traverse'.
+--
+-- @since NEXT_VERSION
+forA :: (Applicative f, Vector v a, Vector v b)
+     => v a -> (a -> f b) -> f (v b)
+{-# INLINE forA #-}
+forA v f = generateA (length v) $ \i -> f (unsafeIndex v i)
+
+-- | Apply the applicative action to every element of a vector and its
+--   index, yielding a vector of results. This is flipped version of 'itraverse'.
+--
+-- @since NEXT_VERSION
+iforA :: (Applicative f, Vector v a, Vector v b)
+      => v a -> (Int -> a -> f b) -> f (v b)
+{-# INLINE iforA #-}
+iforA v f = generateA (length v) $ \i -> f i (unsafeIndex v i)
+
+-- | Map each element of a structure to an 'Applicative' action, evaluate these
+--   actions from left to right, and ignore the results.
+--
+-- @since NEXT_VERSION
+traverse_ :: (Applicative f, Vector v a)
+          => (a -> f b) -> v a -> f ()
+{-# INLINE traverse_ #-}
+traverse_ f = foldr step (pure ())
+  where step x k = f x *> k
+
+-- | Map each element of a structure to an 'Applicative' action, evaluate these
+--   actions from left to right, and ignore the results.
+--
+-- @since NEXT_VERSION
+itraverse_ :: (Applicative f, Vector v a)
+           => (Int -> a -> f b) -> v a -> f ()
+{-# INLINE itraverse_ #-}
+itraverse_ f = ifoldr step (pure ())
+  where step i x k = f i x *> k
+
+-- | Map each element of a structure to an 'Applicative' action, evaluate these
+--   actions from left to right, and ignore the results.
+--
+-- @since NEXT_VERSION
+forA_ :: (Applicative f, Vector v a)
+      => v a -> (a -> f b) -> f ()
+{-# INLINE forA_ #-}
+forA_ = flip traverse_
+
+-- | Map each element of a structure to an 'Applicative' action, evaluate these
+--   actions from left to right, and ignore the results.
+--
+-- @since NEXT_VERSION
+iforA_ :: (Applicative f, Vector v a)
+      => v a -> (Int -> a -> f b) -> f ()
+{-# INLINE iforA_ #-}
+iforA_ = flip itraverse_
 
 -- Comparisons
 -- -----------

@@ -17,6 +17,7 @@ testGeneralPrimitiveVector dummy = concatMap ($ dummy)
   , inline testPolymorphicFunctions
   , testOrdFunctions
   , testMonoidFunctions
+  , testTraverseFunctions
   , testDataFunctions
   ]
 
