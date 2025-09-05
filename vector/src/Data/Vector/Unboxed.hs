@@ -1289,6 +1289,7 @@ breakR = G.breakR
 --
 -- @since 0.13.0.1
 groupBy :: Unbox a => (a -> a -> Bool) -> Vector a -> [Vector a]
+{-# INLINE groupBy #-}
 groupBy = G.groupBy
 
 -- | /O(n)/ Split a vector into a list of slices of the input vector.
@@ -1308,6 +1309,7 @@ groupBy = G.groupBy
 --
 -- @since 0.13.0.1
 group :: (Unbox a, Eq a) => Vector a -> [Vector a]
+{-# INLINE group #-}
 group = G.groupBy (==)
 
 -- Searching
@@ -1965,6 +1967,7 @@ eqBy = G.eqBy
 --
 -- @since 0.12.2.0
 cmpBy :: (Unbox a, Unbox b) => (a -> b -> Ordering) -> Vector a -> Vector b -> Ordering
+{-# INLINE cmpBy #-}
 cmpBy = G.cmpBy
 
 -- Conversions - Lists

@@ -71,6 +71,7 @@ module Data.Vector.Mutable (
 ) where
 
 import           Control.Monad (when, liftM)
+import           Control.Monad.ST (ST)
 import qualified Data.Vector.Generic.Mutable as G
 import           Data.Vector.Internal.Check
 import           Data.Primitive.Array
@@ -171,14 +172,14 @@ instance G.MVector MVector a where
   basicClear v = G.set v uninitialised
 
 {-# INLINE moveBackwards #-}
-moveBackwards :: PrimMonad m => MutableArray (PrimState m) a -> Int -> Int -> Int -> m ()
+moveBackwards :: MutableArray s a -> Int -> Int -> Int -> ST s ()
 moveBackwards !arr !dstOff !srcOff !len =
   check Internal "not a backwards move" (dstOff < srcOff)
   $ loopM len $ \ i -> readArray arr (srcOff + i) >>= writeArray arr (dstOff + i)
 
 {-# INLINE moveForwardsSmallOverlap #-}
 -- Performs a move when dstOff > srcOff, optimized for when the overlap of the intervals is small.
-moveForwardsSmallOverlap :: PrimMonad m => MutableArray (PrimState m) a -> Int -> Int -> Int -> m ()
+moveForwardsSmallOverlap :: MutableArray s a -> Int -> Int -> Int -> ST s ()
 moveForwardsSmallOverlap !arr !dstOff !srcOff !len =
   check Internal "not a forward move" (dstOff > srcOff)
   $ do
@@ -189,7 +190,7 @@ moveForwardsSmallOverlap !arr !dstOff !srcOff !len =
   where nonOverlap = dstOff - srcOff; overlap = len - nonOverlap
 
 -- Performs a move when dstOff > srcOff, optimized for when the overlap of the intervals is large.
-moveForwardsLargeOverlap :: PrimMonad m => MutableArray (PrimState m) a -> Int -> Int -> Int -> m ()
+moveForwardsLargeOverlap :: MutableArray s a -> Int -> Int -> Int -> ST s ()
 moveForwardsLargeOverlap !arr !dstOff !srcOff !len =
   check Internal "not a forward move" (dstOff > srcOff)
   $ do
