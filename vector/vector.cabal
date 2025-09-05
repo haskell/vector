@@ -137,6 +137,7 @@ Library
         Data.Vector.Generic
 
         Data.Vector.Primitive.Mutable
+        Data.Vector.Primitive.Unsafe
         Data.Vector.Primitive
 
         Data.Vector.Storable.Internal
