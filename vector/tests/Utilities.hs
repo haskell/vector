@@ -266,7 +266,11 @@ xs // ps = go xs ps' 0
     go [] _ _      = []
 
 
-withIndexFirst m f = m (uncurry f) . zip [0..]
+-- withIndexFirst :: (Int -> a -> [a]) -> [a] -> [a]
+
+withIndexFirst :: (((Int, a) -> b) -> [(Int, a)] -> c)
+               -> ((Int -> a -> b) -> [a]        -> c)
+withIndexFirst m f = m (uncurry f) . zip [0::Int ..]
 
 modifyList :: [a] -> (a -> a) -> Int -> [a]
 modifyList xs f i = zipWith merge xs (replicate i Nothing ++ [Just f] ++ repeat Nothing)
@@ -285,6 +289,12 @@ imapM = withIndexFirst mapM
 
 imapM_ :: Monad m => (Int -> a -> m b) -> [a] -> m ()
 imapM_ = withIndexFirst mapM_
+
+itraverse :: Applicative m => (Int -> a -> m a) -> [a] -> m [a]
+itraverse = withIndexFirst traverse
+
+itraverse_ :: Applicative m => (Int -> a -> m a) -> [a] -> m ()
+itraverse_ = withIndexFirst traverse_
 
 iconcatMap :: (Int -> a -> [a]) -> [a] -> [a]
 iconcatMap f = concat . withIndexFirst map f
