@@ -183,6 +183,7 @@ module Data.Vector.Generic (
   gfoldl, gunfold, dataCast, mkVecType, mkVecConstr, mkType
 ) where
 
+import           Control.Applicative (Applicative(..), liftA2)
 import           Data.Vector.Generic.Base
 
 import qualified Data.Vector.Generic.Mutable as M
@@ -203,7 +204,7 @@ import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
 import Data.Functor.Identity (Identity(..))
 import Prelude
-  ( Eq(..), Ord(..), Num, Enum, Monoid, Applicative(..), Monad, Read, Show, Bool, Ordering(..)
+  ( Eq(..), Ord(..), Num, Enum, Monoid, Monad, Read, Show, Bool, Ordering(..)
   , Int, Maybe(..), Either, IO, ShowS, ReadS, String
   , compare, mempty, mappend, return, fmap, otherwise, id, flip, seq, error, undefined, uncurry, shows, fst, snd, min, max, not
   , (>>=), (+), (-), (*), (.), ($), (=<<), (>>), (<$>))
@@ -2687,9 +2688,10 @@ generateA n f
   | otherwise = runSTA n <$> go 0
   where
     go !i | i >= n    = pure $ STA $ \_ -> pure ()
-          | otherwise =  (\a (STA m) -> STA $ \mv -> M.unsafeWrite mv i a >> m mv)
-                     <$> f i
-                     <*> go (i + 1)
+          | otherwise = liftA2
+                        (\a (STA m) -> STA $ \mv -> M.unsafeWrite mv i a >> m mv)
+                        (f i)
+                        (go (i + 1))
 
 unsafeGeneratePrim :: (PrimMonad m, Vector v a) => Int -> (Int -> m a) -> m (v a)
 {-# INLINE unsafeGeneratePrim #-}
