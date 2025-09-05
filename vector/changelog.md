@@ -1,3 +1,11 @@
+# Changes in version NEXT_VERSION
+
+ * [#522](https://github.com/haskell/vector/pull/522) API using Applicatives
+   added: `traverse` & friends.
+   * [#518](https://github.com/haskell/vector/pull/518) `UnboxViaStorable` added.
+   Vector constructors are reexported for `DoNotUnbox*`.
+ * [#531](https://github.com/haskell/vector/pull/531) `iconcatMap` added.
+
 # Changes in version 0.13.2.0
 
  * Strict boxed vector `Data.Vector.Strict` and `Data.Vector.Strict.Mutable` is
