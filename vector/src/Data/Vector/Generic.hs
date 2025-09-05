@@ -1,6 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MagicHash #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -211,6 +212,7 @@ import Data.Typeable ( Typeable, gcast1 )
 import Data.Data ( Data, DataType, Constr, Fixity(Prefix),
                    mkDataType, mkConstr, constrIndex, mkNoRepType )
 import qualified Data.Traversable as T (Traversable(mapM))
+import GHC.Exts (Int(..))
 
 -- Length information
 -- ------------------
@@ -246,16 +248,16 @@ infixl 9 !
 (!) :: (HasCallStack, Vector v a) => v a -> Int -> a
 {-# INLINE_FUSED (!) #-}
 -- See NOTE: [Strict indexing]
-(!) v !i = checkIndex Bounds i (length v) $ unBox (basicUnsafeIndexM v i)
+(!) v (I# i) = checkIndex Bounds (I# i) (length v) $ unBox (basicUnsafeIndexM# v i)
 
 infixl 9 !?
 -- | O(1) Safe indexing.
 (!?) :: Vector v a => v a -> Int -> Maybe a
 {-# INLINE_FUSED (!?) #-}
 -- See NOTE: [Strict indexing]
--- Use basicUnsafeIndexM @Box to perform the indexing eagerly.
-v !? (!i)
-  | i `inRange` length v = case basicUnsafeIndexM v i of Box a -> Just a
+-- Use basicUnsafeIndexM# @Box to perform the indexing eagerly.
+v !? (I# i)
+  | I# i `inRange` length v = case basicUnsafeIndexM# v i of Box a -> Just a
   | otherwise            = Nothing
 
 
@@ -273,7 +275,7 @@ last v = v ! (length v - 1)
 unsafeIndex :: Vector v a => v a -> Int -> a
 {-# INLINE_FUSED unsafeIndex #-}
 -- See NOTE: [Strict indexing]
-unsafeIndex v !i = checkIndex Unsafe i (length v) $ unBox (basicUnsafeIndexM v i)
+unsafeIndex v (I# i) = checkIndex Unsafe (I# i) (length v) $ unBox (basicUnsafeIndexM# v i)
 
 -- | /O(1)/ First element, without checking if the vector is empty.
 unsafeHead :: Vector v a => v a -> a
@@ -333,7 +335,7 @@ unsafeLast v = unsafeIndex v (length v - 1)
 -- element) is evaluated eagerly.
 indexM :: (HasCallStack, Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_FUSED indexM #-}
-indexM v !i = checkIndex Bounds i (length v) $ liftBox $ basicUnsafeIndexM v i
+indexM v (I# i) = checkIndex Bounds (I# i) (length v) $ liftBox $ basicUnsafeIndexM# v i
 
 -- | /O(1)/ First element of a vector in a monad. See 'indexM' for an
 -- explanation of why this is useful.
@@ -351,9 +353,9 @@ lastM v = indexM v (length v - 1)
 -- explanation of why this is useful.
 unsafeIndexM :: (Vector v a, Monad m) => v a -> Int -> m a
 {-# INLINE_FUSED unsafeIndexM #-}
-unsafeIndexM v !i = checkIndex Unsafe i (length v)
+unsafeIndexM v (I# i) = checkIndex Unsafe (I# i) (length v)
                  $ liftBox
-                 $ basicUnsafeIndexM v i
+                 $ basicUnsafeIndexM# v i
 
 -- | /O(1)/ First element in a monad, without checking for empty vectors.
 -- See 'indexM' for an explanation of why this is useful.
@@ -1011,7 +1013,7 @@ backpermute v is = seq v
     -- NOTE: we do it this way to avoid triggering LiberateCase on n in
     -- polymorphic code
     index :: HasCallStack => Int -> Box a
-    index !i = checkIndex Bounds i n $ basicUnsafeIndexM v i
+    index (I# i) = checkIndex Bounds (I# i) n $ basicUnsafeIndexM# v i
 
 -- | Same as 'backpermute', but without bounds checking.
 unsafeBackpermute :: (Vector v a, Vector v Int) => v a -> v Int -> v a
@@ -1028,7 +1030,7 @@ unsafeBackpermute v is = seq v
     {-# INLINE index #-}
     -- NOTE: we do it this way to avoid triggering LiberateCase on n in
     -- polymorphic code
-    index !i = checkIndex Unsafe i n $ basicUnsafeIndexM v i
+    index (I# i) = checkIndex Unsafe (I# i) n $ basicUnsafeIndexM# v i
 
 -- Safe destructive updates
 -- ------------------------
@@ -2570,9 +2572,9 @@ streamR v = v `seq` n `seq` (Bundle.unfoldr get n `Bundle.sized` Exact n)
 
     {-# INLINE get #-}
     get 0 = Nothing
-    get i = let !i' = i-1
+    get i = let !(I# i') = i-1
             in
-            case basicUnsafeIndexM v i' of Box x -> Just (x, i')
+            case basicUnsafeIndexM# v i' of Box x -> Just (x, I# i')
 
 -- | /O(n)/ Construct a vector from a 'Bundle', proceeding from right to left.
 unstreamR :: Vector v a => Bundle v a -> v a

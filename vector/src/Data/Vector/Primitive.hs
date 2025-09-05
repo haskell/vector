@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MagicHash #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RoleAnnotations #-}
@@ -246,8 +247,8 @@ instance Prim a => G.Vector Vector a where
   {-# INLINE basicUnsafeSlice #-}
   basicUnsafeSlice j n (Vector i _ arr) = Vector (i+j) n arr
 
-  {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM (Vector i _ arr) j = return $! indexByteArray arr (i+j)
+  {-# INLINE basicUnsafeIndexM# #-}
+  basicUnsafeIndexM# (Vector i _ arr) j = return $! indexByteArray arr (i + Exts.I# j)
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MVector i n dst) (Vector j _ src)
