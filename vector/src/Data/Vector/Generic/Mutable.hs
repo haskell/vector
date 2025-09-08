@@ -58,6 +58,7 @@ module Data.Vector.Generic.Mutable (
   ifoldr, ifoldr', ifoldrM, ifoldrM',
 
   -- * Modifying vectors
+  mapInPlace, imapInPlace, mapInPlaceM, imapInPlaceM,
   nextPermutation, nextPermutationBy,
   prevPermutation, prevPermutationBy,
 
@@ -1214,6 +1215,40 @@ partitionWithUnknown f s
 
 -- Modifying vectors
 -- -----------------
+
+-- | Modify vector in place by applying function to each element.
+--
+-- @since NEXT_VERSION
+mapInPlace :: (PrimMonad m, MVector v a) => (a -> a) -> v (PrimState m) a -> m ()
+{-# INLINE mapInPlace #-}
+mapInPlace f v
+  = stToPrim
+  $ forI_ v $ \i -> unsafeWrite v i . f =<< unsafeRead v i
+
+-- | Modify vector in place by applying function to each element and its index.
+--
+-- @since NEXT_VERSION
+imapInPlace :: (PrimMonad m, MVector v a) => (Int -> a -> a) -> v (PrimState m) a -> m ()
+{-# INLINE imapInPlace #-}
+imapInPlace f v
+  = stToPrim
+  $ forI_ v $ \i -> unsafeWrite v i . f i =<< unsafeRead v i
+
+-- | Modify vector in place by applying monadic function to each element in order.
+--
+-- @since NEXT_VERSION
+mapInPlaceM :: (PrimMonad m, MVector v a) => (a -> m a) -> v (PrimState m) a -> m ()
+{-# INLINE mapInPlaceM #-}
+mapInPlaceM f v
+  = forI_ v $ \i -> unsafeWrite v i =<< f =<< unsafeRead v i
+
+-- | Modify vector in place by applying monadic function to each element and its index in order.
+--
+-- @since NEXT_VERSION
+imapInPlaceM :: (PrimMonad m, MVector v a) => (Int -> a -> m a) -> v (PrimState m) a -> m ()
+{-# INLINE imapInPlaceM #-}
+imapInPlaceM f v
+  = forI_ v $ \i -> unsafeWrite v i =<< f i =<< unsafeRead v i
 
 
 -- | Compute the (lexicographically) next permutation of the given vector in-place.
