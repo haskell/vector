@@ -15,6 +15,7 @@ module Tests.Vector.Property
   , testApplicativeFunctions
   , testAlternativeFunctions
   , testSequenceFunctions
+  , testTraverseFunctions
   , testBoolFunctions
   , testNumFunctions
   , testNestedVectorFunctions
@@ -33,7 +34,7 @@ import Control.Monad.ST
 import qualified Data.Traversable as T (Traversable(..))
 import Data.Orphans ()
 import Data.Maybe
-import Data.Foldable (foldrM)
+import Data.Foldable (foldrM, traverse_, for_)
 import qualified Data.Vector.Generic as V
 import qualified Data.Vector.Generic.Mutable as MV
 import qualified Data.Vector.Fusion.Bundle as S
@@ -767,6 +768,40 @@ testApplicativeFunctions _ = $(testProperties
       = Applicative.pure `eq` Applicative.pure
     prop_applicative_appl :: [a -> a] -> P (v a -> v a)
       = \fs -> (Applicative.<*>) (V.fromList fs) `eq` (Applicative.<*>) fs
+
+testTraverseFunctions
+  :: forall a v. ( CommonContext a v
+                 , V.Vector v a
+                 )
+  => v a -> [TestTree]
+{-# INLINE testTraverseFunctions #-}
+testTraverseFunctions _ = $(testProperties
+  [ 'prop_generateA, 'prop_replicateA, 'prop_traverse, 'prop_itraverse, 'prop_for, 'prop_ifor,
+    'prop_traverse_, 'prop_forA_, 'prop_itraverse_, 'prop_iforA_
+  ])
+  where
+    prop_traverse :: P ((a -> Writer [a] a) -> v a -> Writer [a] (v a))
+      = V.traverse `eq` traverse
+    prop_itraverse :: P ((Int -> a -> Writer [a] a) -> v a -> Writer [a] (v a))
+      = V.itraverse `eq` itraverse
+    prop_for :: P (v a -> (a -> Writer [a] a) -> Writer [a] (v a))
+      = V.forA `eq` flip traverse
+    prop_ifor :: P (v a -> (Int -> a -> Writer [a] a) -> Writer [a] (v a))
+      = V.iforA `eq` flip itraverse
+    prop_generateA  :: P (Int -> (Int -> Writer [a] a) -> Writer [a] (v a))
+              = (\n _ -> n < 1000) ===> V.generateA `eq` Util.generateM
+    prop_replicateA  :: P (Int -> (Writer [a] a) -> Writer [a] (v a))
+              = (\n _ -> n < 1000) ===> V.replicateA `eq` replicateM
+    prop_traverse_ :: P ((a -> Writer [a] a) -> v a -> Writer [a] ())
+      = V.traverse_ `eq` traverse_
+    prop_forA_ :: P (v a -> (a -> Writer [a] a) -> Writer [a] ())
+      = V.forA_ `eq` for_
+    prop_itraverse_ :: P ((Int -> a -> Writer [a] a) -> v a -> Writer [a] ())
+      = V.itraverse_ `eq` itraverse_
+    prop_iforA_ :: P (v a -> (Int -> a -> Writer [a] a) -> Writer [a] ())
+      = V.iforA_ `eq` flip itraverse_
+
+
 
 testAlternativeFunctions :: forall a v. (CommonContext a v, Applicative.Alternative v) => v a -> [TestTree]
 {-# INLINE testAlternativeFunctions #-}
