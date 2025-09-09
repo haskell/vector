@@ -163,150 +163,17 @@ module Data.Vector.Primitive (
 
 import           Control.Applicative (Applicative)
 import qualified Data.Vector.Generic           as G
-import           Data.Vector.Primitive.Mutable ( MVector(..) )
+import           Data.Vector.Primitive.Unsafe  (Vector(..),MVector(..),unsafeCoerceVector)
 import           Data.Vector.Internal.Check
-import qualified Data.Vector.Fusion.Bundle as Bundle
-import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim, sizeOf )
 
-import Control.DeepSeq ( NFData(rnf)
-#if MIN_VERSION_deepseq(1,4,3)
-                       , NFData1(liftRnf)
-#endif
-                       )
-
-import Control.Monad ( liftM )
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
 
 import Prelude
-  ( Eq, Ord, Num, Enum, Monoid, Traversable, Monad, Read, Show, Bool, Ordering(..), Int, Maybe, Either
-  , compare, mempty, mappend, mconcat, showsPrec, return, otherwise, seq, error, undefined
-  , (+), (*), (<), (<=), (>), (>=), (==), (/=), ($!) )
-
-import Data.Data      ( Data(..) )
-import Text.Read      ( Read(..), readListPrecDefault )
-import Data.Semigroup ( Semigroup(..) )
-
-import Data.Coerce
-import Unsafe.Coerce
-import qualified GHC.Exts as Exts
-
-type role Vector nominal
-
--- | /O(1)/ Unsafely coerce an immutable vector from one element type to another,
--- representationally equal type. The operation just changes the type of the
--- underlying pointer and does not modify the elements.
---
--- This is marginally safer than 'unsafeCast', since this function imposes an
--- extra 'Coercible' constraint. The constraint guarantees that the element types
--- are representationally equal. It however cannot guarantee
--- that their respective 'Prim' instances are compatible.
-unsafeCoerceVector :: Coercible a b => Vector a -> Vector b
-unsafeCoerceVector = unsafeCoerce
-
--- | Unboxed vectors of primitive types.
-data Vector a = Vector {-# UNPACK #-} !Int       -- ^ offset
-                       {-# UNPACK #-} !Int       -- ^ length
-                       {-# UNPACK #-} !ByteArray -- ^ underlying byte array
-
-instance NFData (Vector a) where
-  rnf (Vector _ _ _) = ()
-
-#if MIN_VERSION_deepseq(1,4,3)
--- | @since 0.12.1.0
-instance NFData1 Vector where
-  liftRnf _ (Vector _ _ _) = ()
-#endif
-
-instance (Show a, Prim a) => Show (Vector a) where
-  showsPrec = G.showsPrec
-
-instance (Read a, Prim a) => Read (Vector a) where
-  readPrec = G.readPrec
-  readListPrec = readListPrecDefault
-
-instance (Data a, Prim a) => Data (Vector a) where
-  gfoldl       = G.gfoldl
-  toConstr _   = G.mkVecConstr "Data.Vector.Primitive.Vector"
-  gunfold      = G.gunfold
-  dataTypeOf _ = G.mkVecType "Data.Vector.Primitive.Vector"
-  dataCast1    = G.dataCast
-
-
-type instance G.Mutable Vector = MVector
-
-instance Prim a => G.Vector Vector a where
-  {-# INLINE basicUnsafeFreeze #-}
-  basicUnsafeFreeze (MVector i n marr)
-    = Vector i n `liftM` unsafeFreezeByteArray marr
-
-  {-# INLINE basicUnsafeThaw #-}
-  basicUnsafeThaw (Vector i n arr)
-    = MVector i n `liftM` unsafeThawByteArray arr
-
-  {-# INLINE basicLength #-}
-  basicLength (Vector _ n _) = n
-
-  {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice j n (Vector i _ arr) = Vector (i+j) n arr
-
-  {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM (Vector i _ arr) j = return $! indexByteArray arr (i+j)
-
-  {-# INLINE basicUnsafeCopy #-}
-  basicUnsafeCopy (MVector i n dst) (Vector j _ src)
-    = copyByteArray dst (i*sz) src (j*sz) (n*sz)
-    where
-      sz = sizeOf (undefined :: a)
-
-  {-# INLINE elemseq #-}
-  elemseq _ = seq
-
--- See http://trac.haskell.org/vector/ticket/12
-instance (Prim a, Eq a) => Eq (Vector a) where
-  {-# INLINE (==) #-}
-  xs == ys = Bundle.eq (G.stream xs) (G.stream ys)
-
--- See http://trac.haskell.org/vector/ticket/12
-instance (Prim a, Ord a) => Ord (Vector a) where
-  {-# INLINE compare #-}
-  compare xs ys = Bundle.cmp (G.stream xs) (G.stream ys)
-
-  {-# INLINE (<) #-}
-  xs < ys = Bundle.cmp (G.stream xs) (G.stream ys) == LT
-
-  {-# INLINE (<=) #-}
-  xs <= ys = Bundle.cmp (G.stream xs) (G.stream ys) /= GT
-
-  {-# INLINE (>) #-}
-  xs > ys = Bundle.cmp (G.stream xs) (G.stream ys) == GT
-
-  {-# INLINE (>=) #-}
-  xs >= ys = Bundle.cmp (G.stream xs) (G.stream ys) /= LT
-
-instance Prim a => Semigroup (Vector a) where
-  {-# INLINE (<>) #-}
-  (<>) = (++)
-
-  {-# INLINE sconcat #-}
-  sconcat = G.concatNE
-
-instance Prim a => Monoid (Vector a) where
-  {-# INLINE mempty #-}
-  mempty = empty
-
-  {-# INLINE mappend #-}
-  mappend = (<>)
-
-  {-# INLINE mconcat #-}
-  mconcat = concat
-
-instance Prim a => Exts.IsList (Vector a) where
-  type Item (Vector a) = a
-  fromList = fromList
-  fromListN = fromListN
-  toList = toList
+  ( Eq, Ord, Num, Enum, Monoid, Traversable, Monad, Bool, Ordering(..), Int, Maybe, Either
+  , otherwise, error, undefined
+  , (==))
 
 
 -- Length
@@ -2050,4 +1917,4 @@ copy :: (Prim a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 copy = G.copy
 
 -- $setup
--- >>> import Prelude (($), min, even, max, succ, id, Ord(..))
+-- >>> import Prelude (($), min, even, max, succ, id, Ord(..), Num(..))
