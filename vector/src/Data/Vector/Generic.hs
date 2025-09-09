@@ -164,7 +164,7 @@ module Data.Vector.Generic (
   -- * Fusion support
 
   -- ** Conversion to/from Bundles
-  stream, unstream, unstreamM, streamR, unstreamR,
+  stream, unstream, unstreamM, unstreamPrimM, unsafeUnstreamPrimM, streamR, unstreamR,
 
   -- ** Recycling support
   new, clone,
@@ -2621,23 +2621,51 @@ unstreamM s = do
                 xs <- MBundle.toList s
                 return $ unstream $ Bundle.unsafeFromList (MBundle.size s) xs
 
+
+-- | Load a monadic stream bundle into a newly allocated vector. It
+--   makes writes to a single buffer and copies it when finished. Note
+--   for monads that encode nondeterminism result may be different
+--   from `unstreamM`.
+--
+-- @since NEXT_VERSION
 unstreamPrimM :: (PrimMonad m, Vector v a) => MBundle m u a -> m (v a)
 {-# INLINE_FUSED unstreamPrimM #-}
-unstreamPrimM s = M.munstream s >>= unsafeFreeze
+unstreamPrimM s = M.munstream s >>= freeze
+
+-- | Load a monadic stream bundle into a newly allocated vector. This
+--   function create mutable buffer, writes to it and then
+--   'unsafeFreeze's it.
+--
+--   This function is unsafe. For monads that encode nondeterminism
+--   (e.g. @ListT@) it allows to break referential transparency. More
+--   precisely if 'unsafeFreeze' is called more than once we will
+--   perform writes into buffer which is considered immutable.
+--
+--   In particular it's certainly unsafe to use this function when
+--   type of monad is polymorphic but it's safe to use for monads such
+--   as @IO@, @ST@, @Reader@, @Writer@, @State@.
+--
+-- @since NEXT_VERSION
+unsafeUnstreamPrimM :: (PrimMonad m, Vector v a) => MBundle m u a -> m (v a)
+{-# INLINE_FUSED unsafeUnstreamPrimM #-}
+unsafeUnstreamPrimM s = M.munstream s >>= unsafeFreeze
 
 -- FIXME: the next two functions are only necessary for the specialisations
 unstreamPrimM_IO :: Vector v a => MBundle IO u a -> IO (v a)
 {-# INLINE unstreamPrimM_IO #-}
-unstreamPrimM_IO = unstreamPrimM
+unstreamPrimM_IO = unsafeUnstreamPrimM
 
 unstreamPrimM_ST :: Vector v a => MBundle (ST s) u a -> ST s (v a)
 {-# INLINE unstreamPrimM_ST #-}
-unstreamPrimM_ST = unstreamPrimM
+unstreamPrimM_ST = unsafeUnstreamPrimM
 
 {-# RULES
 
-"unstreamM[IO]" unstreamM = unstreamPrimM_IO
-"unstreamM[ST]" unstreamM = unstreamPrimM_ST  #-}
+"unstreamM[IO]"     unstreamM     = unstreamPrimM_IO
+"unstreamM[ST]"     unstreamM     = unstreamPrimM_ST
+"unstreamPrimM[IO]" unstreamPrimM = unstreamPrimM_IO
+"unstreamPrimM[ST]" unstreamPrimM = unstreamPrimM_ST
+  #-}
 
 
 
