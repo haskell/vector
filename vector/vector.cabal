@@ -133,9 +133,11 @@ Library
         Data.Vector.Primitive.Mutable.Unsafe
         Data.Vector.Primitive.Unsafe
 
+        Data.Vector.Storable
         Data.Vector.Storable.Internal
         Data.Vector.Storable.Mutable
-        Data.Vector.Storable
+        Data.Vector.Storable.Mutable.Unsafe
+        Data.Vector.Storable.Unsafe
 
         Data.Vector.Unboxed.Base
         Data.Vector.Unboxed.Mutable
