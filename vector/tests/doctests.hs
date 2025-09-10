@@ -21,6 +21,8 @@ main = mapM_ run modGroups
     modGroups =
       [ [ "src/Data/Vector/Storable/Mutable.hs"
         , "src/Data/Vector/Storable.hs"
+        , "src/Data/Vector/Storable/Mutable/Unsafe.hs"
+        , "src/Data/Vector/Storable/Unsafe.hs"
         ]
       , [ "src/Data/Vector.hs"
         , "src/Data/Vector/Mutable.hs"
