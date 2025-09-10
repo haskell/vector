@@ -199,8 +199,6 @@ import Data.Coerce
 import qualified GHC.Exts as Exts
 import Unsafe.Coerce
 
--- Data.Vector.Internal.Check is unused
-#define NOT_VECTOR_MODULE
 #include "vector.h"
 
 type role Vector nominal

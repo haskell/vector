@@ -74,8 +74,6 @@ import Control.Monad.Primitive
 
 import Prelude ( Ord, Bool, Int, Maybe, Ordering(..) )
 
--- don't import an unused Data.Vector.Internal.Check
-#define NOT_VECTOR_MODULE
 #include "vector.h"
 
 -- Length information

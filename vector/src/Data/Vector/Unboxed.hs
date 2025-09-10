@@ -244,8 +244,6 @@ import Data.Semigroup ( Semigroup(..) )
 
 import qualified GHC.Exts as Exts (IsList(..))
 
-
-#define NOT_VECTOR_MODULE
 #include "vector.h"
 
 -- See http://trac.haskell.org/vector/ticket/12

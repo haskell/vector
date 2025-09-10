@@ -44,8 +44,6 @@ import Prelude
   , return, seq
   , (.), (=<<) )
 
--- Data.Vector.Internal.Check is unused
-#define NOT_VECTOR_MODULE
 #include "vector.h"
 
 -- | This data type is a wrapper around a monadic action which produces
