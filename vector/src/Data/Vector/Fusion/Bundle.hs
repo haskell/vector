@@ -97,8 +97,6 @@ import Prelude
 import Data.Functor.Classes (Eq1 (..), Ord1 (..))
 import GHC.Base ( build )
 
--- Data.Vector.Internal.Check is unused
-#define NOT_VECTOR_MODULE
 #include "vector.h"
 
 -- | The type of pure streams

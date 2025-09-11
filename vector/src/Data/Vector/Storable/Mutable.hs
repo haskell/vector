@@ -108,8 +108,6 @@ import Prelude
 import Data.Coerce
 import Unsafe.Coerce
 
--- Data.Vector.Internal.Check is not needed
-#define NOT_VECTOR_MODULE
 #include "vector.h"
 
 type role MVector nominal nominal
