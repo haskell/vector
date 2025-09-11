@@ -1589,8 +1589,6 @@ spanR = G.spanR
 --
 -- Does not fuse.
 --
--- @since 0.13.2.0
---
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector as V
