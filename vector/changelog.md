@@ -2,7 +2,9 @@
 
  * [#522](https://github.com/haskell/vector/pull/522) API using Applicatives
    added: `traverse` & friends.
-   * [#518](https://github.com/haskell/vector/pull/518) `UnboxViaStorable` added.
+ * `unstreamPrimM` and `unsafeUnstreamPrimM` are added to `Data.Vector.Generic`
+   for converting monadic streams to vectors.
+ * [#518](https://github.com/haskell/vector/pull/518) `UnboxViaStorable` added.
    Vector constructors are reexported for `DoNotUnbox*`.
  * [#531](https://github.com/haskell/vector/pull/531) `iconcatMap` added.
 
