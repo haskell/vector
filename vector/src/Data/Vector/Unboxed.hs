@@ -1257,6 +1257,8 @@ break = G.break
 -- >>> import qualified Data.Vector.Unboxed as VU
 -- >>> VU.spanR (>4) $ VU.generate 10 id
 -- ([5,6,7,8,9],[0,1,2,3,4])
+--
+-- @since 0.13.2.0
 spanR :: Unbox a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE spanR #-}
 spanR = G.spanR
@@ -1266,13 +1268,13 @@ spanR = G.spanR
 --
 -- Does not fuse.
 --
--- @since NEXT_VERSION
---
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Unboxed as VU
 -- >>> VU.breakR (<5) $ VU.generate 10 id
 -- ([5,6,7,8,9],[0,1,2,3,4])
+--
+-- @since 0.13.2.0
 breakR :: Unbox a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE breakR #-}
 breakR = G.breakR
@@ -1292,7 +1294,7 @@ breakR = G.breakR
 --
 -- See also 'Data.List.groupBy', 'group'.
 --
--- @since 0.13.0.1
+-- @since 0.13.0.0
 groupBy :: Unbox a => (a -> a -> Bool) -> Vector a -> [Vector a]
 {-# INLINE groupBy #-}
 groupBy = G.groupBy
@@ -1312,7 +1314,7 @@ groupBy = G.groupBy
 --
 -- See also 'Data.List.group'.
 --
--- @since 0.13.0.1
+-- @since 0.13.0.0
 group :: (Unbox a, Eq a) => Vector a -> [Vector a]
 {-# INLINE group #-}
 group = G.groupBy (==)

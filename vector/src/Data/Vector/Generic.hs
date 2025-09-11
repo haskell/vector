@@ -1611,6 +1611,8 @@ break f xs = case findIndex f xs of
 -- >>> import qualified Data.Vector.Strict as V
 -- >>> V.spanR (>4) $ V.generate 10 id
 -- ([5,6,7,8,9],[0,1,2,3,4])
+--
+-- @since 0.13.2.0
 spanR :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 {-# INLINE spanR #-}
 spanR f = breakR (not . f)
@@ -1620,13 +1622,13 @@ spanR f = breakR (not . f)
 --
 -- Does not fuse.
 --
--- @since NEXT_VERSION
---
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Strict as V
 -- >>> V.breakR (<5) $ V.generate 10 id
 -- ([5,6,7,8,9],[0,1,2,3,4])
+--
+-- @since 0.13.2.0
 breakR :: Vector v a => (a -> Bool) -> v a -> (v a, v a)
 {-# INLINE breakR #-}
 breakR f xs = case findIndexR f xs of
@@ -1650,7 +1652,7 @@ breakR f xs = case findIndexR f xs of
 --
 -- See also 'Data.List.groupBy'.
 --
--- @since 0.13.0.1
+-- @since 0.13.0.0
 {-# INLINE groupBy #-}
 groupBy :: (Vector v a) => (a -> a -> Bool) -> v a -> [v a]
 groupBy _ v | null v = []
@@ -1674,7 +1676,7 @@ groupBy f v =
 --
 -- See also 'Data.List.group'.
 --
--- @since 0.13.0.1
+-- @since 0.13.0.0
 group :: (Vector v a , Eq a) => v a -> [v a]
 {-# INLINE group #-}
 group = groupBy (==)

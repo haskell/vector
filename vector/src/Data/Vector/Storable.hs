@@ -1223,6 +1223,8 @@ break = G.break
 -- >>> import qualified Data.Vector.Storable as VS
 -- >>> VS.spanR (>4) $ VS.generate 10 id
 -- ([5,6,7,8,9],[0,1,2,3,4])
+--
+-- @since 0.13.2.0
 spanR :: Storable a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE spanR #-}
 spanR = G.spanR
@@ -1232,13 +1234,13 @@ spanR = G.spanR
 --
 -- Does not fuse.
 --
--- @since NEXT_VERSION
---
 -- ==== __Examples__
 --
 -- >>> import qualified Data.Vector.Storable as VS
 -- >>> VS.breakR (<5) $ VS.generate 10 id
 -- ([5,6,7,8,9],[0,1,2,3,4])
+--
+-- @since 0.13.2.0
 breakR :: Storable a => (a -> Bool) -> Vector a -> (Vector a, Vector a)
 {-# INLINE breakR #-}
 breakR = G.breakR
@@ -1258,7 +1260,7 @@ breakR = G.breakR
 --
 -- See also 'Data.List.groupBy', 'group'.
 --
--- @since 0.13.0.1
+-- @since 0.13.0.0
 groupBy :: Storable a => (a -> a -> Bool) -> Vector a -> [Vector a]
 {-# INLINE groupBy #-}
 groupBy = G.groupBy
@@ -1278,7 +1280,7 @@ groupBy = G.groupBy
 --
 -- See also 'Data.List.group'.
 --
--- @since 0.13.0.1
+-- @since 0.13.0.0
 group :: (Storable a, Eq a) => Vector a -> [Vector a]
 {-# INLINE group #-}
 group = G.groupBy (==)
