@@ -252,13 +252,16 @@ test-suite vector-inspection
   main-is:          main.hs
   default-language: Haskell2010
   Other-modules:    Inspect
+                    Inspect.Alloc
                     Inspect.DerivingVia
                     Inspect.DerivingVia.OtherFoo
+                    Test.Alloc
   build-depends:
         base                     -any
       , primitive                >= 0.6.4.0 && < 0.10
       , vector                   -any
       , tasty
+      , tasty-hunit
       , tasty-inspection-testing >= 0.1
 
 library benchmarks-O2
