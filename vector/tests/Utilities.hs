@@ -266,8 +266,6 @@ xs // ps = go xs ps' 0
     go [] _ _      = []
 
 
--- withIndexFirst :: (Int -> a -> [a]) -> [a] -> [a]
-
 withIndexFirst :: (((Int, a) -> b) -> [(Int, a)] -> c)
                -> ((Int -> a -> b) -> [a]        -> c)
 withIndexFirst m f = m (uncurry f) . zip [0::Int ..]
