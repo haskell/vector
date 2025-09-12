@@ -58,6 +58,7 @@ module Data.Vector.Generic.Mutable (
   ifoldr, ifoldr', ifoldrM, ifoldrM',
 
   -- * Modifying vectors
+  mapInPlace, imapInPlace, mapInPlaceM, imapInPlaceM,
   nextPermutation, nextPermutationBy,
   prevPermutation, prevPermutationBy,
 
@@ -77,6 +78,7 @@ module Data.Vector.Generic.Mutable (
   PrimMonad, PrimState, RealWorld
 ) where
 
+import           Control.Monad ((<=<))
 import           Data.Vector.Generic.Mutable.Base
 import qualified Data.Vector.Generic.Base as V
 
@@ -1214,6 +1216,37 @@ partitionWithUnknown f s
 
 -- Modifying vectors
 -- -----------------
+
+-- | Modify vector in place by applying function to each element.
+--
+-- @since NEXT_VERSION
+mapInPlace :: (PrimMonad m, MVector v a) => (a -> a) -> v (PrimState m) a -> m ()
+{-# INLINE mapInPlace #-}
+mapInPlace f = imapInPlace (\_ -> f)
+
+-- | Modify vector in place by applying function to each element and its index.
+--
+-- @since NEXT_VERSION
+imapInPlace :: (PrimMonad m, MVector v a) => (Int -> a -> a) -> v (PrimState m) a -> m ()
+{-# INLINE imapInPlace #-}
+imapInPlace f v
+  = stToPrim $ iforM_ v $ \i -> unsafeWrite v i . f i
+
+-- | Modify vector in place by applying monadic function to each element in order.
+--
+-- @since NEXT_VERSION
+mapInPlaceM :: (PrimMonad m, MVector v a) => (a -> m a) -> v (PrimState m) a -> m ()
+{-# INLINE mapInPlaceM #-}
+mapInPlaceM f
+  = imapInPlaceM (\_ -> f)
+
+-- | Modify vector in place by applying monadic function to each element and its index in order.
+--
+-- @since NEXT_VERSION
+imapInPlaceM :: (PrimMonad m, MVector v a) => (Int -> a -> m a) -> v (PrimState m) a -> m ()
+{-# INLINE imapInPlaceM #-}
+imapInPlaceM f v
+  = iforM_ v $ \i -> unsafeWrite v i <=< f i
 
 
 -- | Compute the (lexicographically) next permutation of the given vector in-place.
