@@ -208,7 +208,8 @@ testPolymorphicFunctions _ = $(testProperties [
         'prop_mut_foldr, 'prop_mut_foldr', 'prop_mut_foldl, 'prop_mut_foldl',
         'prop_mut_ifoldr, 'prop_mut_ifoldr', 'prop_mut_ifoldl, 'prop_mut_ifoldl',
         'prop_mut_foldM, 'prop_mut_foldM', 'prop_mut_foldrM, 'prop_mut_foldrM',
-        'prop_mut_ifoldM, 'prop_mut_ifoldM', 'prop_mut_ifoldrM, 'prop_mut_ifoldrM'
+        'prop_mut_ifoldM, 'prop_mut_ifoldM', 'prop_mut_ifoldrM, 'prop_mut_ifoldrM',
+        'prop_mut_mapInPlace, 'prop_mut_imapInPlace, 'prop_mut_mapInPlaceM, 'prop_mut_imapInPlaceM
     ])
   where
     -- Prelude
@@ -590,6 +591,33 @@ testPolymorphicFunctions _ = $(testProperties [
       = (\f v -> liftRunST $ MV.mapM_ (hoistST . f) =<< V.thaw v) `eq` mapM_
     prop_mut_imapM_ :: P ((Int -> a -> Writer [a] ()) -> v a -> Writer [a] ())
       = (\f v -> liftRunST $ MV.imapM_ (\i x -> hoistST $ f i x) =<< V.thaw v) `eq` imapM_
+
+    prop_mut_mapInPlace :: P ((a -> a) -> v a -> v a)
+    prop_mut_mapInPlace
+      = (\f v -> runST $ do mv <- V.thaw v
+                            MV.mapInPlace f mv
+                            V.freeze mv
+        ) `eq` map
+    prop_mut_imapInPlace :: P ((Int -> a -> a) -> v a -> v a)
+    prop_mut_imapInPlace
+      = (\f v -> runST $ do mv <- V.thaw v
+                            MV.imapInPlace f mv
+                            V.freeze mv
+        ) `eq` imap
+    prop_mut_mapInPlaceM :: P ((a -> Writer [a] a) -> v a -> Writer [a] (v a))
+    prop_mut_mapInPlaceM
+      = (\f v -> liftRunST $ do mv <- V.thaw v
+                                MV.mapInPlaceM (\a -> hoistST $ f a) mv
+                                V.freeze mv
+        ) `eq` mapM
+    prop_mut_imapInPlaceM :: P ((Int -> a -> Writer [a] a) -> v a -> Writer [a] (v a))
+    prop_mut_imapInPlaceM
+      = (\f v -> liftRunST $ do mv <- V.thaw v
+                                MV.imapInPlaceM (\i a -> hoistST (f i a)) mv
+                                V.freeze mv
+        ) `eq` imapM
+
+
 
 
 liftRunST :: (forall s. WriterT w (ST s) a) -> Writer w a
