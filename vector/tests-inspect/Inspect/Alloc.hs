@@ -9,6 +9,7 @@ constant overhead.
 -}
 module Inspect.Alloc where
 
+import Control.Monad.ST
 import Data.Int
 -- import Data.Monoid
 import Data.Functor.Identity
@@ -26,6 +27,9 @@ tests = testGroup "allocations"
     [ testCase "IO"
       $ checkAllocations (linear 8)
       $ whnfIO (VU.traverse (\_ -> getAllocationCounter) vector)
+    , testCase "ST"
+      $ checkAllocations (linear 8)
+      $ (\v -> runST $ VU.traverse (pureST . fromIntegral) v) `whnf` vector
     , testCase "Identity"
       $ checkAllocations (linear 8)
       $ VU.traverse (\n -> Identity (10*n)) `whnf` vector
@@ -39,12 +43,19 @@ tests = testGroup "allocations"
     [ testCase "IO"
       $ checkAllocations (linear 8)
       $ whnfIO (VU.replicateM size getAllocationCounter)
+    , testCase "ST"
+      $ checkAllocations (linear 8)
+      $ (\sz -> runST $ VU.generateM sz pureST) `whnf` size
     -- , testCase "Identity"
     --   $ checkAllocations (linear 8)
     --   $ (\sz -> VU.generateM sz (\n -> Identity (fromIntegral n :: Int64))) `whnf` size
     ]
   ]
 
+
+pureST :: Int -> ST s Int64
+{-# NOINLINE pureST #-}
+pureST i = pure $! fromIntegral i
 
 -- | Constant overhead. Measurement precision is 4k
 overhead :: Int64
