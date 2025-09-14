@@ -148,6 +148,8 @@ Library
 
         Data.Vector.Mutable
         Data.Vector
+        Data.Vector.Mutable.Unsafe
+        Data.Vector.Unsafe
 
   Hs-Source-Dirs:
         src
