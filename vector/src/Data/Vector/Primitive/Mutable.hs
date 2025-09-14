@@ -56,6 +56,7 @@ module Data.Vector.Primitive.Mutable (
   ifoldr, ifoldr', ifoldrM, ifoldrM',
 
   -- * Modifying vectors
+  mapInPlace, imapInPlace, mapInPlaceM, imapInPlaceM,
   nextPermutation, nextPermutationBy,
   prevPermutation, prevPermutationBy,
 
@@ -534,6 +535,34 @@ unsafeMove = G.unsafeMove
 
 -- Modifying vectors
 -- -----------------
+
+-- | Modify vector in place by applying function to each element.
+--
+-- @since NEXT_VERSION
+mapInPlace :: (PrimMonad m, Prim a) => (a -> a) -> MVector (PrimState m) a -> m ()
+{-# INLINE mapInPlace #-}
+mapInPlace = G.mapInPlace
+
+-- | Modify vector in place by applying function to each element and its index.
+--
+-- @since NEXT_VERSION
+imapInPlace :: (PrimMonad m, Prim a) => (Int -> a -> a) -> MVector (PrimState m) a -> m ()
+{-# INLINE imapInPlace #-}
+imapInPlace = G.imapInPlace
+
+-- | Modify vector in place by applying monadic function to each element in order.
+--
+-- @since NEXT_VERSION
+mapInPlaceM :: (PrimMonad m, Prim a) => (a -> m a) -> MVector (PrimState m) a -> m ()
+{-# INLINE mapInPlaceM #-}
+mapInPlaceM = G.mapInPlaceM
+
+-- | Modify vector in place by applying monadic function to each element and its index in order.
+--
+-- @since NEXT_VERSION
+imapInPlaceM :: (PrimMonad m, Prim a) => (Int -> a -> m a) -> MVector (PrimState m) a -> m ()
+{-# INLINE imapInPlaceM #-}
+imapInPlaceM = G.imapInPlaceM
 
 -- | Compute the (lexicographically) next permutation of the given vector in-place.
 -- Returns False when the input is the last item in the enumeration, i.e., if it is in

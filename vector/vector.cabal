@@ -101,7 +101,6 @@ common flag-Wall
     if impl(ghc >= 8.0) && impl(ghc < 8.1)
       Ghc-Options:   -Wno-redundant-constraints
 
-
 Library
   import:           flag-Wall
   Default-Language: Haskell2010
@@ -184,6 +183,9 @@ Library
 -- rewrite rules
 common tests-common
   Default-Language: Haskell2010
+  -- Disable pointless warning about partial functions
+  if impl(ghc >= 9.8)
+    Ghc-Options:  -Wno-x-partial
   Ghc-Options:      -fno-warn-missing-signatures
   hs-source-dirs:   tests
   Build-Depends: base >= 4.5 && < 5

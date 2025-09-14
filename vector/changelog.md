@@ -2,7 +2,9 @@
 
  * [#522](https://github.com/haskell/vector/pull/522) API using Applicatives
    added: `traverse` & friends.
-   * [#518](https://github.com/haskell/vector/pull/518) `UnboxViaStorable` added.
+ * [#545](https://github.com/haskell/vector/pull/545) `mapInPlace`,
+   `imapInPlace`, `mapInPlaceM`, `imapInPlaceM` added to mutable vectors API.
+ * [#518](https://github.com/haskell/vector/pull/518) `UnboxViaStorable` added.
    Vector constructors are reexported for `DoNotUnbox*`.
  * [#531](https://github.com/haskell/vector/pull/531) `iconcatMap` added.
 
