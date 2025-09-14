@@ -145,6 +145,8 @@ Library
 
         Data.Vector.Strict.Mutable
         Data.Vector.Strict
+        Data.Vector.Strict.Mutable.Unsafe
+        Data.Vector.Strict.Unsafe
 
         Data.Vector.Mutable
         Data.Vector
