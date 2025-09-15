@@ -216,16 +216,13 @@ data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
                        {-# UNPACK #-} !(Array a)
 
-liftRnfV :: (a -> ()) -> Vector a -> ()
-liftRnfV elemRnf = foldl' (\_ -> elemRnf) ()
-
 instance NFData a => NFData (Vector a) where
-  rnf = liftRnfV rnf
+  rnf = liftRnf rnf
   {-# INLINEABLE rnf #-}
 
 -- | @since 0.12.1.0
 instance NFData1 Vector where
-  liftRnf = liftRnfV
+  liftRnf elemRnf = foldl' (\_ -> elemRnf) ()
   {-# INLINEABLE liftRnf #-}
 
 instance Show a => Show (Vector a) where
