@@ -44,10 +44,6 @@ Description:
         * <http://haskell.org/haskellwiki/Numeric_Haskell:_A_Vector_Tutorial>
 
 Tested-With:
-  GHC == 8.0.2
-  GHC == 8.2.2
-  GHC == 8.4.4
-  GHC == 8.6.5
   GHC == 8.8.4
   GHC == 8.10.7
   GHC == 9.0.2
@@ -98,8 +94,6 @@ common flag-Wall
   Ghc-Options: -Wall
   if !flag(Wall)
     Ghc-Options: -fno-warn-orphans
-    if impl(ghc >= 8.0) && impl(ghc < 8.1)
-      Ghc-Options:   -Wno-redundant-constraints
 
 Library
   import:           flag-Wall
@@ -161,9 +155,9 @@ Library
   Install-Includes:
         vector.h
 
-  Build-Depends: base >= 4.9 && < 4.23
+  Build-Depends: base >= 4.13 && < 4.23
                , primitive >= 0.6.4.0 && < 0.10
-               , deepseq >= 1.1 && < 1.6
+               , deepseq >= 1.4.3 && < 1.6
                , vector-stream >= 0.1 && < 0.2
 
   Ghc-Options: -O2
@@ -188,7 +182,7 @@ common tests-common
     Ghc-Options:  -Wno-x-partial
   Ghc-Options:      -fno-warn-missing-signatures
   hs-source-dirs:   tests
-  Build-Depends: base >= 4.5 && < 5
+  Build-Depends: base >= 4.13 && < 5
                , template-haskell
                , base-orphans >= 0.6
                , vector
@@ -241,9 +235,6 @@ test-suite vector-doctest
   main-is:          doctests.hs
   hs-source-dirs:   tests
   default-language: Haskell2010
-  -- Older GHC don't support DerivingVia and doctests use them
-  if impl(ghc < 8.6)
-    buildable: False
   -- Attempts to run doctests on macos on GHC8.10 and 9.0 cause linker errors:
   -- > ld: warning: -undefined dynamic_lookup may not work with chained fixups
   if os(darwin) && impl(ghc >= 8.10) && impl(ghc < 9.2)
@@ -261,8 +252,7 @@ test-suite vector-inspection
   main-is:          main.hs
   default-language: Haskell2010
   Other-modules:    Inspect
-  if impl(ghc >= 8.6)
-    Other-modules:  Inspect.DerivingVia
+                    Inspect.DerivingVia
                     Inspect.DerivingVia.OtherFoo
   build-depends:
         base                     -any
@@ -305,7 +295,7 @@ benchmark algorithms
   default-language: Haskell2010
 
   build-depends:
-        base >= 2 && < 5
+        base >= 4.13 && < 5
       , random >= 1.2
       , tasty
       , tasty-bench >= 0.2.1

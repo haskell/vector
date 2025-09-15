@@ -76,11 +76,7 @@ module Data.Vector.Storable.Mutable(
   Storable, PrimMonad, PrimState, RealWorld
 ) where
 
-import Control.DeepSeq ( NFData(rnf)
-#if MIN_VERSION_deepseq(1,4,3)
-                       , NFData1(liftRnf)
-#endif
-                       )
+import Control.DeepSeq ( NFData(rnf), NFData1(liftRnf))
 
 import qualified Data.Vector.Generic.Mutable as G
 import Data.Vector.Storable.Internal
@@ -134,10 +130,8 @@ type STVector s = MVector s
 instance NFData (MVector s a) where
   rnf (MVector _ _) = ()
 
-#if MIN_VERSION_deepseq(1,4,3)
 instance NFData1 (MVector s) where
   liftRnf _ (MVector _ _) = ()
-#endif
 
 instance Storable a => G.MVector MVector a where
   {-# INLINE basicLength #-}
