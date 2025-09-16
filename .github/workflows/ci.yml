@@ -18,10 +18,6 @@ jobs:
       matrix:
         include:
           # Linux
-          - { cabal: "3.14", os: ubuntu-24.04,  ghc: "8.0.2"  }
-          - { cabal: "3.14", os: ubuntu-24.04,  ghc: "8.2.2"  }
-          - { cabal: "3.14", os: ubuntu-24.04,  ghc: "8.4.4"  }
-          - { cabal: "3.14", os: ubuntu-24.04,  ghc: "8.6.5"  }
           - { cabal: "3.14", os: ubuntu-24.04,  ghc: "8.8.4"  }
           - { cabal: "3.14", os: ubuntu-24.04,  ghc: "8.10.7" }
           - { cabal: "3.14", os: ubuntu-24.04,  ghc: "9.0.2"  }
@@ -34,15 +30,11 @@ jobs:
           - { cabal: "3.14", os: ubuntu-24.04,  ghc: "9.10.2"  }
           - { cabal: "3.14", os: ubuntu-24.04,  ghc: "9.12.2"  }
           # Win
-          - { cabal: "3.14", os: windows-latest, ghc: "8.4.4"  }
           - { cabal: "3.14", os: windows-latest, ghc: "9.6.7"  }
           - { cabal: "3.14", os: windows-latest, ghc: "9.8.4"  }
           - { cabal: "3.14", os: windows-latest, ghc: "9.10.2"  }
           - { cabal: "3.14", os: windows-latest, ghc: "9.12.2"  }
-          # Too flaky:
-          # - { cabal: "3.6", os: windows-latest,  ghc: "9.0.1"  }
           # MacOS
-          - { cabal: "3.14", os: macOS-13,       ghc: "8.4.4"  }
           # Fails with linker errors
           #  > ld: warning: -single_module is obsolete
           #  > <command line>: can't load framework: Security (not found)

@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP                        #-}
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -10,9 +9,7 @@
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE TypeOperators              #-}
 {-# LANGUAGE UnboxedTuples              #-}
-#if MIN_VERSION_base(4,12,0)
 {-# LANGUAGE DerivingVia                #-}
-#endif
 -- |
 -- These tests make sure that derived Unbox instances actually works.
 -- It's distressingly easy to forget to export some constructor and
@@ -31,7 +28,6 @@ import qualified Data.Vector.Storable        as VS
 import qualified Data.Vector.Primitive       as VP
 import qualified Data.Vector.Unboxed         as VU
 
-#if MIN_VERSION_base(4,12,0)
 ----------------------------------------------------------------
 -- Primitive 
 
@@ -183,4 +179,3 @@ deriving via (FooAs a `VU.As` (Int, a)) instance VU.Unbox a => VGM.MVector VU.MV
 deriving via (FooAs a `VU.As` (Int, a)) instance VU.Unbox a => VG.Vector   VU.Vector   (FooAs a)
 instance VU.Unbox a => VU.Unbox (FooAs a)
 
-#endif

@@ -184,16 +184,9 @@ import Data.Primitive.Array
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector as V
 
-import Control.DeepSeq ( NFData(rnf)
-#if MIN_VERSION_deepseq(1,4,3)
-                       , NFData1(liftRnf)
-#endif
-                       )
+import Control.DeepSeq ( NFData(rnf), NFData1(liftRnf))
 
 import Control.Monad ( MonadPlus(..), ap )
-#if !MIN_VERSION_base(4,13,0)
-import Control.Monad (fail)
-#endif
 import Control.Monad.ST ( ST, runST )
 import Control.Monad.Primitive
 import qualified Control.Monad.Fail as Fail
@@ -234,19 +227,14 @@ newtype Vector a = Vector (V.Vector a)
 -- parameters (e.g. Eq, Ord) and not OK to derive ones where new
 -- vector is created (e.g. Read, Functor)
 
-liftRnfV :: (a -> ()) -> Vector a -> ()
-liftRnfV elemRnf = foldl' (\_ -> elemRnf) ()
-
 instance NFData a => NFData (Vector a) where
-  rnf = liftRnfV rnf
+  rnf = liftRnf rnf
   {-# INLINEABLE rnf #-}
 
-#if MIN_VERSION_deepseq(1,4,3)
 -- | @since 0.13.2.0
 instance NFData1 Vector where
-  liftRnf = liftRnfV
+  liftRnf elemRnf = foldl' (\_ -> elemRnf) ()
   {-# INLINEABLE liftRnf #-}
-#endif
 
 instance Show a => Show (Vector a) where
   showsPrec = G.showsPrec
@@ -334,11 +322,6 @@ instance Monad Vector where
 
   {-# INLINE (>>=) #-}
   (>>=) = flip concatMap
-
-#if !(MIN_VERSION_base(4,13,0))
-  {-# INLINE fail #-}
-  fail = Fail.fail -- == \ _str -> empty
-#endif
 
 -- | @since 0.13.2.0
 instance Fail.MonadFail Vector where
@@ -2576,7 +2559,7 @@ toLazy (Vector v) = v
 -- | /O(n)/ Convert lazy array to strict array. This function reduces
 -- each element of vector to WHNF.
 fromLazy :: V.Vector a -> Vector a
-fromLazy vec = liftRnfV (`seq` ()) v `seq` v where v = Vector vec
+fromLazy vec = liftRnf (`seq` ()) v `seq` v where v = Vector vec
 
 
 -- Conversions - Arrays
@@ -2587,7 +2570,7 @@ fromLazy vec = liftRnfV (`seq` ()) v `seq` v where v = Vector vec
 -- @since 0.13.2.0
 fromArray :: Array a -> Vector a
 {-# INLINE fromArray #-}
-fromArray arr = liftRnfV (`seq` ()) vec `seq` vec
+fromArray arr = liftRnf (`seq` ()) vec `seq` vec
   where
     vec = Vector $ V.fromArray arr
 
@@ -2625,7 +2608,7 @@ unsafeFromArraySlice ::
   -> Int -- ^ Length
   -> Vector a
 {-# INLINE unsafeFromArraySlice #-}
-unsafeFromArraySlice arr offset len = liftRnfV (`seq` ()) vec `seq` vec
+unsafeFromArraySlice arr offset len = liftRnf (`seq` ()) vec `seq` vec
   where vec = Vector (V.unsafeFromArraySlice arr offset len)
 
 

@@ -40,12 +40,7 @@ import qualified Data.Vector.Primitive as P
 
 import Control.Applicative (Const(..))
 
-import Control.DeepSeq ( NFData(rnf)
-#if MIN_VERSION_deepseq(1,4,3)
-                       , NFData1(liftRnf)
-#endif
-                       , force
-                       )
+import Control.DeepSeq ( NFData(rnf), NFData1(liftRnf), force)
 
 import Control.Monad.Primitive
 import Control.Monad ( liftM )
@@ -79,14 +74,13 @@ class (G.Vector Vector a, M.MVector MVector a) => Unbox a
 instance NFData (Vector a) where rnf !_ = ()
 instance NFData (MVector s a) where rnf !_ = ()
 
-#if MIN_VERSION_deepseq(1,4,3)
 -- | @since 0.12.1.0
 instance NFData1 Vector where
   liftRnf _ !_ = ()
 -- | @since 0.12.1.0
 instance NFData1 (MVector s) where
   liftRnf _ !_ = ()
-#endif
+
 
 instance (Data a, Unbox a) => Data (Vector a) where
   gfoldl       = G.gfoldl

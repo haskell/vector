@@ -1018,23 +1018,11 @@ enumFromTo_double n m = n `seq` m `seq` fromStream (Stream step ini) (Max (len n
         l = truncate (y-x)+2
 
     {-# INLINE_INNER step #-}
--- GHC changed definition of Enum for Double in GHC8.6 so we have to
--- accommodate both definitions in order to preserve validity of
--- rewrite rule
---
---  ISSUE:  https://gitlab.haskell.org/ghc/ghc/issues/15081
---  COMMIT: https://gitlab.haskell.org/ghc/ghc/commit/4ffaf4b67773af4c72d92bb8b6c87b1a7d34ac0f
-#if MIN_VERSION_base(4,12,0)
     ini = 0
     step x | x' <= lim = return $ Yield x' (x+1)
            | otherwise = return $ Done
            where
              x' = x + n
-#else
-    ini = n
-    step x | x <= lim  = return $ Yield x (x+1)
-           | otherwise = return $ Done
-#endif
 
 {-# RULES
 

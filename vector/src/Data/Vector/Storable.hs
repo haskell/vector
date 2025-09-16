@@ -178,11 +178,7 @@ import Foreign.ForeignPtr
 import Foreign.Ptr
 import Foreign.Marshal.Array ( advancePtr, copyArray )
 
-import Control.DeepSeq ( NFData(rnf)
-#if MIN_VERSION_deepseq(1,4,3)
-                       , NFData1(liftRnf)
-#endif
-                       )
+import Control.DeepSeq ( NFData(rnf), NFData1(liftRnf))
 
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
@@ -221,11 +217,9 @@ data Vector a = Vector {-# UNPACK #-} !Int
 instance NFData (Vector a) where
   rnf (Vector _ _) = ()
 
-#if MIN_VERSION_deepseq(1,4,3)
 -- | @since 0.12.1.0
 instance NFData1 Vector where
   liftRnf _ (Vector _ _) = ()
-#endif
 
 instance (Show a, Storable a) => Show (Vector a) where
   showsPrec = G.showsPrec

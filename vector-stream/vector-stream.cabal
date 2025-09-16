@@ -22,10 +22,6 @@ Description:
         as a backbone for vector package fusion functionality.
 
 Tested-With:
-  GHC == 8.0.2
-  GHC == 8.2.2
-  GHC == 8.4.4
-  GHC == 8.6.5
   GHC == 8.8.4
   GHC == 8.10.7
   GHC == 9.0.2
@@ -51,7 +47,7 @@ Library
   Hs-Source-Dirs:
         src
 
-  Build-Depends: base >= 4.9 && < 4.23
+  Build-Depends: base >= 4.13 && < 4.23
                , ghc-prim >= 0.2 && < 0.14
 
 source-repository head
