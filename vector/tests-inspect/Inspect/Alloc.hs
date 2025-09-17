@@ -1,4 +1,5 @@
 {-# LANGUAGE BangPatterns        #-}
+{-# LANGUAGE CPP                 #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications    #-}
 {- |
@@ -27,12 +28,23 @@ tests = testGroup "allocations"
     [ testCase "IO"
       $ checkAllocations (linear 8)
       $ whnfIO (VU.traverse (\_ -> getAllocationCounter) vector)
+
+#if MIN_VERSION_base(4,17,0)
+    -- GHC<9.4 doesn't optimize well.
     , testCase "ST"
       $ checkAllocations (linear 8)
       $ (\v -> runST $ VU.traverse (pureST . fromIntegral) v) `whnf` vector
+#endif
+
+#if MIN_VERSION_base(4,15,0)
+      -- GHC<9.0 doesn't optimize this well. And there's no appetite
+      -- for finding out why. Thus it's disabled for them. We'll still
+      -- catch regression going forward.
     , testCase "Identity"
       $ checkAllocations (linear 8)
       $ VU.traverse (\n -> Identity (10*n)) `whnf` vector
+#endif
+
     -- NOTE: Naive traversal is lazy and allocated 2 words per element
     --
     -- , testCase "Const Sum"
@@ -43,9 +55,14 @@ tests = testGroup "allocations"
     [ testCase "IO"
       $ checkAllocations (linear 8)
       $ whnfIO (VU.replicateM size getAllocationCounter)
+
+#if MIN_VERSION_base(4,17,0)
+    -- GHC<9.4 doesn't optimize well.
     , testCase "ST"
       $ checkAllocations (linear 8)
       $ (\sz -> runST $ VU.generateM sz pureST) `whnf` size
+#endif
+
     -- , testCase "Identity"
     --   $ checkAllocations (linear 8)
     --   $ (\sz -> VU.generateM sz (\n -> Identity (fromIntegral n :: Int64))) `whnf` size
