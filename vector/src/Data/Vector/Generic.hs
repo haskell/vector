@@ -2627,19 +2627,11 @@ unstreamPrimM :: (PrimMonad m, Vector v a) => MBundle m u a -> m (v a)
 {-# INLINE_FUSED unstreamPrimM #-}
 unstreamPrimM s = M.munstream s >>= unsafeFreeze
 
--- FIXME: the next two functions are only necessary for the specialisations
-unstreamPrimM_IO :: Vector v a => MBundle IO u a -> IO (v a)
-{-# INLINE unstreamPrimM_IO #-}
-unstreamPrimM_IO = unstreamPrimM
-
-unstreamPrimM_ST :: Vector v a => MBundle (ST s) u a -> ST s (v a)
-{-# INLINE unstreamPrimM_ST #-}
-unstreamPrimM_ST = unstreamPrimM
-
 {-# RULES
 
-"unstreamM[IO]" unstreamM = unstreamPrimM_IO
-"unstreamM[ST]" unstreamM = unstreamPrimM_ST  #-}
+"unstreamM[IO]"                   unstreamM @IO     = unstreamPrimM
+"unstreamM[ST]" forall s. forall. unstreamM @(ST s) = unstreamPrimM
+  #-}
 
 
 
@@ -2699,14 +2691,6 @@ unsafeGeneratePrim :: (PrimMonad m, Vector v a) => Int -> (Int -> m a) -> m (v a
 {-# INLINE unsafeGeneratePrim #-}
 unsafeGeneratePrim n f = unsafeFreeze =<< M.generateM n f
 
-generateA_IO :: (Vector v a) => Int -> (Int -> IO a) -> IO (v a)
-{-# INLINE generateA_IO #-}
-generateA_IO = unsafeGeneratePrim
-
-generateA_ST :: (Vector v a) => Int -> (Int -> ST s a) -> ST s (v a)
-{-# INLINE generateA_ST #-}
-generateA_ST = unsafeGeneratePrim
-
 -- Identity is used in lest for mapping over structures. So it's
 -- relatively important case.
 generateA_Identity :: (Vector v a) => Int -> (Int -> Identity a) -> Identity (v a)
@@ -2715,10 +2699,9 @@ generateA_Identity n f = Identity (generate n (runIdentity . f))
 
 
 {-# RULES
-
-"generateA[IO]"       generateA = generateA_IO
-"generateA[ST]"       generateA = generateA_ST
-"generateA[Identity]" generateA = generateA_Identity
+"generateA[IO]"                         generateA @IO     = unsafeGeneratePrim
+"generateA[ST]"       forall s. forall. generateA @(ST s) = unsafeGeneratePrim
+"generateA[Identity]"                   generateA         = generateA_Identity
   #-}
 
 
