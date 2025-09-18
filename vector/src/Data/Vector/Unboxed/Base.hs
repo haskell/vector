@@ -10,6 +10,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DerivingVia #-}
 {-# OPTIONS_HADDOCK hide #-}
 -- |
 -- Module      : Data.Vector.Unboxed.Base
@@ -387,130 +388,85 @@ instance (IsoUnbox a b, Unbox b) => G.Vector Vector (As a b) where
   basicUnsafeIndexM (V_UnboxAs v) i = As . fromURepr <$> G.basicUnsafeIndexM v i
 
 
-#define primMVector(ty,con)                                             \
-instance M.MVector MVector ty where {                                   \
-  {-# INLINE basicLength #-}                                            \
-; {-# INLINE basicUnsafeSlice #-}                                       \
-; {-# INLINE basicOverlaps #-}                                          \
-; {-# INLINE basicUnsafeNew #-}                                         \
-; {-# INLINE basicInitialize #-}                                        \
-; {-# INLINE basicUnsafeReplicate #-}                                   \
-; {-# INLINE basicUnsafeRead #-}                                        \
-; {-# INLINE basicUnsafeWrite #-}                                       \
-; {-# INLINE basicClear #-}                                             \
-; {-# INLINE basicSet #-}                                               \
-; {-# INLINE basicUnsafeCopy #-}                                        \
-; {-# INLINE basicUnsafeGrow #-}                                        \
-; basicLength (con v) = M.basicLength v                                 \
-; basicUnsafeSlice i n (con v) = con $ M.basicUnsafeSlice i n v         \
-; basicOverlaps (con v1) (con v2) = M.basicOverlaps v1 v2               \
-; basicUnsafeNew n = con `liftM` M.basicUnsafeNew n                     \
-; basicInitialize (con v) = M.basicInitialize v                         \
-; basicUnsafeReplicate n x = con `liftM` M.basicUnsafeReplicate n x     \
-; basicUnsafeRead (con v) i = M.basicUnsafeRead v i                     \
-; basicUnsafeWrite (con v) i x = M.basicUnsafeWrite v i x               \
-; basicClear (con v) = M.basicClear v                                   \
-; basicSet (con v) x = M.basicSet v x                                   \
-; basicUnsafeCopy (con v1) (con v2) = M.basicUnsafeCopy v1 v2           \
-; basicUnsafeMove (con v1) (con v2) = M.basicUnsafeMove v1 v2           \
-; basicUnsafeGrow (con v) n = con `liftM` M.basicUnsafeGrow v n }
-
-#define primVector(ty,con,mcon)                                         \
-instance G.Vector Vector ty where {                                     \
-  {-# INLINE basicUnsafeFreeze #-}                                      \
-; {-# INLINE basicUnsafeThaw #-}                                        \
-; {-# INLINE basicLength #-}                                            \
-; {-# INLINE basicUnsafeSlice #-}                                       \
-; {-# INLINE basicUnsafeIndexM #-}                                      \
-; {-# INLINE elemseq #-}                                                \
-; basicUnsafeFreeze (mcon v) = con `liftM` G.basicUnsafeFreeze v        \
-; basicUnsafeThaw (con v) = mcon `liftM` G.basicUnsafeThaw v            \
-; basicLength (con v) = G.basicLength v                                 \
-; basicUnsafeSlice i n (con v) = con $ G.basicUnsafeSlice i n v         \
-; basicUnsafeIndexM (con v) i = G.basicUnsafeIndexM v i                 \
-; basicUnsafeCopy (mcon mv) (con v) = G.basicUnsafeCopy mv v            \
-; elemseq _ = seq }
-
 newtype instance MVector s Int = MV_Int (P.MVector s Int)
 newtype instance Vector    Int = V_Int  (P.Vector    Int)
+deriving via (UnboxViaPrim Int) instance M.MVector MVector Int
+deriving via (UnboxViaPrim Int) instance G.Vector  Vector  Int
 instance Unbox Int
-primMVector(Int, MV_Int)
-primVector(Int, V_Int, MV_Int)
 
 newtype instance MVector s Int8 = MV_Int8 (P.MVector s Int8)
 newtype instance Vector    Int8 = V_Int8  (P.Vector    Int8)
+deriving via (UnboxViaPrim Int8) instance M.MVector MVector Int8
+deriving via (UnboxViaPrim Int8) instance G.Vector  Vector  Int8
 instance Unbox Int8
-primMVector(Int8, MV_Int8)
-primVector(Int8, V_Int8, MV_Int8)
 
 newtype instance MVector s Int16 = MV_Int16 (P.MVector s Int16)
 newtype instance Vector    Int16 = V_Int16  (P.Vector    Int16)
+deriving via (UnboxViaPrim Int16) instance M.MVector MVector Int16
+deriving via (UnboxViaPrim Int16) instance G.Vector  Vector  Int16
 instance Unbox Int16
-primMVector(Int16, MV_Int16)
-primVector(Int16, V_Int16, MV_Int16)
 
 newtype instance MVector s Int32 = MV_Int32 (P.MVector s Int32)
 newtype instance Vector    Int32 = V_Int32  (P.Vector    Int32)
+deriving via (UnboxViaPrim Int32) instance M.MVector MVector Int32
+deriving via (UnboxViaPrim Int32) instance G.Vector  Vector  Int32
 instance Unbox Int32
-primMVector(Int32, MV_Int32)
-primVector(Int32, V_Int32, MV_Int32)
 
 newtype instance MVector s Int64 = MV_Int64 (P.MVector s Int64)
 newtype instance Vector    Int64 = V_Int64  (P.Vector    Int64)
+deriving via (UnboxViaPrim Int64) instance M.MVector MVector Int64
+deriving via (UnboxViaPrim Int64) instance G.Vector  Vector  Int64
 instance Unbox Int64
-primMVector(Int64, MV_Int64)
-primVector(Int64, V_Int64, MV_Int64)
 
 
 newtype instance MVector s Word = MV_Word (P.MVector s Word)
 newtype instance Vector    Word = V_Word  (P.Vector    Word)
+deriving via (UnboxViaPrim Word) instance M.MVector MVector Word
+deriving via (UnboxViaPrim Word) instance G.Vector  Vector  Word
 instance Unbox Word
-primMVector(Word, MV_Word)
-primVector(Word, V_Word, MV_Word)
 
 newtype instance MVector s Word8 = MV_Word8 (P.MVector s Word8)
 newtype instance Vector    Word8 = V_Word8  (P.Vector    Word8)
+deriving via (UnboxViaPrim Word8) instance M.MVector MVector Word8
+deriving via (UnboxViaPrim Word8) instance G.Vector  Vector  Word8
 instance Unbox Word8
-primMVector(Word8, MV_Word8)
-primVector(Word8, V_Word8, MV_Word8)
 
 newtype instance MVector s Word16 = MV_Word16 (P.MVector s Word16)
 newtype instance Vector    Word16 = V_Word16  (P.Vector    Word16)
+deriving via (UnboxViaPrim Word16) instance M.MVector MVector Word16
+deriving via (UnboxViaPrim Word16) instance G.Vector  Vector  Word16
 instance Unbox Word16
-primMVector(Word16, MV_Word16)
-primVector(Word16, V_Word16, MV_Word16)
 
 newtype instance MVector s Word32 = MV_Word32 (P.MVector s Word32)
 newtype instance Vector    Word32 = V_Word32  (P.Vector    Word32)
+deriving via (UnboxViaPrim Word32) instance M.MVector MVector Word32
+deriving via (UnboxViaPrim Word32) instance G.Vector  Vector  Word32
 instance Unbox Word32
-primMVector(Word32, MV_Word32)
-primVector(Word32, V_Word32, MV_Word32)
 
 newtype instance MVector s Word64 = MV_Word64 (P.MVector s Word64)
 newtype instance Vector    Word64 = V_Word64  (P.Vector    Word64)
+deriving via (UnboxViaPrim Word64) instance M.MVector MVector Word64
+deriving via (UnboxViaPrim Word64) instance G.Vector  Vector  Word64
 instance Unbox Word64
-primMVector(Word64, MV_Word64)
-primVector(Word64, V_Word64, MV_Word64)
 
 
 newtype instance MVector s Float = MV_Float (P.MVector s Float)
 newtype instance Vector    Float = V_Float  (P.Vector    Float)
+deriving via (UnboxViaPrim Float) instance M.MVector MVector Float
+deriving via (UnboxViaPrim Float) instance G.Vector  Vector  Float
 instance Unbox Float
-primMVector(Float, MV_Float)
-primVector(Float, V_Float, MV_Float)
 
 newtype instance MVector s Double = MV_Double (P.MVector s Double)
 newtype instance Vector    Double = V_Double  (P.Vector    Double)
+deriving via (UnboxViaPrim Double) instance M.MVector MVector Double
+deriving via (UnboxViaPrim Double) instance G.Vector  Vector  Double
 instance Unbox Double
-primMVector(Double, MV_Double)
-primVector(Double, V_Double, MV_Double)
-
 
 newtype instance MVector s Char = MV_Char (P.MVector s Char)
 newtype instance Vector    Char = V_Char  (P.Vector    Char)
+deriving via (UnboxViaPrim Char) instance M.MVector MVector Char
+deriving via (UnboxViaPrim Char) instance G.Vector  Vector  Char
 instance Unbox Char
-primMVector(Char, MV_Char)
-primVector(Char, V_Char, MV_Char)
 
 -- ----
 -- Bool
