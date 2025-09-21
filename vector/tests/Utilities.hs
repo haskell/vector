@@ -1,8 +1,10 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Utilities where
 
 import Test.QuickCheck
@@ -114,16 +116,19 @@ instance (Eq a, DVU.Unbox a, TestData a) => TestData (DVU.Vector a) where
   model   = map model    . DVU.toList
   unmodel = DVU.fromList . map unmodel
 
-#define id_TestData(ty) \
-instance TestData ty where { \
-  type Model ty = ty;        \
-  model = id;                \
-  unmodel = id }             \
 
-id_TestData(())
-id_TestData(Bool)
-id_TestData(Int)
-id_TestData(Ordering)
+newtype SelfModel a = SelfModel a
+  deriving Eq
+
+instance Eq a => TestData (SelfModel a) where
+  type Model (SelfModel a) = a
+  model (SelfModel a) = a
+  unmodel = SelfModel
+
+deriving via SelfModel ()       instance TestData ()
+deriving via SelfModel Bool     instance TestData Bool
+deriving via SelfModel Int      instance TestData Int
+deriving via SelfModel Ordering instance TestData Ordering
 
 instance TestData Float where
   type Model Float = Float
