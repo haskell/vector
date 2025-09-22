@@ -2171,8 +2171,176 @@ copy :: (Unbox a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 copy = G.copy
 
 
-#define DEFINE_IMMUTABLE
-#include "unbox-tuple-instances"
+
+-- | /O(1)/ Zip 2 vectors.
+zip :: (Unbox a, Unbox b) => Vector a -> Vector b -> Vector (a, b)
+{-# INLINE_FUSED zip #-}
+zip as bs = V_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
+  where len = length as `delayed_min` length bs
+{-# RULES "stream/zip [Vector.Unboxed]" forall as bs .
+  G.stream (zip as bs) = Bundle.zipWith (,) (G.stream as)
+                                            (G.stream bs)   #-}
+
+-- | /O(1)/ Unzip 2 vectors.
+unzip :: (Unbox a, Unbox b) => Vector (a, b) -> (Vector a,
+                                                 Vector b)
+{-# INLINE unzip #-}
+unzip (V_2 _ as bs) = (as, bs)
+
+-- | /O(1)/ Zip 3 vectors.
+zip3 :: (Unbox a, Unbox b, Unbox c) => Vector a ->
+                                       Vector b ->
+                                       Vector c -> Vector (a, b, c)
+{-# INLINE_FUSED zip3 #-}
+zip3 as bs cs = V_3 len (unsafeSlice 0 len as)
+                        (unsafeSlice 0 len bs)
+                        (unsafeSlice 0 len cs)
+  where
+    len = length as `delayed_min` length bs `delayed_min` length cs
+{-# RULES "stream/zip3 [Vector.Unboxed]" forall as bs cs .
+  G.stream (zip3 as bs cs) = Bundle.zipWith3 (, ,) (G.stream as)
+                                                   (G.stream bs)
+                                                   (G.stream cs)   #-}
+
+-- | /O(1)/ Unzip 3 vectors.
+unzip3 :: (Unbox a,
+           Unbox b,
+           Unbox c) => Vector (a, b, c) -> (Vector a, Vector b, Vector c)
+{-# INLINE unzip3 #-}
+unzip3 (V_3 _ as bs cs) = (as, bs, cs)
+
+-- | /O(1)/ Zip 4 vectors.
+zip4 :: (Unbox a, Unbox b, Unbox c, Unbox d) => Vector a ->
+                                                Vector b ->
+                                                Vector c ->
+                                                Vector d -> Vector (a, b, c, d)
+{-# INLINE_FUSED zip4 #-}
+zip4 as bs cs ds = V_4 len (unsafeSlice 0 len as)
+                           (unsafeSlice 0 len bs)
+                           (unsafeSlice 0 len cs)
+                           (unsafeSlice 0 len ds)
+  where
+    len = length as `delayed_min`
+          length bs `delayed_min`
+          length cs `delayed_min`
+          length ds
+{-# RULES "stream/zip4 [Vector.Unboxed]" forall as bs cs ds .
+  G.stream (zip4 as bs cs ds) = Bundle.zipWith4 (, , ,) (G.stream as)
+                                                        (G.stream bs)
+                                                        (G.stream cs)
+                                                        (G.stream ds)   #-}
+
+-- | /O(1)/ Unzip 4 vectors.
+unzip4 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d) => Vector (a, b, c, d) -> (Vector a,
+                                               Vector b,
+                                               Vector c,
+                                               Vector d)
+{-# INLINE unzip4 #-}
+unzip4 (V_4 _ as bs cs ds) = (as, bs, cs, ds)
+
+-- | /O(1)/ Zip 5 vectors.
+zip5 :: (Unbox a,
+         Unbox b,
+         Unbox c,
+         Unbox d,
+         Unbox e) => Vector a ->
+                     Vector b ->
+                     Vector c ->
+                     Vector d ->
+                     Vector e -> Vector (a, b, c, d, e)
+{-# INLINE_FUSED zip5 #-}
+zip5 as bs cs ds es = V_5 len (unsafeSlice 0 len as)
+                              (unsafeSlice 0 len bs)
+                              (unsafeSlice 0 len cs)
+                              (unsafeSlice 0 len ds)
+                              (unsafeSlice 0 len es)
+  where
+    len = length as `delayed_min`
+          length bs `delayed_min`
+          length cs `delayed_min`
+          length ds `delayed_min`
+          length es
+{-# RULES "stream/zip5 [Vector.Unboxed]" forall as bs cs ds es .
+  G.stream (zip5 as
+                 bs
+                 cs
+                 ds
+                 es) = Bundle.zipWith5 (, , , ,) (G.stream as)
+                                                 (G.stream bs)
+                                                 (G.stream cs)
+                                                 (G.stream ds)
+                                                 (G.stream es)   #-}
+
+-- | /O(1)/ Unzip 5 vectors.
+unzip5 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d,
+           Unbox e) => Vector (a, b, c, d, e) -> (Vector a,
+                                                  Vector b,
+                                                  Vector c,
+                                                  Vector d,
+                                                  Vector e)
+{-# INLINE unzip5 #-}
+unzip5 (V_5 _ as bs cs ds es) = (as, bs, cs, ds, es)
+
+-- | /O(1)/ Zip 6 vectors.
+zip6 :: (Unbox a,
+         Unbox b,
+         Unbox c,
+         Unbox d,
+         Unbox e,
+         Unbox f) => Vector a ->
+                     Vector b ->
+                     Vector c ->
+                     Vector d ->
+                     Vector e ->
+                     Vector f -> Vector (a, b, c, d, e, f)
+{-# INLINE_FUSED zip6 #-}
+zip6 as bs cs ds es fs = V_6 len (unsafeSlice 0 len as)
+                                 (unsafeSlice 0 len bs)
+                                 (unsafeSlice 0 len cs)
+                                 (unsafeSlice 0 len ds)
+                                 (unsafeSlice 0 len es)
+                                 (unsafeSlice 0 len fs)
+  where
+    len = length as `delayed_min`
+          length bs `delayed_min`
+          length cs `delayed_min`
+          length ds `delayed_min`
+          length es `delayed_min`
+          length fs
+{-# RULES "stream/zip6 [Vector.Unboxed]" forall as bs cs ds es fs .
+  G.stream (zip6 as
+                 bs
+                 cs
+                 ds
+                 es
+                 fs) = Bundle.zipWith6 (, , , , ,) (G.stream as)
+                                                   (G.stream bs)
+                                                   (G.stream cs)
+                                                   (G.stream ds)
+                                                   (G.stream es)
+                                                   (G.stream fs)   #-}
+
+-- | /O(1)/ Unzip 6 vectors.
+unzip6 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d,
+           Unbox e,
+           Unbox f) => Vector (a, b, c, d, e, f) -> (Vector a,
+                                                     Vector b,
+                                                     Vector c,
+                                                     Vector d,
+                                                     Vector e,
+                                                     Vector f)
+{-# INLINE unzip6 #-}
+unzip6 (V_6 _ as bs cs ds es fs) = (as, bs, cs, ds, es, fs)
+
 
 -- $setup
 -- >>> import Prelude (Bool(True, False), ($), (+), min, max, even, fst, pred, id, succ, undefined, Ord(..))

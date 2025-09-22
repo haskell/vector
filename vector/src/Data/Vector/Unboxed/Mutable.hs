@@ -667,8 +667,138 @@ ifoldrM' = G.ifoldrM'
 -- tuple. Conversions are performed in /O(1)/ and produced vector will
 -- share underlying buffers with parameter vectors.
 
-#define DEFINE_MUTABLE
-#include "unbox-tuple-instances"
+-- | /O(1)/ Zip 2 vectors.
+zip :: (Unbox a, Unbox b) => MVector s a ->
+                             MVector s b -> MVector s (a, b)
+{-# INLINE_FUSED zip #-}
+zip as bs = MV_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
+  where len = length as `delayed_min` length bs
+-- | /O(1)/ Unzip 2 vectors.
+unzip :: (Unbox a, Unbox b) => MVector s (a, b) -> (MVector s a,
+                                                    MVector s b)
+{-# INLINE unzip #-}
+unzip (MV_2 _ as bs) = (as, bs)
+
+-- | /O(1)/ Zip 3 vectors.
+zip3 :: (Unbox a, Unbox b, Unbox c) => MVector s a ->
+                                       MVector s b ->
+                                       MVector s c -> MVector s (a, b, c)
+{-# INLINE_FUSED zip3 #-}
+zip3 as bs cs = MV_3 len (unsafeSlice 0 len as)
+                         (unsafeSlice 0 len bs)
+                         (unsafeSlice 0 len cs)
+  where
+    len = length as `delayed_min` length bs `delayed_min` length cs
+-- | /O(1)/ Unzip 3 vectors.
+unzip3 :: (Unbox a,
+           Unbox b,
+           Unbox c) => MVector s (a, b, c) -> (MVector s a,
+                                               MVector s b,
+                                               MVector s c)
+{-# INLINE unzip3 #-}
+unzip3 (MV_3 _ as bs cs) = (as, bs, cs)
+
+-- | /O(1)/ Zip 4 vectors.
+zip4 :: (Unbox a, Unbox b, Unbox c, Unbox d) => MVector s a ->
+                                                MVector s b ->
+                                                MVector s c ->
+                                                MVector s d -> MVector s (a, b, c, d)
+{-# INLINE_FUSED zip4 #-}
+zip4 as bs cs ds = MV_4 len (unsafeSlice 0 len as)
+                            (unsafeSlice 0 len bs)
+                            (unsafeSlice 0 len cs)
+                            (unsafeSlice 0 len ds)
+  where
+    len = length as `delayed_min`
+          length bs `delayed_min`
+          length cs `delayed_min`
+          length ds
+-- | /O(1)/ Unzip 4 vectors.
+unzip4 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d) => MVector s (a, b, c, d) -> (MVector s a,
+                                                  MVector s b,
+                                                  MVector s c,
+                                                  MVector s d)
+{-# INLINE unzip4 #-}
+unzip4 (MV_4 _ as bs cs ds) = (as, bs, cs, ds)
+
+-- | /O(1)/ Zip 5 vectors.
+zip5 :: (Unbox a,
+         Unbox b,
+         Unbox c,
+         Unbox d,
+         Unbox e) => MVector s a ->
+                     MVector s b ->
+                     MVector s c ->
+                     MVector s d ->
+                     MVector s e -> MVector s (a, b, c, d, e)
+{-# INLINE_FUSED zip5 #-}
+zip5 as bs cs ds es = MV_5 len (unsafeSlice 0 len as)
+                               (unsafeSlice 0 len bs)
+                               (unsafeSlice 0 len cs)
+                               (unsafeSlice 0 len ds)
+                               (unsafeSlice 0 len es)
+  where
+    len = length as `delayed_min`
+          length bs `delayed_min`
+          length cs `delayed_min`
+          length ds `delayed_min`
+          length es
+-- | /O(1)/ Unzip 5 vectors.
+unzip5 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d,
+           Unbox e) => MVector s (a, b, c, d, e) -> (MVector s a,
+                                                     MVector s b,
+                                                     MVector s c,
+                                                     MVector s d,
+                                                     MVector s e)
+{-# INLINE unzip5 #-}
+unzip5 (MV_5 _ as bs cs ds es) = (as, bs, cs, ds, es)
+
+-- | /O(1)/ Zip 6 vectors.
+zip6 :: (Unbox a,
+         Unbox b,
+         Unbox c,
+         Unbox d,
+         Unbox e,
+         Unbox f) => MVector s a ->
+                     MVector s b ->
+                     MVector s c ->
+                     MVector s d ->
+                     MVector s e ->
+                     MVector s f -> MVector s (a, b, c, d, e, f)
+{-# INLINE_FUSED zip6 #-}
+zip6 as bs cs ds es fs = MV_6 len (unsafeSlice 0 len as)
+                                  (unsafeSlice 0 len bs)
+                                  (unsafeSlice 0 len cs)
+                                  (unsafeSlice 0 len ds)
+                                  (unsafeSlice 0 len es)
+                                  (unsafeSlice 0 len fs)
+  where
+    len = length as `delayed_min`
+          length bs `delayed_min`
+          length cs `delayed_min`
+          length ds `delayed_min`
+          length es `delayed_min`
+          length fs
+-- | /O(1)/ Unzip 6 vectors.
+unzip6 :: (Unbox a,
+           Unbox b,
+           Unbox c,
+           Unbox d,
+           Unbox e,
+           Unbox f) => MVector s (a, b, c, d, e, f) -> (MVector s a,
+                                                        MVector s b,
+                                                        MVector s c,
+                                                        MVector s d,
+                                                        MVector s e,
+                                                        MVector s f)
+{-# INLINE unzip6 #-}
+unzip6 (MV_6 _ as bs cs ds es fs) = (as, bs, cs, ds, es, fs)
 
 -- $setup
 -- >>> import Prelude (Char, (*), ($))
