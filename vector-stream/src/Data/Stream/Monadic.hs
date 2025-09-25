@@ -139,13 +139,11 @@ emptyStream = "empty stream"
 -- | Result of taking a single step in a stream
 data Step s a where
   Yield :: a -> s -> Step s a
-  Skip  :: s -> Step s a
   Done  :: Step s a
 
 instance Functor (Step s) where
   {-# INLINE fmap #-}
   fmap f (Yield x s) = Yield (f x) s
-  fmap _ (Skip s) = Skip s
   fmap _ Done = Done
   {-# INLINE (<$) #-}
   (<$) = fmap . const
@@ -170,7 +168,6 @@ null (Stream step t) = null_loop t
       r <- step s
       case r of
         Yield _ _ -> return False
-        Skip s'   -> null_loop s'
         Done      -> return True
 
 -- Construction
@@ -238,17 +235,18 @@ Stream stepa ta ++ Stream stepb tb = Stream step (Left ta)
   where
     {-# INLINE_INNER step #-}
     step (Left  sa) = do
-                        r <- stepa sa
-                        case r of
-                          Yield x sa' -> return $ Yield x (Left  sa')
-                          Skip    sa' -> return $ Skip    (Left  sa')
-                          Done        -> return $ Skip    (Right tb)
-    step (Right sb) = do
-                        r <- stepb sb
-                        case r of
-                          Yield x sb' -> return $ Yield x (Right sb')
-                          Skip    sb' -> return $ Skip    (Right sb')
-                          Done        -> return $ Done
+      r <- stepa sa
+      case r of
+        Yield x sa' -> return $ Yield x (Left  sa')
+        Done        -> step' tb
+    step (Right sb) = step' sb
+
+    {-# INLINE_INNER step' #-}
+    step' s = do
+      r <- stepb s
+      case r of
+        Yield x s' -> return $ Yield x (Right s')
+        Done       -> return $ Done
 
 -- Accessing elements
 -- ------------------
@@ -263,7 +261,6 @@ head (Stream step t) = head_loop SPEC t
           r <- step s
           case r of
             Yield x _  -> return x
-            Skip    s' -> head_loop SPEC s'
             Done       -> error emptyStream
 
 
@@ -278,7 +275,6 @@ last (Stream step t) = last_loop0 SPEC t
           r <- step s
           case r of
             Yield x s' -> last_loop1 SPEC x s'
-            Skip    s' -> last_loop0 SPEC   s'
             Done       -> error emptyStream
 
     last_loop1 !_ x s
@@ -286,7 +282,6 @@ last (Stream step t) = last_loop0 SPEC t
           r <- step s
           case r of
             Yield y s' -> last_loop1 SPEC y s'
-            Skip    s' -> last_loop1 SPEC x s'
             Done       -> return x
 
 infixl 9 !!
@@ -303,7 +298,6 @@ Stream step t !! j | j < 0     = error $ "negative index (" Prelude.++ show j Pr
           case r of
             Yield x s' | i == 0    -> return x
                        | otherwise -> index_loop SPEC s' (i-1)
-            Skip    s'             -> index_loop SPEC s' i
             Done                   -> error emptyStream
 
 infixl 9 !?
@@ -319,7 +313,6 @@ Stream step t !? j = index_loop SPEC t j
           case r of
             Yield x s' | i == 0    -> return (Just x)
                        | otherwise -> index_loop SPEC s' (i-1)
-            Skip    s'             -> index_loop SPEC s' i
             Done                   -> return Nothing
 
 -- Substreams
@@ -339,19 +332,20 @@ init :: (HasCallStack, Monad m) => Stream m a -> Stream m a
 init (Stream step t) = Stream step' (Nothing, t)
   where
     {-# INLINE_INNER step' #-}
-    step' (Nothing, s) = liftM (\r ->
+    step' (Nothing, s) = do
+                           r <- step s
                            case r of
-                             Yield x s' -> Skip (Just x,  s')
-                             Skip    s' -> Skip (Nothing, s')
-                             Done       -> error emptyStream
-                         ) (step s)
+                             Yield x s' -> step'' x s'
+                             Done       -> return (error emptyStream)
 
-    step' (Just x,  s) = liftM (\r ->
-                           case r of
-                             Yield y s' -> Yield x (Just y, s')
-                             Skip    s' -> Skip    (Just x, s')
-                             Done       -> Done
-                         ) (step s)
+    step' (Just x,  s) = step'' x s
+
+    {-# INLINE_INNER step'' #-}
+    step'' x s = liftM (\r ->
+                         case r of
+                           Yield y s' -> Yield x (Just y, s')
+                           Done       -> Done
+                       ) (step s)
 
 -- | All but the first element
 tail :: (HasCallStack, Monad m) => Stream m a -> Stream m a
@@ -359,19 +353,19 @@ tail :: (HasCallStack, Monad m) => Stream m a -> Stream m a
 tail (Stream step t) = Stream step' (Left t)
   where
     {-# INLINE_INNER step' #-}
-    step' (Left  s) = liftM (\r ->
+    step' (Left  s) = do
+                        r <- step s
                         case r of
-                          Yield _ s' -> Skip (Right s')
-                          Skip    s' -> Skip (Left  s')
-                          Done       -> error emptyStream
-                      ) (step s)
+                          Yield _ s' -> step'' s'
+                          Done       -> return (error emptyStream)
+    step' (Right s) = step'' s
 
-    step' (Right s) = liftM (\r ->
-                        case r of
-                          Yield x s' -> Yield x (Right s')
-                          Skip    s' -> Skip    (Right s')
-                          Done       -> Done
-                      ) (step s)
+    {-# INLINE_INNER step'' #-}
+    step'' s = liftM (\r ->
+                       case r of
+                         Yield x s' -> Yield x (Right s')
+                         Done       -> Done
+                     ) (step s)
 
 -- | The first @n@ elements
 take :: Monad m => Int -> Stream m a -> Stream m a
@@ -382,7 +376,6 @@ take n (Stream step t) = n `seq` Stream step' (t, 0)
     step' (s, i) | i < n = liftM (\r ->
                              case r of
                                Yield x s' -> Yield x (s', i+1)
-                               Skip    s' -> Skip    (s', i)
                                Done       -> Done
                            ) (step s)
     step' (_, _) = return Done
@@ -390,23 +383,28 @@ take n (Stream step t) = n `seq` Stream step' (t, 0)
 -- | All but the first @n@ elements
 drop :: Monad m => Int -> Stream m a -> Stream m a
 {-# INLINE_FUSED drop #-}
-drop n (Stream step t) = Stream step' (t, Just n)
+drop n (Stream step t) = Stream step' (t, n)
   where
     {-# INLINE_INNER step' #-}
-    step' (s, Just i) | i > 0 = liftM (\r ->
-                                case r of
-                                   Yield _ s' -> Skip (s', Just (i-1))
-                                   Skip    s' -> Skip (s', Just i)
-                                   Done       -> Done
-                                ) (step s)
-                      | otherwise = return $ Skip (s, Nothing)
+    step' (s, i) | i > 0 = go s i
+    step' (s, _) = step'' s
 
-    step' (s, Nothing) = liftM (\r ->
-                           case r of
-                             Yield x s' -> Yield x (s', Nothing)
-                             Skip    s' -> Skip    (s', Nothing)
-                             Done       -> Done
-                           ) (step s)
+    -- go is a recursive join point
+    {-# INLINABLE go #-}
+    go s i | i > 0 = do
+                       r <- step s
+                       case r of
+                         Yield _ s' -> go s' (i-1)
+                         Done -> return Done
+           | otherwise = step'' s
+
+
+    {-# INLINE_INNER step'' #-}
+    step'' s = liftM (\r ->
+                       case r of
+                         Yield x s' -> Yield x (s', 0)
+                         Done       -> Done
+                       ) (step s)
 
 -- Mapping
 -- -------
@@ -431,7 +429,6 @@ mapM f (Stream step t) = Stream step' t
                 r <- step s
                 case r of
                   Yield x s' -> liftM  (`Yield` s') (f x)
-                  Skip    s' -> return (Skip    s')
                   Done       -> return Done
 
 consume :: Monad m => Stream m a -> m ()
@@ -443,7 +440,6 @@ consume (Stream step t) = consume_loop SPEC t
           r <- step s
           case r of
             Yield _ s' -> consume_loop SPEC s'
-            Skip    s' -> consume_loop SPEC s'
             Done       -> return ()
 
 -- | Execute a monadic action for each element of the 'Stream'
@@ -466,7 +462,6 @@ unbox (Stream step t) = Stream step' t
                 r <- step s
                 case r of
                   Yield (Box x) s' -> return $ Yield x s'
-                  Skip          s' -> return $ Skip    s'
                   Done             -> return Done
 
 -- Zipping
@@ -483,7 +478,6 @@ indexed (Stream step t) = Stream step' (t,0)
                     r <- step s
                     case r of
                       Yield x s' -> return $ Yield (i,x) (s', i+1)
-                      Skip    s' -> return $ Skip        (s', i)
                       Done       -> return Done
 
 -- | Pair each element in a 'Stream' with its index, starting from the right
@@ -500,7 +494,6 @@ indexedR m (Stream step t) = Stream step' (t,m)
                       Yield x s' -> let i' = i-1
                                     in
                                     return $ Yield (i',x) (s', i')
-                      Skip    s' -> return $ Skip         (s', i)
                       Done       -> return Done
 
 -- | Zip two 'Stream's with the given monadic function
@@ -509,22 +502,22 @@ zipWithM :: Monad m => (a -> b -> m c) -> Stream m a -> Stream m b -> Stream m c
 zipWithM f (Stream stepa ta) (Stream stepb tb) = Stream step (ta, tb, Nothing)
   where
     {-# INLINE_INNER step #-}
-    step (sa, sb, Nothing) = liftM (\r ->
+    step (sa, sb, Nothing) = do 
+                               r <- stepa sa
                                case r of
-                                 Yield x sa' -> Skip (sa', sb, Just x)
-                                 Skip    sa' -> Skip (sa', sb, Nothing)
-                                 Done        -> Done
-                             ) (stepa sa)
-
-    step (sa, sb, Just x)  = do
-                               r <- stepb sb
-                               case r of
-                                 Yield y sb' ->
-                                   do
-                                     z <- f x y
-                                     return $ Yield z (sa, sb', Nothing)
-                                 Skip    sb' -> return $ Skip (sa, sb', Just x)
+                                 Yield x sa' -> step' sa' sb x
                                  Done        -> return Done
+    step (sa, sb, Just x) = step' sa sb x
+
+    {-# INLINE_INNER step' #-}
+    step' sa sb x  = do
+                       r <- stepb sb
+                       case r of
+                         Yield y sb' ->
+                           do
+                             z <- f x y
+                             return $ Yield z (sa, sb', Nothing)
+                         Done        -> return Done
 
 zipWithM_ :: Monad m => (a -> b -> m c) -> Stream m a -> Stream m b -> m ()
 {-# INLINE zipWithM_ #-}
@@ -539,23 +532,24 @@ zipWith3M f (Stream stepa ta)
     {-# INLINE_INNER step #-}
     step (sa, sb, sc, Nothing) = do
         r <- stepa sa
-        return $ case r of
-            Yield x sa' -> Skip (sa', sb, sc, Just (x, Nothing))
-            Skip    sa' -> Skip (sa', sb, sc, Nothing)
-            Done        -> Done
+        case r of
+            Yield x sa' -> step' sa' sb sc x
+            Done        -> return Done
+    step (sa, sb, sc, Just (x, Nothing)) = step' sa sb sc x
+    step (sa, sb, sc, Just (x, Just y)) = step'' sa sb sc x y
 
-    step (sa, sb, sc, Just (x, Nothing)) = do
+    {-# INLINE_INNER step' #-}
+    step' sa sb sc x = do
         r <- stepb sb
-        return $ case r of
-            Yield y sb' -> Skip (sa, sb', sc, Just (x, Just y))
-            Skip    sb' -> Skip (sa, sb', sc, Just (x, Nothing))
-            Done        -> Done
+        case r of
+            Yield y sb' -> step'' sa sb' sc x y
+            Done        -> return Done
 
-    step (sa, sb, sc, Just (x, Just y)) = do
+    {-# INLINE_INNER step'' #-}
+    step'' sa sb sc x y = do
         r <- stepc sc
         case r of
             Yield z sc' -> f x y z >>= (\res -> return $ Yield res (sa, sb, sc', Nothing))
-            Skip    sc' -> return $ Skip (sa, sb, sc', Just (x, Just y))
             Done        -> return $ Done
 
 zipWith4M :: Monad m => (a -> b -> c -> d -> m e)
@@ -642,7 +636,6 @@ eqBy eq (Stream step1 t1) (Stream step2 t2) = eq_loop0 SPEC t1 t2
       r <- step1 s1
       case r of
         Yield x s1' -> eq_loop1 SPEC x s1' s2
-        Skip    s1' -> eq_loop0 SPEC   s1' s2
         Done        -> eq_null s2
 
     eq_loop1 !_ x s1 s2 = do
@@ -651,14 +644,12 @@ eqBy eq (Stream step1 t1) (Stream step2 t2) = eq_loop0 SPEC t1 t2
         Yield y s2'
           | eq x y    -> eq_loop0 SPEC   s1 s2'
           | otherwise -> return False
-        Skip    s2'   -> eq_loop1 SPEC x s1 s2'
         Done          -> return False
 
     eq_null s2 = do
       r <- step2 s2
       case r of
         Yield _ _ -> return False
-        Skip s2'  -> eq_null s2'
         Done      -> return True
 
 -- | Lexicographically compare two 'Stream's
@@ -670,7 +661,6 @@ cmpBy cmp (Stream step1 t1) (Stream step2 t2) = cmp_loop0 SPEC t1 t2
       r <- step1 s1
       case r of
         Yield x s1' -> cmp_loop1 SPEC x s1' s2
-        Skip    s1' -> cmp_loop0 SPEC   s1' s2
         Done        -> cmp_null s2
 
     cmp_loop1 !_ x s1 s2 = do
@@ -679,14 +669,12 @@ cmpBy cmp (Stream step1 t1) (Stream step2 t2) = cmp_loop0 SPEC t1 t2
         Yield y s2' -> case x `cmp` y of
                          EQ -> cmp_loop0 SPEC s1 s2'
                          c  -> return c
-        Skip    s2' -> cmp_loop1 SPEC x s1 s2'
         Done        -> return GT
 
     cmp_null s2 = do
       r <- step2 s2
       case r of
         Yield _ _ -> return LT
-        Skip s2'  -> cmp_null s2'
         Done      -> return EQ
 
 -- Filtering
@@ -702,15 +690,17 @@ mapMaybe :: Monad m => (a -> Maybe b) -> Stream m a -> Stream m b
 mapMaybe f (Stream step t) = Stream step' t
   where
     {-# INLINE_INNER step' #-}
-    step' s = do
-                r <- step s
-                case r of
-                  Yield x s' -> do
-                                  return $ case f x of
-                                    Nothing -> Skip s'
-                                    Just b' -> Yield b' s'
-                  Skip    s' -> return $ Skip s'
-                  Done       -> return $ Done
+    step' s0 =
+      let
+        -- go is a recursive join point
+        go s = do
+                 r <- step s
+                 case r of
+                   Yield x s' -> case f x of
+                                   Nothing -> go s'
+                                   Just b' -> return $ Yield b' s'
+                   Done       -> return $ Done
+      in go s0
 
 catMaybes :: Monad m => Stream m (Maybe a) -> Stream m a
 catMaybes = mapMaybe id
@@ -721,15 +711,18 @@ filterM :: Monad m => (a -> m Bool) -> Stream m a -> Stream m a
 filterM f (Stream step t) = Stream step' t
   where
     {-# INLINE_INNER step' #-}
-    step' s = do
-                r <- step s
-                case r of
-                  Yield x s' -> do
-                                  b <- f x
-                                  return $ if b then Yield x s'
-                                                else Skip    s'
-                  Skip    s' -> return $ Skip s'
-                  Done       -> return $ Done
+    step' s0 =
+      let
+        -- go is a join point
+        go s = do
+                 r <- step s
+                 case r of
+                   Yield x s' -> do
+                                   b <- f x
+                                   if b then return $ Yield x s'
+                                        else go s'
+                   Done       -> return $ Done
+      in go s0
 
 -- | Apply monadic function to each element and drop all Nothings
 --
@@ -739,16 +732,19 @@ mapMaybeM :: Monad m => (a -> m (Maybe b)) -> Stream m a -> Stream m b
 mapMaybeM f (Stream step t) = Stream step' t
   where
     {-# INLINE_INNER step' #-}
-    step' s = do
-                r <- step s
-                case r of
-                  Yield x s' -> do
-                                  fx <- f x
-                                  return $ case fx of
-                                    Nothing -> Skip s'
-                                    Just b  -> Yield b s'
-                  Skip    s' -> return $ Skip s'
-                  Done       -> return $ Done
+    step' s0 =
+      let
+        -- go is a join point
+        go s = do
+                 r <- step s
+                 case r of
+                   Yield x s' -> do
+                                   fx <- f x
+                                   case fx of
+                                     Nothing -> go s'
+                                     Just b  -> return $ Yield b s'
+                   Done       -> return $ Done
+      in go s0
 
 -- | Drop repeated adjacent elements.
 uniq :: (Eq a, Monad m) => Stream m a -> Stream m a
@@ -759,14 +755,16 @@ uniq (Stream step st) = Stream step' (Nothing,st)
     step' (Nothing, s) = do r <- step s
                             case r of
                               Yield x s' -> return $ Yield x (Just x , s')
-                              Skip  s'   -> return $ Skip  (Nothing, s')
                               Done       -> return   Done
-    step' (Just x0, s) = do r <- step s
-                            case r of
-                              Yield x s' | x == x0   -> return $ Skip    (Just x0, s')
-                                         | otherwise -> return $ Yield x (Just x , s')
-                              Skip  s'   -> return $ Skip (Just x0, s')
-                              Done       -> return   Done
+    step' (Just x, s) = go x s
+
+    -- go is a recursive join point
+    {-# INLINABLE go #-}
+    go x0 s = do r <- step s
+                 case r of
+                   Yield x s' | x == x0   -> go x0 s'
+                              | otherwise -> return $ Yield x (Just x , s')
+                   Done                   -> return   Done
 
 -- | Longest prefix of elements that satisfy the predicate
 takeWhile :: Monad m => (a -> Bool) -> Stream m a -> Stream m a
@@ -785,7 +783,6 @@ takeWhileM f (Stream step t) = Stream step' t
                   Yield x s' -> do
                                   b <- f x
                                   return $ if b then Yield x s' else Done
-                  Skip    s' -> return $ Skip s'
                   Done       -> return $ Done
 
 -- | Drop the longest prefix of elements that satisfy the predicate
@@ -804,26 +801,28 @@ dropWhileM f (Stream step t) = Stream step' (DropWhile_Drop t)
     -- declarations would be nice!
 
     {-# INLINE_INNER step' #-}
-    step' (DropWhile_Drop s)
-      = do
-          r <- step s
-          case r of
-            Yield x s' -> do
-                            b <- f x
-                            return $ if b then Skip (DropWhile_Drop    s')
-                                          else Skip (DropWhile_Yield x s')
-            Skip    s' -> return $ Skip (DropWhile_Drop    s')
-            Done       -> return $ Done
+    step' s0 =
+      let
+        -- go is a join point
+        go (DropWhile_Drop s)
+          = do
+              r <- step s
+              case r of
+                Yield x s' -> do
+                                b <- f x
+                                if b then go (DropWhile_Drop    s')
+                                     else go (DropWhile_Yield x s')
+                Done       -> return $ Done
 
-    step' (DropWhile_Yield x s) = return $ Yield x (DropWhile_Next s)
+        go (DropWhile_Yield x s) = return $ Yield x (DropWhile_Next s)
 
-    step' (DropWhile_Next s)
-      = liftM (\r ->
-          case r of
-            Yield x s' -> Skip    (DropWhile_Yield x s')
-            Skip    s' -> Skip    (DropWhile_Next    s')
-            Done       -> Done
-        ) (step s)
+        go (DropWhile_Next s)
+          = do
+              r <- step s
+              case r of
+                Yield x s' -> go (DropWhile_Yield x s')
+                Done       -> return Done
+      in go s0
 
 -- Searching
 -- ---------
@@ -840,7 +839,6 @@ elem x (Stream step t) = elem_loop SPEC t
           case r of
             Yield y s' | x == y    -> return True
                        | otherwise -> elem_loop SPEC s'
-            Skip    s'             -> elem_loop SPEC s'
             Done                   -> return False
 
 infix 4 `notElem`
@@ -869,7 +867,6 @@ findM f (Stream step t) = find_loop SPEC t
                             b <- f x
                             if b then return $ Just x
                                  else find_loop SPEC s'
-            Skip    s' -> find_loop SPEC s'
             Done       -> return Nothing
 
 -- | Yield 'Just' the index of the first element that satisfies the predicate
@@ -892,7 +889,6 @@ findIndexM f (Stream step t) = findIndex_loop SPEC t 0
                             b <- f x
                             if b then return $ Just i
                                  else findIndex_loop SPEC s' (i+1)
-            Skip    s' -> findIndex_loop SPEC s' i
             Done       -> return Nothing
 
 -- Folding
@@ -913,7 +909,6 @@ foldlM m w (Stream step t) = foldlM_loop SPEC w t
           r <- step s
           case r of
             Yield x s' -> do { z' <- m z x; foldlM_loop SPEC z' s' }
-            Skip    s' -> foldlM_loop SPEC z s'
             Done       -> return z
 
 -- | Same as 'foldlM'
@@ -936,7 +931,6 @@ foldl1M f (Stream step t) = foldl1M_loop SPEC t
           r <- step s
           case r of
             Yield x s' -> foldlM f x (Stream step s')
-            Skip    s' -> foldl1M_loop SPEC s'
             Done       -> error emptyStream
 
 -- | Same as 'foldl1M'
@@ -960,7 +954,6 @@ foldlM' m w (Stream step t) = foldlM'_loop SPEC w t
           r <- step s
           case r of
             Yield x s' -> do { z' <- m z x; foldlM'_loop SPEC z' s' }
-            Skip    s' -> foldlM'_loop SPEC z s'
             Done       -> return z
 
 -- | Same as 'foldlM''
@@ -984,7 +977,6 @@ foldl1M' f (Stream step t) = foldl1M'_loop SPEC t
           r <- step s
           case r of
             Yield x s' -> foldlM' f x (Stream step s')
-            Skip    s' -> foldl1M'_loop SPEC s'
             Done       -> error emptyStream
 
 -- | Same as 'foldl1M''
@@ -1007,7 +999,6 @@ foldrM f z (Stream step t) = foldrM_loop SPEC t
           r <- step s
           case r of
             Yield x s' -> f x =<< foldrM_loop SPEC s'
-            Skip    s' -> foldrM_loop SPEC s'
             Done       -> return z
 
 -- | Right fold over a non-empty stream
@@ -1025,7 +1016,6 @@ foldr1M f (Stream step t) = foldr1M_loop0 SPEC t
           r <- step s
           case r of
             Yield x s' -> foldr1M_loop1 SPEC x s'
-            Skip    s' -> foldr1M_loop0 SPEC   s'
             Done       -> error emptyStream
 
     foldr1M_loop1 !_ x s
@@ -1033,7 +1023,6 @@ foldr1M f (Stream step t) = foldr1M_loop0 SPEC t
           r <- step s
           case r of
             Yield y s' -> f x =<< foldr1M_loop1 SPEC y s'
-            Skip    s' -> foldr1M_loop1 SPEC x s'
             Done       -> return x
 
 -- Specialised folds
@@ -1049,7 +1038,6 @@ and (Stream step t) = and_loop SPEC t
           case r of
             Yield False _  -> return False
             Yield True  s' -> and_loop SPEC s'
-            Skip        s' -> and_loop SPEC s'
             Done           -> return True
 
 or :: Monad m => Stream m Bool -> m Bool
@@ -1062,7 +1050,6 @@ or (Stream step t) = or_loop SPEC t
           case r of
             Yield False s' -> or_loop SPEC s'
             Yield True  _  -> return True
-            Skip        s' -> or_loop SPEC s'
             Done           -> return False
 
 concatMap :: Monad m => (a -> Stream m b) -> Stream m a -> Stream m b
@@ -1071,22 +1058,25 @@ concatMap f = concatMapM (return . f)
 
 concatMapM :: Monad m => (a -> m (Stream m b)) -> Stream m a -> Stream m b
 {-# INLINE_FUSED concatMapM #-}
-concatMapM f (Stream step t) = Stream concatMap_go (Left t)
+concatMapM f (Stream step t) = Stream step' (Left t)
   where
-    concatMap_go (Left s) = do
-        r <- step s
-        case r of
-            Yield a s' -> do
-                b_stream <- f a
-                return $ Skip (Right (b_stream, s'))
-            Skip    s' -> return $ Skip (Left s')
-            Done       -> return Done
-    concatMap_go (Right (Stream inner_step inner_s, s)) = do
-        r <- inner_step inner_s
-        case r of
-            Yield b inner_s' -> return $ Yield b (Right (Stream inner_step inner_s', s))
-            Skip    inner_s' -> return $ Skip (Right (Stream inner_step inner_s', s))
-            Done             -> return $ Skip (Left s)
+    {-# INLINE_INNER step' #-}
+    step' s0 =
+      let
+        -- go is a join point
+        go (Left s) = do
+          r <- step s
+          case r of
+              Yield a s' -> do
+                  b_stream <- f a
+                  go (Right (b_stream, s'))
+              Done       -> return Done
+        go (Right (Stream inner_step inner_s, s)) = do
+          r <- inner_step inner_s
+          case r of
+              Yield b inner_s' -> return $ Yield b (Right (Stream inner_step inner_s', s))
+              Done             -> go (Left s)
+      in go s0
 
 -- | Create a 'Stream' of values from a 'Stream' of streamable things
 flatten :: Monad m => (a -> m s) -> (s -> m (Step s b)) -> Stream m a -> Stream m b
@@ -1094,22 +1084,24 @@ flatten :: Monad m => (a -> m s) -> (s -> m (Step s b)) -> Stream m a -> Stream 
 flatten mk istep (Stream ostep u) = Stream step (Left u)
   where
     {-# INLINE_INNER step #-}
-    step (Left t) = do
-                      r <- ostep t
-                      case r of
-                        Yield a t' -> do
-                                        s <- mk a
-                                        s `seq` return (Skip (Right (s,t')))
-                        Skip    t' -> return $ Skip (Left t')
-                        Done       -> return $ Done
+    step s0 =
+      let
+        -- go is a join point
+        go (Left t) = do
+                        r <- ostep t
+                        case r of
+                          Yield a t' -> do
+                                          s <- mk a
+                                          s `seq` go (Right (s,t'))
+                          Done       -> return $ Done
 
 
-    step (Right (s,t)) = do
-                           r <- istep s
-                           case r of
-                             Yield x s' -> return $ Yield x (Right (s',t))
-                             Skip    s' -> return $ Skip    (Right (s',t))
-                             Done       -> return $ Skip    (Left t)
+        go (Right (s,t)) = do
+                             r <- istep s
+                             case r of
+                               Yield x s' -> return $ Yield x (Right (s',t))
+                               Done       -> go (Left t)
+      in go s0
 
 -- Unfolding
 -- ---------
@@ -1205,7 +1197,6 @@ prescanlM f w (Stream step t) = Stream step' (t,w)
                       Yield y s' -> do
                                       z <- f x y
                                       return $ Yield x (s', z)
-                      Skip    s' -> return $ Skip (s', x)
                       Done       -> return Done
 
 -- | Prefix scan with strict accumulator
@@ -1226,7 +1217,6 @@ prescanlM' f w (Stream step t) = Stream step' (t,w)
                       Yield y s' -> do
                                       z <- f x y
                                       return $ Yield x (s', z)
-                      Skip    s' -> return $ Skip (s', x)
                       Done       -> return Done
 
 -- | Suffix scan
@@ -1246,7 +1236,6 @@ postscanlM f w (Stream step t) = Stream step' (t,w)
                       Yield y s' -> do
                                       z <- f x y
                                       return $ Yield z (s',z)
-                      Skip    s' -> return $ Skip (s',x)
                       Done       -> return Done
 
 -- | Suffix scan with strict accumulator
@@ -1267,7 +1256,6 @@ postscanlM' f w (Stream step t) = w `seq` Stream step' (t,w)
                       Yield y s' -> do
                                       z <- f x y
                                       z `seq` return (Yield z (s',z))
-                      Skip    s' -> return $ Skip (s',x)
                       Done       -> return Done
 
 -- | Haskell-style scan
@@ -1305,7 +1293,6 @@ scanl1M f (Stream step t) = Stream step' (t, Nothing)
                            r <- step s
                            case r of
                              Yield x s' -> return $ Yield x (s', Just x)
-                             Skip    s' -> return $ Skip (s', Nothing)
                              Done       -> return Done
 
     step' (s, Just x) = do
@@ -1314,7 +1301,6 @@ scanl1M f (Stream step t) = Stream step' (t, Nothing)
                             Yield y s' -> do
                                             z <- f x y
                                             return $ Yield z (s', Just z)
-                            Skip    s' -> return $ Skip (s', Just x)
                             Done       -> return Done
 
 -- | Initial-value free scan over a 'Stream' with a strict accumulator
@@ -1333,7 +1319,6 @@ scanl1M' f (Stream step t) = Stream step' (t, Nothing)
                            r <- step s
                            case r of
                              Yield x s' -> x `seq` return (Yield x (s', Just x))
-                             Skip    s' -> return $ Skip (s', Nothing)
                              Done       -> return Done
 
     step' (s, Just x) = x `seq`
@@ -1343,7 +1328,6 @@ scanl1M' f (Stream step t) = Stream step' (t, Nothing)
                             Yield y s' -> do
                                             z <- f x y
                                             z `seq` return (Yield z (s', Just z))
-                            Skip    s' -> return $ Skip (s', Just x)
                             Done       -> return Done
 
 -- Enumerations
@@ -1639,10 +1623,10 @@ fromVectors vs = Stream (Unf pstep (Left vs))
     n = List.foldl' (\k v -> k + basicLength v) 0 vs
 
     pstep (Left []) = return Done
-    pstep (Left (v:vs)) = basicLength v `seq` return (Skip (Right (v,0,vs)))
+    pstep (Left (v:vs)) = basicLength v `seq` return (_ (Right (v,0,vs)))
 
     pstep (Right (v,i,vs))
-      | i >= basicLength v = return $ Skip (Left vs)
+      | i >= basicLength v = return $ _ (Left vs)
       | otherwise          = case basicUnsafeIndexM v i of
                                Box x -> return $ Yield x (Right (v,i+1,vs))
 
@@ -1666,12 +1650,11 @@ concatVectors (Stream step s}
     pstep (Left s) = do
       r <- step s
       case r of
-        Yield v s' -> basicLength v `seq` return (Skip (Right (v,0,s')))
-        Skip    s' -> return (Skip (Left s'))
+        Yield v s' -> basicLength v `seq` return (_ (Right (v,0,s')))
         Done       -> return Done
 
     pstep (Right (v,i,s))
-      | i >= basicLength v = return (Skip (Left s))
+      | i >= basicLength v = return (_ (Left s))
       | otherwise          = case basicUnsafeIndexM v i of
                                Box x -> return (Yield x (Right (v,i+1,s)))
 
@@ -1683,7 +1666,6 @@ concatVectors (Stream step s}
                                            (\mv -> INTERNAL_CHECK(check) "concatVectors" "length mismatch"
                                                                           (M.basicLength mv == basicLength v)
                                                    $ basicUnsafeCopy mv v)) s')
-        Skip    s' -> return (Skip s')
         Done       -> return Done
 
 reVector :: Monad m => Stream m a -> Stream m a
