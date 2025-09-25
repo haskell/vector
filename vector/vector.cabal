@@ -260,13 +260,14 @@ test-suite vector-inspection
                     Inspect.DerivingVia.OtherFoo
                     Test.Alloc
                     Test.InspectExtra
+                    Test.Ignore
   build-depends:
         base                     -any
       , template-haskell
       , primitive                >= 0.6.4.0 && < 0.10
       , vector                   -any
       , vector-stream            -any
-      , tasty
+      , tasty                    >=1.2
       , tasty-hunit
       , tasty-inspection-testing >= 0.1
 
