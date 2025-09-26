@@ -7,6 +7,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 -- |
 -- Module      : Data.Stream.Monadic
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -95,21 +96,15 @@ import Prelude
   , RealFrac, return, pure, otherwise, seq, error, not, id, show, const, fmap
   , (==), (<), (<=), (>), (+), (-), (/), ($), (.), (=<<), (>>=) )
 
-import Data.Int  ( Int8, Int16, Int32 )
+import Data.Int  ( Int8, Int16, Int32, Int64 )
 import Data.Word ( Word8, Word16, Word32, Word64 )
 
 import GHC.Stack (HasCallStack)
 import GHC.Types ( SPEC(..) )
 
-#include "MachDeps.h"
-
 #define INLINE_FUSED INLINE [1]
 #define INLINE_INNER INLINE [0]
 
-
-#if WORD_SIZE_IN_BITS > 32
-import Data.Int  ( Int64 )
-#endif
 
 
 -- | Box monad
@@ -1371,165 +1366,22 @@ enumFromTo :: (Enum a, Monad m) => a -> a -> Stream m a
 {-# INLINE_FUSED enumFromTo #-}
 enumFromTo x y = fromList [x .. y]
 
--- NOTE: We use (x+1) instead of (succ x) below because the latter checks for
--- overflow which can't happen here.
 
--- FIXME: add "too large" test for Int
-enumFromTo_small :: (Integral a, Monad m) => a -> a -> Stream m a
-{-# INLINE_FUSED enumFromTo_small #-}
-enumFromTo_small x y = x `seq` y `seq` Stream step (Just x)
+enumFromTo_integral :: (Integral a, Monad m) => a -> a -> Stream m a
+{-# INLINE_FUSED enumFromTo_integral #-}
+enumFromTo_integral !x !y = Stream step (Just x)
   where
+    -- NOTE: We use (x+1) instead of (succ x) below because the latter
+    --       checks for overflow which can't happen here.
     {-# INLINE_INNER step #-}
     step Nothing              = return $ Done
     step (Just z) | z == y    = return $ Yield z Nothing
                   | z <  y    = return $ Yield z (Just (z+1))
                   | otherwise = return $ Done
-
-{-# RULES
-
-"enumFromTo<Int8> [Stream]"
-  enumFromTo = enumFromTo_small :: Monad m => Int8 -> Int8 -> Stream m Int8
-
-"enumFromTo<Int16> [Stream]"
-  enumFromTo = enumFromTo_small :: Monad m => Int16 -> Int16 -> Stream m Int16
-
-"enumFromTo<Word8> [Stream]"
-  enumFromTo = enumFromTo_small :: Monad m => Word8 -> Word8 -> Stream m Word8
-
-"enumFromTo<Word16> [Stream]"
-  enumFromTo = enumFromTo_small :: Monad m => Word16 -> Word16 -> Stream m Word16   #-}
-
-
-#if WORD_SIZE_IN_BITS > 32
-
-{-# RULES
-
-"enumFromTo<Int32> [Stream]"
-  enumFromTo = enumFromTo_small :: Monad m => Int32 -> Int32 -> Stream m Int32
-
-"enumFromTo<Word32> [Stream]"
-  enumFromTo = enumFromTo_small :: Monad m => Word32 -> Word32 -> Stream m Word32   #-}
-
-
-#endif
-
--- NOTE: We could implement a generic "too large" test:
---
--- len x y | x > y = 0
---         | n > 0 && n <= fromIntegral (maxBound :: Int) = fromIntegral n
---         | otherwise = error
---   where
---     n = y-x+1
---
--- Alas, GHC won't eliminate unnecessary comparisons (such as n >= 0 for
--- unsigned types). See http://hackage.haskell.org/trac/ghc/ticket/3744
---
-
-enumFromTo_int :: forall m. Monad m => Int -> Int -> Stream m Int
-{-# INLINE_FUSED enumFromTo_int #-}
-enumFromTo_int x y = x `seq` y `seq` Stream step (Just x)
-  where
-    -- {-# INLINE [0] len #-}
-    -- len :: Int -> Int -> Int
-    -- len u v | u > v     = 0
-    --         | otherwise = BOUNDS_CHECK(check) "enumFromTo" "vector too large"
-    --                       (n > 0)
-    --                     $ n
-    --   where
-    --     n = v-u+1
-
-    {-# INLINE_INNER step #-}
-    step Nothing              = return $ Done
-    step (Just z) | z == y    = return $ Yield z Nothing
-                  | z <  y    = return $ Yield z (Just (z+1))
-                  | otherwise = return $ Done
-
-
-enumFromTo_intlike :: (Integral a, Monad m) => a -> a -> Stream m a
-{-# INLINE_FUSED enumFromTo_intlike #-}
-enumFromTo_intlike x y = x `seq` y `seq` Stream step (Just x)
-  where
-    {-# INLINE_INNER step #-}
-    step Nothing              = return $ Done
-    step (Just z) | z == y    = return $ Yield z Nothing
-                  | z <  y    = return $ Yield z (Just (z+1))
-                  | otherwise = return $ Done
-
-{-# RULES
-
-"enumFromTo<Int> [Stream]"
-  enumFromTo = enumFromTo_int :: Monad m => Int -> Int -> Stream m Int
-
-#if WORD_SIZE_IN_BITS > 32
-
-"enumFromTo<Int64> [Stream]"
-  enumFromTo = enumFromTo_intlike :: Monad m => Int64 -> Int64 -> Stream m Int64 #-}
-
-#else
-
-"enumFromTo<Int32> [Stream]"
-  enumFromTo = enumFromTo_intlike :: Monad m => Int32 -> Int32 -> Stream m Int32 #-}
-
-#endif
-
-enumFromTo_big_word :: (Integral a, Monad m) => a -> a -> Stream m a
-{-# INLINE_FUSED enumFromTo_big_word #-}
-enumFromTo_big_word x y = x `seq` y `seq` Stream step (Just x)
-  where
-    {-# INLINE_INNER step #-}
-    step Nothing              = return $ Done
-    step (Just z) | z == y    = return $ Yield z Nothing
-                  | z <  y    = return $ Yield z (Just (z+1))
-                  | otherwise = return $ Done
-
-{-# RULES
-
-"enumFromTo<Word> [Stream]"
-  enumFromTo = enumFromTo_big_word :: Monad m => Word -> Word -> Stream m Word
-
-"enumFromTo<Word64> [Stream]"
-  enumFromTo = enumFromTo_big_word
-                        :: Monad m => Word64 -> Word64 -> Stream m Word64
-
-#if WORD_SIZE_IN_BITS == 32
-
-"enumFromTo<Word32> [Stream]"
-  enumFromTo = enumFromTo_big_word
-                        :: Monad m => Word32 -> Word32 -> Stream m Word32
-
-#endif
-
-"enumFromTo<Integer> [Stream]"
-  enumFromTo = enumFromTo_big_word
-                        :: Monad m => Integer -> Integer -> Stream m Integer   #-}
-
-
-
-#if WORD_SIZE_IN_BITS > 32
-
--- FIXME: the "too large" test is totally wrong
-enumFromTo_big_int :: (Integral a, Monad m) => a -> a -> Stream m a
-{-# INLINE_FUSED enumFromTo_big_int #-}
-enumFromTo_big_int x y = x `seq` y `seq` Stream step (Just x)
-  where
-    {-# INLINE_INNER step #-}
-    step Nothing              = return $ Done
-    step (Just z) | z == y    = return $ Yield z Nothing
-                  | z <  y    = return $ Yield z (Just (z+1))
-                  | otherwise = return $ Done
-
-{-# RULES
-
-"enumFromTo<Int64> [Stream]"
-  enumFromTo = enumFromTo_big_int :: Monad m => Int64 -> Int64 -> Stream m Int64   #-}
-
-
-
-#endif
 
 enumFromTo_char :: Monad m => Char -> Char -> Stream m Char
 {-# INLINE_FUSED enumFromTo_char #-}
-enumFromTo_char x y = x `seq` y `seq` Stream step xn
+enumFromTo_char !x !y = Stream step xn
   where
     xn = ord x
     yn = ord y
@@ -1538,21 +1390,10 @@ enumFromTo_char x y = x `seq` y `seq` Stream step xn
     step zn | zn <= yn  = return $ Yield (unsafeChr zn) (zn+1)
             | otherwise = return $ Done
 
-{-# RULES
-
-"enumFromTo<Char> [Stream]"
-  enumFromTo = enumFromTo_char   #-}
-
-
-
-------------------------------------------------------------------------
-
--- Specialise enumFromTo for Float and Double.
--- Also, try to do something about pairs?
 
 enumFromTo_double :: (Monad m, Ord a, RealFrac a) => a -> a -> Stream m a
 {-# INLINE_FUSED enumFromTo_double #-}
-enumFromTo_double n m = n `seq` m `seq` Stream step ini
+enumFromTo_double !n !m = Stream step ini
   where
     lim = m + 1/2 -- important to float out
     ini = 0
@@ -1561,13 +1402,26 @@ enumFromTo_double n m = n `seq` m `seq` Stream step ini
            where
              x' = x + n
 
+
 {-# RULES
 
-"enumFromTo<Double> [Stream]"
-  enumFromTo = enumFromTo_double :: Monad m => Double -> Double -> Stream m Double
+"Stream.enumFromTo[Int]"     enumFromTo @Int     = enumFromTo_integral
+"Stream.enumFromTo[Int8]"    enumFromTo @Int8    = enumFromTo_integral
+"Stream.enumFromTo[Int16]"   enumFromTo @Int16   = enumFromTo_integral
+"Stream.enumFromTo[Int32]"   enumFromTo @Int32   = enumFromTo_integral
+"Stream.enumFromTo[Int64]"   enumFromTo @Int64   = enumFromTo_integral
+"Stream.enumFromTo[Word]"    enumFromTo @Word    = enumFromTo_integral
+"Stream.enumFromTo[Word8]"   enumFromTo @Word8   = enumFromTo_integral
+"Stream.enumFromTo[Word16]"  enumFromTo @Word16  = enumFromTo_integral
+"Stream.enumFromTo[Word32]"  enumFromTo @Word32  = enumFromTo_integral
+"Stream.enumFromTo[Word64]"  enumFromTo @Word64  = enumFromTo_integral
+"Stream.enumFromTo[Integer]" enumFromTo @Integer = enumFromTo_integral
 
-"enumFromTo<Float> [Stream]"
-  enumFromTo = enumFromTo_double :: Monad m => Float -> Float -> Stream m Float   #-}
+"Stream.enumFromTo[Float]"   enumFromTo @Float   = enumFromTo_double
+"Stream.enumFromTo[Double]"  enumFromTo @Double  = enumFromTo_double
+
+"Stream.enumFromTo[Char]"    enumFromTo @Char    = enumFromTo_char
+  #-}
 
 
 
