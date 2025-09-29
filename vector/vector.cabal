@@ -246,20 +246,27 @@ test-suite vector-doctest
 
 test-suite vector-inspection
   import:           flag-Wall
+  -- We need to compile with -O2 since we're checking that function on vectors are
+  -- compiled down to nonallocating loops. GHC is not good at this with only -O1
+  Ghc-Options:      -O2
   type:             exitcode-stdio-1.0
   hs-source-dirs:   tests-inspect
   main-is:          main.hs
   default-language: Haskell2010
-  Other-modules:    Inspect
-                    Inspect.Alloc
+  Other-modules:    Inspect.Alloc
+                    Inspect.Fusion
                     Inspect.DerivingVia
                     Inspect.DerivingVia.OtherFoo
                     Test.Alloc
+                    Test.InspectExtra
+                    Test.Ignore
   build-depends:
         base                     -any
+      , template-haskell
       , primitive                >= 0.6.4.0 && < 0.10
       , vector                   -any
-      , tasty
+      , vector-stream            -any
+      , tasty                    >=1.2
       , tasty-hunit
       , tasty-inspection-testing >= 0.1
 
