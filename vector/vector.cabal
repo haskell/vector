@@ -60,7 +60,6 @@ Extra-doc-files:
       tests/LICENSE
 Extra-Source-Files:
       internal/GenUnboxTuple.hs
-      internal/unbox-tuple-instances
 
 source-repository head
   type:     git
