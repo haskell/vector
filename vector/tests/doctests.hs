@@ -44,6 +44,6 @@ main = mapM_ run modGroups
         ]
       , [ "src/Data/Vector/Unboxed.hs"
         , "src/Data/Vector/Unboxed/Mutable.hs"
-        , "src/Data/Vector/Unboxed/Base.hs"
+        , "src/Data/Vector/Unboxed/Unsafe.hs"
         ]
       ]

@@ -139,7 +139,7 @@ Library
         Data.Vector.Storable.Mutable.Unsafe
         Data.Vector.Storable.Unsafe
 
-        Data.Vector.Unboxed.Base
+        Data.Vector.Unboxed.Unsafe
         Data.Vector.Unboxed.Mutable
         Data.Vector.Unboxed
 
