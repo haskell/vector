@@ -68,7 +68,7 @@ module Data.Vector.Unboxed.Mutable (
   PrimMonad, PrimState, RealWorld
 ) where
 
-import Data.Vector.Unboxed.Base
+import Data.Vector.Unboxed.Unsafe
 import qualified Data.Vector.Generic.Mutable as G
 import Data.Vector.Fusion.Util ( delayed_min )
 import Control.Monad.Primitive

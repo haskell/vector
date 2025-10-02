@@ -226,7 +226,7 @@ module Data.Vector.Unboxed (
 ) where
 
 import Control.Applicative (Applicative)
-import Data.Vector.Unboxed.Base
+import Data.Vector.Unboxed.Unsafe
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Fusion.Bundle as Bundle
 import Data.Vector.Fusion.Util ( delayed_min )
