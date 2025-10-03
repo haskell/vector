@@ -68,7 +68,10 @@
 -- @
 module Data.Vector.Unboxed (
   -- * Unboxed vectors
-  Vector(V_UnboxAs, V_UnboxViaPrim, V_UnboxViaStorable,V_DoNotUnboxLazy,V_DoNotUnboxStrict,V_DoNotUnboxNormalForm),
+  Vector(V_UnboxAs, V_UnboxViaPrim, V_UnboxViaStorable,V_DoNotUnboxLazy,V_DoNotUnboxStrict,V_DoNotUnboxNormalForm,
+         V_Int,V_Int8,V_Int16,V_Int32,V_Int64,V_Word,V_Word8,V_Word16,V_Word32,V_Word64,V_Float,V_Double,
+         V_Char,V_Bool,V_Complex,V_Identity,V_Down,V_Dual,V_Sum,V_Product,V_Min,V_Max,V_First,V_Last,
+         V_WrappedMonoid,V_Arg,V_Any,V_All,V_Const,V_Alt,V_Compose),
   MVector(..), Unbox,
 
   -- * Accessors

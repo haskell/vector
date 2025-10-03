@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP #-}
-
+{-# LANGUAGE PatternSynonyms #-}
 -- |
 -- Module      : Data.Vector.Unboxed.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010
@@ -16,7 +16,11 @@
 
 module Data.Vector.Unboxed.Mutable (
   -- * Mutable vectors of primitive types
-  MVector(..), IOVector, STVector, Unbox,
+  MVector(MV_UnboxViaPrim, MV_UnboxViaStorable, MV_DoNotUnboxLazy, MV_DoNotUnboxStrict, MV_DoNotUnboxNormalForm, MV_UnboxAs,
+          MV_Int,MV_Int8,MV_Int16,MV_Int32,MV_Int64,MV_Word,MV_Word8,MV_Word16,MV_Word32,MV_Word64,MV_Float,MV_Double,
+          MV_Char,MV_Bool,MV_Complex,MV_Identity,MV_Down,MV_Dual,MV_Sum,MV_Product,MV_Min,MV_Max,MV_First,MV_Last,
+          MV_WrappedMonoid,MV_Arg,MV_Any,MV_All,MV_Const,MV_Alt,MV_Compose),
+  IOVector, STVector, Unbox,
 
   -- * Accessors
 
@@ -65,7 +69,10 @@ module Data.Vector.Unboxed.Mutable (
   -- ** Filling and copying
   set, copy, move, unsafeCopy, unsafeMove,
   -- * Re-exports
-  PrimMonad, PrimState, RealWorld
+  PrimMonad, PrimState, RealWorld,
+  -- * Deprecated
+  pattern MV_Unit,
+  pattern MV_2, pattern MV_3, pattern MV_4, pattern MV_5, pattern MV_6
 ) where
 
 import Data.Vector.Unboxed.Unsafe (MVector, STVector,Unbox,IOVector)
@@ -803,3 +810,36 @@ unzip6 (U.MV_6 _ as bs cs ds es fs) = (as, bs, cs, ds, es, fs)
 
 -- $setup
 -- >>> import Prelude (Char, (*), ($))
+
+
+pattern MV_Unit :: Int -> MVector s ()
+pattern MV_Unit i = U.MV_Unit i
+{-# COMPLETE MV_Unit #-}
+{-# DEPRECATED MV_Unit "Import constructor from Data.Vector.Unboxed.Unsafe" #-}
+
+pattern MV_2 :: Int -> MVector s a -> MVector s b -> MVector s (a,b)
+pattern MV_2 i va vb = U.MV_2 i va vb
+{-# COMPLETE MV_2 #-}
+{-# DEPRECATED MV_2 "Import constructor from Data.Vector.Unboxed.Unsafe" #-}
+
+pattern MV_3 :: Int -> MVector s a -> MVector s b -> MVector s c -> MVector s (a,b,c)
+pattern MV_3 i va vb vc = U.MV_3 i va vb vc
+{-# COMPLETE MV_3 #-}
+{-# DEPRECATED MV_3 "Import constructor from Data.Vector.Unboxed.Unsafe" #-}
+
+pattern MV_4 :: Int -> MVector s a -> MVector s b -> MVector s c -> MVector s d -> MVector s (a,b,c,d)
+pattern MV_4 i va vb vc vd = U.MV_4 i va vb vc vd
+{-# COMPLETE MV_4 #-}
+{-# DEPRECATED MV_4 "Import constructor from Data.Vector.Unboxed.Unsafe" #-}
+
+pattern MV_5 :: Int -> MVector s a -> MVector s b -> MVector s c -> MVector s d
+             -> MVector s e -> MVector s (a,b,c,d,e)
+pattern MV_5 i va vb vc vd ve = U.MV_5 i va vb vc vd ve
+{-# COMPLETE MV_5 #-}
+{-# DEPRECATED MV_5 "Import constructor from Data.Vector.Unboxed.Unsafe" #-}
+
+pattern MV_6 :: Int -> MVector s a -> MVector s b -> MVector s c -> MVector s d
+             -> MVector s e -> MVector s f -> MVector s (a,b,c,d,e,f)
+pattern MV_6 i va vb vc vd ve vf = U.MV_6 i va vb vc vd ve vf
+{-# COMPLETE MV_6 #-}
+{-# DEPRECATED MV_6 "Import constructor from Data.Vector.Unboxed.Unsafe" #-}
