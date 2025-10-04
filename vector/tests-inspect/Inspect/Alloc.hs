@@ -105,6 +105,17 @@ tests = testGroup "allocations"
       , allocWHNF "test_enumFromTo[Float]"  (test_enumFromTo @Float  round        0) 100000
       , allocWHNF "test_enumFromTo[Double]" (test_enumFromTo @Double round        0) 100000
       , allocWHNF "test_enumFromTo[Char]"   (test_enumFromTo @Char ord (chr 32)) (chr 8000)
+      , allocWHNF "test_enumFromToStream[Int]"    (test_enumFromToStream @Int    fromIntegral 0) 100000
+      , allocWHNF "test_enumFromToStream[Int64]"  (test_enumFromToStream @Int64  fromIntegral 0) 100000
+      , allocWHNF "test_enumFromToStream[Int32]"  (test_enumFromToStream @Int32  fromIntegral 0) 100000
+      , allocWHNF "test_enumFromToStream[Int16]"  (test_enumFromToStream @Int16  fromIntegral 0) maxBound
+      , allocWHNF "test_enumFromToStream[Word]"   (test_enumFromToStream @Word   fromIntegral 0) 100000
+      , allocWHNF "test_enumFromToStream[Word64]" (test_enumFromToStream @Word64 fromIntegral 0) 100000
+      , allocWHNF "test_enumFromToStream[Word32]" (test_enumFromToStream @Word32 fromIntegral 0) 100000
+      , allocWHNF "test_enumFromToStream[Word16]" (test_enumFromToStream @Word16 fromIntegral 0) maxBound
+      , allocWHNF "test_enumFromToStream[Float]"  (test_enumFromToStream @Float  round        0) 100000
+      , allocWHNF "test_enumFromToStream[Double]" (test_enumFromToStream @Double round        0) 100000
+      , allocWHNF "test_enumFromToStream[Char]"   (test_enumFromToStream @Char ord (chr 32)) (chr 8000)
       -- FIXME: We don't have specializations for enumFromThenTo
       --
       -- , allocWHNF "test_enumFromThenTo" test_enumFromThenTo size
