@@ -185,6 +185,7 @@ common tests-common
                , template-haskell
                , base-orphans >= 0.6
                , vector
+               , vector-stream
                , deepseq
                , primitive
                , random
@@ -205,6 +206,7 @@ common tests-common
     Tests.Vector.Unboxed
     Tests.Vector.UnitTests
     Tests.Deriving
+    Tests.Specialization
     Utilities
 
   default-extensions:

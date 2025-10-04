@@ -8,6 +8,7 @@ import qualified Tests.Vector.Strict
 import qualified Tests.Vector.Unboxed
 import qualified Tests.Bundle
 import qualified Tests.Move
+import qualified Tests.Specialization
 import qualified Tests.Deriving ()
 
 import Test.Tasty (defaultMain,testGroup)
@@ -23,4 +24,5 @@ main = defaultMain $ testGroup "toplevel" $ concat
     ]
   , Tests.Vector.UnitTests.tests
   , Tests.Move.tests
+  , Tests.Specialization.tests
   ]

@@ -6,12 +6,23 @@ module Inspect.Fusion where
 
 import Test.Tasty
 -- import Test.Tasty.Inspection
+import qualified Data.Vector.Fusion.Bundle.Monadic as B
+import           Data.Vector.Fusion.Bundle.Size (Size(..))
+import qualified Data.Stream.Monadic as S
 import qualified Data.Vector.Unboxed as VU
 import           Data.Vector.Unboxed (Vector)
 import qualified Data.Vector.Generic as VG
 import           Data.Vector.Fusion.Util (Box)
 
 import Test.InspectExtra
+
+
+-- We need to define this function to test rewrite rules in vector-stream.Hv
+-- Rewrite rules in Bundle do not reuse rules in vector-stream
+enumFromToStream :: (Enum a, VG.Vector v a) => a -> a -> v a
+{-# INLINE enumFromToStream #-}
+enumFromToStream x y = VG.unstream $ B.fromStream (S.enumFromTo x y) Unknown
+
 
 -- NOTE: [Fusion tests]
 -- ~~~~~~~~~~~~~~~~~~~~
@@ -198,7 +209,10 @@ test_enumFromThenTo :: (Enum a, VU.Unbox a) => (a -> Int) -> a -> a -> a -> Int
 test_enumFromThenTo fun a b
   = goodProducer (VU.map fun . VU.enumFromThenTo a b)
 
-
+test_enumFromToStream :: (Enum a, VU.Unbox a) => (a -> Int) -> a -> a -> Int
+{-# INLINE test_enumFromToStream #-}
+test_enumFromToStream fun a
+  = goodProducer (VU.map fun . enumFromToStream a)
 
 ----------------------------------------------------------------
 -- Function consuming vectors
@@ -286,6 +300,7 @@ tests = testGroup "Fusion"
     , $(inspectFusion 'test_enumFromStepN)
     , $(inspectClassyFusion 'test_enumFromTo)
     , $(inspectClassyFusion 'test_enumFromThenTo)
+    , $(inspectClassyFusion 'test_enumFromToStream)
     ]
   , testGroup "consumers"
     [ $(inspectFusion 'test_bang)
