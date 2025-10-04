@@ -68,7 +68,10 @@
 -- @
 module Data.Vector.Unboxed (
   -- * Unboxed vectors
-  Vector(V_UnboxAs, V_UnboxViaPrim, V_UnboxViaStorable,V_DoNotUnboxLazy,V_DoNotUnboxStrict,V_DoNotUnboxNormalForm),
+  Vector(V_UnboxAs, V_UnboxViaPrim, V_UnboxViaStorable,V_DoNotUnboxLazy,V_DoNotUnboxStrict,V_DoNotUnboxNormalForm,
+         V_Int,V_Int8,V_Int16,V_Int32,V_Int64,V_Word,V_Word8,V_Word16,V_Word32,V_Word64,V_Float,V_Double,
+         V_Char,V_Bool,V_Complex,V_Identity,V_Down,V_Dual,V_Sum,V_Product,V_Min,V_Max,V_First,V_Last,
+         V_WrappedMonoid,V_Arg,V_Any,V_All,V_Const,V_Alt,V_Compose),
   MVector(..), Unbox,
 
   -- * Accessors
@@ -212,21 +215,22 @@ module Data.Vector.Unboxed (
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
 
   -- ** Deriving via
-  UnboxViaPrim(..),
-  As(..),
-  IsoUnbox(..),
-  UnboxViaStorable(..),
+  U.UnboxViaPrim(..),
+  U.As(..),
+  U.IsoUnbox(..),
+  U.UnboxViaStorable(..),
 
   -- *** /Lazy/ boxing
-  DoNotUnboxLazy(..),
+  U.DoNotUnboxLazy(..),
 
   -- *** /Strict/ boxing
-  DoNotUnboxStrict(..),
-  DoNotUnboxNormalForm(..)
+  U.DoNotUnboxStrict(..),
+  U.DoNotUnboxNormalForm(..)
 ) where
 
 import Control.Applicative (Applicative)
-import Data.Vector.Unboxed.Base
+import Data.Vector.Unboxed.Unsafe (Vector,MVector,Unbox)
+import qualified Data.Vector.Unboxed.Unsafe as U
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Fusion.Bundle as Bundle
 import Data.Vector.Fusion.Util ( delayed_min )
@@ -2175,7 +2179,7 @@ copy = G.copy
 -- | /O(1)/ Zip 2 vectors.
 zip :: (Unbox a, Unbox b) => Vector a -> Vector b -> Vector (a, b)
 {-# INLINE_FUSED zip #-}
-zip as bs = V_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
+zip as bs = U.V_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
   where len = length as `delayed_min` length bs
 {-# RULES "stream/zip [Vector.Unboxed]" forall as bs .
   G.stream (zip as bs) = Bundle.zipWith (,) (G.stream as)
@@ -2185,14 +2189,14 @@ zip as bs = V_2 len (unsafeSlice 0 len as) (unsafeSlice 0 len bs)
 unzip :: (Unbox a, Unbox b) => Vector (a, b) -> (Vector a,
                                                  Vector b)
 {-# INLINE unzip #-}
-unzip (V_2 _ as bs) = (as, bs)
+unzip (U.V_2 _ as bs) = (as, bs)
 
 -- | /O(1)/ Zip 3 vectors.
 zip3 :: (Unbox a, Unbox b, Unbox c) => Vector a ->
                                        Vector b ->
                                        Vector c -> Vector (a, b, c)
 {-# INLINE_FUSED zip3 #-}
-zip3 as bs cs = V_3 len (unsafeSlice 0 len as)
+zip3 as bs cs = U.V_3 len (unsafeSlice 0 len as)
                         (unsafeSlice 0 len bs)
                         (unsafeSlice 0 len cs)
   where
@@ -2207,7 +2211,7 @@ unzip3 :: (Unbox a,
            Unbox b,
            Unbox c) => Vector (a, b, c) -> (Vector a, Vector b, Vector c)
 {-# INLINE unzip3 #-}
-unzip3 (V_3 _ as bs cs) = (as, bs, cs)
+unzip3 (U.V_3 _ as bs cs) = (as, bs, cs)
 
 -- | /O(1)/ Zip 4 vectors.
 zip4 :: (Unbox a, Unbox b, Unbox c, Unbox d) => Vector a ->
@@ -2215,7 +2219,7 @@ zip4 :: (Unbox a, Unbox b, Unbox c, Unbox d) => Vector a ->
                                                 Vector c ->
                                                 Vector d -> Vector (a, b, c, d)
 {-# INLINE_FUSED zip4 #-}
-zip4 as bs cs ds = V_4 len (unsafeSlice 0 len as)
+zip4 as bs cs ds = U.V_4 len (unsafeSlice 0 len as)
                            (unsafeSlice 0 len bs)
                            (unsafeSlice 0 len cs)
                            (unsafeSlice 0 len ds)
@@ -2239,7 +2243,7 @@ unzip4 :: (Unbox a,
                                                Vector c,
                                                Vector d)
 {-# INLINE unzip4 #-}
-unzip4 (V_4 _ as bs cs ds) = (as, bs, cs, ds)
+unzip4 (U.V_4 _ as bs cs ds) = (as, bs, cs, ds)
 
 -- | /O(1)/ Zip 5 vectors.
 zip5 :: (Unbox a,
@@ -2252,7 +2256,7 @@ zip5 :: (Unbox a,
                      Vector d ->
                      Vector e -> Vector (a, b, c, d, e)
 {-# INLINE_FUSED zip5 #-}
-zip5 as bs cs ds es = V_5 len (unsafeSlice 0 len as)
+zip5 as bs cs ds es = U.V_5 len (unsafeSlice 0 len as)
                               (unsafeSlice 0 len bs)
                               (unsafeSlice 0 len cs)
                               (unsafeSlice 0 len ds)
@@ -2285,7 +2289,7 @@ unzip5 :: (Unbox a,
                                                   Vector d,
                                                   Vector e)
 {-# INLINE unzip5 #-}
-unzip5 (V_5 _ as bs cs ds es) = (as, bs, cs, ds, es)
+unzip5 (U.V_5 _ as bs cs ds es) = (as, bs, cs, ds, es)
 
 -- | /O(1)/ Zip 6 vectors.
 zip6 :: (Unbox a,
@@ -2300,7 +2304,7 @@ zip6 :: (Unbox a,
                      Vector e ->
                      Vector f -> Vector (a, b, c, d, e, f)
 {-# INLINE_FUSED zip6 #-}
-zip6 as bs cs ds es fs = V_6 len (unsafeSlice 0 len as)
+zip6 as bs cs ds es fs = U.V_6 len (unsafeSlice 0 len as)
                                  (unsafeSlice 0 len bs)
                                  (unsafeSlice 0 len cs)
                                  (unsafeSlice 0 len ds)
@@ -2339,7 +2343,7 @@ unzip6 :: (Unbox a,
                                                      Vector e,
                                                      Vector f)
 {-# INLINE unzip6 #-}
-unzip6 (V_6 _ as bs cs ds es fs) = (as, bs, cs, ds, es, fs)
+unzip6 (U.V_6 _ as bs cs ds es fs) = (as, bs, cs, ds, es, fs)
 
 
 -- $setup

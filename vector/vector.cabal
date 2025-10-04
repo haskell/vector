@@ -128,22 +128,30 @@ Library
         Data.Vector.Generic.New
         Data.Vector.Generic
 
-        Data.Vector.Primitive.Mutable
         Data.Vector.Primitive
+        Data.Vector.Primitive.Mutable
+        Data.Vector.Primitive.Mutable.Unsafe
+        Data.Vector.Primitive.Unsafe
 
+        Data.Vector.Storable
         Data.Vector.Storable.Internal
         Data.Vector.Storable.Mutable
-        Data.Vector.Storable
+        Data.Vector.Storable.Mutable.Unsafe
+        Data.Vector.Storable.Unsafe
 
-        Data.Vector.Unboxed.Base
+        Data.Vector.Unboxed.Unsafe
         Data.Vector.Unboxed.Mutable
         Data.Vector.Unboxed
 
         Data.Vector.Strict.Mutable
         Data.Vector.Strict
+        Data.Vector.Strict.Mutable.Unsafe
+        Data.Vector.Strict.Unsafe
 
         Data.Vector.Mutable
         Data.Vector
+        Data.Vector.Mutable.Unsafe
+        Data.Vector.Unsafe
 
   Hs-Source-Dirs:
         src

@@ -11,7 +11,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DerivingVia #-}
-{-# OPTIONS_HADDOCK hide #-}
 -- |
 -- Module      : Data.Vector.Unboxed.Base
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010
@@ -26,7 +25,7 @@
 --
 -- Adaptive unboxed vectors: basic implementation.
 
-module Data.Vector.Unboxed.Base (
+module Data.Vector.Unboxed.Unsafe (
   MVector(..), IOVector, STVector, Vector(..), Unbox,
   UnboxViaPrim(..), UnboxViaStorable(..), As(..), IsoUnbox(..),
   DoNotUnboxLazy(..), DoNotUnboxNormalForm(..), DoNotUnboxStrict(..)
