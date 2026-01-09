@@ -750,7 +750,7 @@ scanl' f = scanlM' (\a b -> return (f a b))
 -- | Haskell-style scan with strict accumulator and a monadic operator
 scanlM' :: Monad m => (a -> b -> m a) -> a -> Bundle m v b -> Bundle m v a
 {-# INLINE scanlM' #-}
-scanlM' f z s = z `seq` (z `cons` postscanlM f z s)
+scanlM' f !z s = z `cons` postscanlM f z s
 
 -- | Initial-value free scan over a 'Bundle'
 scanl1 :: Monad m => (a -> a -> a) -> Bundle m v a -> Bundle m v a
@@ -800,7 +800,7 @@ enumFromTo x y = fromList [x .. y]
 -- FIXME: add "too large" test for Int
 enumFromTo_small :: (Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_small #-}
-enumFromTo_small x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact n)
+enumFromTo_small !x !y = fromStream (Stream step (Just x)) (Exact n)
   where
     n = delay_inline max (fromIntegral y - fromIntegral x + 1) 0
 
@@ -852,7 +852,7 @@ enumFromTo_small x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact 
 
 enumFromTo_int :: forall m v. (HasCallStack, Monad m) => Int -> Int -> Bundle m v Int
 {-# INLINE_FUSED enumFromTo_int #-}
-enumFromTo_int x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
+enumFromTo_int !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len :: HasCallStack => Int -> Int -> Int
@@ -869,7 +869,7 @@ enumFromTo_int x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (l
 
 enumFromTo_intlike :: forall m v a. (HasCallStack, Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_intlike #-}
-enumFromTo_intlike x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
+enumFromTo_intlike !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len :: HasCallStack => a -> a -> Int
@@ -907,7 +907,7 @@ enumFromTo_intlike x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exac
 
 enumFromTo_big_word :: forall m v a. (HasCallStack, Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_big_word #-}
-enumFromTo_big_word x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
+enumFromTo_big_word !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len :: HasCallStack => a -> a -> Int
@@ -951,7 +951,7 @@ enumFromTo_big_word x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exa
 -- FIXME: the "too large" test is totally wrong
 enumFromTo_big_int :: forall m v a. (HasCallStack, Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_big_int #-}
-enumFromTo_big_int x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
+enumFromTo_big_int !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len :: HasCallStack => a -> a -> Int
@@ -980,7 +980,7 @@ enumFromTo_big_int x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exac
 
 enumFromTo_char :: Monad m => Char -> Char -> Bundle m v Char
 {-# INLINE_FUSED enumFromTo_char #-}
-enumFromTo_char x y = x `seq` y `seq` fromStream (Stream step xn) (Exact n)
+enumFromTo_char !x !y = fromStream (Stream step xn) (Exact n)
   where
     xn = ord x
     yn = ord y
@@ -1005,7 +1005,7 @@ enumFromTo_char x y = x `seq` y `seq` fromStream (Stream step xn) (Exact n)
 
 enumFromTo_double :: forall m v a. (HasCallStack, Monad m, Ord a, RealFrac a) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_double #-}
-enumFromTo_double n m = n `seq` m `seq` fromStream (Stream step ini) (Max (len n lim))
+enumFromTo_double !n !m = fromStream (Stream step ini) (Max (len n lim))
   where
     lim = m + 1/2 -- important to float out
 
@@ -1071,7 +1071,7 @@ unsafeFromList sz xs = fromStream (S.fromList xs) sz
 
 fromVector :: (Monad m, Vector v a) => v a -> Bundle m v a
 {-# INLINE_FUSED fromVector #-}
-fromVector v = v `seq` n `seq` Bundle (Stream step 0)
+fromVector !v = n `seq` Bundle (Stream step 0)
                                       (Stream vstep True)
                                       (Just v)
                                       (Exact n)
