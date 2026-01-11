@@ -812,18 +812,6 @@ enumFromTo_small !x !y = fromStream (Stream step (Just x)) (Exact n)
                   | otherwise = return $ Done
 
 
-#if WORD_SIZE_IN_BITS > 32
-
-{-# RULES
-
-"enumFromTo<Int32> [Bundle]"
-  enumFromTo = enumFromTo_small :: Monad m => Int32 -> Int32 -> Bundle m v Int32
-
-"enumFromTo<Word32> [Bundle]"
-  enumFromTo = enumFromTo_small :: Monad m => Word32 -> Word32 -> Bundle m v Word32   #-}
-
-#endif
-
 -- NOTE: We could implement a generic "too large" test:
 --
 -- len x y | x > y = 0
@@ -872,17 +860,6 @@ enumFromTo_intlike !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
                   | z <  y    = return $ Yield z (Just (z+1))
                   | otherwise = return $ Done
 
-{-# RULES
-#if WORD_SIZE_IN_BITS > 32
-
-"enumFromTo<Int64> [Bundle]"
-  enumFromTo = enumFromTo_intlike :: Monad m => Int64 -> Int64 -> Bundle m v Int64    #-}
-
-#else
-
-"enumFromTo<Int32> [Bundle]"
-  enumFromTo = enumFromTo_intlike :: Monad m => Int32 -> Int32 -> Bundle m v Int32    #-}
-#endif
 
 
 
@@ -905,16 +882,6 @@ enumFromTo_big_word !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
                   | z <  y    = return $ Yield z (Just (z+1))
                   | otherwise = return $ Done
 
-{-# RULES
-
-#if WORD_SIZE_IN_BITS == 32
-
-"enumFromTo<Word32> [Bundle]"
-  enumFromTo = enumFromTo_big_word
-                        :: Monad m => Word32 -> Word32 -> Bundle m v Word32
-
-#endif
-  #-}
 
 
 #if WORD_SIZE_IN_BITS > 32
@@ -1004,7 +971,20 @@ enumFromTo_double !n !m = fromStream (Stream step ini) (Max (len n lim))
 "enumFromTo<Float> [Bundle]"   enumFromTo @Float   = enumFromTo_double
   #-}
 
-
+#if WORD_SIZE_IN_BITS > 32
+-- 64bit systems
+{-# RULES
+"enumFromTo<Int32> [Bundle]"  enumFromTo @Int32  = enumFromTo_small
+"enumFromTo<Int64> [Bundle]"  enumFromTo @Int64  = enumFromTo_intlike
+"enumFromTo<Word32> [Bundle]" enumFromTo @Word32 = enumFromTo_small
+  #-}
+#else
+-- 32bit systems
+{-# RULES
+"enumFromTo<Int32> [Bundle]"  enumFromTo @Int32  = enumFromTo_intlike
+"enumFromTo<Word32> [Bundle]" enumFromTo @Word32 = enumFromTo_big_word
+  #-}
+#endif
 
 ------------------------------------------------------------------------
 
