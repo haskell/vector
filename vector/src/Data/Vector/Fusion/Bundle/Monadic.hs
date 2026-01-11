@@ -884,8 +884,7 @@ enumFromTo_big_word !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
 
 
 
-#if WORD_SIZE_IN_BITS > 32
-
+#if WORD_SIZE_IN_BITS == 32
 -- FIXME: the "too large" test is totally wrong
 enumFromTo_big_int :: forall m v a. (HasCallStack, Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_big_int #-}
@@ -905,13 +904,6 @@ enumFromTo_big_int !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
     step (Just z) | z == y    = return $ Yield z Nothing
                   | z <  y    = return $ Yield z (Just (z+1))
                   | otherwise = return $ Done
-
-
-{-# RULES
-
-"enumFromTo<Int64> [Bundle]"
-  enumFromTo = enumFromTo_big_int :: Monad m => Int64 -> Int64 -> Bundle m v Int64   #-}
-
 #endif
 
 enumFromTo_char :: Monad m => Char -> Char -> Bundle m v Char
@@ -983,6 +975,7 @@ enumFromTo_double !n !m = fromStream (Stream step ini) (Max (len n lim))
 {-# RULES
 "enumFromTo<Int32> [Bundle]"  enumFromTo @Int32  = enumFromTo_intlike
 "enumFromTo<Word32> [Bundle]" enumFromTo @Word32 = enumFromTo_big_word
+"enumFromTo<Int64> [Bundle]"  enumFromTo @Int64  = enumFromTo_big_int
   #-}
 #endif
 
