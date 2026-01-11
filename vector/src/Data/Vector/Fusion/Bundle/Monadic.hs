@@ -7,6 +7,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 -- |
 -- Module      : Data.Vector.Fusion.Bundle.Monadic
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -810,21 +811,6 @@ enumFromTo_small !x !y = fromStream (Stream step (Just x)) (Exact n)
                   | z <  y    = return $ Yield z (Just (z+1))
                   | otherwise = return $ Done
 
-{-# RULES
-
-"enumFromTo<Int8> [Bundle]"
-  enumFromTo = enumFromTo_small :: Monad m => Int8 -> Int8 -> Bundle m v Int8
-
-"enumFromTo<Int16> [Bundle]"
-  enumFromTo = enumFromTo_small :: Monad m => Int16 -> Int16 -> Bundle m v Int16
-
-"enumFromTo<Word8> [Bundle]"
-  enumFromTo = enumFromTo_small :: Monad m => Word8 -> Word8 -> Bundle m v Word8
-
-"enumFromTo<Word16> [Bundle]"
-  enumFromTo = enumFromTo_small :: Monad m => Word16 -> Word16 -> Bundle m v Word16   #-}
-
-
 
 #if WORD_SIZE_IN_BITS > 32
 
@@ -887,10 +873,6 @@ enumFromTo_intlike !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
                   | otherwise = return $ Done
 
 {-# RULES
-
-"enumFromTo<Int> [Bundle]"
-  enumFromTo = enumFromTo_int :: Monad m => Int -> Int -> Bundle m v Int
-
 #if WORD_SIZE_IN_BITS > 32
 
 "enumFromTo<Int64> [Bundle]"
@@ -900,7 +882,6 @@ enumFromTo_intlike !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
 
 "enumFromTo<Int32> [Bundle]"
   enumFromTo = enumFromTo_intlike :: Monad m => Int32 -> Int32 -> Bundle m v Int32    #-}
-
 #endif
 
 
@@ -926,13 +907,6 @@ enumFromTo_big_word !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
 
 {-# RULES
 
-"enumFromTo<Word> [Bundle]"
-  enumFromTo = enumFromTo_big_word :: Monad m => Word -> Word -> Bundle m v Word
-
-"enumFromTo<Word64> [Bundle]"
-  enumFromTo = enumFromTo_big_word
-                        :: Monad m => Word64 -> Word64 -> Bundle m v Word64
-
 #if WORD_SIZE_IN_BITS == 32
 
 "enumFromTo<Word32> [Bundle]"
@@ -940,10 +914,7 @@ enumFromTo_big_word !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
                         :: Monad m => Word32 -> Word32 -> Bundle m v Word32
 
 #endif
-
-"enumFromTo<Integer> [Bundle]"
-  enumFromTo = enumFromTo_big_word
-                        :: Monad m => Integer -> Integer -> Bundle m v Integer   #-}
+  #-}
 
 
 #if WORD_SIZE_IN_BITS > 32
@@ -974,8 +945,6 @@ enumFromTo_big_int !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
 "enumFromTo<Int64> [Bundle]"
   enumFromTo = enumFromTo_big_int :: Monad m => Int64 -> Int64 -> Bundle m v Int64   #-}
 
-
-
 #endif
 
 enumFromTo_char :: Monad m => Char -> Char -> Bundle m v Char
@@ -990,11 +959,6 @@ enumFromTo_char !x !y = fromStream (Stream step xn) (Exact n)
     {-# INLINE_INNER step #-}
     step zn | zn <= yn  = return $ Yield (unsafeChr zn) (zn+1)
             | otherwise = return $ Done
-
-{-# RULES
-
-"enumFromTo<Char> [Bundle]"
-  enumFromTo = enumFromTo_char   #-}
 
 
 
@@ -1025,12 +989,20 @@ enumFromTo_double !n !m = fromStream (Stream step ini) (Max (len n lim))
              x' = x + n
 
 {-# RULES
+"enumFromTo<Int8> [Bundle]"    enumFromTo @Int8    = enumFromTo_small
+"enumFromTo<Int16> [Bundle]"   enumFromTo @Int16   = enumFromTo_small
+"enumFromTo<Word8> [Bundle]"   enumFromTo @Word8   = enumFromTo_small
+"enumFromTo<Word16> [Bundle]"  enumFromTo @Word16  = enumFromTo_small
 
-"enumFromTo<Double> [Bundle]"
-  enumFromTo = enumFromTo_double :: Monad m => Double -> Double -> Bundle m v Double
+"enumFromTo<Int> [Bundle]"     enumFromTo @Int     = enumFromTo_int
+"enumFromTo<Word> [Bundle]"    enumFromTo @Word    = enumFromTo_big_word
+"enumFromTo<Word64> [Bundle]"  enumFromTo @Word64  = enumFromTo_big_word
+"enumFromTo<Integer> [Bundle]" enumFromTo @Integer = enumFromTo_big_word
 
-"enumFromTo<Float> [Bundle]"
-  enumFromTo = enumFromTo_double :: Monad m => Float -> Float -> Bundle m v Float   #-}
+"enumFromTo<Char> [Bundle]"    enumFromTo @Char    = enumFromTo_char
+"enumFromTo<Double> [Bundle]"  enumFromTo @Double  = enumFromTo_double
+"enumFromTo<Float> [Bundle]"   enumFromTo @Float   = enumFromTo_double
+  #-}
 
 
 
