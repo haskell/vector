@@ -106,15 +106,11 @@ import Prelude
   , return, fmap, otherwise, id, const, seq, max, maxBound, fromIntegral, truncate
   , (+), (-), (<), (<=), (>), (>=), (==), (/=), (&&), (.), ($), (<$), (/) )
 
-import Data.Int  ( Int8, Int16, Int32 )
+import Data.Int  ( Int8, Int16, Int32, Int64 )
 import Data.Word ( Word8, Word16, Word32, Word64 )
 
 #include "vector.h"
 #include "MachDeps.h"
-
-#if WORD_SIZE_IN_BITS > 32
-import Data.Int  ( Int64 )
-#endif
 
 data Chunk v a = Chunk Int (forall m. (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m ())
 
