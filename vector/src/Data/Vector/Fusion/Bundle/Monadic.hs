@@ -794,18 +794,26 @@ enumFromTo x y = fromList [x .. y]
 -- NOTE: We use (x+1) instead of (succ x) below because the latter checks for
 -- overflow which can't happen here.
 
+stepEnumFromToNum
+  :: (Monad m, Ord a, Num a)
+  => a -> Maybe a -> m (Step (Maybe a) a)
+{-# INLINE_INNER stepEnumFromToNum #-}
+stepEnumFromToNum y = \st -> case st of
+  Nothing -> return $ Done
+  Just z
+    | z == y    -> return $ Yield z Nothing
+    | z <  y    -> return $ Yield z (Just (z+1))
+    | otherwise -> return $ Done
+
+
 -- FIXME: add "too large" test for Int
 enumFromTo_small :: (Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_small #-}
-enumFromTo_small !x !y = fromStream (Stream step (Just x)) (Exact n)
+enumFromTo_small !x !y
+  = fromStream (Stream (stepEnumFromToNum y) (Just x)) (Exact n)
   where
     n = delay_inline max (fromIntegral y - fromIntegral x + 1) 0
 
-    {-# INLINE_INNER step #-}
-    step Nothing              = return $ Done
-    step (Just z) | z == y    = return $ Yield z Nothing
-                  | z <  y    = return $ Yield z (Just (z+1))
-                  | otherwise = return $ Done
 
 
 -- NOTE: We could implement a generic "too large" test:
@@ -822,7 +830,8 @@ enumFromTo_small !x !y = fromStream (Stream step (Just x)) (Exact n)
 
 enumFromTo_int :: forall m v. (HasCallStack, Monad m) => Int -> Int -> Bundle m v Int
 {-# INLINE_FUSED enumFromTo_int #-}
-enumFromTo_int !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
+enumFromTo_int !x !y
+  = fromStream (Stream (stepEnumFromToNum y) (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len :: HasCallStack => Int -> Int -> Int
@@ -831,15 +840,10 @@ enumFromTo_int !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
       where
         n = v-u+1
 
-    {-# INLINE_INNER step #-}
-    step Nothing              = return $ Done
-    step (Just z) | z == y    = return $ Yield z Nothing
-                  | z <  y    = return $ Yield z (Just (z+1))
-                  | otherwise = return $ Done
-
 enumFromTo_intlike :: forall m v a. (HasCallStack, Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_intlike #-}
-enumFromTo_intlike !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
+enumFromTo_intlike !x !y
+  = fromStream (Stream (stepEnumFromToNum y) (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len :: HasCallStack => a -> a -> Int
@@ -850,18 +854,10 @@ enumFromTo_intlike !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
       where
         n = v-u+1
 
-    {-# INLINE_INNER step #-}
-    step Nothing              = return $ Done
-    step (Just z) | z == y    = return $ Yield z Nothing
-                  | z <  y    = return $ Yield z (Just (z+1))
-                  | otherwise = return $ Done
-
-
-
-
 enumFromTo_big_word :: forall m v a. (HasCallStack, Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_big_word #-}
-enumFromTo_big_word !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
+enumFromTo_big_word !x !y
+  = fromStream (Stream (stepEnumFromToNum y) (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len :: HasCallStack => a -> a -> Int
@@ -872,19 +868,13 @@ enumFromTo_big_word !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
       where
         n = v-u
 
-    {-# INLINE_INNER step #-}
-    step Nothing              = return $ Done
-    step (Just z) | z == y    = return $ Yield z Nothing
-                  | z <  y    = return $ Yield z (Just (z+1))
-                  | otherwise = return $ Done
-
-
 
 #if WORD_SIZE_IN_BITS == 32
 -- FIXME: the "too large" test is totally wrong
 enumFromTo_big_int :: forall m v a. (HasCallStack, Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_big_int #-}
-enumFromTo_big_int !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
+enumFromTo_big_int !x !y
+  = fromStream (Stream (stepEnumFromToNum y) (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len :: HasCallStack => a -> a -> Int
@@ -894,12 +884,6 @@ enumFromTo_big_int !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
                         $ fromIntegral n
       where
         n = v-u+1
-
-    {-# INLINE_INNER step #-}
-    step Nothing              = return $ Done
-    step (Just z) | z == y    = return $ Yield z Nothing
-                  | z <  y    = return $ Yield z (Just (z+1))
-                  | otherwise = return $ Done
 #endif
 
 enumFromTo_char :: Monad m => Char -> Char -> Bundle m v Char
