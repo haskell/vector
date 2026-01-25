@@ -5,6 +5,12 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
 -- |
+-- This module exposes internal representation of lazy boxed vector
+-- and functions that work on that representation directly (as opposed
+-- to using 'G.Vector' API.
+--
+-- Note that working with internal representation of vector is
+-- generally unsafe and may violate memory safety
 module Data.Vector.Unsafe
   ( Vector(..)
     -- * Array conversions
@@ -44,7 +50,7 @@ import qualified Data.Traversable as Traversable
 import qualified GHC.Exts as Exts (IsList(..))
 
 
--- | Boxed vectors, supporting efficient slicing.
+-- | Lazy boxed vectors, supporting efficient slicing.
 data Vector a = Vector {-# UNPACK #-} !Int
                        {-# UNPACK #-} !Int
                        {-# UNPACK #-} !(Array a)

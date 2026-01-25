@@ -8,6 +8,12 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 -- |
+-- This module exposes internal representation of strict boxed vector
+-- and functions that work on that representation directly (as opposed
+-- to using 'G.Vector' API.
+--
+-- Note that working with internal representation of vector is
+-- generally unsafe and may violate memory safety
 module Data.Vector.Strict.Unsafe
   ( Vector(..)
     -- * Vector conversions

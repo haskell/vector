@@ -6,6 +6,12 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 -- |
+-- This module exposes internal representation of vectors based on
+-- 'Storable' and functions that work on that representation directly
+-- (as opposed to using 'G.Vector' API.
+--
+-- Note that working with internal representation of vector is
+-- generally unsafe and may violate memory safety.
 module Data.Vector.Storable.Unsafe
   ( Vector(..)
   , unsafeCoerceVector

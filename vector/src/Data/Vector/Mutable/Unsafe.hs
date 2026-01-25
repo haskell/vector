@@ -5,6 +5,12 @@
 {-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE TypeFamilies #-}
 -- |
+-- This module exposes internal representation of mutable lazy boxed
+-- vector and functions that work on that representation directly (as
+-- opposed to using 'G.MVector' API.
+--
+-- Note that working with internal representation of vector is
+-- generally unsafe and may violate memory safety
 module Data.Vector.Mutable.Unsafe
   ( MVector(..)
   , IOVector

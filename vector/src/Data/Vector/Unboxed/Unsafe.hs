@@ -12,7 +12,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DerivingVia #-}
 -- |
--- Module      : Data.Vector.Unboxed.Base
+-- Module      : Data.Vector.Unboxed.Unsafe
 -- Copyright   : (c) Roman Leshchinskiy 2009-2010
 --                   Alexey Kuleshevich 2020-2022
 --                   Aleksey Khudyakov 2020-2022
@@ -23,8 +23,14 @@
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- Adaptive unboxed vectors: basic implementation.
-
+-- Adaptive unboxed vectors. This module exposes internal
+-- representation for all unboxed vectors. Both pure and mutable
+-- vectors are exposed from this module.
+--
+-- Note that working with internal representation is generally unsafe
+-- and may violate memory safety. Data family constructors which are
+-- safe exposed in "Data.Vector.Unboxed" and
+-- "Data.Vector.Unboxed.Mutable" modules.
 module Data.Vector.Unboxed.Unsafe (
   MVector(..), IOVector, STVector, Vector(..), Unbox,
   UnboxViaPrim(..), UnboxViaStorable(..), As(..), IsoUnbox(..),

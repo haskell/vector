@@ -5,6 +5,12 @@
 {-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 -- |
+-- This module exposes internal representation of mutable vectors backed by
+-- single 'ByteArray' and functions that work on that representation
+-- directly (as opposed to using 'G.Vector' API).
+--
+-- Note that working with internal representation of vector is
+-- generally unsafe and may violate memory safety.
 module Data.Vector.Primitive.Mutable.Unsafe
   ( MVector(..)
   , IOVector

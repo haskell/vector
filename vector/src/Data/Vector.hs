@@ -16,7 +16,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 --
--- A library for boxed vectors (that is, polymorphic arrays capable of
+-- A library for lazy boxed vectors (that is, polymorphic arrays capable of
 -- holding any Haskell value). The vectors come in two flavours:
 --
 --  * mutable
