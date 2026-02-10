@@ -92,7 +92,7 @@ import Prelude ( Ord, Bool, Int, Maybe, Ordering(..))
 pattern MVector :: MV.MVector s a -> MVector s a
 pattern MVector v = U.MVector v
 {-# COMPLETE MVector #-}
-{-# DEPRECATED MVector "Use constructor exported from Data.Vector.Strict.Unsafe" #-}
+{-# DEPRECATED MVector "Use MVector constructor exported from \"Data.Vector.Strict.Unsafe\"" #-}
 
 
 -- Length information

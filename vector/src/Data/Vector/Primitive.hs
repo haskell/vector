@@ -25,7 +25,7 @@
 
 module Data.Vector.Primitive (
   -- * Primitive vectors
-  Vector, MVector, pattern MVector, pattern Vector,
+  Vector, MVector(MVector), pattern Vector,
 
   -- * Accessors
 
@@ -181,7 +181,7 @@ import Prelude
 pattern Vector :: Int -> Int -> ByteArray -> Vector a
 pattern Vector i j arr = U.Vector i j arr
 {-# COMPLETE Vector #-}
-{-# DEPRECATED Vector "Use constructor exported from Data.Vector.Primitive.Unsafe" #-}
+{-# DEPRECATED Vector "Use Vector constructor exported from \"Data.Vector.Primitive.Unsafe\"" #-}
 
 -- Length
 -- ------

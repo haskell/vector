@@ -22,7 +22,7 @@
 
 module Data.Vector.Storable (
   -- * Storable vectors
-  Vector, MVector, pattern MVector,
+  Vector, MVector(MVector),
 
   -- * Accessors
 

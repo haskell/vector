@@ -86,7 +86,7 @@ import Prelude( Ord, Bool, Ordering(..), Int, Maybe )
 pattern MVector :: Int -> Int -> MutableArray s a -> MVector s a
 pattern MVector i j arr = U.MVector i j arr
 {-# COMPLETE MVector #-}
-{-# DEPRECATED MVector "Use constructor exported from Data.Vector.Mutable.Unsafe" #-}
+{-# DEPRECATED MVector "Use MVector exported from \"Data.Vector.Mutable.Unsafe\"" #-}
 
 
 -- Length information

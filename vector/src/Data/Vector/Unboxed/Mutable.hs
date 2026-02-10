@@ -815,31 +815,31 @@ unzip6 (U.MV_6 _ as bs cs ds es fs) = (as, bs, cs, ds, es, fs)
 pattern MV_Unit :: Int -> MVector s ()
 pattern MV_Unit i = U.MV_Unit i
 {-# COMPLETE MV_Unit #-}
-{-# DEPRECATED MV_Unit "Import constructor from Data.Vector.Unboxed.Unsafe" #-}
+{-# DEPRECATED MV_Unit "Import constructor from \"Data.Vector.Unboxed.Unsafe\"" #-}
 
 pattern MV_2 :: Int -> MVector s a -> MVector s b -> MVector s (a,b)
 pattern MV_2 i va vb = U.MV_2 i va vb
 {-# COMPLETE MV_2 #-}
-{-# DEPRECATED MV_2 "Import constructor from Data.Vector.Unboxed.Unsafe" #-}
+{-# DEPRECATED MV_2 "Import constructor from \"Data.Vector.Unboxed.Unsafe\"" #-}
 
 pattern MV_3 :: Int -> MVector s a -> MVector s b -> MVector s c -> MVector s (a,b,c)
 pattern MV_3 i va vb vc = U.MV_3 i va vb vc
 {-# COMPLETE MV_3 #-}
-{-# DEPRECATED MV_3 "Import constructor from Data.Vector.Unboxed.Unsafe" #-}
+{-# DEPRECATED MV_3 "Import constructor from \"Data.Vector.Unboxed.Unsafe\"" #-}
 
 pattern MV_4 :: Int -> MVector s a -> MVector s b -> MVector s c -> MVector s d -> MVector s (a,b,c,d)
 pattern MV_4 i va vb vc vd = U.MV_4 i va vb vc vd
 {-# COMPLETE MV_4 #-}
-{-# DEPRECATED MV_4 "Import constructor from Data.Vector.Unboxed.Unsafe" #-}
+{-# DEPRECATED MV_4 "Import constructor from \"Data.Vector.Unboxed.Unsafe\"" #-}
 
 pattern MV_5 :: Int -> MVector s a -> MVector s b -> MVector s c -> MVector s d
              -> MVector s e -> MVector s (a,b,c,d,e)
 pattern MV_5 i va vb vc vd ve = U.MV_5 i va vb vc vd ve
 {-# COMPLETE MV_5 #-}
-{-# DEPRECATED MV_5 "Import constructor from Data.Vector.Unboxed.Unsafe" #-}
+{-# DEPRECATED MV_5 "Import constructor from \"Data.Vector.Unboxed.Unsafe\"" #-}
 
 pattern MV_6 :: Int -> MVector s a -> MVector s b -> MVector s c -> MVector s d
              -> MVector s e -> MVector s f -> MVector s (a,b,c,d,e,f)
 pattern MV_6 i va vb vc vd ve vf = U.MV_6 i va vb vc vd ve vf
 {-# COMPLETE MV_6 #-}
-{-# DEPRECATED MV_6 "Import constructor from Data.Vector.Unboxed.Unsafe" #-}
+{-# DEPRECATED MV_6 "Import constructor from \"Data.Vector.Unboxed.Unsafe\"" #-}
