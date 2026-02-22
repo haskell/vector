@@ -75,7 +75,7 @@ import qualified Data.Vector.Generic.Mutable as G
 import           Data.Primitive ( Prim )
 import           Data.Primitive.ByteArray
 import           Data.Vector.Primitive.Mutable.Unsafe
-  (MVector,IOVector,STVector,unsafeCoerceMVector,unsafeCast)
+  (MVector,unsafeCoerceMVector,unsafeCast)
 import qualified Data.Vector.Primitive.Mutable.Unsafe as U
 import           Control.Monad.Primitive
 
@@ -88,6 +88,10 @@ pattern MVector :: Int -> Int -> MutableByteArray s -> MVector s a
 pattern MVector i j arr = U.MVector i j arr
 {-# COMPLETE MVector #-}
 {-# DEPRECATED MVector "Use MVector exported from \"Data.Vector.Primitive.Mutable.Unsafe\"" #-}
+
+type IOVector = MVector RealWorld
+type STVector s = MVector s
+
 
 -- Length information
 -- ------------------

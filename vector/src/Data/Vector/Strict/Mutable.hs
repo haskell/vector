@@ -78,14 +78,14 @@ module Data.Vector.Strict.Mutable (
   PrimMonad, PrimState, RealWorld
 ) where
 
+import           Data.Primitive.Array
 import qualified Data.Vector.Generic.Mutable as G
 import qualified Data.Vector.Mutable         as MV
-import           Data.Vector.Strict.Mutable.Unsafe
-  (MVector,IOVector,STVector,toLazy,fromLazy,toMutableArray,fromMutableArray)
+import           Data.Vector.Strict.Mutable.Unsafe (MVector)
 import qualified Data.Vector.Strict.Mutable.Unsafe as U
 import           Control.Monad.Primitive
 
-import Prelude ( Ord, Bool, Int, Maybe, Ordering(..))
+import Prelude ( Ord, Bool, Int, Maybe, Ordering(..), Monad(..), (<$>), ($))
 
 #include "vector.h"
 
@@ -93,6 +93,49 @@ pattern MVector :: MV.MVector s a -> MVector s a
 pattern MVector v = U.MVector v
 {-# COMPLETE MVector #-}
 {-# DEPRECATED MVector "Use MVector constructor exported from \"Data.Vector.Strict.Unsafe\"" #-}
+
+type IOVector = MVector RealWorld
+type STVector s = MVector s
+
+
+-- Conversions - Lazy vectors
+-- -----------------------------
+
+-- | /O(1)/ Convert strict mutable vector to lazy mutable
+-- vector. Vectors will share mutable buffer
+toLazy :: MVector s a -> MV.MVector s a
+{-# INLINE toLazy #-}
+toLazy (MVector vec) = vec
+
+-- | /O(n)/ Convert lazy mutable vector to strict mutable
+-- vector. Vectors will share mutable buffer. This function evaluates
+-- vector elements to WHNF.
+fromLazy :: PrimMonad m => MV.MVector (PrimState m) a -> m (MVector (PrimState m) a)
+fromLazy mvec = stToPrim $ do
+  G.foldM' (\_ !_ -> return ()) () mvec
+  return $ MVector mvec
+
+
+-- Conversions - Arrays
+-- -----------------------------
+
+-- | /O(n)/ Make a copy of a mutable array to a new mutable
+-- vector. All elements of a vector are evaluated to WHNF
+--
+-- @since 0.13.2.0
+fromMutableArray :: PrimMonad m => MutableArray (PrimState m) a -> m (MVector (PrimState m) a)
+{-# INLINE fromMutableArray #-}
+fromMutableArray marr = stToPrim $ do
+  mvec <- MVector <$> MV.fromMutableArray marr
+  G.foldM' (\_ !_ -> return ()) () mvec
+  return mvec
+
+-- | /O(n)/ Make a copy of a mutable vector into a new mutable array.
+--
+-- @since 0.13.2.0
+toMutableArray :: PrimMonad m => MVector (PrimState m) a -> m (MutableArray (PrimState m) a)
+{-# INLINE toMutableArray #-}
+toMutableArray (MVector v) = MV.toMutableArray v
 
 
 -- Length information

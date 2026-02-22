@@ -178,6 +178,8 @@ module Data.Vector (
 ) where
 
 import Control.Applicative (Applicative)
+import Data.Primitive.Array
+import qualified Data.Traversable as Traversable
 import Data.Vector.Mutable.Unsafe ( MVector )
 import Data.Vector.Unsafe
 import qualified Data.Vector.Generic as G
@@ -187,11 +189,36 @@ import Control.Monad.Primitive
 
 import Prelude
   ( Eq, Ord, Num, Enum, Monoid, Monad, Bool, Ordering(..), Int, Maybe, Either
-  , id, (==))
+  , id, (==), (&&), otherwise)
 
 
-import qualified Data.Traversable as Traversable
 
+-- | /O(1)/ Convert an array to a vector.
+--
+-- @since 0.12.2.0
+fromArray :: Array a -> Vector a
+{-# INLINE fromArray #-}
+fromArray arr = Vector 0 (sizeofArray arr) arr
+
+-- | /O(n)/ Convert a vector to an array.
+--
+-- @since 0.12.2.0
+toArray :: Vector a -> Array a
+{-# INLINE toArray #-}
+toArray (Vector offset len arr)
+  | offset == 0 && len == sizeofArray arr = arr
+  | otherwise = cloneArray arr offset len
+
+-- | /O(1)/ Extract the underlying `Array`, offset where vector starts and the
+-- total number of elements in the vector. Below property always holds:
+--
+-- > let (array, offset, len) = toArraySlice v
+-- > v === unsafeFromArraySlice len offset array
+--
+-- @since 0.13.0.0
+toArraySlice :: Vector a -> (Array a, Int, Int)
+{-# INLINE toArraySlice #-}
+toArraySlice (Vector offset len arr) = (arr, offset, len)
 
 
 -- Length information

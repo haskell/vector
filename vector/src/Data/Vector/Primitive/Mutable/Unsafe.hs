@@ -13,8 +13,6 @@
 -- generally unsafe and may violate memory safety.
 module Data.Vector.Primitive.Mutable.Unsafe
   ( MVector(..)
-  , IOVector
-  , STVector
   , unsafeCoerceMVector
   , unsafeCast
   ) where
@@ -23,7 +21,6 @@ import qualified Data.Vector.Generic.Mutable as MG
 import           Data.Primitive.ByteArray
 import           Data.Primitive ( Prim, sizeOf )
 import           Data.Word ( Word8 )
-import           Control.Monad.Primitive
 import           Control.Monad ( liftM )
 import           GHC.Stack (HasCallStack)
 
@@ -49,9 +46,6 @@ type role MVector nominal nominal
 data MVector s a = MVector {-# UNPACK #-} !Int                  -- ^ offset
                            {-# UNPACK #-} !Int                  -- ^ length
                            {-# UNPACK #-} !(MutableByteArray s) -- ^ underlying mutable byte array
-
-type IOVector = MVector RealWorld
-type STVector s = MVector s
 
 -- | /O(1)/ Unsafely coerce a mutable vector from one element type to another,
 -- representationally equal type. The operation just changes the type of the

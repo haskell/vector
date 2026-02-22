@@ -14,8 +14,7 @@
 module Data.Vector.Unsafe
   ( Vector(..)
     -- * Array conversions
-  , toArray, fromArray
-  , toArraySlice, unsafeFromArraySlice
+  , unsafeFromArraySlice
   ) where
 
 import Data.Vector.Mutable.Unsafe ( MVector(..) )
@@ -36,7 +35,7 @@ import Data.Function ( fix )
 import Prelude
   ( Eq, Ord, Monoid, Functor, Monad, Show, Ordering(..), Int
   , compare, mempty, mappend, mconcat, return, showsPrec, fmap, otherwise, flip, const
-  , (>>=), (+), (-), (<), (<=), (>), (>=), (==), (/=), (&&), (.), ($) )
+  , (>>=), (+), (-), (<), (<=), (>), (>=), (==), (/=), (.), ($) )
 
 import Data.Functor.Classes (Eq1 (..), Ord1 (..), Read1 (..), Show1 (..))
 import Data.Data      ( Data(..) )
@@ -295,34 +294,6 @@ instance Traversable.Traversable Vector where
 
 -- Conversions - Arrays
 -- -----------------------------
-
--- | /O(1)/ Convert an array to a vector.
---
--- @since 0.12.2.0
-fromArray :: Array a -> Vector a
-{-# INLINE fromArray #-}
-fromArray arr = Vector 0 (sizeofArray arr) arr
-
--- | /O(n)/ Convert a vector to an array.
---
--- @since 0.12.2.0
-toArray :: Vector a -> Array a
-{-# INLINE toArray #-}
-toArray (Vector offset len arr)
-  | offset == 0 && len == sizeofArray arr = arr
-  | otherwise = cloneArray arr offset len
-
--- | /O(1)/ Extract the underlying `Array`, offset where vector starts and the
--- total number of elements in the vector. Below property always holds:
---
--- > let (array, offset, len) = toArraySlice v
--- > v === unsafeFromArraySlice len offset array
---
--- @since 0.13.0.0
-toArraySlice :: Vector a -> (Array a, Int, Int)
-{-# INLINE toArraySlice #-}
-toArraySlice (Vector offset len arr) = (arr, offset, len)
-
 
 -- | /O(1)/ Convert an array slice to a vector. This function is very unsafe,
 -- because constructing an invalid vector can yield almost all other safe

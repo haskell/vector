@@ -179,16 +179,63 @@ module Data.Vector.Strict (
 
 import Control.Applicative (Applicative)
 import Control.Monad.Primitive
+import Control.DeepSeq (NFData1(liftRnf))
+import Data.Primitive.Array
 import Data.Vector.Strict.Mutable.Unsafe  ( MVector(..) )
 import Data.Vector.Strict.Unsafe
 import qualified Data.Vector.Generic as G
+import qualified Data.Vector as V
 import qualified Data.Traversable as Traversable
 
 import Control.Monad.ST ( ST )
 
 import Prelude
   ( Eq(..), Ord(..), Num, Enum, Monoid, Monad, Bool, Ordering(..), Int, Maybe, Either
-  , id)
+  , id, ($), seq)
+
+-- Conversions - Lazy vectors
+-- -----------------------------
+
+-- | /O(1)/ Convert strict array to lazy array
+toLazy :: Vector a -> V.Vector a
+toLazy (Vector v) = v
+
+-- | /O(n)/ Convert lazy array to strict array. This function reduces
+-- each element of vector to WHNF.
+fromLazy :: V.Vector a -> Vector a
+fromLazy vec = liftRnf (`seq` ()) v `seq` v where v = Vector vec
+
+
+-- Conversions - Arrays
+-- -----------------------------
+
+-- | /O(n)/ Convert an array to a vector and reduce each element to WHNF.
+--
+-- @since 0.13.2.0
+fromArray :: Array a -> Vector a
+{-# INLINE fromArray #-}
+fromArray arr = liftRnf (`seq` ()) vec `seq` vec
+  where
+    vec = Vector $ V.fromArray arr
+
+-- | /O(n)/ Convert a vector to an array.
+--
+-- @since 0.13.2.0
+toArray :: Vector a -> Array a
+{-# INLINE toArray #-}
+toArray (Vector v) = V.toArray v
+
+-- | /O(1)/ Extract the underlying `Array`, offset where vector starts and the
+-- total number of elements in the vector. Below property always holds:
+--
+-- > let (array, offset, len) = toArraySlice v
+-- > v === unsafeFromArraySlice len offset array
+--
+-- @since 0.13.2.0
+toArraySlice :: Vector a -> (Array a, Int, Int)
+{-# INLINE toArraySlice #-}
+toArraySlice (Vector v) = V.toArraySlice v
+
 
 -- Length information
 -- ------------------

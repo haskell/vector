@@ -13,19 +13,13 @@
 -- generally unsafe and may violate memory safety
 module Data.Vector.Mutable.Unsafe
   ( MVector(..)
-  , IOVector
-  , STVector
-    -- * Array conversions
-  , toMutableArray
-  , fromMutableArray
   ) where
 
-import           Control.Monad (when, liftM)
+import           Control.Monad (when)
 import           Control.Monad.ST (ST)
 import qualified Data.Vector.Generic.Mutable as G
 import           Data.Vector.Internal.Check
 import           Data.Primitive.Array
-import           Control.Monad.Primitive
 
 import Prelude
   ( Monad, Ordering(..), Int
@@ -44,9 +38,6 @@ data MVector s a = MVector { _offset :: {-# UNPACK #-} !Int
                            , _array  :: {-# UNPACK #-} !(MutableArray s a)
                            -- ^ Underlying array
                            }
-
-type IOVector = MVector RealWorld
-type STVector s = MVector s
 
 
 -- NOTE: This seems unsafe, see http://trac.haskell.org/vector/ticket/54
@@ -165,23 +156,3 @@ loopM !n k = let
 
 uninitialised :: a
 uninitialised = error "Data.Vector.Mutable: uninitialised element. If you are trying to compact a vector, use the 'Data.Vector.force' function to remove uninitialised elements from the underlying array."
-
-
--- Conversions - Arrays
--- -----------------------------
-
--- | /O(n)/ Make a copy of a mutable array to a new mutable vector.
---
--- @since 0.12.2.0
-fromMutableArray :: PrimMonad m => MutableArray (PrimState m) a -> m (MVector (PrimState m) a)
-{-# INLINE fromMutableArray #-}
-fromMutableArray marr =
-  let size = sizeofMutableArray marr
-  in MVector 0 size `liftM` cloneMutableArray marr 0 size
-
--- | /O(n)/ Make a copy of a mutable vector into a new mutable array.
---
--- @since 0.12.2.0
-toMutableArray :: PrimMonad m => MVector (PrimState m) a -> m (MutableArray (PrimState m) a)
-{-# INLINE toMutableArray #-}
-toMutableArray (MVector offset size marr) = cloneMutableArray marr offset size
