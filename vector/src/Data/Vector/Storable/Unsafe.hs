@@ -63,8 +63,12 @@ unsafeCoerceVector :: Coercible a b => Vector a -> Vector b
 unsafeCoerceVector = unsafeCoerce
 
 -- | 'Storable'-based vectors.
-data Vector a = Vector {-# UNPACK #-} !Int
-                       {-# UNPACK #-} !(ForeignPtr a)
+data Vector a = Vector
+  { unsafeSize :: {-# UNPACK #-} !Int
+    -- ^ Number of elements in a vector
+  , unsafeForeignPtr :: {-# UNPACK #-} !(ForeignPtr a)
+    -- ^ Underlying buffer as a `ForeignPtr`, which mustn't be mutated
+  }
 
 instance NFData (Vector a) where
   rnf (Vector _ _) = ()

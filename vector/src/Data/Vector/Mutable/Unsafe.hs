@@ -31,13 +31,12 @@ import Prelude
 type role MVector nominal representational
 
 -- | Mutable boxed vectors keyed on the monad they live in ('IO' or @'ST' s@).
-data MVector s a = MVector { _offset :: {-# UNPACK #-} !Int
-                           -- ^ Offset in underlying array
-                           , _size   :: {-# UNPACK #-} !Int
-                           -- ^ Size of slice
-                           , _array  :: {-# UNPACK #-} !(MutableArray s a)
-                           -- ^ Underlying array
-                           }
+data MVector s a = MVector
+  { unsafeOffset :: {-# UNPACK #-} !Int -- ^ Offset in underlying array
+  , unsafeSize   :: {-# UNPACK #-} !Int -- ^ Size of slice
+  , unsafeMutableArray  :: {-# UNPACK #-} !(MutableArray s a)
+    -- ^ Underlying mutable array
+  }
 
 
 -- NOTE: This seems unsafe, see http://trac.haskell.org/vector/ticket/54

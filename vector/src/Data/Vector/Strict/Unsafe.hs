@@ -54,7 +54,7 @@ import qualified Data.Traversable as Traversable
 import qualified GHC.Exts as Exts (IsList(..))
 
 -- | Strict boxed vectors, supporting efficient slicing.
-newtype Vector a = Vector (V.Vector a)
+newtype Vector a = Vector { unsafeLazyVector :: V.Vector a }
   deriving (Foldable.Foldable, Semigroup, Monoid)
 
 -- NOTE: [GND for strict vector]

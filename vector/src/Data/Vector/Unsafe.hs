@@ -50,9 +50,12 @@ import qualified GHC.Exts as Exts (IsList(..))
 
 
 -- | Lazy boxed vectors, supporting efficient slicing.
-data Vector a = Vector {-# UNPACK #-} !Int
-                       {-# UNPACK #-} !Int
-                       {-# UNPACK #-} !(Array a)
+data Vector a = Vector
+  { unsafeOffset :: {-# UNPACK #-} !Int -- ^ Offset in underlying array
+  , unsafeSize   :: {-# UNPACK #-} !Int -- ^ Size of slice
+  , unsafeArray  :: {-# UNPACK #-} !(Array a)
+    -- ^ Underlying immutable array
+  }
 
 liftRnfV :: (a -> ()) -> Vector a -> ()
 liftRnfV elemRnf = G.foldl' (\_ -> elemRnf) ()

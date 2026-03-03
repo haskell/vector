@@ -48,9 +48,14 @@ import Data.Vector.Primitive.Mutable.Unsafe (MVector(..))
 type role Vector nominal
 
 -- | Unboxed vectors of primitive types.
-data Vector a = Vector {-# UNPACK #-} !Int       -- ^ offset
-                       {-# UNPACK #-} !Int       -- ^ length
-                       {-# UNPACK #-} !ByteArray -- ^ underlying byte array
+data Vector a = Vector
+  { unsafeOffset :: {-# UNPACK #-} !Int
+    -- ^ Offset into `unsafeByteArray` in number of elements, not bytes
+  , unsafeSize :: {-# UNPACK #-} !Int
+    -- ^ Number of elements in number of elements, not bytes
+  , unsafeByteArray :: {-# UNPACK #-} !ByteArray
+    -- ^ Underlying byte array
+  }
 
 type instance G.Mutable Vector = MVector
 

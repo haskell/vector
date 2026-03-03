@@ -28,7 +28,7 @@ import Prelude ( Monad(..), return )
 type role MVector nominal representational
 
 -- | Mutable boxed vectors keyed on the monad they live in ('IO' or @'ST' s@).
-newtype MVector s a = MVector (MV.MVector s a)
+newtype MVector s a = MVector { unsafeLazyMVector :: MV.MVector s a }
 
 instance G.MVector MVector a where
   {-# INLINE basicLength #-}

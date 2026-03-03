@@ -43,9 +43,14 @@ import Unsafe.Coerce
 type role MVector nominal nominal
 
 -- | Mutable vectors of primitive types.
-data MVector s a = MVector {-# UNPACK #-} !Int                  -- ^ offset
-                           {-# UNPACK #-} !Int                  -- ^ length
-                           {-# UNPACK #-} !(MutableByteArray s) -- ^ underlying mutable byte array
+data MVector s a = MVector
+  { unsafeOffset :: {-# UNPACK #-} !Int
+    -- ^ Offset into the `unsafeMutableByteArray` in number of elements, not bytes
+  , unsafeSize :: {-# UNPACK #-} !Int
+    -- ^ Size of the mutable vector in number of elements, not bytes
+  , unsafeMutableByteArray :: {-# UNPACK #-} !(MutableByteArray s)
+    -- ^ Underlying mutable byte array
+  }
 
 -- | /O(1)/ Unsafely coerce a mutable vector from one element type to another,
 -- representationally equal type. The operation just changes the type of the
