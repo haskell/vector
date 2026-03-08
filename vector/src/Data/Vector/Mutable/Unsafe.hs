@@ -31,7 +31,7 @@ import Prelude
 type role MVector nominal representational
 
 -- | Mutable boxed vectors keyed on the monad they live in ('IO' or @'ST' s@).
-data MVector s a = MVector
+data MVector s a = UnsafeMVector
   { unsafeOffset :: !Int -- ^ Offset in underlying array
   , unsafeSize   :: !Int -- ^ Size of slice
   , unsafeMutableArray  :: {-# UNPACK #-} !(MutableArray s a)
@@ -51,13 +51,13 @@ instance NFData a => NFData (MVector s a) where
 
 instance G.MVector MVector a where
   {-# INLINE basicLength #-}
-  basicLength (MVector _ n _) = n
+  basicLength (UnsafeMVector _ n _) = n
 
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice j m (MVector i _ arr) = MVector (i+j) m arr
+  basicUnsafeSlice j m (UnsafeMVector i _ arr) = UnsafeMVector (i+j) m arr
 
   {-# INLINE basicOverlaps #-}
-  basicOverlaps (MVector i m arr1) (MVector j n arr2)
+  basicOverlaps (UnsafeMVector i m arr1) (UnsafeMVector j n arr2)
     = sameMutableArray arr1 arr2
       && (between i j (j+n) || between j i (i+m))
     where
@@ -67,7 +67,7 @@ instance G.MVector MVector a where
   basicUnsafeNew n
     = do
         arr <- newArray n uninitialised
-        return (MVector 0 n arr)
+        return (UnsafeMVector 0 n arr)
 
   {-# INLINE basicInitialize #-}
   -- initialization is unnecessary for boxed vectors
@@ -77,19 +77,19 @@ instance G.MVector MVector a where
   basicUnsafeReplicate n x
     = do
         arr <- newArray n x
-        return (MVector 0 n arr)
+        return (UnsafeMVector 0 n arr)
 
   {-# INLINE basicUnsafeRead #-}
-  basicUnsafeRead (MVector i _ arr) j = readArray arr (i+j)
+  basicUnsafeRead (UnsafeMVector i _ arr) j = readArray arr (i+j)
 
   {-# INLINE basicUnsafeWrite #-}
-  basicUnsafeWrite (MVector i _ arr) j x = writeArray arr (i+j) x
+  basicUnsafeWrite (UnsafeMVector i _ arr) j x = writeArray arr (i+j) x
 
   {-# INLINE basicUnsafeCopy #-}
-  basicUnsafeCopy (MVector i n dst) (MVector j _ src)
+  basicUnsafeCopy (UnsafeMVector i n dst) (UnsafeMVector j _ src)
     = copyMutableArray dst i src j n
 
-  basicUnsafeMove dst@(MVector iDst n arrDst) src@(MVector iSrc _ arrSrc)
+  basicUnsafeMove dst@(UnsafeMVector iDst n arrDst) src@(UnsafeMVector iSrc _ arrSrc)
     = case n of
         0 -> return ()
         1 -> readArray arrSrc iSrc >>= writeArray arrDst iDst

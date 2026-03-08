@@ -198,12 +198,12 @@ import Prelude
 
 -- | /O(1)/ Convert strict array to lazy array
 toLazy :: Vector a -> V.Vector a
-toLazy (Vector v) = v
+toLazy (UnsafeVector v) = v
 
 -- | /O(n)/ Convert lazy array to strict array. This function reduces
 -- each element of vector to WHNF.
 fromLazy :: V.Vector a -> Vector a
-fromLazy vec = liftRnf (`seq` ()) v `seq` v where v = Vector vec
+fromLazy vec = liftRnf (`seq` ()) v `seq` v where v = UnsafeVector vec
 
 
 -- Conversions - Arrays
@@ -216,14 +216,14 @@ fromArray :: Array a -> Vector a
 {-# INLINE fromArray #-}
 fromArray arr = liftRnf (`seq` ()) vec `seq` vec
   where
-    vec = Vector $ V.fromArray arr
+    vec = UnsafeVector $ V.fromArray arr
 
 -- | /O(n)/ Convert a vector to an array.
 --
 -- @since 0.13.2.0
 toArray :: Vector a -> Array a
 {-# INLINE toArray #-}
-toArray (Vector v) = V.toArray v
+toArray (UnsafeVector v) = V.toArray v
 
 -- | /O(1)/ Extract the underlying `Array`, offset where vector starts and the
 -- total number of elements in the vector. Below property always holds:
@@ -234,7 +234,7 @@ toArray (Vector v) = V.toArray v
 -- @since 0.13.2.0
 toArraySlice :: Vector a -> (Array a, Int, Int)
 {-# INLINE toArraySlice #-}
-toArraySlice (Vector v) = V.toArraySlice v
+toArraySlice (UnsafeVector v) = V.toArraySlice v
 
 
 -- Length information

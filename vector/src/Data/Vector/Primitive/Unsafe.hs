@@ -48,7 +48,7 @@ import Data.Vector.Primitive.Mutable.Unsafe (MVector(..))
 type role Vector nominal
 
 -- | Unboxed vectors of primitive types.
-data Vector a = Vector
+data Vector a = UnsafeVector
   { unsafeOffset :: !Int
     -- ^ Offset into `unsafeByteArray` in number of elements, not bytes
   , unsafeSize :: !Int
@@ -79,31 +79,31 @@ unsafeCoerceVector = unsafeCoerce
 -- | @since 0.13.0.0
 unsafeCast :: forall a b. (HasCallStack, Prim a, Prim b) => Vector a -> Vector b
 {-# INLINE unsafeCast #-}
-unsafeCast (Vector o n ba)
-  | sizeOf (undefined :: a) == sizeOf (undefined :: b) = Vector o n ba
+unsafeCast (UnsafeVector o n ba)
+  | sizeOf (undefined :: a) == sizeOf (undefined :: b) = UnsafeVector o n ba
   | otherwise = error "Element size mismatch"
 
 
 instance Prim a => G.Vector Vector a where
   {-# INLINE basicUnsafeFreeze #-}
-  basicUnsafeFreeze (MVector i n marr)
-    = Vector i n `liftM` unsafeFreezeByteArray marr
+  basicUnsafeFreeze (UnsafeMVector i n marr)
+    = UnsafeVector i n `liftM` unsafeFreezeByteArray marr
 
   {-# INLINE basicUnsafeThaw #-}
-  basicUnsafeThaw (Vector i n arr)
-    = MVector i n `liftM` unsafeThawByteArray arr
+  basicUnsafeThaw (UnsafeVector i n arr)
+    = UnsafeMVector i n `liftM` unsafeThawByteArray arr
 
   {-# INLINE basicLength #-}
-  basicLength (Vector _ n _) = n
+  basicLength (UnsafeVector _ n _) = n
 
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice j n (Vector i _ arr) = Vector (i+j) n arr
+  basicUnsafeSlice j n (UnsafeVector i _ arr) = UnsafeVector (i+j) n arr
 
   {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM (Vector i _ arr) j = return $! indexByteArray arr (i+j)
+  basicUnsafeIndexM (UnsafeVector i _ arr) j = return $! indexByteArray arr (i+j)
 
   {-# INLINE basicUnsafeCopy #-}
-  basicUnsafeCopy (MVector i n dst) (Vector j _ src)
+  basicUnsafeCopy (UnsafeMVector i n dst) (UnsafeVector j _ src)
     = copyByteArray dst (i*sz) src (j*sz) (n*sz)
     where
       sz = sizeOf (undefined :: a)
@@ -113,11 +113,11 @@ instance Prim a => G.Vector Vector a where
 
 
 instance NFData (Vector a) where
-  rnf (Vector _ _ _) = ()
+  rnf (UnsafeVector _ _ _) = ()
 
 -- | @since 0.12.1.0
 instance NFData1 Vector where
-  liftRnf _ (Vector _ _ _) = ()
+  liftRnf _ (UnsafeVector _ _ _) = ()
 
 instance (Show a, Prim a) => Show (Vector a) where
   showsPrec = G.showsPrec

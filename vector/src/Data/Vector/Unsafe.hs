@@ -50,7 +50,7 @@ import qualified GHC.Exts as Exts (IsList(..))
 
 
 -- | Lazy boxed vectors, supporting efficient slicing.
-data Vector a = Vector
+data Vector a = UnsafeVector
   { unsafeOffset :: !Int -- ^ Offset in underlying array
   , unsafeSize   :: !Int -- ^ Size of slice
   , unsafeArray  :: {-# UNPACK #-} !(Array a)
@@ -99,24 +99,24 @@ type instance G.Mutable Vector = MVector
 
 instance G.Vector Vector a where
   {-# INLINE basicUnsafeFreeze #-}
-  basicUnsafeFreeze (MVector i n marr)
-    = Vector i n `liftM` unsafeFreezeArray marr
+  basicUnsafeFreeze (UnsafeMVector i n marr)
+    = UnsafeVector i n `liftM` unsafeFreezeArray marr
 
   {-# INLINE basicUnsafeThaw #-}
-  basicUnsafeThaw (Vector i n arr)
-    = MVector i n `liftM` unsafeThawArray arr
+  basicUnsafeThaw (UnsafeVector i n arr)
+    = UnsafeMVector i n `liftM` unsafeThawArray arr
 
   {-# INLINE basicLength #-}
-  basicLength (Vector _ n _) = n
+  basicLength (UnsafeVector _ n _) = n
 
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice j n (Vector i _ arr) = Vector (i+j) n arr
+  basicUnsafeSlice j n (UnsafeVector i _ arr) = UnsafeVector (i+j) n arr
 
   {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM (Vector i _ arr) j = indexArrayM arr (i+j)
+  basicUnsafeIndexM (UnsafeVector i _ arr) j = indexArrayM arr (i+j)
 
   {-# INLINE basicUnsafeCopy #-}
-  basicUnsafeCopy (MVector i n dst) (Vector j _ src)
+  basicUnsafeCopy (UnsafeMVector i n dst) (UnsafeVector j _ src)
     = copyArray dst i src j n
 
 -- See http://trac.haskell.org/vector/ticket/12
@@ -311,4 +311,4 @@ unsafeFromArraySlice ::
   -> Int -- ^ Length
   -> Vector a
 {-# INLINE unsafeFromArraySlice #-}
-unsafeFromArraySlice arr offset len = Vector offset len arr
+unsafeFromArraySlice arr offset len = UnsafeVector offset len arr

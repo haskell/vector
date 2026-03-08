@@ -54,7 +54,7 @@ import qualified Data.Traversable as Traversable
 import qualified GHC.Exts as Exts (IsList(..))
 
 -- | Strict boxed vectors, supporting efficient slicing.
-newtype Vector a = Vector { unsafeLazyVector :: V.Vector a }
+newtype Vector a = UnsafeVector { unsafeLazyVector :: V.Vector a }
   deriving (Foldable.Foldable, Semigroup, Monoid)
 
 -- NOTE: [GND for strict vector]
@@ -256,4 +256,4 @@ unsafeFromArraySlice ::
   -> Vector a
 {-# INLINE unsafeFromArraySlice #-}
 unsafeFromArraySlice arr offset len = liftRnf (`seq` ()) vec `seq` vec
-  where vec = Vector (V.unsafeFromArraySlice arr offset len)
+  where vec = UnsafeVector (V.unsafeFromArraySlice arr offset len)

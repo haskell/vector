@@ -43,7 +43,7 @@ import Unsafe.Coerce
 type role MVector nominal nominal
 
 -- | Mutable vectors of primitive types.
-data MVector s a = MVector
+data MVector s a = UnsafeMVector
   { unsafeOffset :: !Int
     -- ^ Offset into the `unsafeMutableByteArray` in number of elements, not bytes
   , unsafeSize :: !Int
@@ -71,25 +71,25 @@ unsafeCoerceMVector = unsafeCoerce
 -- | @since 0.13.0.0
 unsafeCast :: forall a b s. (HasCallStack, Prim a, Prim b) => MVector s a -> MVector s b
 {-# INLINE unsafeCast #-}
-unsafeCast (MVector o n ba)
-  | sizeOf (undefined :: a) == sizeOf (undefined :: b) = MVector o n ba
+unsafeCast (UnsafeMVector o n ba)
+  | sizeOf (undefined :: a) == sizeOf (undefined :: b) = UnsafeMVector o n ba
   | otherwise = error "Element size mismatch"
 
 
 
 instance NFData (MVector s a) where
-  rnf (MVector _ _ _) = ()
+  rnf (UnsafeMVector _ _ _) = ()
 
 instance NFData1 (MVector s) where
-  liftRnf _ (MVector _ _ _) = ()
+  liftRnf _ (UnsafeMVector _ _ _) = ()
 
 instance Prim a => MG.MVector MVector a where
-  basicLength (MVector _ n _) = n
-  basicUnsafeSlice j m (MVector i _ arr)
-    = MVector (i+j) m arr
+  basicLength (UnsafeMVector _ n _) = n
+  basicUnsafeSlice j m (UnsafeMVector i _ arr)
+    = UnsafeMVector (i+j) m arr
 
   {-# INLINE basicOverlaps #-}
-  basicOverlaps (MVector i m arr1) (MVector j n arr2)
+  basicOverlaps (UnsafeMVector i m arr1) (UnsafeMVector j n arr2)
     = sameMutableByteArray arr1 arr2
       && (between i j (j+n) || between j i (i+m))
     where
@@ -99,36 +99,36 @@ instance Prim a => MG.MVector MVector a where
   basicUnsafeNew n
     | n < 0 = error $ "Primitive.basicUnsafeNew: negative length: " ++ show n
     | n > mx = error $ "Primitive.basicUnsafeNew: length too large: " ++ show n
-    | otherwise = MVector 0 n `liftM` newByteArray (n * size)
+    | otherwise = UnsafeMVector 0 n `liftM` newByteArray (n * size)
     where
       size = sizeOf (undefined :: a)
       mx = maxBound `div` size :: Int
 
   {-# INLINE basicInitialize #-}
-  basicInitialize (MVector off n v) =
+  basicInitialize (UnsafeMVector off n v) =
       setByteArray v (off * size) (n * size) (0 :: Word8)
     where
       size = sizeOf (undefined :: a)
 
 
   {-# INLINE basicUnsafeRead #-}
-  basicUnsafeRead (MVector i _ arr) j = readByteArray arr (i+j)
+  basicUnsafeRead (UnsafeMVector i _ arr) j = readByteArray arr (i+j)
 
   {-# INLINE basicUnsafeWrite #-}
-  basicUnsafeWrite (MVector i _ arr) j x = writeByteArray arr (i+j) x
+  basicUnsafeWrite (UnsafeMVector i _ arr) j x = writeByteArray arr (i+j) x
 
   {-# INLINE basicUnsafeCopy #-}
-  basicUnsafeCopy (MVector i n dst) (MVector j _ src)
+  basicUnsafeCopy (UnsafeMVector i n dst) (UnsafeMVector j _ src)
     = copyMutableByteArray dst (i*sz) src (j*sz) (n*sz)
     where
       sz = sizeOf (undefined :: a)
 
   {-# INLINE basicUnsafeMove #-}
-  basicUnsafeMove (MVector i n dst) (MVector j _ src)
+  basicUnsafeMove (UnsafeMVector i n dst) (UnsafeMVector j _ src)
     = moveByteArray dst (i*sz) src (j*sz) (n * sz)
     where
       sz = sizeOf (undefined :: a)
 
   {-# INLINE basicSet #-}
-  basicSet (MVector i n arr) x = setByteArray arr i n x
+  basicSet (UnsafeMVector i n arr) x = setByteArray arr i n x
 

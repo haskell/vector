@@ -911,7 +911,7 @@ izipWith6 = G.izipWith6
 -- True
 isSameVector :: (Storable a) => Vector a -> Vector a -> Bool
 {-# INLINE isSameVector #-}
-isSameVector (Vector n1 ptr1) (Vector n2 ptr2) = n1 == n2 && ptr1 == ptr2
+isSameVector (UnsafeVector n1 ptr1) (UnsafeVector n2 ptr2) = n1 == n2 && ptr1 == ptr2
 
 
 -- Monadic zipping
@@ -1896,9 +1896,9 @@ iforA_ = G.iforA_
 -- underlying memory block.
 unsafeCast :: forall a b. (Storable a, Storable b) => Vector a -> Vector b
 {-# INLINE unsafeCast #-}
-unsafeCast (Vector n fp)
-  = Vector ((n * sizeOf (undefined :: a)) `div` sizeOf (undefined :: b))
-           (castForeignPtr fp)
+unsafeCast (UnsafeVector n fp)
+  = UnsafeVector ((n * sizeOf (undefined :: a)) `div` sizeOf (undefined :: b))
+                 (castForeignPtr fp)
 
 -- Conversions - Mutable vectors
 -- -----------------------------

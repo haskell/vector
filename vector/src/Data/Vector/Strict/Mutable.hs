@@ -90,7 +90,7 @@ import Prelude ( Ord, Bool, Int, Maybe, Ordering(..), Monad(..), (<$>), ($))
 #include "vector.h"
 
 pattern MVector :: MV.MVector s a -> MVector s a
-pattern MVector v = U.MVector v
+pattern MVector v = U.UnsafeMVector v
 {-# COMPLETE MVector #-}
 {-# DEPRECATED MVector "Use MVector constructor exported from \"Data.Vector.Strict.Unsafe\"" #-}
 

@@ -198,14 +198,14 @@ import Prelude
 -- @since 0.12.2.0
 fromArray :: Array a -> Vector a
 {-# INLINE fromArray #-}
-fromArray arr = Vector 0 (sizeofArray arr) arr
+fromArray arr = UnsafeVector 0 (sizeofArray arr) arr
 
 -- | /O(n)/ Convert a vector to an array.
 --
 -- @since 0.12.2.0
 toArray :: Vector a -> Array a
 {-# INLINE toArray #-}
-toArray (Vector offset len arr)
+toArray (UnsafeVector offset len arr)
   | offset == 0 && len == sizeofArray arr = arr
   | otherwise = cloneArray arr offset len
 
@@ -218,7 +218,7 @@ toArray (Vector offset len arr)
 -- @since 0.13.0.0
 toArraySlice :: Vector a -> (Array a, Int, Int)
 {-# INLINE toArraySlice #-}
-toArraySlice (Vector offset len arr) = (arr, offset, len)
+toArraySlice (UnsafeVector offset len arr) = (arr, offset, len)
 
 
 -- Length information

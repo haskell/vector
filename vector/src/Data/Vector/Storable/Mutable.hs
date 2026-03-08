@@ -94,7 +94,7 @@ import Prelude (Int, Ord, Bool, Maybe, Ordering(..) )
 
 
 pattern MVector :: Int -> ForeignPtr a -> MVector s a
-pattern MVector i ptr = U.MVector i ptr
+pattern MVector i ptr = U.UnsafeMVector i ptr
 {-# COMPLETE MVector #-}
 {-# DEPRECATED MVector "Use MVector exported from Data.Vector.Strict.Mutable.Unsafe" #-}
 

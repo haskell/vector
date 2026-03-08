@@ -85,7 +85,7 @@ import Prelude ( Ord, Bool, Int, Maybe, Ordering(..) )
 
 
 pattern MVector :: Int -> Int -> MutableByteArray s -> MVector s a
-pattern MVector i j arr = U.MVector i j arr
+pattern MVector i j arr = U.UnsafeMVector i j arr
 {-# COMPLETE MVector #-}
 {-# DEPRECATED MVector "Use MVector exported from \"Data.Vector.Primitive.Mutable.Unsafe\"" #-}
 

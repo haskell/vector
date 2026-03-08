@@ -63,7 +63,7 @@ unsafeCoerceVector :: Coercible a b => Vector a -> Vector b
 unsafeCoerceVector = unsafeCoerce
 
 -- | 'Storable'-based vectors.
-data Vector a = Vector
+data Vector a = UnsafeVector
   { unsafeSize :: !Int
     -- ^ Number of elements in a vector
   , unsafeForeignPtr :: {-# UNPACK #-} !(ForeignPtr a)
@@ -71,11 +71,11 @@ data Vector a = Vector
   }
 
 instance NFData (Vector a) where
-  rnf (Vector _ _) = ()
+  rnf (UnsafeVector _ _) = ()
 
 -- | @since 0.12.1.0
 instance NFData1 Vector where
-  liftRnf _ (Vector _ _) = ()
+  liftRnf _ (UnsafeVector _ _) = ()
 
 instance (Show a, Storable a) => Show (Vector a) where
   showsPrec = G.showsPrec
@@ -96,25 +96,26 @@ type instance G.Mutable Vector = MVector
 
 instance Storable a => G.Vector Vector a where
   {-# INLINE basicUnsafeFreeze #-}
-  basicUnsafeFreeze (MVector n fp) = return $ Vector n fp
+  basicUnsafeFreeze (UnsafeMVector n fp) = return $ UnsafeVector n fp
 
   {-# INLINE basicUnsafeThaw #-}
-  basicUnsafeThaw (Vector n fp) = return $ MVector n fp
+  basicUnsafeThaw (UnsafeVector n fp) = return $ UnsafeMVector n fp
 
   {-# INLINE basicLength #-}
-  basicLength (Vector n _) = n
+  basicLength (UnsafeVector n _) = n
 
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice i n (Vector _ fp) = Vector n (updPtr (`advancePtr` i) fp)
+  basicUnsafeSlice i n (UnsafeVector _ fp) = UnsafeVector n (updPtr (`advancePtr` i) fp)
 
   {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM (Vector _ fp) i = return
-                                    . unsafeInlineIO
-                                    $ unsafeWithForeignPtr fp $ \p ->
-                                      peekElemOff p i
+  basicUnsafeIndexM (UnsafeVector _ fp) i
+    = return
+    . unsafeInlineIO
+    $ unsafeWithForeignPtr fp $ \p ->
+      peekElemOff p i
 
   {-# INLINE basicUnsafeCopy #-}
-  basicUnsafeCopy (MVector n fp) (Vector _ fq)
+  basicUnsafeCopy (UnsafeMVector n fp) (UnsafeVector _ fq)
     = unsafePrimToPrim
     $ unsafeWithForeignPtr fp $ \p ->
       unsafeWithForeignPtr fq $ \q ->
@@ -199,13 +200,13 @@ unsafeFromForeignPtr0 :: ForeignPtr a    -- ^ pointer
                       -> Int             -- ^ length
                       -> Vector a
 {-# INLINE unsafeFromForeignPtr0 #-}
-unsafeFromForeignPtr0 fp n = Vector n fp
+unsafeFromForeignPtr0 fp n = UnsafeVector n fp
 
 -- | /O(1)/ Yield the underlying 'ForeignPtr' together with the offset to the
 -- data and its length. The data may not be modified through the 'ForeignPtr'.
 unsafeToForeignPtr :: Vector a -> (ForeignPtr a, Int, Int)
 {-# INLINE unsafeToForeignPtr #-}
-unsafeToForeignPtr (Vector n fp) = (fp, 0, n)
+unsafeToForeignPtr (UnsafeVector n fp) = (fp, 0, n)
 
 -- | /O(1)/ Yield the underlying 'ForeignPtr' together with its length.
 --
@@ -214,10 +215,10 @@ unsafeToForeignPtr (Vector n fp) = (fp, 0, n)
 -- The data may not be modified through the 'ForeignPtr'.
 unsafeToForeignPtr0 :: Vector a -> (ForeignPtr a, Int)
 {-# INLINE unsafeToForeignPtr0 #-}
-unsafeToForeignPtr0 (Vector n fp) = (fp, n)
+unsafeToForeignPtr0 (UnsafeVector n fp) = (fp, n)
 
 -- | Pass a pointer to the vector's data to the IO action. The data may not be
 -- modified through the 'Ptr.
 unsafeWith :: Storable a => Vector a -> (Ptr a -> IO b) -> IO b
 {-# INLINE unsafeWith #-}
-unsafeWith (Vector _ fp) = withForeignPtr fp
+unsafeWith (UnsafeVector _ fp) = withForeignPtr fp

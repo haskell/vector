@@ -58,7 +58,7 @@ import Unsafe.Coerce
 type role MVector nominal nominal
 
 -- | Mutable 'Storable'-based vectors.
-data MVector s a = MVector
+data MVector s a = UnsafeMVector
   { unsafeSize :: !Int
     -- ^ Number of elements in a mutable vector
   , unsafeForeignPtr :: {-# UNPACK #-} !(ForeignPtr a)
@@ -69,21 +69,21 @@ type IOVector = MVector RealWorld
 type STVector s = MVector s
 
 instance NFData (MVector s a) where
-  rnf (MVector _ _) = ()
+  rnf (UnsafeMVector _ _) = ()
 
 instance NFData1 (MVector s) where
-  liftRnf _ (MVector _ _) = ()
+  liftRnf _ (UnsafeMVector _ _) = ()
 
 instance Storable a => G.MVector MVector a where
   {-# INLINE basicLength #-}
-  basicLength (MVector n _) = n
+  basicLength (UnsafeMVector n _) = n
 
   {-# INLINE basicUnsafeSlice #-}
-  basicUnsafeSlice j m (MVector _ fp) = MVector m (updPtr (`advancePtr` j) fp)
+  basicUnsafeSlice j m (UnsafeMVector _ fp) = UnsafeMVector m (updPtr (`advancePtr` j) fp)
 
   -- FIXME: this relies on non-portable pointer comparisons
   {-# INLINE basicOverlaps #-}
-  basicOverlaps (MVector m fp) (MVector n fq)
+  basicOverlaps (UnsafeMVector m fp) (UnsafeMVector n fq)
     = between p q (q `advancePtr` n) || between q p (p `advancePtr` m)
     where
       between x y z = x >= y && x < z
@@ -96,7 +96,7 @@ instance Storable a => G.MVector MVector a where
     | n > mx = error $ "Storable.basicUnsafeNew: length too large: " ++ show n
     | otherwise = unsafePrimToPrim $ do
         fp <- mallocVector n
-        return $ MVector n fp
+        return $ UnsafeMVector n fp
     where
       size = sizeOf (undefined :: a) `max` 1
       mx = maxBound `quot` size :: Int
@@ -105,12 +105,12 @@ instance Storable a => G.MVector MVector a where
   basicInitialize = storableZero
 
   {-# INLINE basicUnsafeRead #-}
-  basicUnsafeRead (MVector _ fp) i
+  basicUnsafeRead (UnsafeMVector _ fp) i
     = unsafePrimToPrim
     $ unsafeWithForeignPtr fp (`peekElemOff` i)
 
   {-# INLINE basicUnsafeWrite #-}
-  basicUnsafeWrite (MVector _ fp) i x
+  basicUnsafeWrite (UnsafeMVector _ fp) i x
     = unsafePrimToPrim
     $ unsafeWithForeignPtr fp $ \p -> pokeElemOff p i x
 
@@ -118,14 +118,14 @@ instance Storable a => G.MVector MVector a where
   basicSet = storableSet
 
   {-# INLINE basicUnsafeCopy #-}
-  basicUnsafeCopy (MVector n fp) (MVector _ fq)
+  basicUnsafeCopy (UnsafeMVector n fp) (UnsafeMVector _ fq)
     = unsafePrimToPrim
     $ unsafeWithForeignPtr fp $ \p ->
       unsafeWithForeignPtr fq $ \q ->
       copyArray p q n
 
   {-# INLINE basicUnsafeMove #-}
-  basicUnsafeMove (MVector n fp) (MVector _ fq)
+  basicUnsafeMove (UnsafeMVector n fp) (UnsafeMVector _ fq)
     = unsafePrimToPrim
     $ unsafeWithForeignPtr fp $ \p ->
       unsafeWithForeignPtr fq $ \q ->
@@ -143,7 +143,7 @@ mallocVector =
 
 storableZero :: forall a m. (Storable a, PrimMonad m) => MVector (PrimState m) a -> m ()
 {-# INLINE storableZero #-}
-storableZero (MVector n fp) = unsafePrimToPrim . unsafeWithForeignPtr fp $ \ptr-> do
+storableZero (UnsafeMVector n fp) = unsafePrimToPrim . unsafeWithForeignPtr fp $ \ptr-> do
   memsetPrimPtr_vector (castPtr ptr) byteSize (0 :: Word8)
  where
  x :: a
@@ -153,7 +153,7 @@ storableZero (MVector n fp) = unsafePrimToPrim . unsafeWithForeignPtr fp $ \ptr-
 
 storableSet :: (Storable a, PrimMonad m) => MVector (PrimState m) a -> a -> m ()
 {-# INLINE storableSet #-}
-storableSet (MVector n fp) x
+storableSet (UnsafeMVector n fp) x
   | n == 0 = return ()
   | otherwise = unsafePrimToPrim $
                 case sizeOf x of
@@ -215,9 +215,9 @@ peakPrimPtr_vector (Ptr addr#) (I# i#) = primitive (DPT.readOffAddr# addr# i#)
 unsafeCast :: forall a b s.
               (Storable a, Storable b) => MVector s a -> MVector s b
 {-# INLINE unsafeCast #-}
-unsafeCast (MVector n fp)
-  = MVector ((n * sizeOf (undefined :: a)) `div` sizeOf (undefined :: b))
-            (castForeignPtr fp)
+unsafeCast (UnsafeMVector n fp)
+  = UnsafeMVector ((n * sizeOf (undefined :: a)) `div` sizeOf (undefined :: b))
+                  (castForeignPtr fp)
 
 -- | /O(1)/ Unsafely coerce a mutable vector from one element type to another,
 -- representationally equal type. The operation just changes the type of the
@@ -265,14 +265,14 @@ unsafeFromForeignPtr0 :: ForeignPtr a    -- ^ pointer
                       -> Int             -- ^ length
                       -> MVector s a
 {-# INLINE unsafeFromForeignPtr0 #-}
-unsafeFromForeignPtr0 fp n = MVector n fp
+unsafeFromForeignPtr0 fp n = UnsafeMVector n fp
 
 -- | /O(1)/ Yield the underlying 'ForeignPtr' together with the offset to the data
 -- and its length. Modifying the data through the 'ForeignPtr' is
 -- unsafe if the vector could have been frozen before the modification.
 unsafeToForeignPtr :: MVector s a -> (ForeignPtr a, Int, Int)
 {-# INLINE unsafeToForeignPtr #-}
-unsafeToForeignPtr (MVector n fp) = (fp, 0, n)
+unsafeToForeignPtr (UnsafeMVector n fp) = (fp, 0, n)
 
 -- | /O(1)/ Yield the underlying 'ForeignPtr' together with its length.
 --
@@ -282,11 +282,11 @@ unsafeToForeignPtr (MVector n fp) = (fp, 0, n)
 -- have been frozen before the modification.
 unsafeToForeignPtr0 :: MVector s a -> (ForeignPtr a, Int)
 {-# INLINE unsafeToForeignPtr0 #-}
-unsafeToForeignPtr0 (MVector n fp) = (fp, n)
+unsafeToForeignPtr0 (UnsafeMVector n fp) = (fp, n)
 
 -- | Pass a pointer to the vector's data to the IO action. Modifying data
 -- through the pointer is unsafe if the vector could have been frozen before
 -- the modification.
 unsafeWith :: Storable a => IOVector a -> (Ptr a -> IO b) -> IO b
 {-# INLINE unsafeWith #-}
-unsafeWith (MVector _ fp) = withForeignPtr fp
+unsafeWith (UnsafeMVector _ fp) = withForeignPtr fp

@@ -179,7 +179,7 @@ import Prelude
   , (==))
 
 pattern Vector :: Int -> Int -> ByteArray -> Vector a
-pattern Vector i j arr = U.Vector i j arr
+pattern Vector i j arr = U.UnsafeVector i j arr
 {-# COMPLETE Vector #-}
 {-# DEPRECATED Vector "Use Vector constructor exported from \"Data.Vector.Primitive.Unsafe\"" #-}
 
