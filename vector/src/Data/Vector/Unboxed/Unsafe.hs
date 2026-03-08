@@ -1113,10 +1113,10 @@ instance Unbox (f (g a)) => Unbox (Compose f g a)
 -- ------
 
 data instance MVector s (a, b)
-    = MV_2 {-# UNPACK #-} !Int !(MVector s a)
+    = MV_2 !Int !(MVector s a)
                                !(MVector s b)
 data instance Vector (a, b)
-    = V_2 {-# UNPACK #-} !Int !(Vector a)
+    = V_2 !Int !(Vector a)
                               !(Vector b)
 instance (Unbox a, Unbox b) => Unbox (a, b)
 instance (Unbox a, Unbox b) => M.MVector MVector (a, b) where
@@ -1220,11 +1220,11 @@ instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
         . G.elemseq (undefined :: Vector b) b
 
 data instance MVector s (a, b, c)
-    = MV_3 {-# UNPACK #-} !Int !(MVector s a)
+    = MV_3 !Int !(MVector s a)
                                !(MVector s b)
                                !(MVector s c)
 data instance Vector (a, b, c)
-    = V_3 {-# UNPACK #-} !Int !(Vector a)
+    = V_3 !Int !(Vector a)
                               !(Vector b)
                               !(Vector c)
 instance (Unbox a, Unbox b, Unbox c) => Unbox (a, b, c)
@@ -1351,12 +1351,12 @@ instance (Unbox a,
         . G.elemseq (undefined :: Vector c) c
 
 data instance MVector s (a, b, c, d)
-    = MV_4 {-# UNPACK #-} !Int !(MVector s a)
+    = MV_4 !Int !(MVector s a)
                                !(MVector s b)
                                !(MVector s c)
                                !(MVector s d)
 data instance Vector (a, b, c, d)
-    = V_4 {-# UNPACK #-} !Int !(Vector a)
+    = V_4 !Int !(Vector a)
                               !(Vector b)
                               !(Vector c)
                               !(Vector d)
@@ -1513,13 +1513,13 @@ instance (Unbox a,
         . G.elemseq (undefined :: Vector d) d
 
 data instance MVector s (a, b, c, d, e)
-    = MV_5 {-# UNPACK #-} !Int !(MVector s a)
+    = MV_5 !Int !(MVector s a)
                                !(MVector s b)
                                !(MVector s c)
                                !(MVector s d)
                                !(MVector s e)
 data instance Vector (a, b, c, d, e)
-    = V_5 {-# UNPACK #-} !Int !(Vector a)
+    = V_5 !Int !(Vector a)
                               !(Vector b)
                               !(Vector c)
                               !(Vector d)
@@ -1708,14 +1708,14 @@ instance (Unbox a,
         . G.elemseq (undefined :: Vector e) e
 
 data instance MVector s (a, b, c, d, e, f)
-    = MV_6 {-# UNPACK #-} !Int !(MVector s a)
+    = MV_6 !Int !(MVector s a)
                                !(MVector s b)
                                !(MVector s c)
                                !(MVector s d)
                                !(MVector s e)
                                !(MVector s f)
 data instance Vector (a, b, c, d, e, f)
-    = V_6 {-# UNPACK #-} !Int !(Vector a)
+    = V_6 !Int !(Vector a)
                               !(Vector b)
                               !(Vector c)
                               !(Vector d)

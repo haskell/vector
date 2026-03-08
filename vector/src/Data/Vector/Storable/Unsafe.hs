@@ -64,7 +64,7 @@ unsafeCoerceVector = unsafeCoerce
 
 -- | 'Storable'-based vectors.
 data Vector a = Vector
-  { unsafeSize :: {-# UNPACK #-} !Int
+  { unsafeSize :: !Int
     -- ^ Number of elements in a vector
   , unsafeForeignPtr :: {-# UNPACK #-} !(ForeignPtr a)
     -- ^ Underlying buffer as a `ForeignPtr`, which mustn't be mutated

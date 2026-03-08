@@ -44,9 +44,9 @@ type role MVector nominal nominal
 
 -- | Mutable vectors of primitive types.
 data MVector s a = MVector
-  { unsafeOffset :: {-# UNPACK #-} !Int
+  { unsafeOffset :: !Int
     -- ^ Offset into the `unsafeMutableByteArray` in number of elements, not bytes
-  , unsafeSize :: {-# UNPACK #-} !Int
+  , unsafeSize :: !Int
     -- ^ Size of the mutable vector in number of elements, not bytes
   , unsafeMutableByteArray :: {-# UNPACK #-} !(MutableByteArray s)
     -- ^ Underlying mutable byte array

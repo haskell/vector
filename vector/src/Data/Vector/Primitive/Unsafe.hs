@@ -49,9 +49,9 @@ type role Vector nominal
 
 -- | Unboxed vectors of primitive types.
 data Vector a = Vector
-  { unsafeOffset :: {-# UNPACK #-} !Int
+  { unsafeOffset :: !Int
     -- ^ Offset into `unsafeByteArray` in number of elements, not bytes
-  , unsafeSize :: {-# UNPACK #-} !Int
+  , unsafeSize :: !Int
     -- ^ Number of elements in number of elements, not bytes
   , unsafeByteArray :: {-# UNPACK #-} !ByteArray
     -- ^ Underlying byte array

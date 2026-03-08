@@ -59,7 +59,7 @@ type role MVector nominal nominal
 
 -- | Mutable 'Storable'-based vectors.
 data MVector s a = MVector
-  { unsafeSize :: {-# UNPACK #-} !Int
+  { unsafeSize :: !Int
     -- ^ Number of elements in a mutable vector
   , unsafeForeignPtr :: {-# UNPACK #-} !(ForeignPtr a)
     -- ^ Underlying buffer as a `ForeignPtr`, which is allowed to be mutated

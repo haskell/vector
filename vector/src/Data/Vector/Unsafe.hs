@@ -51,8 +51,8 @@ import qualified GHC.Exts as Exts (IsList(..))
 
 -- | Lazy boxed vectors, supporting efficient slicing.
 data Vector a = Vector
-  { unsafeOffset :: {-# UNPACK #-} !Int -- ^ Offset in underlying array
-  , unsafeSize   :: {-# UNPACK #-} !Int -- ^ Size of slice
+  { unsafeOffset :: !Int -- ^ Offset in underlying array
+  , unsafeSize   :: !Int -- ^ Size of slice
   , unsafeArray  :: {-# UNPACK #-} !(Array a)
     -- ^ Underlying immutable array
   }

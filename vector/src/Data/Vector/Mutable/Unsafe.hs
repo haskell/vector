@@ -32,8 +32,8 @@ type role MVector nominal representational
 
 -- | Mutable boxed vectors keyed on the monad they live in ('IO' or @'ST' s@).
 data MVector s a = MVector
-  { unsafeOffset :: {-# UNPACK #-} !Int -- ^ Offset in underlying array
-  , unsafeSize   :: {-# UNPACK #-} !Int -- ^ Size of slice
+  { unsafeOffset :: !Int -- ^ Offset in underlying array
+  , unsafeSize   :: !Int -- ^ Size of slice
   , unsafeMutableArray  :: {-# UNPACK #-} !(MutableArray s a)
     -- ^ Underlying mutable array
   }
