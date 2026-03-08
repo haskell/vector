@@ -3,7 +3,6 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE PatternSynonyms #-}
 -- |
 -- Module      : Data.Vector.Primitive.Mutable
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -20,8 +19,7 @@
 
 module Data.Vector.Primitive.Mutable (
   -- * Mutable vectors of primitive types
-  MVector, IOVector, STVector,
-  pattern MVector,
+  MVector(MVector), IOVector, STVector,
 
   -- * Accessors
 
@@ -73,21 +71,15 @@ module Data.Vector.Primitive.Mutable (
 
 import qualified Data.Vector.Generic.Mutable as G
 import           Data.Primitive ( Prim )
-import           Data.Primitive.ByteArray
 import           Data.Vector.Primitive.Mutable.Unsafe
   (MVector,unsafeCoerceMVector,unsafeCast)
-import qualified Data.Vector.Primitive.Mutable.Unsafe as U
+import           Data.Vector.Primitive.Pattern
 import           Control.Monad.Primitive
 
 import Prelude ( Ord, Bool, Int, Maybe, Ordering(..) )
 
 #include "vector.h"
 
-
-pattern MVector :: Int -> Int -> MutableByteArray s -> MVector s a
-pattern MVector i j arr = U.UnsafeMVector i j arr
-{-# COMPLETE MVector #-}
-{-# DEPRECATED MVector "Use MVector exported from \"Data.Vector.Primitive.Mutable.Unsafe\"" #-}
 
 type IOVector = MVector RealWorld
 type STVector s = MVector s

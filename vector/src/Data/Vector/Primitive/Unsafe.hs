@@ -4,6 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE PatternSynonyms #-}
 -- |
 -- This module exposes internal representation of vectors backed by
 -- single 'ByteArray' and functions that work on that representation
@@ -41,6 +42,8 @@ import Data.Coerce
 import Unsafe.Coerce
 
 import Data.Vector.Primitive.Mutable.Unsafe (MVector(..))
+
+
 ----------------------------------------------------------------
 -- Immutable
 ----------------------------------------------------------------
@@ -58,6 +61,7 @@ data Vector a = UnsafeVector
   }
 
 type instance G.Mutable Vector = MVector
+
 
 -- | /O(1)/ Unsafely coerce an immutable vector from one element type to another,
 -- representationally equal type. The operation just changes the type of the

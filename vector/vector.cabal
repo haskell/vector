@@ -152,6 +152,11 @@ Library
         Data.Vector
         Data.Vector.Mutable.Unsafe
         Data.Vector.Unsafe
+  Other-modules:
+        Data.Vector.Primitive.Pattern
+        Data.Vector.Storable.Pattern
+        Data.Vector.Strict.Pattern
+        Data.Vector.Pattern
 
   Hs-Source-Dirs:
         src

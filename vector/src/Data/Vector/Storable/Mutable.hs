@@ -21,8 +21,7 @@
 
 module Data.Vector.Storable.Mutable(
   -- * Mutable vectors of 'Storable' types
-  MVector, IOVector, STVector,
-  pattern MVector,
+  MVector(MVector), IOVector, STVector,
 
   -- * Accessors
 
@@ -82,21 +81,14 @@ import qualified Data.Vector.Generic.Mutable as G
 import Data.Vector.Storable.Mutable.Unsafe(
   MVector,IOVector,STVector,unsafeCast,unsafeWith,unsafeCoerceMVector,
   unsafeToForeignPtr,unsafeToForeignPtr0,unsafeFromForeignPtr,unsafeFromForeignPtr0)
-import qualified Data.Vector.Storable.Mutable.Unsafe as U
+import           Data.Vector.Storable.Pattern
 import Foreign.Storable
 
 import Control.Monad.Primitive
-import Foreign.ForeignPtr (ForeignPtr)
 
 import Prelude (Int, Ord, Bool, Maybe, Ordering(..) )
 
 #include "vector.h"
-
-
-pattern MVector :: Int -> ForeignPtr a -> MVector s a
-pattern MVector i ptr = U.UnsafeMVector i ptr
-{-# COMPLETE MVector #-}
-{-# DEPRECATED MVector "Use MVector exported from Data.Vector.Strict.Mutable.Unsafe" #-}
 
 
 -- Length information

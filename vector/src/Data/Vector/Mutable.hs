@@ -21,8 +21,7 @@
 
 module Data.Vector.Mutable (
   -- * Mutable boxed vectors
-  MVector, IOVector, STVector,
-  pattern MVector,
+  MVector(MVector), IOVector, STVector,
 
   -- * Accessors
 
@@ -74,19 +73,14 @@ module Data.Vector.Mutable (
 ) where
 
 import qualified Data.Vector.Generic.Mutable as G
-import           Data.Vector.Mutable.Unsafe (MVector)
-import qualified Data.Vector.Mutable.Unsafe as U
+import           Data.Vector.Mutable.Unsafe (MVector(..))
+import           Data.Vector.Pattern
 import           Data.Primitive.Array
 import           Control.Monad.Primitive
 
 import Prelude( Ord, Bool, Ordering(..), Int, Maybe, (<$>) )
 
 #include "vector.h"
-
-pattern MVector :: Int -> Int -> MutableArray s a -> MVector s a
-pattern MVector i j arr = U.UnsafeMVector i j arr
-{-# COMPLETE MVector #-}
-{-# DEPRECATED MVector "Use MVector exported from \"Data.Vector.Mutable.Unsafe\"" #-}
 
 type IOVector = MVector RealWorld
 type STVector s = MVector s
@@ -102,14 +96,14 @@ fromMutableArray :: PrimMonad m => MutableArray (PrimState m) a -> m (MVector (P
 {-# INLINE fromMutableArray #-}
 fromMutableArray marr =
   let size = sizeofMutableArray marr
-  in MVector 0 size <$> cloneMutableArray marr 0 size
+  in UnsafeMVector 0 size <$> cloneMutableArray marr 0 size
 
 -- | /O(n)/ Make a copy of a mutable vector into a new mutable array.
 --
 -- @since 0.12.2.0
 toMutableArray :: PrimMonad m => MVector (PrimState m) a -> m (MutableArray (PrimState m) a)
 {-# INLINE toMutableArray #-}
-toMutableArray (MVector offset size marr) = cloneMutableArray marr offset size
+toMutableArray (UnsafeMVector offset size marr) = cloneMutableArray marr offset size
 
 
 -- Length information

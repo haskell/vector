@@ -4,6 +4,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE ExplicitNamespaces #-}
 -- |
 -- This module exposes internal representation of mutable vectors
 -- based on 'Storable' and functions that work on that representation
@@ -64,6 +66,7 @@ data MVector s a = UnsafeMVector
   , unsafeForeignPtr :: {-# UNPACK #-} !(ForeignPtr a)
     -- ^ Underlying buffer as a `ForeignPtr`, which is allowed to be mutated
   }
+
 
 type IOVector = MVector RealWorld
 type STVector s = MVector s

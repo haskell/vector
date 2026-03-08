@@ -23,16 +23,19 @@ main = mapM_ run modGroups
         , "src/Data/Vector/Storable.hs"
         , "src/Data/Vector/Storable/Mutable/Unsafe.hs"
         , "src/Data/Vector/Storable/Unsafe.hs"
+        , "src/Data/Vector/Storable/Pattern.hs"
         ]
       , [ "src/Data/Vector.hs"
         , "src/Data/Vector/Mutable.hs"
         , "src/Data/Vector/Unsafe.hs"
         , "src/Data/Vector/Mutable/Unsafe.hs"
+        , "src/Data/Vector/Pattern.hs"
         ]
       , [ "src/Data/Vector/Strict.hs"
         , "src/Data/Vector/Strict/Unsafe.hs"
         , "src/Data/Vector/Strict/Mutable.hs"
         , "src/Data/Vector/Strict/Mutable/Unsafe.hs"
+        , "src/Data/Vector/Pattern.hs"
         ]
       , [ "src/Data/Vector/Generic.hs"
         , "src/Data/Vector/Generic/Mutable.hs"
@@ -41,6 +44,7 @@ main = mapM_ run modGroups
         , "src/Data/Vector/Primitive/Unsafe.hs"
         , "src/Data/Vector/Primitive/Mutable.hs"
         , "src/Data/Vector/Primitive/Mutable/Unsafe.hs"
+        , "src/Data/Vector/Primitive/Pattern.hs"
         ]
       , [ "src/Data/Vector/Unboxed.hs"
         , "src/Data/Vector/Unboxed/Mutable.hs"

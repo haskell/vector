@@ -25,8 +25,7 @@
 -- are set to ⊥.
 module Data.Vector.Strict.Mutable (
   -- * Mutable boxed vectors
-  MVector, IOVector, STVector,
-  pattern MVector,
+  MVector(U.MVector), IOVector, STVector,
 
   -- * Accessors
 
@@ -81,18 +80,13 @@ module Data.Vector.Strict.Mutable (
 import           Data.Primitive.Array
 import qualified Data.Vector.Generic.Mutable as G
 import qualified Data.Vector.Mutable         as MV
-import           Data.Vector.Strict.Mutable.Unsafe (MVector)
-import qualified Data.Vector.Strict.Mutable.Unsafe as U
+import           Data.Vector.Strict.Mutable.Unsafe as U (MVector(..))
+import           Data.Vector.Strict.Pattern        as U
 import           Control.Monad.Primitive
 
 import Prelude ( Ord, Bool, Int, Maybe, Ordering(..), Monad(..), (<$>), ($))
 
 #include "vector.h"
-
-pattern MVector :: MV.MVector s a -> MVector s a
-pattern MVector v = U.UnsafeMVector v
-{-# COMPLETE MVector #-}
-{-# DEPRECATED MVector "Use MVector constructor exported from \"Data.Vector.Strict.Unsafe\"" #-}
 
 type IOVector = MVector RealWorld
 type STVector s = MVector s
@@ -105,7 +99,7 @@ type STVector s = MVector s
 -- vector. Vectors will share mutable buffer
 toLazy :: MVector s a -> MV.MVector s a
 {-# INLINE toLazy #-}
-toLazy (MVector vec) = vec
+toLazy (UnsafeMVector vec) = vec
 
 -- | /O(n)/ Convert lazy mutable vector to strict mutable
 -- vector. Vectors will share mutable buffer. This function evaluates
@@ -113,7 +107,7 @@ toLazy (MVector vec) = vec
 fromLazy :: PrimMonad m => MV.MVector (PrimState m) a -> m (MVector (PrimState m) a)
 fromLazy mvec = stToPrim $ do
   G.foldM' (\_ !_ -> return ()) () mvec
-  return $ MVector mvec
+  return $ UnsafeMVector mvec
 
 
 -- Conversions - Arrays
@@ -126,7 +120,7 @@ fromLazy mvec = stToPrim $ do
 fromMutableArray :: PrimMonad m => MutableArray (PrimState m) a -> m (MVector (PrimState m) a)
 {-# INLINE fromMutableArray #-}
 fromMutableArray marr = stToPrim $ do
-  mvec <- MVector <$> MV.fromMutableArray marr
+  mvec <- UnsafeMVector <$> MV.fromMutableArray marr
   G.foldM' (\_ !_ -> return ()) () mvec
   return mvec
 
@@ -135,7 +129,7 @@ fromMutableArray marr = stToPrim $ do
 -- @since 0.13.2.0
 toMutableArray :: PrimMonad m => MVector (PrimState m) a -> m (MutableArray (PrimState m) a)
 {-# INLINE toMutableArray #-}
-toMutableArray (MVector v) = MV.toMutableArray v
+toMutableArray (UnsafeMVector v) = MV.toMutableArray v
 
 
 -- Length information
