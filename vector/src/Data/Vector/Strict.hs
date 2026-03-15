@@ -2470,4 +2470,4 @@ copy = G.copy
 
 -- $setup
 -- >>> :set -Wno-type-defaults
--- >>> import Prelude (Char, String, Bool(..), min, max, fst, even, undefined, Ord(..), (<>), Num(..),($))
+-- >>> import Prelude (Char,String,Bool(..),min,max,fst,even,undefined,Eq(..),Ord(..),(<>),Num(..),($),id,Int)
