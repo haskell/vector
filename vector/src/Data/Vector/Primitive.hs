@@ -163,8 +163,10 @@ module Data.Vector.Primitive (
 ) where
 
 import           Control.Applicative (Applicative)
+import           Data.Coerce         (Coercible)
 import qualified Data.Vector.Generic           as G
-import           Data.Vector.Primitive.Unsafe  (Vector,unsafeCoerceVector,unsafeCast)
+import           Data.Vector.Primitive.Unsafe  (Vector)
+import qualified Data.Vector.Primitive.Unsafe  as U
 import           Data.Vector.Primitive.Mutable (MVector)
 import           Data.Vector.Primitive.Pattern
 
@@ -172,6 +174,7 @@ import           Data.Primitive ( Prim )
 
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
+import GHC.Stack (HasCallStack)
 
 import Prelude
   ( Eq, Ord, Num, Enum, Monoid, Traversable, Monad, Bool, Ordering(..), Int, Maybe, Either
@@ -1903,6 +1906,18 @@ unsafeCopy = G.unsafeCopy
 copy :: (Prim a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE copy #-}
 copy = G.copy
+
+-- | Unsafe functions are defined in "Data.Vector.Primitive.Unsafe"
+unsafeCoerceVector :: Coercible a b => Vector a -> Vector b
+unsafeCoerceVector = U.unsafeCoerceVector
+{-# DEPRECATED unsafeCoerceVector "Use 'Data.Vector.Primitive.Unsafe.unsafeCoerceVector'" #-}
+
+-- | Unsafe functions are defined in "Data.Vector.Primitive.Unsafe"
+unsafeCast :: forall a b. (HasCallStack, Prim a, Prim b) => Vector a -> Vector b
+unsafeCast = U.unsafeCast
+{-# INLINE unsafeCast #-}
+{-# DEPRECATED unsafeCast "Use 'Data.Vector.Primitive.Unsafe.unsafeCast'" #-}
+
 
 -- $setup
 -- >>> import Prelude (($), min, even, max, succ, id, Ord(..), Num(..), undefined)
