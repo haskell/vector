@@ -202,7 +202,7 @@ common tests-common
                , deepseq
                , primitive
                , random
-               , QuickCheck >= 2.9 && < 2.16
+               , QuickCheck >= 2.9 && < 2.19
                , tasty
                , tasty-hunit
                , tasty-quickcheck
