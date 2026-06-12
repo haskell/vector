@@ -176,11 +176,9 @@ import Data.Vector.Storable.Unsafe
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
 import Foreign.Storable
-import Foreign.ForeignPtr
 import Prelude
   ( Eq, Ord, Num, Enum, Monoid, Traversable, Monad, Bool, Ordering(..), Int, Maybe, Either
-  , undefined, div
-  , (*), (==), (&&))
+  , (==), (&&))
 
 #include "vector.h"
 
@@ -1884,21 +1882,6 @@ iforA_ :: (Applicative f, Storable a)
 {-# INLINE iforA_ #-}
 iforA_ = G.iforA_
 
-
--- Conversions - Unsafe casts
--- --------------------------
-
--- | /O(1)/ Unsafely cast a vector from one element type to another.
--- This operation just changes the type of the underlying pointer and does not
--- modify the elements.
---
--- The resulting vector contains as many elements as can fit into the
--- underlying memory block.
-unsafeCast :: forall a b. (Storable a, Storable b) => Vector a -> Vector b
-{-# INLINE unsafeCast #-}
-unsafeCast (UnsafeVector n fp)
-  = UnsafeVector ((n * sizeOf (undefined :: a)) `div` sizeOf (undefined :: b))
-                 (castForeignPtr fp)
 
 -- Conversions - Mutable vectors
 -- -----------------------------
