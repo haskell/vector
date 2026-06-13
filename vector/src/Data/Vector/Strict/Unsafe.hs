@@ -27,6 +27,7 @@ import Data.Primitive.Array
 import qualified Data.Vector.Generic as G
 import Data.Vector.Generic ((!))
 import qualified Data.Vector as V
+import qualified Data.Vector.Unsafe as UV
 
 import Control.DeepSeq ( NFData(rnf), NFData1(liftRnf))
 
@@ -256,4 +257,4 @@ unsafeFromArraySlice ::
   -> Vector a
 {-# INLINE unsafeFromArraySlice #-}
 unsafeFromArraySlice arr offset len = liftRnf (`seq` ()) vec `seq` vec
-  where vec = UnsafeVector (V.unsafeFromArraySlice arr offset len)
+  where vec = UnsafeVector (UV.unsafeFromArraySlice arr offset len)
