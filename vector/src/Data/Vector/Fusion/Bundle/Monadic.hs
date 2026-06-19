@@ -7,6 +7,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 -- |
 -- Module      : Data.Vector.Fusion.Bundle.Monadic
 -- Copyright   : (c) Roman Leshchinskiy 2008-2010
@@ -105,15 +106,11 @@ import Prelude
   , return, fmap, otherwise, id, const, seq, max, maxBound, fromIntegral, truncate
   , (+), (-), (<), (<=), (>), (>=), (==), (/=), (&&), (.), ($), (<$), (/) )
 
-import Data.Int  ( Int8, Int16, Int32 )
+import Data.Int  ( Int8, Int16, Int32, Int64 )
 import Data.Word ( Word8, Word16, Word32, Word64 )
 
 #include "vector.h"
 #include "MachDeps.h"
-
-#if WORD_SIZE_IN_BITS > 32
-import Data.Int  ( Int64 )
-#endif
 
 data Chunk v a = Chunk Int (forall m. (PrimMonad m, Vector v a) => Mutable v (PrimState m) a -> m ())
 
@@ -750,7 +747,7 @@ scanl' f = scanlM' (\a b -> return (f a b))
 -- | Haskell-style scan with strict accumulator and a monadic operator
 scanlM' :: Monad m => (a -> b -> m a) -> a -> Bundle m v b -> Bundle m v a
 {-# INLINE scanlM' #-}
-scanlM' f z s = z `seq` (z `cons` postscanlM f z s)
+scanlM' f !z s = z `cons` postscanlM f z s
 
 -- | Initial-value free scan over a 'Bundle'
 scanl1 :: Monad m => (a -> a -> a) -> Bundle m v a -> Bundle m v a
@@ -800,7 +797,7 @@ enumFromTo x y = fromList [x .. y]
 -- FIXME: add "too large" test for Int
 enumFromTo_small :: (Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_small #-}
-enumFromTo_small x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact n)
+enumFromTo_small !x !y = fromStream (Stream step (Just x)) (Exact n)
   where
     n = delay_inline max (fromIntegral y - fromIntegral x + 1) 0
 
@@ -810,33 +807,6 @@ enumFromTo_small x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact 
                   | z <  y    = return $ Yield z (Just (z+1))
                   | otherwise = return $ Done
 
-{-# RULES
-
-"enumFromTo<Int8> [Bundle]"
-  enumFromTo = enumFromTo_small :: Monad m => Int8 -> Int8 -> Bundle m v Int8
-
-"enumFromTo<Int16> [Bundle]"
-  enumFromTo = enumFromTo_small :: Monad m => Int16 -> Int16 -> Bundle m v Int16
-
-"enumFromTo<Word8> [Bundle]"
-  enumFromTo = enumFromTo_small :: Monad m => Word8 -> Word8 -> Bundle m v Word8
-
-"enumFromTo<Word16> [Bundle]"
-  enumFromTo = enumFromTo_small :: Monad m => Word16 -> Word16 -> Bundle m v Word16   #-}
-
-
-
-#if WORD_SIZE_IN_BITS > 32
-
-{-# RULES
-
-"enumFromTo<Int32> [Bundle]"
-  enumFromTo = enumFromTo_small :: Monad m => Int32 -> Int32 -> Bundle m v Int32
-
-"enumFromTo<Word32> [Bundle]"
-  enumFromTo = enumFromTo_small :: Monad m => Word32 -> Word32 -> Bundle m v Word32   #-}
-
-#endif
 
 -- NOTE: We could implement a generic "too large" test:
 --
@@ -852,7 +822,7 @@ enumFromTo_small x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact 
 
 enumFromTo_int :: forall m v. (HasCallStack, Monad m) => Int -> Int -> Bundle m v Int
 {-# INLINE_FUSED enumFromTo_int #-}
-enumFromTo_int x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
+enumFromTo_int !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len :: HasCallStack => Int -> Int -> Int
@@ -869,7 +839,7 @@ enumFromTo_int x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (l
 
 enumFromTo_intlike :: forall m v a. (HasCallStack, Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_intlike #-}
-enumFromTo_intlike x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
+enumFromTo_intlike !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len :: HasCallStack => a -> a -> Int
@@ -886,28 +856,12 @@ enumFromTo_intlike x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exac
                   | z <  y    = return $ Yield z (Just (z+1))
                   | otherwise = return $ Done
 
-{-# RULES
-
-"enumFromTo<Int> [Bundle]"
-  enumFromTo = enumFromTo_int :: Monad m => Int -> Int -> Bundle m v Int
-
-#if WORD_SIZE_IN_BITS > 32
-
-"enumFromTo<Int64> [Bundle]"
-  enumFromTo = enumFromTo_intlike :: Monad m => Int64 -> Int64 -> Bundle m v Int64    #-}
-
-#else
-
-"enumFromTo<Int32> [Bundle]"
-  enumFromTo = enumFromTo_intlike :: Monad m => Int32 -> Int32 -> Bundle m v Int32    #-}
-
-#endif
 
 
 
 enumFromTo_big_word :: forall m v a. (HasCallStack, Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_big_word #-}
-enumFromTo_big_word x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
+enumFromTo_big_word !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len :: HasCallStack => a -> a -> Int
@@ -924,34 +878,13 @@ enumFromTo_big_word x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exa
                   | z <  y    = return $ Yield z (Just (z+1))
                   | otherwise = return $ Done
 
-{-# RULES
 
-"enumFromTo<Word> [Bundle]"
-  enumFromTo = enumFromTo_big_word :: Monad m => Word -> Word -> Bundle m v Word
-
-"enumFromTo<Word64> [Bundle]"
-  enumFromTo = enumFromTo_big_word
-                        :: Monad m => Word64 -> Word64 -> Bundle m v Word64
 
 #if WORD_SIZE_IN_BITS == 32
-
-"enumFromTo<Word32> [Bundle]"
-  enumFromTo = enumFromTo_big_word
-                        :: Monad m => Word32 -> Word32 -> Bundle m v Word32
-
-#endif
-
-"enumFromTo<Integer> [Bundle]"
-  enumFromTo = enumFromTo_big_word
-                        :: Monad m => Integer -> Integer -> Bundle m v Integer   #-}
-
-
-#if WORD_SIZE_IN_BITS > 32
-
 -- FIXME: the "too large" test is totally wrong
 enumFromTo_big_int :: forall m v a. (HasCallStack, Integral a, Monad m) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_big_int #-}
-enumFromTo_big_int x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exact (len x y))
+enumFromTo_big_int !x !y = fromStream (Stream step (Just x)) (Exact (len x y))
   where
     {-# INLINE [0] len #-}
     len :: HasCallStack => a -> a -> Int
@@ -967,20 +900,11 @@ enumFromTo_big_int x y = x `seq` y `seq` fromStream (Stream step (Just x)) (Exac
     step (Just z) | z == y    = return $ Yield z Nothing
                   | z <  y    = return $ Yield z (Just (z+1))
                   | otherwise = return $ Done
-
-
-{-# RULES
-
-"enumFromTo<Int64> [Bundle]"
-  enumFromTo = enumFromTo_big_int :: Monad m => Int64 -> Int64 -> Bundle m v Int64   #-}
-
-
-
 #endif
 
 enumFromTo_char :: Monad m => Char -> Char -> Bundle m v Char
 {-# INLINE_FUSED enumFromTo_char #-}
-enumFromTo_char x y = x `seq` y `seq` fromStream (Stream step xn) (Exact n)
+enumFromTo_char !x !y = fromStream (Stream step xn) (Exact n)
   where
     xn = ord x
     yn = ord y
@@ -991,11 +915,6 @@ enumFromTo_char x y = x `seq` y `seq` fromStream (Stream step xn) (Exact n)
     step zn | zn <= yn  = return $ Yield (unsafeChr zn) (zn+1)
             | otherwise = return $ Done
 
-{-# RULES
-
-"enumFromTo<Char> [Bundle]"
-  enumFromTo = enumFromTo_char   #-}
-
 
 
 ------------------------------------------------------------------------
@@ -1005,7 +924,7 @@ enumFromTo_char x y = x `seq` y `seq` fromStream (Stream step xn) (Exact n)
 
 enumFromTo_double :: forall m v a. (HasCallStack, Monad m, Ord a, RealFrac a) => a -> a -> Bundle m v a
 {-# INLINE_FUSED enumFromTo_double #-}
-enumFromTo_double n m = n `seq` m `seq` fromStream (Stream step ini) (Max (len n lim))
+enumFromTo_double !n !m = fromStream (Stream step ini) (Max (len n lim))
   where
     lim = m + 1/2 -- important to float out
 
@@ -1025,14 +944,36 @@ enumFromTo_double n m = n `seq` m `seq` fromStream (Stream step ini) (Max (len n
              x' = x + n
 
 {-# RULES
+"enumFromTo<Int8> [Bundle]"    enumFromTo @Int8    = enumFromTo_small
+"enumFromTo<Int16> [Bundle]"   enumFromTo @Int16   = enumFromTo_small
+"enumFromTo<Word8> [Bundle]"   enumFromTo @Word8   = enumFromTo_small
+"enumFromTo<Word16> [Bundle]"  enumFromTo @Word16  = enumFromTo_small
 
-"enumFromTo<Double> [Bundle]"
-  enumFromTo = enumFromTo_double :: Monad m => Double -> Double -> Bundle m v Double
+"enumFromTo<Int> [Bundle]"     enumFromTo @Int     = enumFromTo_int
+"enumFromTo<Word> [Bundle]"    enumFromTo @Word    = enumFromTo_big_word
+"enumFromTo<Word64> [Bundle]"  enumFromTo @Word64  = enumFromTo_big_word
+"enumFromTo<Integer> [Bundle]" enumFromTo @Integer = enumFromTo_big_word
 
-"enumFromTo<Float> [Bundle]"
-  enumFromTo = enumFromTo_double :: Monad m => Float -> Float -> Bundle m v Float   #-}
+"enumFromTo<Char> [Bundle]"    enumFromTo @Char    = enumFromTo_char
+"enumFromTo<Double> [Bundle]"  enumFromTo @Double  = enumFromTo_double
+"enumFromTo<Float> [Bundle]"   enumFromTo @Float   = enumFromTo_double
+  #-}
 
-
+#if WORD_SIZE_IN_BITS > 32
+-- 64bit systems
+{-# RULES
+"enumFromTo<Int32> [Bundle]"  enumFromTo @Int32  = enumFromTo_small
+"enumFromTo<Int64> [Bundle]"  enumFromTo @Int64  = enumFromTo_intlike
+"enumFromTo<Word32> [Bundle]" enumFromTo @Word32 = enumFromTo_small
+  #-}
+#else
+-- 32bit systems
+{-# RULES
+"enumFromTo<Int32> [Bundle]"  enumFromTo @Int32  = enumFromTo_intlike
+"enumFromTo<Word32> [Bundle]" enumFromTo @Word32 = enumFromTo_big_word
+"enumFromTo<Int64> [Bundle]"  enumFromTo @Int64  = enumFromTo_big_int
+  #-}
+#endif
 
 ------------------------------------------------------------------------
 
@@ -1071,7 +1012,7 @@ unsafeFromList sz xs = fromStream (S.fromList xs) sz
 
 fromVector :: (Monad m, Vector v a) => v a -> Bundle m v a
 {-# INLINE_FUSED fromVector #-}
-fromVector v = v `seq` n `seq` Bundle (Stream step 0)
+fromVector !v = n `seq` Bundle (Stream step 0)
                                       (Stream vstep True)
                                       (Just v)
                                       (Exact n)
