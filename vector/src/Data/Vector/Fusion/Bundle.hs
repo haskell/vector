@@ -610,7 +610,6 @@ toListFB c n M.Bundle{M.sElems = Stream step t} = go t
   where
     go s = case unId (step s) of
              Yield x s' -> x `c` go s'
-             Skip    s' -> go s'
              Done       -> n
 
 -- | Create a 'Bundle' from a list
