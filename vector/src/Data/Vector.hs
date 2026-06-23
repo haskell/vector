@@ -168,20 +168,24 @@ module Data.Vector (
   toList, Data.Vector.fromList, Data.Vector.fromListN,
 
   -- ** Arrays
-  toArray, fromArray, toArraySlice, unsafeFromArraySlice,
+  toArray, fromArray, toArraySlice,
 
   -- ** Other vector types
   G.convert,
 
   -- ** Mutable vectors
-  freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy
+  freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
+
+  -- * Deprecated
+  unsafeFromArraySlice
 ) where
 
 import Control.Applicative (Applicative)
 import Data.Primitive.Array
 import qualified Data.Traversable as Traversable
 import Data.Vector.Mutable.Unsafe ( MVector )
-import Data.Vector.Unsafe
+import Data.Vector.Unsafe         ( Vector(..) )
+import qualified Data.Vector.Unsafe  as U
 import qualified Data.Vector.Generic as G
 
 import Control.Monad.ST ( ST )
@@ -2112,6 +2116,19 @@ unsafeCopy = G.unsafeCopy
 copy :: PrimMonad m => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE copy #-}
 copy = G.copy
+
+-- Deprecated
+-- ----------
+
+-- | Unsafe functions are defined in "Data.Vector.Unsafe"
+unsafeFromArraySlice ::
+     Array a -- ^ Immutable boxed array.
+  -> Int -- ^ Offset
+  -> Int -- ^ Length
+  -> Vector a
+{-# INLINE unsafeFromArraySlice #-}
+unsafeFromArraySlice = U.unsafeFromArraySlice
+{-# DEPRECATED unsafeFromArraySlice "Use 'Data.Vector.Unsafe.unsafeCast'" #-}
 
 -- $setup
 -- >>> :set -Wno-type-defaults

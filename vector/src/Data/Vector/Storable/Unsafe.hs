@@ -15,6 +15,7 @@
 module Data.Vector.Storable.Unsafe
   ( Vector(..)
   , unsafeCoerceVector
+  , unsafeCast
     -- * Raw pointers
   , unsafeFromForeignPtr, unsafeFromForeignPtr0
   , unsafeToForeignPtr,   unsafeToForeignPtr0
@@ -36,8 +37,8 @@ import Control.DeepSeq ( NFData(rnf), NFData1(liftRnf))
 import Control.Monad.Primitive
 
 import Prelude
-  ( Eq, Ord, Monoid, Read, Show, Ordering(..), Int, IO
-  , compare, mempty, mappend, mconcat, showsPrec, return, seq
+  ( Eq, Ord, Monoid, Read, Show, Ordering(..), Int, IO, Num(..)
+  , compare, mempty, mappend, mconcat, showsPrec, return, seq, undefined, div
   , (<), (<=), (>), (>=), (==), (/=), (.), ($) )
 
 import Data.Data      ( Data(..) )
@@ -61,6 +62,18 @@ type role Vector nominal
 -- 'Storable' instances.
 unsafeCoerceVector :: Coercible a b => Vector a -> Vector b
 unsafeCoerceVector = unsafeCoerce
+
+-- | /O(1)/ Unsafely cast a vector from one element type to another.
+-- This operation just changes the type of the underlying pointer and does not
+-- modify the elements.
+--
+-- The resulting vector contains as many elements as can fit into the
+-- underlying memory block.
+unsafeCast :: forall a b. (Storable a, Storable b) => Vector a -> Vector b
+{-# INLINE unsafeCast #-}
+unsafeCast (UnsafeVector n fp)
+  = UnsafeVector ((n * sizeOf (undefined :: a)) `div` sizeOf (undefined :: b))
+                 (castForeignPtr fp)
 
 -- | 'Storable'-based vectors.
 data Vector a = UnsafeVector

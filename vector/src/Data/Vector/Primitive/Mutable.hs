@@ -63,19 +63,21 @@ module Data.Vector.Primitive.Mutable (
   -- ** Filling and copying
   set, copy, move, unsafeCopy, unsafeMove,
 
-  -- * Unsafe conversions
-  unsafeCoerceMVector, unsafeCast,
   -- * Re-exports
-  Prim, PrimMonad, PrimState, RealWorld
+  Prim, PrimMonad, PrimState, RealWorld,
+  -- * Deprecated
+  unsafeCoerceMVector, unsafeCast,
 ) where
 
+import           Data.Coerce (Coercible)
 import qualified Data.Vector.Generic.Mutable as G
 import           Data.Primitive ( Prim )
-import           Data.Vector.Primitive.Mutable.Unsafe
-  (MVector,unsafeCoerceMVector,unsafeCast)
+import           Data.Vector.Primitive.Mutable.Unsafe (MVector)
+import qualified Data.Vector.Primitive.Mutable.Unsafe as U
 import           Data.Vector.Primitive.Pattern
 import           Control.Monad.Primitive
 
+import GHC.Stack (HasCallStack)
 import Prelude ( Ord, Bool, Int, Maybe, Ordering(..) )
 
 #include "vector.h"
@@ -665,6 +667,17 @@ ifoldrM = G.ifoldrM
 ifoldrM' :: (PrimMonad m, Prim a) => (Int -> a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldrM' #-}
 ifoldrM' = G.ifoldrM'
+
+-- | Unsafe functions are defined in "Data.Vector.Primitive.Mutable.Unsafe"
+unsafeCoerceMVector :: Coercible a b => MVector s a -> MVector s b
+unsafeCoerceMVector = U.unsafeCoerceMVector
+{-# DEPRECATED unsafeCoerceMVector "Use 'Data.Vector.Primitive.Mutable.Unsafe.unsafeCoerceMVector'" #-}
+
+-- | Unsafe functions are defined in "Data.Vector.Primitive.Mutable.Unsafe"
+unsafeCast :: forall a b s. (HasCallStack, Prim a, Prim b) => MVector s a -> MVector s b
+unsafeCast = U.unsafeCast
+{-# INLINE unsafeCast #-}
+{-# DEPRECATED unsafeCast "Use 'Data.Vector.Primitive.Mutable.Unsafe.unsafeCast'" #-}
 
 -- $setup
 -- >>> import Prelude (($), Num(..))

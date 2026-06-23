@@ -153,34 +153,35 @@ module Data.Vector.Storable (
   toList, fromList, fromListN,
 
   -- ** Other vector types
-  G.convert, unsafeCast,
-  unsafeCoerceVector,
+  G.convert,
 
   -- ** Mutable vectors
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
 
-  -- * Raw pointers
+  -- * Re-exports
+  Storable,
+  -- * Deprecated
+  unsafeCast, unsafeCoerceVector,
   unsafeFromForeignPtr, unsafeFromForeignPtr0,
   unsafeToForeignPtr,   unsafeToForeignPtr0,
-  unsafeWith,
-
-  -- * Re-exports
-  Storable
+  unsafeWith
 ) where
 
 import           Control.Applicative (Applicative)
+import           Data.Coerce
 import qualified Data.Vector.Generic          as G
 import           Data.Vector.Storable.Mutable ( MVector, pattern MVector )
-import Data.Vector.Storable.Unsafe
+import           Data.Vector.Storable.Unsafe  (Vector(..))
+import qualified Data.Vector.Storable.Unsafe  as U
 
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
 import Foreign.Storable
-import Foreign.ForeignPtr
+import Foreign.ForeignPtr (ForeignPtr)
+import Foreign.Ptr        (Ptr)
 import Prelude
-  ( Eq, Ord, Num, Enum, Monoid, Traversable, Monad, Bool, Ordering(..), Int, Maybe, Either
-  , undefined, div
-  , (*), (==), (&&))
+  ( Eq,Ord,Num,Enum,Monoid,Traversable,Monad,Bool,Ordering(..),Int,Maybe,Either,IO
+  , (==), (&&))
 
 #include "vector.h"
 
@@ -1885,21 +1886,6 @@ iforA_ :: (Applicative f, Storable a)
 iforA_ = G.iforA_
 
 
--- Conversions - Unsafe casts
--- --------------------------
-
--- | /O(1)/ Unsafely cast a vector from one element type to another.
--- This operation just changes the type of the underlying pointer and does not
--- modify the elements.
---
--- The resulting vector contains as many elements as can fit into the
--- underlying memory block.
-unsafeCast :: forall a b. (Storable a, Storable b) => Vector a -> Vector b
-{-# INLINE unsafeCast #-}
-unsafeCast (UnsafeVector n fp)
-  = UnsafeVector ((n * sizeOf (undefined :: a)) `div` sizeOf (undefined :: b))
-                 (castForeignPtr fp)
-
 -- Conversions - Mutable vectors
 -- -----------------------------
 
@@ -1963,9 +1949,57 @@ copy :: (Storable a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE copy #-}
 copy = G.copy
 
--- Conversions - Raw pointers
--- --------------------------
+-- Deprecated
+-- ----------
+
+-- | Unsafe functions are defined in "Data.Vector.Storable.Unsafe"
+unsafeCoerceVector :: Coercible a b => Vector a -> Vector b
+unsafeCoerceVector = U.unsafeCoerceVector
+{-# DEPRECATED unsafeCoerceVector "Use 'Data.Vector.Storable.Unsafe.unsafeCoerceVector'" #-}
+
+-- | Unsafe functions are defined in "Data.Vector.Storable.Unsafe"
+unsafeCast :: forall a b. (Storable a, Storable b) => Vector a -> Vector b
+{-# INLINE unsafeCast #-}
+unsafeCast = U.unsafeCast
+{-# DEPRECATED unsafeCast "Use 'Data.Vector.Storable.Unsafe.unsafeCast'" #-}
+
+-- | Unsafe functions are defined in "Data.Vector.Storable.Unsafe"
+unsafeFromForeignPtr :: Storable a
+                     => ForeignPtr a    -- ^ pointer
+                     -> Int             -- ^ offset
+                     -> Int             -- ^ length
+                     -> Vector a
+{-# INLINE unsafeFromForeignPtr #-}
+unsafeFromForeignPtr = U.unsafeFromForeignPtr
+{-# DEPRECATED unsafeFromForeignPtr "Use 'Data.Vector.Storable.Unsafe.unsafeFromForeignPtr'" #-}
+
+-- | Unsafe functions are defined in "Data.Vector.Storable.Unsafe"
+unsafeFromForeignPtr0 :: ForeignPtr a    -- ^ pointer
+                      -> Int             -- ^ length
+                      -> Vector a
+{-# INLINE unsafeFromForeignPtr0 #-}
+unsafeFromForeignPtr0 = U.unsafeFromForeignPtr0
+{-# DEPRECATED unsafeFromForeignPtr0 "Use 'Data.Vector.Storable.Unsafe.unsafeFromForeignPtr0'" #-}
+
+-- | Unsafe functions are defined in "Data.Vector.Storable.Unsafe"
+unsafeToForeignPtr :: Vector a -> (ForeignPtr a, Int, Int)
+{-# INLINE unsafeToForeignPtr #-}
+unsafeToForeignPtr = U.unsafeToForeignPtr
+{-# DEPRECATED unsafeToForeignPtr "Use 'Data.Vector.Storable.Unsafe.unsafeToForeignPtr'" #-}
+
+-- | Unsafe functions are defined in "Data.Vector.Storable.Unsafe"
+unsafeToForeignPtr0 :: Vector a -> (ForeignPtr a, Int)
+{-# INLINE unsafeToForeignPtr0 #-}
+unsafeToForeignPtr0 = U.unsafeToForeignPtr0
+{-# DEPRECATED unsafeToForeignPtr0 "Use 'Data.Vector.Storable.Unsafe.unsafeToForeignPtr0'" #-}
+
+-- | Unsafe functions are defined in "Data.Vector.Storable.Unsafe"
+unsafeWith :: Storable a => Vector a -> (Ptr a -> IO b) -> IO b
+{-# INLINE unsafeWith #-}
+unsafeWith = U.unsafeWith
+{-# DEPRECATED unsafeWith "Use 'Data.Vector.Storable.Unsafe.unsafeWith'" #-}
+
 
 
 -- $setup
--- >>> import Prelude (Bool(..), Double, ($), (+), (/), succ, even, min, max, id, Ord(..))
+-- >>> import Prelude (Bool(..), Double, ($), (+), (/), succ, even, min, max, id, Ord(..), undefined)

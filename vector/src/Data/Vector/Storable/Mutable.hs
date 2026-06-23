@@ -65,28 +65,29 @@ module Data.Vector.Storable.Mutable(
   -- ** Filling and copying
   set, copy, move, unsafeCopy, unsafeMove,
 
-  -- * Unsafe conversions
-  unsafeCast,
-  unsafeCoerceMVector,
+  -- * Re-exports
+  Storable, PrimMonad, PrimState, RealWorld,
 
-  -- * Raw pointers
+  -- * Deprecated
+  unsafeCast, unsafeCoerceMVector,
   unsafeFromForeignPtr, unsafeFromForeignPtr0,
   unsafeToForeignPtr,   unsafeToForeignPtr0,
-  unsafeWith,
-  -- * Re-exports
-  Storable, PrimMonad, PrimState, RealWorld
+  unsafeWith
 ) where
 
+import Data.Coerce
 import qualified Data.Vector.Generic.Mutable as G
 import Data.Vector.Storable.Mutable.Unsafe(
-  MVector,IOVector,STVector,unsafeCast,unsafeWith,unsafeCoerceMVector,
-  unsafeToForeignPtr,unsafeToForeignPtr0,unsafeFromForeignPtr,unsafeFromForeignPtr0)
+  MVector,IOVector,STVector)
+import qualified Data.Vector.Storable.Mutable.Unsafe as U
 import           Data.Vector.Storable.Pattern
 import Foreign.Storable
+import Foreign.ForeignPtr (ForeignPtr)
+import Foreign.Ptr        (Ptr)
 
 import Control.Monad.Primitive
 
-import Prelude (Int, Ord, Bool, Maybe, Ordering(..) )
+import Prelude (IO, Int, Ord, Bool, Maybe, Ordering(..) )
 
 #include "vector.h"
 
@@ -674,6 +675,60 @@ ifoldrM = G.ifoldrM
 ifoldrM' :: (PrimMonad m, Storable a) => (Int -> a -> b -> m b) -> b -> MVector (PrimState m) a -> m b
 {-# INLINE ifoldrM' #-}
 ifoldrM' = G.ifoldrM'
+
+
+-- Deprecated
+-- ----------
+
+-- | Unsafe functions are defined in "Data.Vector.Storable.Mutable.Unsafe"
+unsafeCast :: forall a b s.
+              (Storable a, Storable b) => MVector s a -> MVector s b
+{-# INLINE unsafeCast #-}
+unsafeCast = U.unsafeCast
+{-# DEPRECATED unsafeCast "Use 'Data.Vector.Storable.Mutable.Unsafe.unsafeCast'" #-}
+
+-- | Unsafe functions are defined in "Data.Vector.Storable.Mutable.Unsafe"
+unsafeCoerceMVector :: Coercible a b => MVector s a -> MVector s b
+unsafeCoerceMVector = U.unsafeCoerceMVector
+{-# DEPRECATED unsafeCoerceMVector "Use 'Data.Vector.Storable.Unsafe.unsafeCoerceMVector'" #-}
+
+-- | Unsafe functions are defined in "Data.Vector.Storable.Mutable.Unsafe"
+unsafeFromForeignPtr :: Storable a
+                     => ForeignPtr a    -- ^ pointer
+                     -> Int             -- ^ offset
+                     -> Int             -- ^ length
+                     -> MVector s a
+{-# INLINE_FUSED unsafeFromForeignPtr #-}
+unsafeFromForeignPtr = U.unsafeFromForeignPtr
+{-# DEPRECATED unsafeFromForeignPtr "Use 'Data.Vector.Storable.Mutable.Unsafe.unsafeFromForeignPtr'" #-}
+
+-- | Unsafe functions are defined in "Data.Vector.Storable.Mutable.Unsafe"
+unsafeFromForeignPtr0 :: ForeignPtr a    -- ^ pointer
+                      -> Int             -- ^ length
+                      -> MVector s a
+{-# INLINE unsafeFromForeignPtr0 #-}
+unsafeFromForeignPtr0 = U.unsafeFromForeignPtr0
+{-# DEPRECATED unsafeFromForeignPtr0 "Use 'Data.Vector.Storable.Mutable.Unsafe.unsafeFromForeignPtr0'" #-}
+
+-- | Unsafe functions are defined in "Data.Vector.Storable.Mutable.Unsafe"
+unsafeToForeignPtr :: MVector s a -> (ForeignPtr a, Int, Int)
+{-# INLINE unsafeToForeignPtr #-}
+unsafeToForeignPtr = U.unsafeToForeignPtr
+{-# DEPRECATED unsafeToForeignPtr "Use 'Data.Vector.Storable.Mutable.Unsafe.unsafeToForeignPtr'" #-}
+
+-- | Unsafe functions are defined in "Data.Vector.Storable.Mutable.Unsafe"
+unsafeToForeignPtr0 :: MVector s a -> (ForeignPtr a, Int)
+{-# INLINE unsafeToForeignPtr0 #-}
+unsafeToForeignPtr0 = U.unsafeToForeignPtr0
+{-# DEPRECATED unsafeToForeignPtr0 "Use 'Data.Vector.Storable.Mutable.Unsafe.unsafeToForeignPtr0'" #-}
+
+-- | Unsafe functions are defined in "Data.Vector.Storable.Mutable.Unsafe"
+unsafeWith :: Storable a => IOVector a -> (Ptr a -> IO b) -> IO b
+{-# INLINE unsafeWith #-}
+unsafeWith = U.unsafeWith
+{-# DEPRECATED unsafeWith "Use 'Data.Vector.Storable.Mutable.Unsafe.unsafeWith'" #-}
+
+
 
 -- $setup
 -- >>> import Prelude (($), Num(..))
