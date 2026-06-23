@@ -152,14 +152,16 @@ module Data.Vector.Primitive (
   toList, fromList, fromListN,
 
   -- ** Other vector types
-  G.convert, unsafeCast,
-  unsafeCoerceVector,
+  G.convert,
 
   -- ** Mutable vectors
   freeze, thaw, copy, unsafeFreeze, unsafeThaw, unsafeCopy,
 
   -- ** Re-exports
-  Prim
+  Prim,
+
+  -- * Deprecated
+  unsafeCast, unsafeCoerceVector
 ) where
 
 import           Control.Applicative (Applicative)

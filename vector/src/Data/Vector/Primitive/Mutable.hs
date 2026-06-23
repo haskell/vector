@@ -63,10 +63,10 @@ module Data.Vector.Primitive.Mutable (
   -- ** Filling and copying
   set, copy, move, unsafeCopy, unsafeMove,
 
-  -- * Unsafe conversions
-  unsafeCoerceMVector, unsafeCast,
   -- * Re-exports
-  Prim, PrimMonad, PrimState, RealWorld
+  Prim, PrimMonad, PrimState, RealWorld,
+  -- * Deprecated
+  unsafeCoerceMVector, unsafeCast,
 ) where
 
 import           Data.Coerce (Coercible)

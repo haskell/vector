@@ -685,7 +685,7 @@ unsafeCast :: forall a b s.
               (Storable a, Storable b) => MVector s a -> MVector s b
 {-# INLINE unsafeCast #-}
 unsafeCast = U.unsafeCast
-{-# DEPRECATED unsafeCast "Use 'Data.Vector.Storable.Unsafe.unsafeCast'" #-}
+{-# DEPRECATED unsafeCast "Use 'Data.Vector.Storable.Mutable.Unsafe.unsafeCast'" #-}
 
 -- | Unsafe functions are defined in "Data.Vector.Storable.Mutable.Unsafe"
 unsafeCoerceMVector :: Coercible a b => MVector s a -> MVector s b
@@ -700,7 +700,7 @@ unsafeFromForeignPtr :: Storable a
                      -> MVector s a
 {-# INLINE_FUSED unsafeFromForeignPtr #-}
 unsafeFromForeignPtr = U.unsafeFromForeignPtr
-{-# DEPRECATED unsafeFromForeignPtr "Use 'Data.Vector.Storable.Unsafe.unsafeFromForeignPtr'" #-}
+{-# DEPRECATED unsafeFromForeignPtr "Use 'Data.Vector.Storable.Mutable.Unsafe.unsafeFromForeignPtr'" #-}
 
 -- | Unsafe functions are defined in "Data.Vector.Storable.Mutable.Unsafe"
 unsafeFromForeignPtr0 :: ForeignPtr a    -- ^ pointer
@@ -708,25 +708,25 @@ unsafeFromForeignPtr0 :: ForeignPtr a    -- ^ pointer
                       -> MVector s a
 {-# INLINE unsafeFromForeignPtr0 #-}
 unsafeFromForeignPtr0 = U.unsafeFromForeignPtr0
-{-# DEPRECATED unsafeFromForeignPtr0 "Use 'Data.Vector.Storable.Unsafe.unsafeFromForeignPtr0'" #-}
+{-# DEPRECATED unsafeFromForeignPtr0 "Use 'Data.Vector.Storable.Mutable.Unsafe.unsafeFromForeignPtr0'" #-}
 
 -- | Unsafe functions are defined in "Data.Vector.Storable.Mutable.Unsafe"
 unsafeToForeignPtr :: MVector s a -> (ForeignPtr a, Int, Int)
 {-# INLINE unsafeToForeignPtr #-}
 unsafeToForeignPtr = U.unsafeToForeignPtr
-{-# DEPRECATED unsafeToForeignPtr "Use 'Data.Vector.Storable.Unsafe.unsafeToForeignPtr'" #-}
+{-# DEPRECATED unsafeToForeignPtr "Use 'Data.Vector.Storable.Mutable.Unsafe.unsafeToForeignPtr'" #-}
 
 -- | Unsafe functions are defined in "Data.Vector.Storable.Mutable.Unsafe"
 unsafeToForeignPtr0 :: MVector s a -> (ForeignPtr a, Int)
 {-# INLINE unsafeToForeignPtr0 #-}
 unsafeToForeignPtr0 = U.unsafeToForeignPtr0
-{-# DEPRECATED unsafeToForeignPtr0 "Use 'Data.Vector.Storable.Unsafe.unsafeToForeignPtr0'" #-}
+{-# DEPRECATED unsafeToForeignPtr0 "Use 'Data.Vector.Storable.Mutable.Unsafe.unsafeToForeignPtr0'" #-}
 
 -- | Unsafe functions are defined in "Data.Vector.Storable.Mutable.Unsafe"
 unsafeWith :: Storable a => IOVector a -> (Ptr a -> IO b) -> IO b
 {-# INLINE unsafeWith #-}
 unsafeWith = U.unsafeWith
-{-# DEPRECATED unsafeWith "Use 'Data.Vector.Storable.Unsafe.unsafeWith'" #-}
+{-# DEPRECATED unsafeWith "Use 'Data.Vector.Storable.Mutable.Unsafe.unsafeWith'" #-}
 
 
 
