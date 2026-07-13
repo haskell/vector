@@ -1,6 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MagicHash #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -46,7 +47,7 @@ import qualified Control.Applicative as Applicative
 import qualified Data.Foldable as Foldable
 import qualified Data.Traversable as Traversable
 
-import qualified GHC.Exts as Exts (IsList(..))
+import qualified GHC.Exts as Exts (IsList(..), Int(..))
 
 
 -- | Lazy boxed vectors, supporting efficient slicing.
@@ -112,8 +113,8 @@ instance G.Vector Vector a where
   {-# INLINE basicUnsafeSlice #-}
   basicUnsafeSlice j n (UnsafeVector i _ arr) = UnsafeVector (i+j) n arr
 
-  {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM (UnsafeVector i _ arr) j = indexArrayM arr (i+j)
+  {-# INLINE basicUnsafeIndexM# #-}
+  basicUnsafeIndexM# (UnsafeVector i _ arr) j = indexArrayM arr (i + Exts.I# j)
 
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (UnsafeMVector i n dst) (UnsafeVector j _ src)
@@ -287,10 +288,10 @@ instance Foldable.Foldable Vector where
 instance Traversable.Traversable Vector where
   {-# INLINE traverse #-}
   traverse = G.traverse
-  
+
   {-# INLINE mapM #-}
   mapM = G.mapM
-  
+
   {-# INLINE sequence #-}
   sequence = G.sequence
 

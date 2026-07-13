@@ -1,5 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MagicHash #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -34,6 +35,7 @@ import qualified Data.Primitive.PrimArray as Prim
 
 import Control.Monad.ST
 import Data.Kind (Type)
+import GHC.Exts (Int(..), Int#)
 
 -- | @Mutable v s a@ is the mutable version of the immutable vector type @v a@ with
 -- the state token @s@. It is injective on GHC 8 and newer.
@@ -112,7 +114,13 @@ class MVector (Mutable v) a => Vector v a where
   --
   -- which does not have this problem, because indexing (but not the returned
   -- element!) is evaluated immediately.
-  basicUnsafeIndexM  :: v a -> Int -> Box a
+  basicUnsafeIndexM :: v a -> Int -> Box a
+  basicUnsafeIndexM xs (I# i) = basicUnsafeIndexM# xs i
+  {-# INLINE basicUnsafeIndexM #-}
+
+  basicUnsafeIndexM# :: v a -> Int# -> Box a
+  basicUnsafeIndexM# xs i = basicUnsafeIndexM xs (I# i)
+  {-# INLINE basicUnsafeIndexM# #-}
 
   -- |  /Assumed complexity: O(n)/
   --
@@ -131,11 +139,12 @@ class MVector (Mutable v) a => Vector v a where
     where
       !n = basicLength src
 
-      do_copy i | i < n = do
-                            x <- liftBox $ basicUnsafeIndexM src i
-                            M.basicUnsafeWrite dst i x
-                            do_copy (i+1)
-                | otherwise = return ()
+      do_copy (I# i)
+        | I# i < n = do
+          x <- liftBox $ basicUnsafeIndexM# src i
+          M.basicUnsafeWrite dst (I# i) x
+          do_copy (I# i + 1)
+        | otherwise = return ()
 
   -- | Evaluate @a@ as far as storing it in a vector would and yield @b@.
   -- The @v a@ argument only fixes the type and is not touched. This method is
@@ -152,4 +161,4 @@ class MVector (Mutable v) a => Vector v a where
   elemseq _ = \_ x -> x
 
   {-# MINIMAL basicUnsafeFreeze, basicUnsafeThaw, basicLength,
-              basicUnsafeSlice, basicUnsafeIndexM #-}
+              basicUnsafeSlice, (basicUnsafeIndexM | basicUnsafeIndexM#) #-}
