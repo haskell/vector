@@ -234,6 +234,7 @@ import qualified Data.Vector.Unboxed.Unsafe as U
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Fusion.Bundle as Bundle
 import Data.Vector.Fusion.Util ( delayed_min )
+import GHC.Stack (HasCallStack)
 
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
@@ -319,7 +320,7 @@ null = G.null
 -- --------
 
 -- | O(1) Indexing.
-(!) :: Unbox a => Vector a -> Int -> a
+(!) :: (HasCallStack, Unbox a) => Vector a -> Int -> a
 {-# INLINE (!) #-}
 (!) = (G.!)
 
@@ -374,7 +375,7 @@ unsafeLast = G.unsafeLast
 --
 -- Here, no references to @v@ are retained because indexing (but /not/ the
 -- element) is evaluated eagerly.
-indexM :: (Unbox a, Monad m) => Vector a -> Int -> m a
+indexM :: (HasCallStack, Unbox a, Monad m) => Vector a -> Int -> m a
 {-# INLINE indexM #-}
 indexM = G.indexM
 
@@ -413,10 +414,11 @@ unsafeLastM = G.unsafeLastM
 
 -- | /O(1)/ Yield a slice of the vector without copying it. The vector must
 -- contain at least @i+n@ elements.
-slice :: Unbox a => Int   -- ^ @i@ starting index
-                 -> Int   -- ^ @n@ length
-                 -> Vector a
-                 -> Vector a
+slice :: (HasCallStack, Unbox a)
+      => Int   -- ^ @i@ starting index
+      -> Int   -- ^ @n@ length
+      -> Vector a
+      -> Vector a
 {-# INLINE slice #-}
 slice = G.slice
 
@@ -886,7 +888,7 @@ reverse = G.reverse
 -- often much more efficient.
 --
 -- > backpermute <a,b,c,d> <0,3,2,3,1,0> = <a,d,c,d,b,a>
-backpermute :: Unbox a => Vector a -> Vector Int -> Vector a
+backpermute :: (HasCallStack, Unbox a) => Vector a -> Vector Int -> Vector a
 {-# INLINE backpermute #-}
 backpermute = G.backpermute
 
@@ -2170,7 +2172,7 @@ unsafeCopy = G.unsafeCopy
 
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length.
-copy :: (Unbox a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
+copy :: (HasCallStack, Unbox a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE copy #-}
 copy = G.copy
 

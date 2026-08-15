@@ -189,6 +189,7 @@ import qualified Data.Vector.Strict.Unsafe as U
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector as V
 import qualified Data.Traversable as Traversable
+import GHC.Stack (HasCallStack)
 
 import Control.Monad.ST ( ST )
 
@@ -263,7 +264,7 @@ null = G.null
 -- | O(1) Indexing.
 --
 -- @since 0.13.2.0
-(!) :: Vector a -> Int -> a
+(!) :: HasCallStack => Vector a -> Int -> a
 {-# INLINE (!) #-}
 (!) = (G.!)
 
@@ -332,7 +333,7 @@ unsafeLast = G.unsafeLast
 -- element) is evaluated eagerly.
 --
 -- @since 0.13.2.0
-indexM :: Monad m => Vector a -> Int -> m a
+indexM :: (HasCallStack, Monad m) => Vector a -> Int -> m a
 {-# INLINE indexM #-}
 indexM = G.indexM
 
@@ -383,10 +384,11 @@ unsafeLastM = G.unsafeLastM
 -- contain at least @i+n@ elements.
 --
 -- @since 0.13.2.0
-slice :: Int   -- ^ @i@ starting index
-                 -> Int   -- ^ @n@ length
-                 -> Vector a
-                 -> Vector a
+slice :: HasCallStack
+      => Int   -- ^ @i@ starting index
+      -> Int   -- ^ @n@ length
+      -> Vector a
+      -> Vector a
 {-# INLINE slice #-}
 slice = G.slice
 
@@ -942,7 +944,7 @@ reverse = G.reverse
 -- > backpermute <a,b,c,d> <0,3,2,3,1,0> = <a,d,c,d,b,a>
 --
 -- @since 0.13.2.0
-backpermute :: Vector a -> Vector Int -> Vector a
+backpermute :: HasCallStack => Vector a -> Vector Int -> Vector a
 {-# INLINE backpermute #-}
 backpermute = G.backpermute
 
@@ -2467,7 +2469,7 @@ unsafeCopy = G.unsafeCopy
 -- have the same length.
 --
 -- @since 0.13.2.0
-copy :: PrimMonad m => MVector (PrimState m) a -> Vector a -> m ()
+copy :: (HasCallStack, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE copy #-}
 copy = G.copy
 
