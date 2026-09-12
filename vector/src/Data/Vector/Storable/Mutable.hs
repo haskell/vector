@@ -86,6 +86,7 @@ import Foreign.ForeignPtr (ForeignPtr)
 import Foreign.Ptr        (Ptr)
 
 import Control.Monad.Primitive
+import GHC.Stack (HasCallStack)
 
 import Prelude (IO, Int, Ord, Bool, Maybe, Ordering(..) )
 
@@ -197,7 +198,7 @@ overlaps = G.overlaps
 -- --------------
 
 -- | Create a mutable vector of the given length.
-new :: (PrimMonad m, Storable a) => Int -> m (MVector (PrimState m) a)
+new :: (HasCallStack, PrimMonad m, Storable a) => Int -> m (MVector (PrimState m) a)
 {-# INLINE new #-}
 new = G.new
 
@@ -284,7 +285,7 @@ clone = G.clone
 -- [10,20,30]
 --
 -- @since 0.5
-grow :: (PrimMonad m, Storable a)
+grow :: (HasCallStack, PrimMonad m, Storable a)
      => MVector (PrimState m) a -> Int -> m (MVector (PrimState m) a)
 {-# INLINE grow #-}
 grow = G.grow
@@ -319,7 +320,7 @@ clear = G.clear
 -- >>> v <- MVS.generate 10 (\x -> x*x)
 -- >>> MVS.read v 3
 -- 9
-read :: (PrimMonad m, Storable a) => MVector (PrimState m) a -> Int -> m a
+read :: (HasCallStack, PrimMonad m, Storable a) => MVector (PrimState m) a -> Int -> m a
 {-# INLINE read #-}
 read = G.read
 
@@ -342,30 +343,30 @@ readMaybe = G.readMaybe
 
 -- | Replace the element at the given position.
 write
-    :: (PrimMonad m, Storable a) => MVector (PrimState m) a -> Int -> a -> m ()
+    :: (HasCallStack, PrimMonad m, Storable a) => MVector (PrimState m) a -> Int -> a -> m ()
 {-# INLINE write #-}
 write = G.write
 
 -- | Modify the element at the given position.
-modify :: (PrimMonad m, Storable a) => MVector (PrimState m) a -> (a -> a) -> Int -> m ()
+modify :: (HasCallStack, PrimMonad m, Storable a) => MVector (PrimState m) a -> (a -> a) -> Int -> m ()
 {-# INLINE modify #-}
 modify = G.modify
 
 -- | Modify the element at the given position using a monadic function.
 --
 -- @since 0.12.3.0
-modifyM :: (PrimMonad m, Storable a) => MVector (PrimState m) a -> (a -> m a) -> Int -> m ()
+modifyM :: (HasCallStack, PrimMonad m, Storable a) => MVector (PrimState m) a -> (a -> m a) -> Int -> m ()
 {-# INLINE modifyM #-}
 modifyM = G.modifyM
 
 -- | Swap the elements at the given positions.
 swap
-    :: (PrimMonad m, Storable a) => MVector (PrimState m) a -> Int -> Int -> m ()
+    :: (HasCallStack, PrimMonad m, Storable a) => MVector (PrimState m) a -> Int -> Int -> m ()
 {-# INLINE swap #-}
 swap = G.swap
 
 -- | Replace the element at the given position and return the old element.
-exchange :: (PrimMonad m, Storable a) => MVector (PrimState m) a -> Int -> a -> m a
+exchange :: (HasCallStack, PrimMonad m, Storable a) => MVector (PrimState m) a -> Int -> a -> m a
 {-# INLINE exchange #-}
 exchange = G.exchange
 
@@ -413,7 +414,7 @@ set = G.set
 
 -- | Copy a vector. The two vectors must have the same length and may not
 -- overlap.
-copy :: (PrimMonad m, Storable a)
+copy :: (HasCallStack, PrimMonad m, Storable a)
      => MVector (PrimState m) a   -- ^ target
      -> MVector (PrimState m) a   -- ^ source
      -> m ()
@@ -436,7 +437,7 @@ unsafeCopy = G.unsafeCopy
 -- Otherwise, the copying is performed as if the source vector were
 -- copied to a temporary vector and then the temporary vector was copied
 -- to the target vector.
-move :: (PrimMonad m, Storable a)
+move :: (HasCallStack, PrimMonad m, Storable a)
      => MVector (PrimState m) a   -- ^ target
      -> MVector (PrimState m) a   -- ^ source
      -> m ()
