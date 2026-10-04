@@ -19,6 +19,7 @@ import qualified Data.Vector.Generic.Mutable as VGM
 import qualified Data.Vector.Unboxed         as VU
 import GHC.Generics (Generic)
 
+import Test.InspectExtra
 import Inspect.DerivingVia.OtherFoo
 
 
@@ -64,12 +65,12 @@ pipeline_OtherFoo n
 -- and even mentions of Foo data type.
 tests :: TestTree
 tests = testGroup "iso-deriving"
-  [ $(inspectObligations [(`doesNotUse` 'Foo), hasNoGenerics, hasNoTypeClasses]
+  [ $(inspectObligations [(`doesNotUse` 'Foo), hasNoGenerics, hasNoTypeClasses']
        'map_Foo)
-  , $(inspectObligations [(`doesNotUse` 'OtherFoo), hasNoGenerics, hasNoTypeClasses]
+  , $(inspectObligations [(`doesNotUse` 'OtherFoo), hasNoGenerics, hasNoTypeClasses']
        'pipeline_Foo)
-  , $(inspectObligations [(`doesNotUse` 'OtherFoo), hasNoGenerics, hasNoTypeClasses]
+  , $(inspectObligations [(`doesNotUse` 'OtherFoo), hasNoGenerics, hasNoTypeClasses']
        'map_OtherFoo)
-  , $(inspectObligations [(`doesNotUse` 'OtherFoo), hasNoGenerics, hasNoTypeClasses]
+  , $(inspectObligations [(`doesNotUse` 'OtherFoo), hasNoGenerics, hasNoTypeClasses']
        'pipeline_OtherFoo)
   ]
