@@ -2650,7 +2650,7 @@ clone :: Vector v a => v a -> New v a
 {-# INLINE_FUSED clone #-}
 clone v = v `seq` New.create (
   do
-    mv <- M.new (basicLength v)
+    mv <- M.unsafeNew (basicLength v)
     unsafeCopy mv v
     return mv)
 
