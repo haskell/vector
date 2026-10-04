@@ -18,35 +18,38 @@ jobs:
       matrix:
         include:
           # Linux
-          - { cabal: "3.14", os: ubuntu-24.04,  ghc: "8.8.4"  }
-          - { cabal: "3.14", os: ubuntu-24.04,  ghc: "8.10.7" }
-          - { cabal: "3.14", os: ubuntu-24.04,  ghc: "9.0.2"  }
-          - { cabal: "3.14", os: ubuntu-24.04,  ghc: "9.2.8"  }
-          - { cabal: "3.14", os: ubuntu-24.04,  ghc: "9.4.8"  }
-          - { cabal: "3.14", os: ubuntu-24.04,  ghc: "9.6.7"  }
-          - { cabal: "3.14", os: ubuntu-24.04,  ghc: "9.6.7",
+          - { cabal: "3.16", os: ubuntu-24.04,  ghc: "8.8.4"  }
+          - { cabal: "3.16", os: ubuntu-24.04,  ghc: "8.10.7" }
+          - { cabal: "3.16", os: ubuntu-24.04,  ghc: "9.0.2"  }
+          - { cabal: "3.16", os: ubuntu-24.04,  ghc: "9.2.8"  }
+          - { cabal: "3.16", os: ubuntu-24.04,  ghc: "9.4.8"  }
+          - { cabal: "3.16", os: ubuntu-24.04,  ghc: "9.6.7"  }
+          - { cabal: "3.16", os: ubuntu-24.04,  ghc: "9.6.7",
               flags: "-fUnsafeChecks -fInternalChecks" }
-          - { cabal: "3.14", os: ubuntu-24.04,  ghc: "9.8.4"  }
-          - { cabal: "3.14", os: ubuntu-24.04,  ghc: "9.10.2"  }
-          - { cabal: "3.14", os: ubuntu-24.04,  ghc: "9.12.2"  }
+          - { cabal: "3.16", os: ubuntu-24.04,  ghc: "9.8.4"  }
+          - { cabal: "3.16", os: ubuntu-24.04,  ghc: "9.10.2"  }
+          - { cabal: "3.16", os: ubuntu-24.04,  ghc: "9.12.2"  }
+          - { cabal: "3.16", os: ubuntu-24.04,  ghc: "9.14.1"  }
           # Win
-          - { cabal: "3.14", os: windows-latest, ghc: "9.6.7"  }
-          - { cabal: "3.14", os: windows-latest, ghc: "9.8.4"  }
-          - { cabal: "3.14", os: windows-latest, ghc: "9.10.2"  }
-          - { cabal: "3.14", os: windows-latest, ghc: "9.12.2"  }
+          - { cabal: "3.16", os: windows-latest, ghc: "9.6.7"  }
+          - { cabal: "3.16", os: windows-latest, ghc: "9.8.4"  }
+          - { cabal: "3.16", os: windows-latest, ghc: "9.10.2"  }
+          - { cabal: "3.16", os: windows-latest, ghc: "9.12.2"  }
+          - { cabal: "3.16", os: windows-latest, ghc: "9.14.1"  }
           # MacOS
           #
           # Fails with:
           # > <command line>: can't load framework: Security (not found)
-          # - { cabal: "3.14", os: macOS-15-intel, ghc: "8.8.4"  }
-          - { cabal: "3.14", os: macOS-15-intel, ghc: "8.10.7" }
-          - { cabal: "3.14", os: macOS-15-intel, ghc: "9.0.2"  }
-          - { cabal: "3.14", os: macOS-latest,   ghc: "9.2.8"  }
-          - { cabal: "3.14", os: macOS-latest,   ghc: "9.4.8"  }
-          - { cabal: "3.14", os: macOS-latest,   ghc: "9.6.7"  }
-          - { cabal: "3.14", os: macOS-latest,   ghc: "9.8.4"  }
-          - { cabal: "3.14", os: macOS-latest,   ghc: "9.10.2" }
-          - { cabal: "3.14", os: macOS-latest,   ghc: "9.12.2" }
+          # - { cabal: "3.16", os: macOS-15-intel, ghc: "8.8.4"  }
+          - { cabal: "3.16", os: macOS-15-intel, ghc: "8.10.7" }
+          - { cabal: "3.16", os: macOS-15-intel, ghc: "9.0.2"  }
+          - { cabal: "3.16", os: macOS-latest,   ghc: "9.2.8"  }
+          - { cabal: "3.16", os: macOS-latest,   ghc: "9.4.8"  }
+          - { cabal: "3.16", os: macOS-latest,   ghc: "9.6.7"  }
+          - { cabal: "3.16", os: macOS-latest,   ghc: "9.8.4"  }
+          - { cabal: "3.16", os: macOS-latest,   ghc: "9.10.2" }
+          - { cabal: "3.16", os: macOS-latest,   ghc: "9.12.2" }
+          - { cabal: "3.16", os: macOS-latest,   ghc: "9.14.1" }
       fail-fast: false
 
     steps:
