@@ -120,3 +120,23 @@ jobs:
       run: |
         cabal bench all
       working-directory: unpacked/
+  # Job for checking that vector is buildable and works correctly on 32-bit
+  # systems. Adapted from os-string's CI setup
+  i386:
+    needs: cabal
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Prepare script
+      run: |
+        echo > run.sh <<EOF
+        cabal update
+        cabal build all --write-ghc-environment-files=always
+        cabal test all --enable-tests --test-show-details=direct
+        EOF
+    # ----------------
+    - name: Test
+      uses: docker://hasufell/i386-alpine-haskell:3.12
+      with:
+        args: sh run.sh
