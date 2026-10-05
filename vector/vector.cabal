@@ -52,6 +52,7 @@ Tested-With:
   GHC == 9.8.4
   GHC == 9.10.2
   GHC == 9.12.2
+  GHC == 9.14.1
 
 Extra-doc-files:
       changelog.md
