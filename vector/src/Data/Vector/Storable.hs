@@ -173,6 +173,7 @@ import qualified Data.Vector.Generic          as G
 import           Data.Vector.Storable.Mutable ( MVector, pattern MVector )
 import           Data.Vector.Storable.Unsafe  (Vector(..))
 import qualified Data.Vector.Storable.Unsafe  as U
+import GHC.Stack (HasCallStack)
 
 import Control.Monad.ST ( ST )
 import Control.Monad.Primitive
@@ -203,7 +204,7 @@ null = G.null
 -- --------
 
 -- | O(1) Indexing.
-(!) :: Storable a => Vector a -> Int -> a
+(!) :: (HasCallStack, Storable a) => Vector a -> Int -> a
 {-# INLINE (!) #-}
 (!) = (G.!)
 
@@ -258,7 +259,7 @@ unsafeLast = G.unsafeLast
 --
 -- Here, no references to @v@ are retained because indexing (but /not/ the
 -- element) is evaluated eagerly.
-indexM :: (Storable a, Monad m) => Vector a -> Int -> m a
+indexM :: (HasCallStack, Storable a, Monad m) => Vector a -> Int -> m a
 {-# INLINE indexM #-}
 indexM = G.indexM
 
@@ -297,7 +298,7 @@ unsafeLastM = G.unsafeLastM
 
 -- | /O(1)/ Yield a slice of the vector without copying it. The vector must
 -- contain at least @i+n@ elements.
-slice :: Storable a
+slice :: (HasCallStack, Storable a)
       => Int   -- ^ @i@ starting index
       -> Int   -- ^ @n@ length
       -> Vector a
@@ -720,7 +721,7 @@ reverse = G.reverse
 -- often much more efficient.
 --
 -- > backpermute <a,b,c,d> <0,3,2,3,1,0> = <a,d,c,d,b,a>
-backpermute :: Storable a => Vector a -> Vector Int -> Vector a
+backpermute :: (HasCallStack, Storable a) => Vector a -> Vector Int -> Vector a
 {-# INLINE backpermute #-}
 backpermute = G.backpermute
 
@@ -1945,7 +1946,7 @@ unsafeCopy = G.unsafeCopy
 
 -- | /O(n)/ Copy an immutable vector into a mutable one. The two vectors must
 -- have the same length.
-copy :: (Storable a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
+copy :: (HasCallStack, Storable a, PrimMonad m) => MVector (PrimState m) a -> Vector a -> m ()
 {-# INLINE copy #-}
 copy = G.copy
 
