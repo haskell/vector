@@ -1,6 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MagicHash #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -119,8 +120,8 @@ instance G.Vector Vector a where
   basicLength = coerce (G.basicLength @V.Vector @a)
   {-# INLINE basicUnsafeSlice #-}
   basicUnsafeSlice = coerce (G.basicUnsafeSlice @V.Vector @a)
-  {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM = coerce (G.basicUnsafeIndexM @V.Vector @a)
+  {-# INLINE basicUnsafeIndexM# #-}
+  basicUnsafeIndexM# = coerce (G.basicUnsafeIndexM# @V.Vector @a)
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy = coerce (G.basicUnsafeCopy @V.Vector @a)
   {-# INLINE elemseq #-}

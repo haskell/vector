@@ -4,6 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MagicHash #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -157,6 +158,9 @@ instance G.Vector Vector () where
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (V_Unit _) _ = return ()
 
+  {-# INLINE basicUnsafeIndexM# #-}
+  basicUnsafeIndexM# (V_Unit _) _ = return ()
+
   {-# INLINE basicUnsafeCopy #-}
   basicUnsafeCopy (MV_Unit _) (V_Unit _) = return ()
 
@@ -249,13 +253,13 @@ instance P.Prim a => G.Vector Vector (UnboxViaPrim a) where
   {-# INLINE basicUnsafeThaw #-}
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
-  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE basicUnsafeIndexM# #-}
   {-# INLINE elemseq #-}
   basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @P.Vector @a
   basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @P.Vector @a
   basicLength       = coerce $ G.basicLength       @P.Vector @a
   basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @P.Vector @a
-  basicUnsafeIndexM = coerce $ G.basicUnsafeIndexM @P.Vector @a
+  basicUnsafeIndexM# = coerce $ G.basicUnsafeIndexM# @P.Vector @a
   basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @P.Vector @a
   elemseq _ = seq
 
@@ -389,8 +393,8 @@ instance (IsoUnbox a b, Unbox b) => G.Vector Vector (As a b) where
   basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @Vector @b
   elemseq _         = seq
   -- Conversion to/from underlying representation
-  {-# INLINE basicUnsafeIndexM #-}
-  basicUnsafeIndexM (V_UnboxAs v) i = As . fromURepr <$> G.basicUnsafeIndexM v i
+  {-# INLINE basicUnsafeIndexM# #-}
+  basicUnsafeIndexM# (V_UnboxAs v) i = As . fromURepr <$> G.basicUnsafeIndexM# v i
 
 
 newtype instance MVector s Int = MV_Int (P.MVector s Int)
@@ -524,13 +528,13 @@ instance G.Vector Vector Bool where
   {-# INLINE basicUnsafeThaw #-}
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
-  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE basicUnsafeIndexM# #-}
   {-# INLINE elemseq #-}
   basicUnsafeFreeze (MV_Bool v) = V_Bool `liftM` G.basicUnsafeFreeze v
   basicUnsafeThaw (V_Bool v) = MV_Bool `liftM` G.basicUnsafeThaw v
   basicLength (V_Bool v) = G.basicLength v
   basicUnsafeSlice i n (V_Bool v) = V_Bool $ G.basicUnsafeSlice i n v
-  basicUnsafeIndexM (V_Bool v) i = toBool `liftM` G.basicUnsafeIndexM v i
+  basicUnsafeIndexM# (V_Bool v) i = toBool `liftM` G.basicUnsafeIndexM# v i
   basicUnsafeCopy (MV_Bool mv) (V_Bool v) = G.basicUnsafeCopy mv v
   elemseq _ = seq
 
@@ -582,10 +586,10 @@ instance (Unbox a) => G.Vector Vector (Complex a) where
   basicLength       = coerce $ G.basicLength       @Vector @(a,a)
   basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @Vector @(a,a)
   basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @Vector @(a,a)
-  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE basicUnsafeIndexM# #-}
   {-# INLINE elemseq #-}
-  basicUnsafeIndexM (V_Complex v) i
-                = uncurry (:+) <$> G.basicUnsafeIndexM v i
+  basicUnsafeIndexM# (V_Complex v) i
+                = uncurry (:+) <$> G.basicUnsafeIndexM# v i
   elemseq _ (x :+ y) z = G.elemseq (undefined :: Vector a) x
                        $ G.elemseq (undefined :: Vector a) y z
 
@@ -707,9 +711,9 @@ instance (Unbox a, Unbox b) => G.Vector Vector (Arg a b) where
   basicLength       = coerce $ G.basicLength       @Vector @(a,b)
   basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @Vector @(a,b)
   basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @Vector @(a,b)
-  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE basicUnsafeIndexM# #-}
   {-# INLINE elemseq #-}
-  basicUnsafeIndexM (V_Arg v) i  = uncurry Arg `liftM` G.basicUnsafeIndexM v i
+  basicUnsafeIndexM# (V_Arg v) i  = uncurry Arg `liftM` G.basicUnsafeIndexM# v i
   elemseq _ (Arg x y) z          = G.elemseq (undefined :: Vector a) x
                                  $ G.elemseq (undefined :: Vector b) y z
 
@@ -797,13 +801,13 @@ instance St.Storable a => G.Vector Vector (UnboxViaStorable a) where
   {-# INLINE basicUnsafeThaw #-}
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
-  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE basicUnsafeIndexM# #-}
   {-# INLINE elemseq #-}
   basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @St.Vector @a
   basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @St.Vector @a
   basicLength       = coerce $ G.basicLength       @St.Vector @a
   basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @St.Vector @a
-  basicUnsafeIndexM = coerce $ G.basicUnsafeIndexM @St.Vector @a
+  basicUnsafeIndexM# = coerce $ G.basicUnsafeIndexM# @St.Vector @a
   basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @St.Vector @a
   elemseq _ = seq
 
@@ -884,13 +888,13 @@ instance G.Vector Vector (DoNotUnboxLazy a) where
   {-# INLINE basicUnsafeThaw #-}
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
-  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE basicUnsafeIndexM# #-}
   {-# INLINE elemseq #-}
   basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @B.Vector @a
   basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @B.Vector @a
   basicLength       = coerce $ G.basicLength       @B.Vector @a
   basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @B.Vector @a
-  basicUnsafeIndexM = coerce $ G.basicUnsafeIndexM @B.Vector @a
+  basicUnsafeIndexM# = coerce $ G.basicUnsafeIndexM# @B.Vector @a
   basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @B.Vector @a
   elemseq _ = seq
 
@@ -968,13 +972,13 @@ instance G.Vector Vector (DoNotUnboxStrict a) where
   {-# INLINE basicUnsafeThaw #-}
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
-  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE basicUnsafeIndexM# #-}
   {-# INLINE elemseq #-}
   basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @S.Vector @a
   basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @S.Vector @a
   basicLength       = coerce $ G.basicLength       @S.Vector @a
   basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @S.Vector @a
-  basicUnsafeIndexM = coerce $ G.basicUnsafeIndexM @S.Vector @a
+  basicUnsafeIndexM# = coerce $ G.basicUnsafeIndexM# @S.Vector @a
   basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @S.Vector @a
   elemseq _ = seq
 
@@ -1053,13 +1057,13 @@ instance NFData a => G.Vector Vector (DoNotUnboxNormalForm a) where
   {-# INLINE basicUnsafeThaw #-}
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
-  {-# INLINE basicUnsafeIndexM #-}
+  {-# INLINE basicUnsafeIndexM# #-}
   {-# INLINE elemseq #-}
   basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @S.Vector @a
   basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @S.Vector @a
   basicLength       = coerce $ G.basicLength       @S.Vector @a
   basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @S.Vector @a
-  basicUnsafeIndexM = coerce $ G.basicUnsafeIndexM @S.Vector @a
+  basicUnsafeIndexM# = coerce $ G.basicUnsafeIndexM# @S.Vector @a
   basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @S.Vector @a
   elemseq _ x y = rnf (coerce x :: a) `seq` y
 
@@ -1203,11 +1207,11 @@ instance (Unbox a, Unbox b) => G.Vector Vector (a, b) where
   basicUnsafeSlice i_ m_ (V_2 _ as bs)
       = V_2 m_ (G.basicUnsafeSlice i_ m_ as)
                (G.basicUnsafeSlice i_ m_ bs)
-  {-# INLINE basicUnsafeIndexM  #-}
-  basicUnsafeIndexM (V_2 _ as bs) i_
+  {-# INLINE basicUnsafeIndexM#  #-}
+  basicUnsafeIndexM# (V_2 _ as bs) i_
       = do
-          a <- G.basicUnsafeIndexM as i_
-          b <- G.basicUnsafeIndexM bs i_
+          a <- G.basicUnsafeIndexM# as i_
+          b <- G.basicUnsafeIndexM# bs i_
           return (a, b)
   {-# INLINE basicUnsafeCopy  #-}
   basicUnsafeCopy (MV_2 _ as1 bs1) (V_2 _ as2 bs2)
@@ -1331,12 +1335,12 @@ instance (Unbox a,
       = V_3 m_ (G.basicUnsafeSlice i_ m_ as)
                (G.basicUnsafeSlice i_ m_ bs)
                (G.basicUnsafeSlice i_ m_ cs)
-  {-# INLINE basicUnsafeIndexM  #-}
-  basicUnsafeIndexM (V_3 _ as bs cs) i_
+  {-# INLINE basicUnsafeIndexM#  #-}
+  basicUnsafeIndexM# (V_3 _ as bs cs) i_
       = do
-          a <- G.basicUnsafeIndexM as i_
-          b <- G.basicUnsafeIndexM bs i_
-          c <- G.basicUnsafeIndexM cs i_
+          a <- G.basicUnsafeIndexM# as i_
+          b <- G.basicUnsafeIndexM# bs i_
+          c <- G.basicUnsafeIndexM# cs i_
           return (a, b, c)
   {-# INLINE basicUnsafeCopy  #-}
   basicUnsafeCopy (MV_3 _ as1 bs1 cs1) (V_3 _ as2 bs2 cs2)
@@ -1487,13 +1491,13 @@ instance (Unbox a,
                (G.basicUnsafeSlice i_ m_ bs)
                (G.basicUnsafeSlice i_ m_ cs)
                (G.basicUnsafeSlice i_ m_ ds)
-  {-# INLINE basicUnsafeIndexM  #-}
-  basicUnsafeIndexM (V_4 _ as bs cs ds) i_
+  {-# INLINE basicUnsafeIndexM#  #-}
+  basicUnsafeIndexM# (V_4 _ as bs cs ds) i_
       = do
-          a <- G.basicUnsafeIndexM as i_
-          b <- G.basicUnsafeIndexM bs i_
-          c <- G.basicUnsafeIndexM cs i_
-          d <- G.basicUnsafeIndexM ds i_
+          a <- G.basicUnsafeIndexM# as i_
+          b <- G.basicUnsafeIndexM# bs i_
+          c <- G.basicUnsafeIndexM# cs i_
+          d <- G.basicUnsafeIndexM# ds i_
           return (a, b, c, d)
   {-# INLINE basicUnsafeCopy  #-}
   basicUnsafeCopy (MV_4 _ as1 bs1 cs1 ds1) (V_4 _ as2
@@ -1678,14 +1682,14 @@ instance (Unbox a,
                (G.basicUnsafeSlice i_ m_ cs)
                (G.basicUnsafeSlice i_ m_ ds)
                (G.basicUnsafeSlice i_ m_ es)
-  {-# INLINE basicUnsafeIndexM  #-}
-  basicUnsafeIndexM (V_5 _ as bs cs ds es) i_
+  {-# INLINE basicUnsafeIndexM#  #-}
+  basicUnsafeIndexM# (V_5 _ as bs cs ds es) i_
       = do
-          a <- G.basicUnsafeIndexM as i_
-          b <- G.basicUnsafeIndexM bs i_
-          c <- G.basicUnsafeIndexM cs i_
-          d <- G.basicUnsafeIndexM ds i_
-          e <- G.basicUnsafeIndexM es i_
+          a <- G.basicUnsafeIndexM# as i_
+          b <- G.basicUnsafeIndexM# bs i_
+          c <- G.basicUnsafeIndexM# cs i_
+          d <- G.basicUnsafeIndexM# ds i_
+          e <- G.basicUnsafeIndexM# es i_
           return (a, b, c, d, e)
   {-# INLINE basicUnsafeCopy  #-}
   basicUnsafeCopy (MV_5 _ as1 bs1 cs1 ds1 es1) (V_5 _ as2
@@ -1896,15 +1900,15 @@ instance (Unbox a,
                (G.basicUnsafeSlice i_ m_ ds)
                (G.basicUnsafeSlice i_ m_ es)
                (G.basicUnsafeSlice i_ m_ fs)
-  {-# INLINE basicUnsafeIndexM  #-}
-  basicUnsafeIndexM (V_6 _ as bs cs ds es fs) i_
+  {-# INLINE basicUnsafeIndexM#  #-}
+  basicUnsafeIndexM# (V_6 _ as bs cs ds es fs) i_
       = do
-          a <- G.basicUnsafeIndexM as i_
-          b <- G.basicUnsafeIndexM bs i_
-          c <- G.basicUnsafeIndexM cs i_
-          d <- G.basicUnsafeIndexM ds i_
-          e <- G.basicUnsafeIndexM es i_
-          f <- G.basicUnsafeIndexM fs i_
+          a <- G.basicUnsafeIndexM# as i_
+          b <- G.basicUnsafeIndexM# bs i_
+          c <- G.basicUnsafeIndexM# cs i_
+          d <- G.basicUnsafeIndexM# ds i_
+          e <- G.basicUnsafeIndexM# es i_
+          f <- G.basicUnsafeIndexM# fs i_
           return (a, b, c, d, e, f)
   {-# INLINE basicUnsafeCopy  #-}
   basicUnsafeCopy (MV_6 _ as1 bs1 cs1 ds1 es1 fs1) (V_6 _ as2
