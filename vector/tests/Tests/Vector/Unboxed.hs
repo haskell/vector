@@ -56,6 +56,21 @@ testTupleUnboxedVector dummy = concatMap ($ dummy)
     testGeneralUnboxedVector
   ]
 
+
+newtype Bar = Bar Int
+  deriving (Eq, Ord, Show)
+
+newtype instance VU.MVector s Bar = MV_Bar (VU.MVector s (VU.DoNotUnboxLazy Bar))
+newtype instance VU.Vector    Bar = V_Bar  (VU.Vector    (VU.DoNotUnboxLazy Bar))
+deriving via (VU.DoNotUnboxLazy Bar) instance VGM.MVector VU.MVector Bar
+deriving via (VU.DoNotUnboxLazy Bar) instance VG.Vector   VU.Vector  Bar
+instance VU.Unbox Bar
+
+testDeriving :: TestTree
+testDeriving = testGroup "deriving"
+  [ testCase "DoNotUnboxLazy is lazy" $ 10 @=? VU.length (VU.replicate 10 (undefined::Bar))
+  ]
+
 tests =
   [ testGroup "()" $
     testUnitUnboxedVector (undefined :: VU.Vector ())
@@ -73,4 +88,5 @@ tests =
     testTupleUnboxedVector
       (undefined :: VU.Vector (Int, Bool, Int))
   , testGroup "unstream" $ testUnstream (undefined :: VU.Vector Int)
+  , testDeriving
   ]
