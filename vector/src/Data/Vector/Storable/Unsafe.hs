@@ -39,7 +39,7 @@ import Control.Monad.Primitive
 import Prelude
   ( Eq, Ord, Monoid, Read, Show, Ordering(..), Int, IO, Num(..)
   , compare, mempty, mappend, mconcat, showsPrec, return, seq, undefined, div
-  , (<), (<=), (>), (>=), (==), (/=), (.), ($) )
+  , (<), (<=), (>), (>=), (==), (/=), (.), ($), ($!))
 
 import Data.Data      ( Data(..) )
 import Text.Read      ( Read(..), readListPrecDefault )
@@ -123,7 +123,7 @@ instance Storable a => G.Vector Vector a where
   {-# INLINE basicUnsafeIndexM #-}
   basicUnsafeIndexM (UnsafeVector _ fp) i
     = return
-    . unsafeInlineIO
+    $! unsafeInlineIO
     $ unsafeWithForeignPtr fp $ \p ->
       peekElemOff p i
 
