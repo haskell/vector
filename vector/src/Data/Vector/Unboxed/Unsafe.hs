@@ -885,14 +885,12 @@ instance G.Vector Vector (DoNotUnboxLazy a) where
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeSlice #-}
   {-# INLINE basicUnsafeIndexM #-}
-  {-# INLINE elemseq #-}
   basicUnsafeFreeze = coerce $ G.basicUnsafeFreeze @B.Vector @a
   basicUnsafeThaw   = coerce $ G.basicUnsafeThaw   @B.Vector @a
   basicLength       = coerce $ G.basicLength       @B.Vector @a
   basicUnsafeSlice  = coerce $ G.basicUnsafeSlice  @B.Vector @a
   basicUnsafeIndexM = coerce $ G.basicUnsafeIndexM @B.Vector @a
   basicUnsafeCopy   = coerce $ G.basicUnsafeCopy   @B.Vector @a
-  elemseq _ = seq
 
 instance Unbox (DoNotUnboxLazy a)
 

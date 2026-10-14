@@ -1,15 +1,20 @@
-{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE ConstraintKinds    #-}
+{-# LANGUAGE DerivingVia        #-}
+{-# LANGUAGE StandaloneDeriving #-}
 module Tests.Vector.Unboxed (tests) where
 
 import Test.Tasty
-import qualified Data.Vector.Unboxed
+import Test.Tasty.HUnit
+import qualified Data.Vector.Unboxed as VU
+import qualified Data.Vector.Generic as VG
+import qualified Data.Vector.Generic.Mutable as VGM
 import Tests.Vector.Property
 
 
 
 testGeneralUnboxedVector
-  :: forall a. (CommonContext a Data.Vector.Unboxed.Vector, Data.Vector.Unboxed.Unbox a, Ord a, Data a)
-  => Data.Vector.Unboxed.Vector a -> [TestTree]
+  :: forall a. (CommonContext a VU.Vector, VU.Unbox a, Ord a, Data a)
+  => VU.Vector a -> [TestTree]
 testGeneralUnboxedVector dummy = concatMap ($ dummy)
   [
     testSanity
@@ -33,9 +38,9 @@ testBoolUnboxedVector dummy = concatMap ($ dummy)
   ]
 
 testNumericUnboxedVector
-  :: forall a. ( CommonContext a Data.Vector.Unboxed.Vector
-               , Data.Vector.Unboxed.Unbox a, Ord a, Num a, Enum a, Random a, Data a)
-  => Data.Vector.Unboxed.Vector a -> [TestTree]
+  :: forall a. ( CommonContext a VU.Vector
+               , VU.Unbox a, Ord a, Num a, Enum a, Random a, Data a)
+  => VU.Vector a -> [TestTree]
 testNumericUnboxedVector dummy = concatMap ($ dummy)
   [
     testGeneralUnboxedVector
@@ -44,28 +49,44 @@ testNumericUnboxedVector dummy = concatMap ($ dummy)
   ]
 
 testTupleUnboxedVector
-  :: forall a. ( CommonContext a Data.Vector.Unboxed.Vector
-               , Data.Vector.Unboxed.Unbox a, Ord a, Data a) => Data.Vector.Unboxed.Vector a -> [TestTree]
+  :: forall a. ( CommonContext a VU.Vector
+               , VU.Unbox a, Ord a, Data a) => VU.Vector a -> [TestTree]
 testTupleUnboxedVector dummy = concatMap ($ dummy)
   [
     testGeneralUnboxedVector
   ]
 
+
+newtype Bar = Bar Int
+  deriving (Eq, Ord, Show)
+
+newtype instance VU.MVector s Bar = MV_Bar (VU.MVector s (VU.DoNotUnboxLazy Bar))
+newtype instance VU.Vector    Bar = V_Bar  (VU.Vector    (VU.DoNotUnboxLazy Bar))
+deriving via (VU.DoNotUnboxLazy Bar) instance VGM.MVector VU.MVector Bar
+deriving via (VU.DoNotUnboxLazy Bar) instance VG.Vector   VU.Vector  Bar
+instance VU.Unbox Bar
+
+testDeriving :: TestTree
+testDeriving = testGroup "deriving"
+  [ testCase "DoNotUnboxLazy is lazy" $ 10 @=? VU.length (VU.replicate 10 (undefined::Bar))
+  ]
+
 tests =
   [ testGroup "()" $
-    testUnitUnboxedVector (undefined :: Data.Vector.Unboxed.Vector ())
+    testUnitUnboxedVector (undefined :: VU.Vector ())
   , testGroup "(Bool)" $
-    testBoolUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Bool)
+    testBoolUnboxedVector (undefined :: VU.Vector Bool)
   , testGroup "(Int)" $
-    testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Int)
+    testNumericUnboxedVector (undefined :: VU.Vector Int)
   , testGroup "(Float)" $
-    testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Float)
+    testNumericUnboxedVector (undefined :: VU.Vector Float)
   , testGroup "(Double)" $
-    testNumericUnboxedVector (undefined :: Data.Vector.Unboxed.Vector Double)
+    testNumericUnboxedVector (undefined :: VU.Vector Double)
   , testGroup "(Int,Bool)" $
-    testTupleUnboxedVector (undefined :: Data.Vector.Unboxed.Vector (Int, Bool))
+    testTupleUnboxedVector (undefined :: VU.Vector (Int, Bool))
   , testGroup "(Int,Bool,Int)" $
     testTupleUnboxedVector
-      (undefined :: Data.Vector.Unboxed.Vector (Int, Bool, Int))
-  , testGroup "unstream" $ testUnstream (undefined :: Data.Vector.Unboxed.Vector Int)
+      (undefined :: VU.Vector (Int, Bool, Int))
+  , testGroup "unstream" $ testUnstream (undefined :: VU.Vector Int)
+  , testDeriving
   ]
