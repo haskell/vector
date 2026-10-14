@@ -28,7 +28,9 @@ import System.Mem
 import Test.Alloc
 import Test.Ignore
 
-import qualified Data.Vector.Unboxed as VU
+import qualified Data.Vector.Unboxed  as VU
+import qualified Data.Vector.Storable as VS
+import qualified Data.Vector.Strict   as VV
 import Inspect.Fusion
 
 
@@ -160,6 +162,11 @@ tests = testGroup "allocations"
       [ allocWHNF "test_concat" test_concat listVectorI
       ]
     ]
+  , testGroup "indexing"
+    [ allocWHNF "== storable" (uncurry (==)) (vectorS,vectorS)
+    , allocWHNF "== unboxed"  (uncurry (==)) (vectorI,vectorI)
+    , allocWHNF "== boxed"    (uncurry (==)) (vectorV,vectorV)
+    ]
   ]
 
 allocWHNF :: String -> (a -> b) -> a -> TestTree
@@ -193,6 +200,14 @@ vector = VU.generate size fromIntegral
 vectorI :: VU.Vector Int
 {-# NOINLINE vectorI #-}
 vectorI = VU.generate size fromIntegral
+
+vectorS :: VS.Vector Int
+{-# NOINLINE vectorS #-}
+vectorS = VS.generate size fromIntegral
+
+vectorV :: VV.Vector Int
+{-# NOINLINE vectorV #-}
+vectorV = VV.generate size fromIntegral
 
 vectorIdx :: VU.Vector (Int,Int)
 {-# NOINLINE vectorIdx #-}
